@@ -35,4 +35,18 @@ return [
         ],
     ],
 
+    'google' => [
+        'client_id' => env('AUTH_OAUTH_PROVIDER') === 'google' ? env('AUTH_OAUTH_CLIENT_ID') : null,
+        'client_secret' => env('AUTH_OAUTH_PROVIDER') === 'google' ? env('AUTH_OAUTH_CLIENT_SECRET') : null,
+        'redirect' => env('AUTH_OAUTH_PROVIDER') === 'google' ? env('AUTH_OAUTH_REDIRECT_URI') : null,
+        'hosted_domain' => env('AUTH_OAUTH_PROVIDER') === 'google' ? env('AUTH_OAUTH_WORKSPACE_DOMAIN') : null,
+    ],
+
+    'graph' => [
+        'client_id' => env('AUTH_OAUTH_PROVIDER') === 'microsoft' ? env('AUTH_OAUTH_CLIENT_ID') : null,
+        'client_secret' => env('AUTH_OAUTH_PROVIDER') === 'microsoft' ? env('AUTH_OAUTH_CLIENT_SECRET') : null,
+        'redirect' => env('AUTH_OAUTH_PROVIDER') === 'microsoft' ? env('AUTH_OAUTH_REDIRECT_URI') : null,
+        'tenant_id' => env('AUTH_OAUTH_PROVIDER') === 'microsoft' ? env('AUTH_OAUTH_TENANT_ID', 'common') : 'common',
+    ],
+
 ];
