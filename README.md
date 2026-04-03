@@ -64,3 +64,34 @@ Skapade under `resources/views/auth/`:
 - `otp-challenge.blade.php`
 
 Gaster omdirigeras till `/login` om de forsoker na skyddade routes.
+
+## Generic CRUD API
+
+En generisk API-yta finns under `/api/crud/{resource}` och ar skyddad av `auth:sanctum`-middleware.
+
+Endpoints:
+
+- `GET /api/crud/{resource}`
+- `POST /api/crud/{resource}`
+- `GET /api/crud/{resource}/{id}`
+- `PUT|PATCH /api/crud/{resource}/{id}`
+- `DELETE /api/crud/{resource}/{id}`
+
+Index (`GET`) stodjer:
+
+- policykontroll med `viewAny`
+- valbar paginering via `paginate=1` och `per_page`
+- filter pa numeriska och booleska kolumner via `filter[field]=value`
+- fritextsokning i synliga textfalt via `search=...`
+- val av returnerade kolumner via `$select=col1,col2` (eller `select=`)
+
+Exempel:
+
+```text
+GET /api/crud/users?paginate=1&per_page=25
+GET /api/crud/users?filter[enabled]=1&search=alice
+GET /api/crud/users?%24select=id,name,email
+```
+
+Resursmappning kan konfigureras i `config/generic_crud.php` via `resources`.
+
