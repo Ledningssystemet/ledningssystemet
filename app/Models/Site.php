@@ -1,21 +1,19 @@
+
+
+
 <?php
-
 namespace App\Models;
-
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Support\Facades\Validator;
-
 class Site extends Model
 {
     use HasFactory;
-
     protected $table = 'sites';
-
-    protected $fillable = ['uid', 'name', 'description', 'responsible_user_id', 'external_provider_group_id'];
+    protected $fillable = ['name', 'description', 'responsible_user_id', 'external_provider_group_id'];
 
     protected function casts(): array
     {
@@ -28,7 +26,6 @@ class Site extends Model
     public static function validationRules(): array
     {
         return [
-            'uid' => ['nullable', 'string', 'max:36'],
             'name' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
             'responsible_user_id' => ['nullable', 'integer', 'min:0', 'exists:users,id'],
@@ -38,6 +35,7 @@ class Site extends Model
 
     protected static function booted(): void
     {
+
         static::saving(function (self $model): void {
             Validator::make($model->attributesToArray(), static::validationRules())->validate();
         });
@@ -67,11 +65,7 @@ class Site extends Model
     {
         return $this->hasMany(Department::class, 'site_id', 'id');
     }
-
-    public function int_partners(): HasMany
-    {
-        return $this->hasMany(Partner::class, 'site_risk_department_id', 'id');
-    }
+    
 
     public function int_users(): HasMany
     {

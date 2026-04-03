@@ -1,21 +1,18 @@
+
+
+
 <?php
-
 namespace App\Models;
-
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Support\Facades\Validator;
-
 class PersonalAccessToken extends Model
 {
     use HasFactory;
-
     protected $table = 'personal_access_tokens';
-
     protected $fillable = ['tokenable_type', 'tokenable_id', 'name', 'token', 'abilities', 'last_used_at', 'expires_at'];
-
     protected $hidden = ['token'];
 
     protected function casts(): array
@@ -43,6 +40,7 @@ class PersonalAccessToken extends Model
 
     protected static function booted(): void
     {
+
         static::saving(function (self $model): void {
             Validator::make($model->attributesToArray(), static::validationRules())->validate();
         });

@@ -1,26 +1,23 @@
+
+
+
 <?php
-
 namespace App\Models;
-
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Support\Facades\Validator;
-
 class RequirementSource extends Model
 {
     use HasFactory;
-
     protected $table = 'requirement_sources';
-
-    protected $fillable = ['uid', 'partner_id', 'partner_object_uid', 'partner_object_updated_at', 'name', 'reference', 'description', 'responsible_user_id', 'approved_at', 'not_applicable_at', 'max_sanction_fee'];
+    protected $fillable = ['name', 'reference', 'description', 'responsible_user_id', 'approved_at', 'not_applicable_at', 'max_sanction_fee'];
 
     protected function casts(): array
     {
         return [
-            'partner_object_updated_at' => 'datetime',
             'created_at' => 'datetime',
             'updated_at' => 'datetime',
             'approved_at' => 'datetime',
@@ -31,10 +28,6 @@ class RequirementSource extends Model
     public static function validationRules(): array
     {
         return [
-            'uid' => ['nullable', 'string', 'max:36'],
-            'partner_id' => ['nullable', 'integer', 'min:0', 'exists:partners,id'],
-            'partner_object_uid' => ['nullable', 'string', 'max:36'],
-            'partner_object_updated_at' => ['nullable', 'date'],
             'name' => ['required', 'string', 'max:100'],
             'reference' => ['required', 'string', 'max:20'],
             'description' => ['nullable', 'string'],
@@ -47,6 +40,7 @@ class RequirementSource extends Model
 
     protected static function booted(): void
     {
+
         static::saving(function (self $model): void {
             Validator::make($model->attributesToArray(), static::validationRules())->validate();
         });
@@ -56,11 +50,7 @@ class RequirementSource extends Model
     {
         return $plural ? 'Requirement Sources' : 'Requirement Source';
     }
-
-    public function int_partner(): BelongsTo
-    {
-        return $this->belongsTo(Partner::class, 'partner_id');
-    }
+    
 
     public function int_responsible_user(): BelongsTo
     {

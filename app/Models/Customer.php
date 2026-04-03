@@ -1,7 +1,8 @@
+
+
+
 <?php
-
 namespace App\Models;
-
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -9,14 +10,11 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Support\Facades\Validator;
-
 class Customer extends Model
 {
     use HasFactory;
-
     protected $table = 'customers';
-
-    protected $fillable = ['uid', 'name', 'legal_reg', 'ext_id', 'dpo_name', 'dpo_email', 'description', 'responsible_user_id'];
+    protected $fillable = ['name', 'legal_reg', 'ext_id', 'dpo_name', 'dpo_email', 'description', 'responsible_user_id'];
 
     protected function casts(): array
     {
@@ -29,7 +27,6 @@ class Customer extends Model
     public static function validationRules(): array
     {
         return [
-            'uid' => ['nullable', 'string', 'max:36'],
             'name' => ['required', 'string', 'max:255'],
             'legal_reg' => ['nullable', 'string', 'max:255'],
             'ext_id' => ['nullable', 'string', 'max:255'],
@@ -42,6 +39,7 @@ class Customer extends Model
 
     protected static function booted(): void
     {
+
         static::saving(function (self $model): void {
             Validator::make($model->attributesToArray(), static::validationRules())->validate();
         });
@@ -66,11 +64,7 @@ class Customer extends Model
     {
         return $this->hasMany(CustomerProcess::class, 'customer_id', 'id');
     }
-
-    public function int_partners(): HasMany
-    {
-        return $this->hasMany(Partner::class, 'customer_risk_department_id', 'id');
-    }
+    
 
     public function int_processes(): BelongsToMany
     {

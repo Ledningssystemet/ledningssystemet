@@ -1,7 +1,8 @@
+
+
+
 <?php
-
 namespace App\Models;
-
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -9,14 +10,11 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Support\Facades\Validator;
-
 class InformationType extends Model
 {
     use HasFactory;
-
     protected $table = 'information_types';
-
-    protected $fillable = ['uid', 'name', 'description', 'responsible_user_id', 'confidentiality_class_id', 'integrity_class_id', 'availability_class_id', 'retention', 'piidescription', 'confidentiality_ground_id', 'diary_id', 'archivingdescription', 'archiveshippingtime', 'archivemedia', 'sortinginformation'];
+    protected $fillable = ['name', 'description', 'responsible_user_id', 'confidentiality_class_id', 'integrity_class_id', 'availability_class_id', 'retention', 'piidescription', 'confidentiality_ground_id', 'diary_id', 'archivingdescription', 'archiveshippingtime', 'archivemedia', 'sortinginformation'];
 
     protected function casts(): array
     {
@@ -29,7 +27,6 @@ class InformationType extends Model
     public static function validationRules(): array
     {
         return [
-            'uid' => ['nullable', 'string', 'max:36'],
             'name' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
             'responsible_user_id' => ['nullable', 'integer', 'min:0', 'exists:users,id'],
@@ -49,6 +46,7 @@ class InformationType extends Model
 
     protected static function booted(): void
     {
+
         static::saving(function (self $model): void {
             Validator::make($model->attributesToArray(), static::validationRules())->validate();
         });

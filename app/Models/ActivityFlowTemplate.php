@@ -1,27 +1,24 @@
+
+
+
 <?php
-
 namespace App\Models;
-
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Support\Facades\Validator;
-
 class ActivityFlowTemplate extends Model
 {
     use HasFactory;
-
     protected $table = 'activity_flow_templates';
-
-    protected $fillable = ['name', 'description', 'user_instantiatable', 'partner_id', 'partner_object_uid', 'partner_object_updated_at'];
+    protected $fillable = ['name', 'description', 'user_instantiatable'];
 
     protected function casts(): array
     {
         return [
             'user_instantiatable' => 'boolean',
-            'partner_object_updated_at' => 'datetime',
             'created_at' => 'datetime',
             'updated_at' => 'datetime',
         ];
@@ -33,14 +30,12 @@ class ActivityFlowTemplate extends Model
             'name' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
             'user_instantiatable' => ['required', 'boolean'],
-            'partner_id' => ['nullable', 'integer', 'min:0', 'exists:partners,id'],
-            'partner_object_uid' => ['nullable', 'string', 'max:36'],
-            'partner_object_updated_at' => ['nullable', 'date'],
         ];
     }
 
     protected static function booted(): void
     {
+
         static::saving(function (self $model): void {
             Validator::make($model->attributesToArray(), static::validationRules())->validate();
         });
@@ -50,11 +45,7 @@ class ActivityFlowTemplate extends Model
     {
         return $plural ? 'Activity Flow Templates' : 'Activity Flow Template';
     }
-
-    public function int_partner(): BelongsTo
-    {
-        return $this->belongsTo(Partner::class, 'partner_id');
-    }
+    
 
     public function int_activity_flow_template_items(): HasMany
     {

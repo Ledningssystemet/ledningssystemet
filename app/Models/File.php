@@ -1,19 +1,17 @@
+
+
+
 <?php
-
 namespace App\Models;
-
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Support\Facades\Validator;
-
 class File extends Model
 {
     use HasFactory;
-
     protected $table = 'files';
-
     protected $fillable = ['object_id', 'object_type', 'created_by', 'name', 'description', 'filename', 'contenttype', 'contentlength', 'contents'];
 
     protected function casts(): array
@@ -41,6 +39,7 @@ class File extends Model
 
     protected static function booted(): void
     {
+
         static::saving(function (self $model): void {
             Validator::make($model->attributesToArray(), static::validationRules())->validate();
         });

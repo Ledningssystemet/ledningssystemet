@@ -1,7 +1,8 @@
+
+
+
 <?php
-
 namespace App\Models;
-
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -9,19 +10,15 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Support\Facades\Validator;
-
 class Requirement extends Model
 {
     use HasFactory;
-
     protected $table = 'requirements';
-
-    protected $fillable = ['uid', 'requirement_source_id', 'partner_object_uid', 'partner_object_updated_at', 'iscontrol', 'applicable', 'name', 'reference', 'ordinal', 'description', 'governance'];
+    protected $fillable = ['requirement_source_id', 'iscontrol', 'applicable', 'name', 'reference', 'ordinal', 'description', 'governance'];
 
     protected function casts(): array
     {
         return [
-            'partner_object_updated_at' => 'datetime',
             'iscontrol' => 'boolean',
             'applicable' => 'boolean',
             'created_at' => 'datetime',
@@ -32,10 +29,7 @@ class Requirement extends Model
     public static function validationRules(): array
     {
         return [
-            'uid' => ['nullable', 'string', 'max:36'],
             'requirement_source_id' => ['required', 'integer', 'min:0', 'exists:requirement_sources,id'],
-            'partner_object_uid' => ['nullable', 'string', 'max:36'],
-            'partner_object_updated_at' => ['nullable', 'date'],
             'iscontrol' => ['required', 'boolean'],
             'applicable' => ['nullable', 'boolean'],
             'name' => ['required', 'string', 'max:100'],
@@ -48,6 +42,7 @@ class Requirement extends Model
 
     protected static function booted(): void
     {
+
         static::saving(function (self $model): void {
             Validator::make($model->attributesToArray(), static::validationRules())->validate();
         });

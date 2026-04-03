@@ -1,7 +1,8 @@
+
+
+
 <?php
-
 namespace App\Models;
-
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -10,19 +11,15 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Support\Facades\Validator;
-
 class Risk extends Model
 {
     use HasFactory;
-
     protected $table = 'risks';
-
-    protected $fillable = ['uid', 'name', 'context_type', 'department_id', 'context_id', 'partner_id', 'partner_object_uid', 'partner_object_updated_at', 'scenariodescription', 'consequencedescription', 'riskowner_id', 'replacing_id', 'replacedby_id', 'assessed_at', 'replaced_at', 'created_by', 'probability_id', 'consequence_id', 'assessmentcomment', 'risk_project_id', 'post_probability_id', 'post_consequence_id'];
+    protected $fillable = ['name', 'context_type', 'department_id', 'context_id', 'scenariodescription', 'consequencedescription', 'riskowner_id', 'replacing_id', 'replacedby_id', 'assessed_at', 'replaced_at', 'created_by', 'probability_id', 'consequence_id', 'assessmentcomment', 'risk_project_id', 'post_probability_id', 'post_consequence_id'];
 
     protected function casts(): array
     {
         return [
-            'partner_object_updated_at' => 'datetime',
             'assessed_at' => 'datetime',
             'replaced_at' => 'datetime',
             'created_at' => 'datetime',
@@ -33,14 +30,10 @@ class Risk extends Model
     public static function validationRules(): array
     {
         return [
-            'uid' => ['nullable', 'string', 'max:36'],
             'name' => ['required', 'string', 'max:255'],
             'context_type' => ['nullable', 'string', 'max:255'],
             'department_id' => ['required', 'integer', 'min:0', 'exists:departments,id'],
             'context_id' => ['nullable', 'integer', 'min:0'],
-            'partner_id' => ['nullable', 'integer', 'min:0', 'exists:partners,id'],
-            'partner_object_uid' => ['nullable', 'string', 'max:36'],
-            'partner_object_updated_at' => ['nullable', 'date'],
             'scenariodescription' => ['nullable', 'string'],
             'consequencedescription' => ['nullable', 'string'],
             'riskowner_id' => ['nullable', 'integer', 'min:0', 'exists:users,id'],
@@ -60,6 +53,7 @@ class Risk extends Model
 
     protected static function booted(): void
     {
+
         static::saving(function (self $model): void {
             Validator::make($model->attributesToArray(), static::validationRules())->validate();
         });
@@ -84,11 +78,7 @@ class Risk extends Model
     {
         return $this->belongsTo(Department::class, 'department_id');
     }
-
-    public function int_partner(): BelongsTo
-    {
-        return $this->belongsTo(Partner::class, 'partner_id');
-    }
+    
 
     public function int_post_consequence(): BelongsTo
     {

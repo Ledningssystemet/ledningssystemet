@@ -33,7 +33,6 @@ CREATE TABLE `access_groups` (
 
 CREATE TABLE `activities` (
                               `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-                              `uid` char(36) DEFAULT NULL,
                               `name` varchar(255) NOT NULL,
                               `description` text NOT NULL,
                               `due` date NOT NULL,
@@ -43,20 +42,15 @@ CREATE TABLE `activities` (
                               `created_at` timestamp NULL DEFAULT NULL,
                               `updated_at` timestamp NULL DEFAULT NULL,
                               `responsible_user_id` bigint(20) unsigned DEFAULT NULL,
-                              `partner_id` bigint(20) unsigned DEFAULT NULL,
-                              `partner_object_uid` char(36) DEFAULT NULL,
-                              `partner_object_updated_at` timestamp NULL DEFAULT NULL,
                               `activity_flow_id` bigint(20) unsigned DEFAULT NULL,
                               `activity_flow_template_item_id` bigint(20) unsigned DEFAULT NULL,
                               PRIMARY KEY (`id`),
-                              UNIQUE KEY `activities_uid_unique` (`uid`),
                               KEY `activities_responsible_user_id_foreign` (`responsible_user_id`),
-                              KEY `activities_partner_id_foreign` (`partner_id`),
                               KEY `activities_activity_flow_id_foreign` (`activity_flow_id`),
                               KEY `activities_activity_flow_template_item_id_foreign` (`activity_flow_template_item_id`),
                               CONSTRAINT `activities_activity_flow_id_foreign` FOREIGN KEY (`activity_flow_id`) REFERENCES `activity_flows` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
                               CONSTRAINT `activities_activity_flow_template_item_id_foreign` FOREIGN KEY (`activity_flow_template_item_id`) REFERENCES `activity_flow_template_items` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-                              CONSTRAINT `activities_partner_id_foreign` FOREIGN KEY (`partner_id`) REFERENCES `partners` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
+
                               CONSTRAINT `activities_responsible_user_id_foreign` FOREIGN KEY (`responsible_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_swedish_ci;
 
@@ -69,12 +63,9 @@ CREATE TABLE `activity_flow_template_items` (
                                                 `waitforpreceeding` tinyint(1) NOT NULL DEFAULT 0,
                                                 `dueoffsetdays` int(10) unsigned NOT NULL DEFAULT 0,
                                                 `activity_flow_template_id` bigint(20) unsigned NOT NULL,
-                                                `partner_object_uid` char(36) DEFAULT NULL,
-                                                `partner_object_updated_at` timestamp NULL DEFAULT NULL,
                                                 `created_at` timestamp NULL DEFAULT NULL,
                                                 `updated_at` timestamp NULL DEFAULT NULL,
                                                 PRIMARY KEY (`id`),
-                                                UNIQUE KEY `activity_flow_template_items_partner_object_uid_unique` (`partner_object_uid`),
                                                 KEY `activity_flow_template_items_activity_flow_template_id_foreign` (`activity_flow_template_id`),
                                                 CONSTRAINT `activity_flow_template_items_activity_flow_template_id_foreign` FOREIGN KEY (`activity_flow_template_id`) REFERENCES `activity_flow_templates` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_swedish_ci;
@@ -84,15 +75,9 @@ CREATE TABLE `activity_flow_templates` (
                                            `name` varchar(255) NOT NULL,
                                            `description` text DEFAULT NULL,
                                            `user_instantiatable` tinyint(1) NOT NULL DEFAULT 0,
-                                           `partner_id` bigint(20) unsigned DEFAULT NULL,
-                                           `partner_object_uid` char(36) DEFAULT NULL,
-                                           `partner_object_updated_at` timestamp NULL DEFAULT NULL,
                                            `created_at` timestamp NULL DEFAULT NULL,
                                            `updated_at` timestamp NULL DEFAULT NULL,
-                                           PRIMARY KEY (`id`),
-                                           UNIQUE KEY `activity_flow_templates_partner_object_uid_unique` (`partner_object_uid`),
-                                           KEY `activity_flow_templates_partner_id_foreign` (`partner_id`),
-                                           CONSTRAINT `activity_flow_templates_partner_id_foreign` FOREIGN KEY (`partner_id`) REFERENCES `partners` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
+                                           PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_swedish_ci;
 
 CREATE TABLE `activity_flows` (
@@ -193,7 +178,6 @@ CREATE TABLE `asset_information_type` (
 
 CREATE TABLE `assets` (
                           `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-                          `uid` char(36) DEFAULT NULL,
                           `name` varchar(255) NOT NULL,
                           `description` longtext DEFAULT NULL,
                           `responsible_user_id` bigint(20) unsigned DEFAULT NULL,
@@ -208,7 +192,6 @@ CREATE TABLE `assets` (
                           `site_id` bigint(20) unsigned DEFAULT NULL,
                           PRIMARY KEY (`id`),
                           UNIQUE KEY `assets_name_unique` (`name`),
-                          UNIQUE KEY `assets_uid_unique` (`uid`),
                           KEY `assets_responsible_user_id_foreign` (`responsible_user_id`),
                           KEY `assets_supplier_id_foreign` (`supplier_id`),
                           KEY `assets_confidentiality_class_id_foreign` (`confidentiality_class_id`),
@@ -331,7 +314,6 @@ CREATE TABLE `compliance_evaluation_requirement_source` (
 
 CREATE TABLE `compliance_evaluations` (
                                           `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-                                          `uid` char(36) DEFAULT NULL,
                                           `name` varchar(100) NOT NULL,
                                           `startdate` date NOT NULL,
                                           `description` text DEFAULT NULL,
@@ -341,8 +323,7 @@ CREATE TABLE `compliance_evaluations` (
                                           `archived` timestamp NULL DEFAULT NULL,
                                           `created_at` timestamp NULL DEFAULT NULL,
                                           `updated_at` timestamp NULL DEFAULT NULL,
-                                          PRIMARY KEY (`id`),
-                                          UNIQUE KEY `compliance_evaluations_uid_unique` (`uid`)
+                                          PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_swedish_ci;
 
 CREATE TABLE `confidentiality_classes` (
@@ -452,10 +433,6 @@ CREATE TABLE `control_risks` (
 
 CREATE TABLE `controls` (
                             `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-                            `uid` char(36) DEFAULT NULL,
-                            `partner_id` bigint(20) unsigned DEFAULT NULL,
-                            `partner_object_uid` char(36) DEFAULT NULL,
-                            `partner_object_updated_at` timestamp NULL DEFAULT NULL,
                             `name` varchar(255) NOT NULL,
                             `description` text NOT NULL,
                             `created_at` timestamp NULL DEFAULT NULL,
@@ -465,11 +442,7 @@ CREATE TABLE `controls` (
                             `not_applicable_at` timestamp NULL DEFAULT NULL,
                             `reviewed_at` timestamp NULL DEFAULT NULL,
                             PRIMARY KEY (`id`),
-                            UNIQUE KEY `controls_uid_unique` (`uid`),
-                            UNIQUE KEY `controls_partner_object_uid_unique` (`partner_object_uid`),
                             KEY `controls_responsible_user_id_foreign` (`responsible_user_id`),
-                            KEY `controls_partner_id_foreign` (`partner_id`),
-                            CONSTRAINT `controls_partner_id_foreign` FOREIGN KEY (`partner_id`) REFERENCES `partners` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
                             CONSTRAINT `controls_responsible_user_id_foreign` FOREIGN KEY (`responsible_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_swedish_ci;
 
@@ -515,7 +488,6 @@ CREATE TABLE `customer_process` (
 
 CREATE TABLE `customers` (
                              `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-                             `uid` char(36) DEFAULT NULL,
                              `name` varchar(255) NOT NULL,
                              `legal_reg` varchar(255) DEFAULT NULL,
                              `ext_id` varchar(255) DEFAULT NULL,
@@ -526,7 +498,6 @@ CREATE TABLE `customers` (
                              `created_at` timestamp NULL DEFAULT NULL,
                              `updated_at` timestamp NULL DEFAULT NULL,
                              PRIMARY KEY (`id`),
-                             UNIQUE KEY `customers_uid_unique` (`uid`),
                              KEY `customers_responsible_user_id_foreign` (`responsible_user_id`),
                              CONSTRAINT `customers_responsible_user_id_foreign` FOREIGN KEY (`responsible_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_swedish_ci;
@@ -567,7 +538,6 @@ CREATE TABLE `department_user` (
 
 CREATE TABLE `departments` (
                                `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-                               `uid` char(36) DEFAULT NULL,
                                `name` varchar(255) NOT NULL,
                                `created_at` timestamp NULL DEFAULT NULL,
                                `updated_at` timestamp NULL DEFAULT NULL,
@@ -576,7 +546,6 @@ CREATE TABLE `departments` (
                                `site_id` bigint(20) unsigned DEFAULT NULL,
                                PRIMARY KEY (`id`),
                                UNIQUE KEY `departments_name_unique` (`name`),
-                               UNIQUE KEY `departments_uid_unique` (`uid`),
                                KEY `departments_external_provider_group_id_foreign` (`external_provider_group_id`),
                                KEY `dpdi` (`parent_department_id`),
                                KEY `dsi_fk` (`site_id`),
@@ -666,7 +635,6 @@ CREATE TABLE `files` (
 
 CREATE TABLE `findings` (
                             `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-                            `uid` char(36) DEFAULT NULL,
                             `name` varchar(255) NOT NULL,
                             `description` text NOT NULL,
                             `department_id` bigint(20) unsigned NOT NULL,
@@ -685,7 +653,6 @@ CREATE TABLE `findings` (
                             `estimated_cost` bigint(20) unsigned DEFAULT NULL,
                             `distribution_analysis` longtext DEFAULT NULL,
                             PRIMARY KEY (`id`),
-                            UNIQUE KEY `findings_uid_unique` (`uid`),
                             KEY `findings_department_id_foreign` (`department_id`),
                             KEY `findings_compliance_evaluation_requirement_finding_id_foreign` (`compliance_evaluation_requirement_finding_id`),
                             KEY `findings_created_by_foreign` (`created_by`),
@@ -694,39 +661,20 @@ CREATE TABLE `findings` (
                             CONSTRAINT `findings_department_id_foreign` FOREIGN KEY (`department_id`) REFERENCES `departments` (`id`) ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_swedish_ci;
 
-CREATE TABLE `ignored_risks` (
-                                 `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-                                 `risk_id` bigint(20) unsigned NOT NULL,
-                                 `name` varchar(255) NOT NULL,
-                                 `scenariodescription` longtext NOT NULL,
-                                 `partner_id` bigint(20) unsigned NOT NULL,
-                                 `partner_object_uid` char(36) NOT NULL,
-                                 `context_type` varchar(255) NOT NULL,
-                                 `context_id` bigint(20) unsigned DEFAULT NULL,
-                                 `created_by` varchar(255) DEFAULT NULL,
-                                 `created_at` timestamp NULL DEFAULT NULL,
-                                 `updated_at` timestamp NULL DEFAULT NULL,
-                                 `partner_informed_at` timestamp NULL DEFAULT NULL,
-                                 PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_swedish_ci;
-
 CREATE TABLE `incident_logs` (
                                  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-                                 `uid` char(36) DEFAULT NULL,
                                  `incident_id` bigint(20) unsigned NOT NULL,
                                  `start_at` datetime NOT NULL DEFAULT current_timestamp(),
                                  `description` text NOT NULL,
                                  `created_at` timestamp NULL DEFAULT NULL,
                                  `updated_at` timestamp NULL DEFAULT NULL,
                                  PRIMARY KEY (`id`),
-                                 UNIQUE KEY `incident_logs_uid_unique` (`uid`),
                                  KEY `incident_logs_incident_id_foreign` (`incident_id`),
                                  CONSTRAINT `incident_logs_incident_id_foreign` FOREIGN KEY (`incident_id`) REFERENCES `incidents` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_swedish_ci;
 
 CREATE TABLE `incidents` (
                              `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-                             `uid` char(36) DEFAULT NULL,
                              `name` varchar(255) NOT NULL,
                              `started_at` datetime NOT NULL DEFAULT current_timestamp(),
                              `finished_at` datetime DEFAULT NULL,
@@ -737,7 +685,6 @@ CREATE TABLE `incidents` (
                              `created_at` timestamp NULL DEFAULT NULL,
                              `updated_at` timestamp NULL DEFAULT NULL,
                              PRIMARY KEY (`id`),
-                             UNIQUE KEY `incidents_uid_unique` (`uid`),
                              KEY `incidents_responsible_user_id_foreign` (`responsible_user_id`),
                              CONSTRAINT `incidents_responsible_user_id_foreign` FOREIGN KEY (`responsible_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_swedish_ci;
@@ -777,7 +724,6 @@ CREATE TABLE `information_type_subject_category` (
 
 CREATE TABLE `information_types` (
                                      `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-                                     `uid` char(36) DEFAULT NULL,
                                      `name` varchar(255) NOT NULL,
                                      `description` longtext DEFAULT NULL,
                                      `responsible_user_id` bigint(20) unsigned DEFAULT NULL,
@@ -796,7 +742,6 @@ CREATE TABLE `information_types` (
                                      `sortinginformation` varchar(255) DEFAULT NULL,
                                      PRIMARY KEY (`id`),
                                      UNIQUE KEY `information_types_name_unique` (`name`),
-                                     UNIQUE KEY `information_types_uid_unique` (`uid`),
                                      KEY `information_types_responsible_user_id_foreign` (`responsible_user_id`),
                                      KEY `information_types_confidentiality_class_id_foreign` (`confidentiality_class_id`),
                                      KEY `information_types_integrity_class_id_foreign` (`integrity_class_id`),
@@ -858,10 +803,6 @@ CREATE TABLE `library_document_processes` (
 
 CREATE TABLE `library_documents` (
                                      `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-                                     `uid` char(36) DEFAULT NULL,
-                                     `partner_id` bigint(20) unsigned DEFAULT NULL,
-                                     `partner_object_uid` char(36) DEFAULT NULL,
-                                     `partner_object_updated_at` timestamp NULL DEFAULT NULL,
                                      `name` varchar(255) NOT NULL,
                                      `filename` varchar(255) NOT NULL,
                                      `description` text DEFAULT NULL,
@@ -872,17 +813,12 @@ CREATE TABLE `library_documents` (
                                      `filecontent` longblob DEFAULT NULL,
                                      `responsible_user_id` bigint(20) unsigned DEFAULT NULL,
                                      PRIMARY KEY (`id`),
-                                     UNIQUE KEY `library_documents_uid_unique` (`uid`),
-                                     UNIQUE KEY `library_documents_partner_object_uid_unique` (`partner_object_uid`),
-                                     KEY `library_documents_partner_id_foreign` (`partner_id`),
                                      KEY `ld_rui` (`responsible_user_id`),
-                                     CONSTRAINT `ld_rui` FOREIGN KEY (`responsible_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
-                                     CONSTRAINT `library_documents_partner_id_foreign` FOREIGN KEY (`partner_id`) REFERENCES `partners` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
+                                     CONSTRAINT `ld_rui` FOREIGN KEY (`responsible_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_swedish_ci;
 
 CREATE TABLE `object_histories` (
                                     `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-                                    `uid` char(36) DEFAULT NULL,
                                     `action` varchar(1) NOT NULL,
                                     `modified` longtext DEFAULT NULL CHECK (json_valid(`modified`)),
                                     `created_by` varchar(255) DEFAULT NULL,
@@ -890,21 +826,18 @@ CREATE TABLE `object_histories` (
                                     `object_type` varchar(255) NOT NULL,
                                     `created_at` timestamp NULL DEFAULT NULL,
                                     `updated_at` timestamp NULL DEFAULT NULL,
-                                    PRIMARY KEY (`id`),
-                                    UNIQUE KEY `object_histories_uid_unique` (`uid`)
+                                    PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_swedish_ci;
 
 CREATE TABLE `object_messages` (
                                    `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-                                   `uid` char(36) DEFAULT NULL,
                                    `comment` longtext NOT NULL,
                                    `created_by` varchar(255) NOT NULL,
                                    `object_id` bigint(20) unsigned NOT NULL,
                                    `object_type` varchar(255) NOT NULL,
                                    `created_at` timestamp NULL DEFAULT NULL,
                                    `updated_at` timestamp NULL DEFAULT NULL,
-                                   PRIMARY KEY (`id`),
-                                   UNIQUE KEY `object_messages_uid_unique` (`uid`)
+                                   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_swedish_ci;
 
 CREATE TABLE `object_properties` (
@@ -975,49 +908,6 @@ CREATE TABLE `objectives` (
                               CONSTRAINT `orui` FOREIGN KEY (`responsible_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_swedish_ci;
 
-CREATE TABLE `partners` (
-                            `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-                            `uid` char(36) DEFAULT NULL,
-                            `name` varchar(50) NOT NULL,
-                            `description` text DEFAULT NULL,
-                            `url` varchar(255) NOT NULL,
-                            `authtoken` varchar(64) DEFAULT NULL,
-                            `lastseen` datetime DEFAULT NULL,
-                            `created_at` timestamp NULL DEFAULT NULL,
-                            `updated_at` timestamp NULL DEFAULT NULL,
-                            `company_risk_department_id` bigint(20) unsigned DEFAULT NULL,
-                            `department_risk_department_id` bigint(20) unsigned DEFAULT NULL,
-                            `process_risk_department_id` bigint(20) unsigned DEFAULT NULL,
-                            `information_type_risk_department_id` bigint(20) unsigned DEFAULT NULL,
-                            `asset_risk_department_id` bigint(20) unsigned DEFAULT NULL,
-                            `supplier_risk_department_id` bigint(20) unsigned DEFAULT NULL,
-                            `fallback_risk_department_id` bigint(20) unsigned DEFAULT NULL,
-                            `customer_risk_department_id` bigint(20) unsigned DEFAULT NULL,
-                            `site_risk_department_id` bigint(20) unsigned DEFAULT NULL,
-                            PRIMARY KEY (`id`),
-                            UNIQUE KEY `partners_name_unique` (`name`),
-                            UNIQUE KEY `partners_url_unique` (`url`),
-                            UNIQUE KEY `partners_uid_unique` (`uid`),
-                            KEY `pcrdi` (`company_risk_department_id`),
-                            KEY `pdrdi` (`department_risk_department_id`),
-                            KEY `pprdi` (`process_risk_department_id`),
-                            KEY `pitrdi` (`information_type_risk_department_id`),
-                            KEY `pardi` (`asset_risk_department_id`),
-                            KEY `psrdi` (`supplier_risk_department_id`),
-                            KEY `pfrdi` (`fallback_risk_department_id`),
-                            KEY `pcustrdi` (`customer_risk_department_id`),
-                            KEY `pcsrdi` (`site_risk_department_id`),
-                            CONSTRAINT `pardi` FOREIGN KEY (`asset_risk_department_id`) REFERENCES `departments` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
-                            CONSTRAINT `pcrdi` FOREIGN KEY (`company_risk_department_id`) REFERENCES `departments` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
-                            CONSTRAINT `pcsrdi` FOREIGN KEY (`site_risk_department_id`) REFERENCES `sites` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
-                            CONSTRAINT `pcustrdi` FOREIGN KEY (`customer_risk_department_id`) REFERENCES `customers` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
-                            CONSTRAINT `pdrdi` FOREIGN KEY (`department_risk_department_id`) REFERENCES `departments` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
-                            CONSTRAINT `pfrdi` FOREIGN KEY (`fallback_risk_department_id`) REFERENCES `departments` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
-                            CONSTRAINT `pitrdi` FOREIGN KEY (`information_type_risk_department_id`) REFERENCES `departments` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
-                            CONSTRAINT `pprdi` FOREIGN KEY (`process_risk_department_id`) REFERENCES `departments` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
-                            CONSTRAINT `psrdi` FOREIGN KEY (`supplier_risk_department_id`) REFERENCES `departments` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_swedish_ci;
-
 CREATE TABLE `password_resets` (
                                    `email` varchar(255) NOT NULL,
                                    `token` varchar(255) NOT NULL,
@@ -1076,7 +966,6 @@ CREATE TABLE `probability_levels` (
 
 CREATE TABLE `process_activities` (
                                       `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-                                      `uid` char(36) DEFAULT NULL,
                                       `name` varchar(255) NOT NULL,
                                       `description` longtext DEFAULT NULL,
                                       `bpmnId` varchar(255) NOT NULL,
@@ -1088,7 +977,6 @@ CREATE TABLE `process_activities` (
                                       `updated_at` timestamp NULL DEFAULT NULL,
                                       PRIMARY KEY (`id`),
                                       UNIQUE KEY `process_activities_bpmnid_unique` (`bpmnId`),
-                                      UNIQUE KEY `process_activities_uid_unique` (`uid`),
                                       KEY `process_activities_process_id_foreign` (`process_id`),
                                       KEY `process_activities_responsible_role_id_foreign` (`responsible_role_id`),
                                       KEY `process_activities_accountable_role_id_foreign` (`accountable_role_id`),
@@ -1234,7 +1122,6 @@ CREATE TABLE `process_sustainability_aspects` (
 
 CREATE TABLE `processes` (
                              `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-                             `uid` char(36) DEFAULT NULL,
                              `name` varchar(255) NOT NULL,
                              `description` longtext DEFAULT NULL,
                              `bpmn` longtext DEFAULT NULL,
@@ -1253,7 +1140,6 @@ CREATE TABLE `processes` (
                              `data_processor_processing_activities` mediumtext DEFAULT NULL,
                              PRIMARY KEY (`id`),
                              UNIQUE KEY `processes_name_unique` (`name`),
-                             UNIQUE KEY `processes_uid_unique` (`uid`),
                              KEY `processes_department_foreign` (`department_id`),
                              KEY `processes_responsible_user_id_foreign` (`responsible_user_id`),
                              CONSTRAINT `processes_department_foreign` FOREIGN KEY (`department_id`) REFERENCES `departments` (`id`) ON UPDATE CASCADE,
@@ -1262,10 +1148,7 @@ CREATE TABLE `processes` (
 
 CREATE TABLE `properties` (
                               `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-                              `uid` char(36) DEFAULT NULL,
                               `property_tab_id` bigint(20) unsigned NOT NULL,
-                              `partner_object_uid` char(36) DEFAULT NULL,
-                              `partner_object_updated_at` timestamp NULL DEFAULT NULL,
                               `flagname` varchar(255) NOT NULL,
                               `name` varchar(255) NOT NULL,
                               `description` longtext DEFAULT NULL,
@@ -1273,29 +1156,19 @@ CREATE TABLE `properties` (
                               `updated_at` timestamp NULL DEFAULT NULL,
                               `defaultvalue` tinyint(1) DEFAULT NULL,
                               PRIMARY KEY (`id`),
-                              UNIQUE KEY `properties_uid_unique` (`uid`),
-                              UNIQUE KEY `properties_partner_object_uid_unique` (`partner_object_uid`),
                               KEY `properties_property_tab_id_foreign` (`property_tab_id`),
                               CONSTRAINT `properties_property_tab_id_foreign` FOREIGN KEY (`property_tab_id`) REFERENCES `property_tabs` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_swedish_ci;
 
 CREATE TABLE `property_tabs` (
                                  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-                                 `uid` char(36) DEFAULT NULL,
-                                 `partner_id` bigint(20) unsigned DEFAULT NULL,
-                                 `partner_object_uid` char(36) DEFAULT NULL,
-                                 `partner_object_updated_at` timestamp NULL DEFAULT NULL,
                                  `name` varchar(50) NOT NULL,
                                  `context` varchar(255) NOT NULL,
                                  `description` text DEFAULT NULL,
                                  `created_at` timestamp NULL DEFAULT NULL,
                                  `updated_at` timestamp NULL DEFAULT NULL,
                                  PRIMARY KEY (`id`),
-                                 UNIQUE KEY `property_tabs_name_unique` (`name`),
-                                 UNIQUE KEY `property_tabs_uid_unique` (`uid`),
-                                 UNIQUE KEY `property_tabs_partner_object_uid_unique` (`partner_object_uid`),
-                                 KEY `property_tabs_partner_id_foreign` (`partner_id`),
-                                 CONSTRAINT `property_tabs_partner_id_foreign` FOREIGN KEY (`partner_id`) REFERENCES `partners` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+                                 UNIQUE KEY `property_tabs_name_unique` (`name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_swedish_ci;
 
 CREATE TABLE `qualification_role` (
@@ -1353,10 +1226,6 @@ CREATE TABLE `recipient_categories` (
 
 CREATE TABLE `requirement_sources` (
                                        `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-                                       `uid` char(36) DEFAULT NULL,
-                                       `partner_id` bigint(20) unsigned DEFAULT NULL,
-                                       `partner_object_uid` char(36) DEFAULT NULL,
-                                       `partner_object_updated_at` timestamp NULL DEFAULT NULL,
                                        `name` varchar(100) NOT NULL,
                                        `reference` varchar(20) NOT NULL,
                                        `description` text DEFAULT NULL,
@@ -1367,20 +1236,13 @@ CREATE TABLE `requirement_sources` (
                                        `not_applicable_at` timestamp NULL DEFAULT NULL,
                                        `max_sanction_fee` bigint(20) unsigned DEFAULT NULL,
                                        PRIMARY KEY (`id`),
-                                       UNIQUE KEY `requirement_sources_uid_unique` (`uid`),
-                                       UNIQUE KEY `requirement_sources_partner_object_uid_unique` (`partner_object_uid`),
-                                       KEY `requirement_sources_partner_id_foreign` (`partner_id`),
                                        KEY `rs_rui` (`responsible_user_id`),
-                                       CONSTRAINT `requirement_sources_partner_id_foreign` FOREIGN KEY (`partner_id`) REFERENCES `partners` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
                                        CONSTRAINT `rs_rui` FOREIGN KEY (`responsible_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_swedish_ci;
 
 CREATE TABLE `requirements` (
                                 `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-                                `uid` char(36) DEFAULT NULL,
                                 `requirement_source_id` bigint(20) unsigned NOT NULL,
-                                `partner_object_uid` char(36) DEFAULT NULL,
-                                `partner_object_updated_at` timestamp NULL DEFAULT NULL,
                                 `iscontrol` tinyint(1) NOT NULL DEFAULT 0,
                                 `applicable` tinyint(1) DEFAULT NULL,
                                 `name` varchar(100) NOT NULL,
@@ -1391,8 +1253,6 @@ CREATE TABLE `requirements` (
                                 `created_at` timestamp NULL DEFAULT NULL,
                                 `updated_at` timestamp NULL DEFAULT NULL,
                                 PRIMARY KEY (`id`),
-                                UNIQUE KEY `requirements_uid_unique` (`uid`),
-                                UNIQUE KEY `requirements_partner_object_uid_unique` (`partner_object_uid`),
                                 KEY `requirements_requirement_source_id_foreign` (`requirement_source_id`),
                                 CONSTRAINT `requirements_requirement_source_id_foreign` FOREIGN KEY (`requirement_source_id`) REFERENCES `requirement_sources` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_swedish_ci;
@@ -1428,11 +1288,8 @@ CREATE TABLE `risk_levels` (
 
 CREATE TABLE `risk_project_type_risk_templates` (
                                                     `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-                                                    `uid` char(36) DEFAULT NULL,
                                                     `name` varchar(255) NOT NULL,
                                                     `risk_project_type_id` bigint(20) unsigned DEFAULT NULL,
-                                                    `partner_object_uid` char(36) DEFAULT NULL,
-                                                    `partner_object_updated_at` timestamp NULL DEFAULT NULL,
                                                     `scenariodescription` text DEFAULT NULL,
                                                     `consequencedescription` text DEFAULT NULL,
                                                     `probability_id` bigint(20) unsigned DEFAULT NULL,
@@ -1440,8 +1297,6 @@ CREATE TABLE `risk_project_type_risk_templates` (
                                                     `created_at` timestamp NULL DEFAULT NULL,
                                                     `updated_at` timestamp NULL DEFAULT NULL,
                                                     PRIMARY KEY (`id`),
-                                                    UNIQUE KEY `risk_project_type_risk_templates_uid_unique` (`uid`),
-                                                    UNIQUE KEY `risk_project_type_risk_templates_partner_object_uid_unique` (`partner_object_uid`),
                                                     KEY `rptrt_rpti_fk` (`risk_project_type_id`),
                                                     KEY `rptrt_pi_fk` (`probability_id`),
                                                     KEY `rptrt_ci_fk` (`consequence_id`),
@@ -1452,19 +1307,11 @@ CREATE TABLE `risk_project_type_risk_templates` (
 
 CREATE TABLE `risk_project_types` (
                                       `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-                                      `uid` char(36) DEFAULT NULL,
                                       `name` varchar(255) NOT NULL,
                                       `description` text NOT NULL,
-                                      `partner_id` bigint(20) unsigned DEFAULT NULL,
-                                      `partner_object_uid` char(36) DEFAULT NULL,
-                                      `partner_object_updated_at` timestamp NULL DEFAULT NULL,
                                       `created_at` timestamp NULL DEFAULT NULL,
                                       `updated_at` timestamp NULL DEFAULT NULL,
-                                      PRIMARY KEY (`id`),
-                                      UNIQUE KEY `risk_project_types_uid_unique` (`uid`),
-                                      UNIQUE KEY `risk_project_types_partner_object_uid_unique` (`partner_object_uid`),
-                                      KEY `risk_project_types_partner_id_foreign` (`partner_id`),
-                                      CONSTRAINT `risk_project_types_partner_id_foreign` FOREIGN KEY (`partner_id`) REFERENCES `partners` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+                                      PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_swedish_ci;
 
 CREATE TABLE `risk_project_user` (
@@ -1502,30 +1349,12 @@ CREATE TABLE `risk_projects` (
                                  CONSTRAINT `rp_rpti_fk` FOREIGN KEY (`risk_project_type_id`) REFERENCES `risk_project_types` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_swedish_ci;
 
-CREATE TABLE `risk_template_evaluation_attempts` (
-                                                     `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-                                                     `context_type` varchar(255) NOT NULL,
-                                                     `context_id` varchar(255) DEFAULT NULL,
-                                                     `partner_id` bigint(20) unsigned NOT NULL,
-                                                     `partner_template_uid` char(36) NOT NULL,
-                                                     `partner_template_updated` timestamp NOT NULL,
-                                                     `created_at` timestamp NULL DEFAULT NULL,
-                                                     `updated_at` timestamp NULL DEFAULT NULL,
-                                                     PRIMARY KEY (`id`),
-                                                     KEY `rteapi` (`partner_id`),
-                                                     CONSTRAINT `rteapi` FOREIGN KEY (`partner_id`) REFERENCES `partners` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_swedish_ci;
-
 CREATE TABLE `risks` (
                          `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-                         `uid` char(36) DEFAULT NULL,
                          `name` varchar(255) NOT NULL,
                          `context_type` varchar(255) DEFAULT NULL,
                          `department_id` bigint(20) unsigned NOT NULL,
                          `context_id` bigint(20) unsigned DEFAULT NULL,
-                         `partner_id` bigint(20) unsigned DEFAULT NULL,
-                         `partner_object_uid` char(36) DEFAULT NULL,
-                         `partner_object_updated_at` timestamp NULL DEFAULT NULL,
                          `scenariodescription` text DEFAULT NULL,
                          `consequencedescription` text DEFAULT NULL,
                          `riskowner_id` bigint(20) unsigned DEFAULT NULL,
@@ -1543,7 +1372,6 @@ CREATE TABLE `risks` (
                          `post_probability_id` bigint(20) unsigned DEFAULT NULL,
                          `post_consequence_id` bigint(20) unsigned DEFAULT NULL,
                          PRIMARY KEY (`id`),
-                         UNIQUE KEY `risks_uid_unique` (`uid`),
                          KEY `risks_department_foreign` (`department_id`),
                          KEY `risks_riskowner_id_foreign` (`riskowner_id`),
                          KEY `risks_replacing_id_foreign` (`replacing_id`),
@@ -1551,14 +1379,12 @@ CREATE TABLE `risks` (
                          KEY `risks_created_by_foreign` (`created_by`),
                          KEY `risks_probability_id_foreign` (`probability_id`),
                          KEY `risks_consequence_id_foreign` (`consequence_id`),
-                         KEY `risks_partner_id_foreign` (`partner_id`),
                          KEY `risks_risk_project_id_foreign` (`risk_project_id`),
                          KEY `risks_post_probability_id_foreign` (`post_probability_id`),
                          KEY `risks_post_consequence_id_foreign` (`post_consequence_id`),
                          CONSTRAINT `risks_consequence_id_foreign` FOREIGN KEY (`consequence_id`) REFERENCES `consequence_levels` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
                          CONSTRAINT `risks_created_by_foreign` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
                          CONSTRAINT `risks_department_foreign` FOREIGN KEY (`department_id`) REFERENCES `departments` (`id`) ON UPDATE CASCADE,
-                         CONSTRAINT `risks_partner_id_foreign` FOREIGN KEY (`partner_id`) REFERENCES `partners` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
                          CONSTRAINT `risks_post_consequence_id_foreign` FOREIGN KEY (`post_consequence_id`) REFERENCES `consequence_levels` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
                          CONSTRAINT `risks_post_probability_id_foreign` FOREIGN KEY (`post_probability_id`) REFERENCES `probability_levels` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
                          CONSTRAINT `risks_probability_id_foreign` FOREIGN KEY (`probability_id`) REFERENCES `probability_levels` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
@@ -1602,7 +1428,6 @@ CREATE TABLE `role_user` (
 
 CREATE TABLE `roles` (
                          `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-                         `uid` char(36) DEFAULT NULL,
                          `name` varchar(255) NOT NULL,
                          `description` longtext DEFAULT NULL,
                          `created_at` timestamp NULL DEFAULT NULL,
@@ -1611,7 +1436,6 @@ CREATE TABLE `roles` (
                          `authorities` longtext DEFAULT NULL,
                          PRIMARY KEY (`id`),
                          UNIQUE KEY `roles_name_unique` (`name`),
-                         UNIQUE KEY `roles_uid_unique` (`uid`),
                          KEY `roles_external_provider_group_id_foreign` (`external_provider_group_id`),
                          CONSTRAINT `roles_external_provider_group_id_foreign` FOREIGN KEY (`external_provider_group_id`) REFERENCES `external_provider_groups` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_swedish_ci;
@@ -1630,7 +1454,6 @@ CREATE TABLE `sessions` (
 
 CREATE TABLE `sites` (
                          `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-                         `uid` char(36) DEFAULT NULL,
                          `name` varchar(255) NOT NULL,
                          `description` mediumtext DEFAULT NULL,
                          `responsible_user_id` bigint(20) unsigned DEFAULT NULL,
@@ -1638,7 +1461,6 @@ CREATE TABLE `sites` (
                          `created_at` timestamp NULL DEFAULT NULL,
                          `updated_at` timestamp NULL DEFAULT NULL,
                          PRIMARY KEY (`id`),
-                         UNIQUE KEY `sites_uid_unique` (`uid`),
                          KEY `sites_responsible_user_id_foreign` (`responsible_user_id`),
                          KEY `sites_external_provider_group_id_foreign` (`external_provider_group_id`),
                          CONSTRAINT `sites_external_provider_group_id_foreign` FOREIGN KEY (`external_provider_group_id`) REFERENCES `external_provider_groups` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
@@ -1661,15 +1483,9 @@ CREATE TABLE `supplier_categories` (
                                        `reassessment_interval` varchar(255) DEFAULT NULL,
                                        `created_at` timestamp NULL DEFAULT NULL,
                                        `updated_at` timestamp NULL DEFAULT NULL,
-                                       `partner_id` bigint(20) unsigned DEFAULT NULL,
-                                       `partner_object_uid` char(36) DEFAULT NULL,
-                                       `partner_object_updated_at` timestamp NULL DEFAULT NULL,
                                        `formulaname` varchar(255) DEFAULT NULL,
                                        `defaultvalue` tinyint(1) DEFAULT NULL,
-                                       PRIMARY KEY (`id`),
-                                       UNIQUE KEY `supplier_categories_partner_object_uid_unique` (`partner_object_uid`),
-                                       KEY `supplier_categories_partner_id_foreign` (`partner_id`),
-                                       CONSTRAINT `supplier_categories_partner_id_foreign` FOREIGN KEY (`partner_id`) REFERENCES `partners` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
+                                       PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_swedish_ci;
 
 CREATE TABLE `supplier_documents` (
@@ -1695,10 +1511,7 @@ CREATE TABLE `supplier_requirements` (
                                          `reassessment` tinyint(1) NOT NULL DEFAULT 1,
                                          `created_at` timestamp NULL DEFAULT NULL,
                                          `updated_at` timestamp NULL DEFAULT NULL,
-                                         `partner_object_uid` char(36) DEFAULT NULL,
-                                         `partner_object_updated_at` timestamp NULL DEFAULT NULL,
                                          PRIMARY KEY (`id`),
-                                         UNIQUE KEY `supplier_requirements_partner_object_uid_unique` (`partner_object_uid`),
                                          KEY `supplier_requirements_supplier_category_id_foreign` (`supplier_category_id`),
                                          CONSTRAINT `supplier_requirements_supplier_category_id_foreign` FOREIGN KEY (`supplier_category_id`) REFERENCES `supplier_categories` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_swedish_ci;
@@ -1736,7 +1549,6 @@ CREATE TABLE `supplier_supplier_requirement` (
 
 CREATE TABLE `suppliers` (
                              `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-                             `uid` char(36) DEFAULT NULL,
                              `name` varchar(255) NOT NULL,
                              `description` longtext DEFAULT NULL,
                              `responsible_user_id` bigint(20) unsigned DEFAULT NULL,
@@ -1747,7 +1559,6 @@ CREATE TABLE `suppliers` (
                              `external_supplier_id` varchar(255) DEFAULT NULL,
                              PRIMARY KEY (`id`),
                              UNIQUE KEY `suppliers_name_unique` (`name`),
-                             UNIQUE KEY `suppliers_uid_unique` (`uid`),
                              KEY `suppliers_responsible_user_id_foreign` (`responsible_user_id`),
                              CONSTRAINT `suppliers_responsible_user_id_foreign` FOREIGN KEY (`responsible_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_swedish_ci;
@@ -1811,12 +1622,10 @@ CREATE TABLE `system_configurations` (
 
 CREATE TABLE `tags` (
                         `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-                        `uid` char(36) DEFAULT NULL,
                         `name` varchar(25) NOT NULL,
                         `created_at` timestamp NULL DEFAULT NULL,
                         `updated_at` timestamp NULL DEFAULT NULL,
-                        PRIMARY KEY (`id`),
-                        UNIQUE KEY `tags_uid_unique` (`uid`)
+                        PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_swedish_ci;
 
 CREATE TABLE `user_competence` (
@@ -1889,7 +1698,6 @@ CREATE TABLE `user_status_email_settings` (
 
 CREATE TABLE `users` (
                          `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-                         `uid` char(36) DEFAULT NULL,
                          `name` varchar(255) NOT NULL,
                          `email` varchar(255) NOT NULL,
                          `email_verified_at` timestamp NULL DEFAULT NULL,
@@ -1905,7 +1713,6 @@ CREATE TABLE `users` (
                          `last_login_at` timestamp NULL DEFAULT NULL,
                          PRIMARY KEY (`id`),
                          UNIQUE KEY `users_email_unique` (`email`),
-                         UNIQUE KEY `users_uid_unique` (`uid`),
                          UNIQUE KEY `users_external_id_unique` (`external_id`),
                          KEY `umui` (`manager_user_id`),
                          KEY `usi_fk` (`site_id`),

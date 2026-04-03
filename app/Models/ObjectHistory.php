@@ -1,20 +1,18 @@
+
+
+
 <?php
-
 namespace App\Models;
-
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Support\Facades\Validator;
-
 class ObjectHistory extends Model
 {
     use HasFactory;
-
     protected $table = 'object_histories';
-
-    protected $fillable = ['uid', 'action', 'modified', 'created_by', 'object_id', 'object_type'];
+    protected $fillable = ['action', 'modified', 'created_by', 'object_id', 'object_type'];
 
     protected function casts(): array
     {
@@ -28,7 +26,6 @@ class ObjectHistory extends Model
     public static function validationRules(): array
     {
         return [
-            'uid' => ['nullable', 'string', 'max:36'],
             'action' => ['required', 'string', 'max:1'],
             'modified' => ['nullable', 'array'],
             'created_by' => ['nullable', 'string', 'max:255'],
@@ -39,6 +36,7 @@ class ObjectHistory extends Model
 
     protected static function booted(): void
     {
+
         static::saving(function (self $model): void {
             Validator::make($model->attributesToArray(), static::validationRules())->validate();
         });

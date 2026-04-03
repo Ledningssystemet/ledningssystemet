@@ -25,7 +25,22 @@ return new class extends Migration {
 
     public function down(): void
     {
-        throw new \RuntimeException('Baseline migration is not reversible. Use migrate:fresh to rebuild the database.');
+        // Drop all tables in the database dynamicaly
+        DB::statement('SET FOREIGN_KEY_CHECKS=0;');
+        foreach (DB::select('SHOW TABLES') as $table) {
+            // Cnvert the object to an array
+            $table = (array) $table;
+            $tablename = $table[array_key_first($table)];
+            if($tablename == 'migrations')
+                continue;
+
+            DB::statement('DROP TABLE IF EXISTS `' . $tablename.'`');
+        }
+
+        DB::statement('DROP TABLE IF EXISTS `migrations`');
+        DB::statement('SET FOREIGN_KEY_CHECKS=1;');
+
+        exit(0);
     }
 };
 

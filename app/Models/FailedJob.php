@@ -1,18 +1,16 @@
+
+
+
 <?php
-
 namespace App\Models;
-
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Support\Facades\Validator;
-
 class FailedJob extends Model
 {
     use HasFactory;
-
     protected $table = 'failed_jobs';
-
     protected $fillable = ['uuid', 'connection', 'queue', 'payload', 'exception', 'failed_at'];
 
     protected function casts(): array
@@ -36,6 +34,7 @@ class FailedJob extends Model
 
     protected static function booted(): void
     {
+
         static::saving(function (self $model): void {
             Validator::make($model->attributesToArray(), static::validationRules())->validate();
         });

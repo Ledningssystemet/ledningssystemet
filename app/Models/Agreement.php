@@ -1,19 +1,17 @@
+
+
+
 <?php
-
 namespace App\Models;
-
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Support\Facades\Validator;
-
 class Agreement extends Model
 {
     use HasFactory;
-
     protected $table = 'agreements';
-
     protected $fillable = ['name', 'description', 'startdate', 'enddate', 'reminderdate', 'responsible_user_id', 'supplier_id', 'customer_id', 'archived_at'];
 
     protected function casts(): array
@@ -45,6 +43,7 @@ class Agreement extends Model
 
     protected static function booted(): void
     {
+
         static::saving(function (self $model): void {
             Validator::make($model->attributesToArray(), static::validationRules())->validate();
         });

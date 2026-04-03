@@ -1,19 +1,17 @@
+
+
+
 <?php
-
 namespace App\Models;
-
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Support\Facades\Validator;
-
 class QualificationUser extends Model
 {
     use HasFactory;
-
     protected $table = 'qualification_user';
-
     protected $fillable = ['qualification_id', 'user_id', 'note', 'planned_at', 'finished_at', 'expires_at', 'filename', 'contenttype', 'file'];
 
     protected function casts(): array
@@ -44,6 +42,7 @@ class QualificationUser extends Model
 
     protected static function booted(): void
     {
+
         static::saving(function (self $model): void {
             Validator::make($model->attributesToArray(), static::validationRules())->validate();
         });

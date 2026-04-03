@@ -1,7 +1,8 @@
+
+
+
 <?php
-
 namespace App\Models;
-
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -9,14 +10,11 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Support\Facades\Validator;
-
 class ProcessActivity extends Model
 {
     use HasFactory;
-
     protected $table = 'process_activities';
-
-    protected $fillable = ['uid', 'name', 'description', 'bpmnId', 'ordinal', 'process_id', 'responsible_role_id', 'accountable_role_id'];
+    protected $fillable = ['name', 'description', 'bpmnId', 'ordinal', 'process_id', 'responsible_role_id', 'accountable_role_id'];
 
     protected function casts(): array
     {
@@ -29,7 +27,6 @@ class ProcessActivity extends Model
     public static function validationRules(): array
     {
         return [
-            'uid' => ['nullable', 'string', 'max:36'],
             'name' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
             'bpmnId' => ['required', 'string', 'max:255'],
@@ -42,6 +39,7 @@ class ProcessActivity extends Model
 
     protected static function booted(): void
     {
+
         static::saving(function (self $model): void {
             Validator::make($model->attributesToArray(), static::validationRules())->validate();
         });

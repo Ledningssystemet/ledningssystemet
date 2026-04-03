@@ -1,7 +1,8 @@
+
+
+
 <?php
-
 namespace App\Models;
-
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -10,15 +11,11 @@ use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Validator;
-
 class User extends Authenticatable
 {
     use HasFactory, Notifiable;
-
     protected $table = 'users';
-
-    protected $fillable = ['uid', 'name', 'email', 'email_verified_at', 'password', 'enabled', 'remember_token', 'external_id', 'title', 'manager_user_id', 'site_id', 'last_login_at'];
-
+    protected $fillable = ['name', 'email', 'email_verified_at', 'password', 'enabled', 'remember_token', 'external_id', 'title', 'manager_user_id', 'site_id', 'last_login_at'];
     protected $hidden = ['password', 'remember_token'];
 
     protected function casts(): array
@@ -35,7 +32,6 @@ class User extends Authenticatable
     public static function validationRules(): array
     {
         return [
-            'uid' => ['nullable', 'string', 'max:36'],
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'max:255'],
             'email_verified_at' => ['nullable', 'date'],
@@ -52,6 +48,7 @@ class User extends Authenticatable
 
     protected static function booted(): void
     {
+
         static::saving(function (self $model): void {
             Validator::make($model->attributesToArray(), static::validationRules())->validate();
         });

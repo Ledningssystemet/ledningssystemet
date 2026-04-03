@@ -1,19 +1,17 @@
+
+
+
 <?php
-
 namespace App\Models;
-
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Support\Facades\Validator;
-
 class InformationTypeProcessActivity extends Model
 {
     use HasFactory;
-
     protected $table = 'information_type_process_activity';
-
     protected $fillable = ['information_type_id', 'process_activity_id'];
 
     public static function validationRules(): array
@@ -26,6 +24,7 @@ class InformationTypeProcessActivity extends Model
 
     protected static function booted(): void
     {
+
         static::saving(function (self $model): void {
             Validator::make($model->attributesToArray(), static::validationRules())->validate();
         });

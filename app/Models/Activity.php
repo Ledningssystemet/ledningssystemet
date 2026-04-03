@@ -1,21 +1,19 @@
+
+
+
 <?php
-
 namespace App\Models;
-
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Support\Facades\Validator;
-
 class Activity extends Model
 {
     use HasFactory;
-
     protected $table = 'activities';
-
-    protected $fillable = ['uid', 'name', 'description', 'due', 'intervalnum', 'intervaltype', 'completed_at', 'responsible_user_id', 'partner_id', 'partner_object_uid', 'partner_object_updated_at', 'activity_flow_id', 'activity_flow_template_item_id'];
+    protected $fillable = ['name', 'description', 'due', 'intervalnum', 'intervaltype', 'completed_at', 'responsible_user_id', 'activity_flow_id', 'activity_flow_template_item_id'];
 
     protected function casts(): array
     {
@@ -24,14 +22,12 @@ class Activity extends Model
             'completed_at' => 'datetime',
             'created_at' => 'datetime',
             'updated_at' => 'datetime',
-            'partner_object_updated_at' => 'datetime',
         ];
     }
 
     public static function validationRules(): array
     {
         return [
-            'uid' => ['nullable', 'string', 'max:36'],
             'name' => ['required', 'string', 'max:255'],
             'description' => ['required', 'string'],
             'due' => ['required', 'date'],
@@ -39,9 +35,6 @@ class Activity extends Model
             'intervaltype' => ['nullable', 'string', 'max:255'],
             'completed_at' => ['nullable', 'date'],
             'responsible_user_id' => ['nullable', 'integer', 'min:0', 'exists:users,id'],
-            'partner_id' => ['nullable', 'integer', 'min:0', 'exists:partners,id'],
-            'partner_object_uid' => ['nullable', 'string', 'max:36'],
-            'partner_object_updated_at' => ['nullable', 'date'],
             'activity_flow_id' => ['nullable', 'integer', 'min:0', 'exists:activity_flows,id'],
             'activity_flow_template_item_id' => ['nullable', 'integer', 'min:0', 'exists:activity_flow_template_items,id'],
         ];
@@ -49,6 +42,7 @@ class Activity extends Model
 
     protected static function booted(): void
     {
+
         static::saving(function (self $model): void {
             Validator::make($model->attributesToArray(), static::validationRules())->validate();
         });
@@ -68,11 +62,7 @@ class Activity extends Model
     {
         return $this->belongsTo(ActivityFlowTemplateItem::class, 'activity_flow_template_item_id');
     }
-
-    public function int_partner(): BelongsTo
-    {
-        return $this->belongsTo(Partner::class, 'partner_id');
-    }
+    
 
     public function int_responsible_user(): BelongsTo
     {

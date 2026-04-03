@@ -1,7 +1,8 @@
+
+
+
 <?php
-
 namespace App\Models;
-
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -9,14 +10,11 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Support\Facades\Validator;
-
 class Department extends Model
 {
     use HasFactory;
-
     protected $table = 'departments';
-
-    protected $fillable = ['uid', 'name', 'external_provider_group_id', 'parent_department_id', 'site_id'];
+    protected $fillable = ['name', 'external_provider_group_id', 'parent_department_id', 'site_id'];
 
     protected function casts(): array
     {
@@ -29,7 +27,6 @@ class Department extends Model
     public static function validationRules(): array
     {
         return [
-            'uid' => ['nullable', 'string', 'max:36'],
             'name' => ['required', 'string', 'max:255'],
             'external_provider_group_id' => ['nullable', 'integer', 'min:0', 'exists:external_provider_groups,id'],
             'parent_department_id' => ['nullable', 'integer', 'min:0', 'exists:departments,id'],
@@ -39,6 +36,7 @@ class Department extends Model
 
     protected static function booted(): void
     {
+
         static::saving(function (self $model): void {
             Validator::make($model->attributesToArray(), static::validationRules())->validate();
         });
@@ -88,41 +86,13 @@ class Department extends Model
     {
         return $this->hasMany(Objective::class, 'department_id', 'id');
     }
-
-    public function int_partners_by_asset_risk_department(): HasMany
-    {
-        return $this->hasMany(Partner::class, 'asset_risk_department_id', 'id');
-    }
-
-    public function int_partners_by_company_risk_department(): HasMany
-    {
-        return $this->hasMany(Partner::class, 'company_risk_department_id', 'id');
-    }
-
-    public function int_partners_by_department_risk_department(): HasMany
-    {
-        return $this->hasMany(Partner::class, 'department_risk_department_id', 'id');
-    }
-
-    public function int_partners_by_fallback_risk_department(): HasMany
-    {
-        return $this->hasMany(Partner::class, 'fallback_risk_department_id', 'id');
-    }
-
-    public function int_partners_by_information_type_risk_department(): HasMany
-    {
-        return $this->hasMany(Partner::class, 'information_type_risk_department_id', 'id');
-    }
-
-    public function int_partners_by_process_risk_department(): HasMany
-    {
-        return $this->hasMany(Partner::class, 'process_risk_department_id', 'id');
-    }
-
-    public function int_partners_by_supplier_risk_department(): HasMany
-    {
-        return $this->hasMany(Partner::class, 'supplier_risk_department_id', 'id');
-    }
+    
+    
+    
+    
+    
+    
+    
 
     public function int_processes(): HasMany
     {

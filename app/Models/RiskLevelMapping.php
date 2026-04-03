@@ -1,19 +1,17 @@
+
+
+
 <?php
-
 namespace App\Models;
-
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Support\Facades\Validator;
-
 class RiskLevelMapping extends Model
 {
     use HasFactory;
-
     protected $table = 'risk_level_mappings';
-
     protected $fillable = ['probability_level_id', 'consequence_level_id', 'risk_level_id'];
 
     protected function casts(): array
@@ -35,6 +33,7 @@ class RiskLevelMapping extends Model
 
     protected static function booted(): void
     {
+
         static::saving(function (self $model): void {
             Validator::make($model->attributesToArray(), static::validationRules())->validate();
         });

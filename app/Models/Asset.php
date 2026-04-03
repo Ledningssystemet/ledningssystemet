@@ -1,21 +1,19 @@
+
+
+
 <?php
-
 namespace App\Models;
-
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Support\Facades\Validator;
-
 class Asset extends Model
 {
     use HasFactory;
-
     protected $table = 'assets';
-
-    protected $fillable = ['uid', 'name', 'description', 'responsible_user_id', 'supplier_id', 'confidentiality_class_id', 'integrity_class_id', 'availability_class_id', 'mtd', 'rpo', 'site_id'];
+    protected $fillable = ['name', 'description', 'responsible_user_id', 'supplier_id', 'confidentiality_class_id', 'integrity_class_id', 'availability_class_id', 'mtd', 'rpo', 'site_id'];
 
     protected function casts(): array
     {
@@ -28,7 +26,6 @@ class Asset extends Model
     public static function validationRules(): array
     {
         return [
-            'uid' => ['nullable', 'string', 'max:36'],
             'name' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
             'responsible_user_id' => ['nullable', 'integer', 'min:0', 'exists:users,id'],
@@ -44,6 +41,7 @@ class Asset extends Model
 
     protected static function booted(): void
     {
+
         static::saving(function (self $model): void {
             Validator::make($model->attributesToArray(), static::validationRules())->validate();
         });

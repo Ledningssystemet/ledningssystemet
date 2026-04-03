@@ -1,19 +1,17 @@
+
+
+
 <?php
-
 namespace App\Models;
-
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Support\Facades\Validator;
-
 class ProcessHref extends Model
 {
     use HasFactory;
-
     protected $table = 'process_hrefs';
-
     protected $fillable = ['process_id', 'name', 'description', 'url', 'blank', 'ordinal'];
 
     protected function casts(): array
@@ -39,6 +37,7 @@ class ProcessHref extends Model
 
     protected static function booted(): void
     {
+
         static::saving(function (self $model): void {
             Validator::make($model->attributesToArray(), static::validationRules())->validate();
         });

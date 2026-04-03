@@ -1,26 +1,23 @@
+
+
+
 <?php
-
 namespace App\Models;
-
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Support\Facades\Validator;
-
 class PropertyTab extends Model
 {
     use HasFactory;
-
     protected $table = 'property_tabs';
-
-    protected $fillable = ['uid', 'partner_id', 'partner_object_uid', 'partner_object_updated_at', 'name', 'context', 'description'];
+    protected $fillable = ['name', 'context', 'description'];
 
     protected function casts(): array
     {
         return [
-            'partner_object_updated_at' => 'datetime',
             'created_at' => 'datetime',
             'updated_at' => 'datetime',
         ];
@@ -29,10 +26,6 @@ class PropertyTab extends Model
     public static function validationRules(): array
     {
         return [
-            'uid' => ['nullable', 'string', 'max:36'],
-            'partner_id' => ['nullable', 'integer', 'min:0', 'exists:partners,id'],
-            'partner_object_uid' => ['nullable', 'string', 'max:36'],
-            'partner_object_updated_at' => ['nullable', 'date'],
             'name' => ['required', 'string', 'max:50'],
             'context' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
@@ -41,6 +34,7 @@ class PropertyTab extends Model
 
     protected static function booted(): void
     {
+
         static::saving(function (self $model): void {
             Validator::make($model->attributesToArray(), static::validationRules())->validate();
         });
@@ -50,11 +44,7 @@ class PropertyTab extends Model
     {
         return $plural ? 'Property Tabs' : 'Property Tab';
     }
-
-    public function int_partner(): BelongsTo
-    {
-        return $this->belongsTo(Partner::class, 'partner_id');
-    }
+    
 
     public function int_properties(): HasMany
     {

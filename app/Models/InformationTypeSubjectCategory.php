@@ -1,19 +1,17 @@
+
+
+
 <?php
-
 namespace App\Models;
-
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Support\Facades\Validator;
-
 class InformationTypeSubjectCategory extends Model
 {
     use HasFactory;
-
     protected $table = 'information_type_subject_category';
-
     protected $fillable = ['information_type_id', 'subject_category_id'];
 
     public static function validationRules(): array
@@ -26,6 +24,7 @@ class InformationTypeSubjectCategory extends Model
 
     protected static function booted(): void
     {
+
         static::saving(function (self $model): void {
             Validator::make($model->attributesToArray(), static::validationRules())->validate();
         });

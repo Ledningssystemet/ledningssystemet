@@ -1,20 +1,18 @@
+
+
+
 <?php
-
 namespace App\Models;
-
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Support\Facades\Validator;
-
 class ComplianceEvaluation extends Model
 {
     use HasFactory;
-
     protected $table = 'compliance_evaluations';
-
-    protected $fillable = ['uid', 'name', 'startdate', 'description', 'participants', 'summary', 'finished', 'archived'];
+    protected $fillable = ['name', 'startdate', 'description', 'participants', 'summary', 'finished', 'archived'];
 
     protected function casts(): array
     {
@@ -30,7 +28,6 @@ class ComplianceEvaluation extends Model
     public static function validationRules(): array
     {
         return [
-            'uid' => ['nullable', 'string', 'max:36'],
             'name' => ['required', 'string', 'max:100'],
             'startdate' => ['required', 'date'],
             'description' => ['nullable', 'string'],
@@ -43,6 +40,7 @@ class ComplianceEvaluation extends Model
 
     protected static function booted(): void
     {
+
         static::saving(function (self $model): void {
             Validator::make($model->attributesToArray(), static::validationRules())->validate();
         });

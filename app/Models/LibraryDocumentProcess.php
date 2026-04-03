@@ -1,19 +1,17 @@
+
+
+
 <?php
-
 namespace App\Models;
-
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Support\Facades\Validator;
-
 class LibraryDocumentProcess extends Model
 {
     use HasFactory;
-
     protected $table = 'library_document_processes';
-
     protected $fillable = ['process_id', 'library_document_id'];
 
     protected function casts(): array
@@ -34,6 +32,7 @@ class LibraryDocumentProcess extends Model
 
     protected static function booted(): void
     {
+
         static::saving(function (self $model): void {
             Validator::make($model->attributesToArray(), static::validationRules())->validate();
         });

@@ -1,7 +1,8 @@
+
+
+
 <?php
-
 namespace App\Models;
-
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -9,14 +10,11 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Support\Facades\Validator;
-
 class Finding extends Model
 {
     use HasFactory;
-
     protected $table = 'findings';
-
-    protected $fillable = ['uid', 'name', 'description', 'department_id', 'finished_at', 'nonconformity', 'consequence', 'rootcause', 'immediateaction', 'preventativeaction', 'compliance_evaluation_requirement_finding_id', 'context_type', 'context_id', 'created_by', 'estimated_cost', 'distribution_analysis'];
+    protected $fillable = ['name', 'description', 'department_id', 'finished_at', 'nonconformity', 'consequence', 'rootcause', 'immediateaction', 'preventativeaction', 'compliance_evaluation_requirement_finding_id', 'context_type', 'context_id', 'created_by', 'estimated_cost', 'distribution_analysis'];
 
     protected function casts(): array
     {
@@ -31,7 +29,6 @@ class Finding extends Model
     public static function validationRules(): array
     {
         return [
-            'uid' => ['nullable', 'string', 'max:36'],
             'name' => ['required', 'string', 'max:255'],
             'description' => ['required', 'string'],
             'department_id' => ['required', 'integer', 'min:0', 'exists:departments,id'],
@@ -52,6 +49,7 @@ class Finding extends Model
 
     protected static function booted(): void
     {
+
         static::saving(function (self $model): void {
             Validator::make($model->attributesToArray(), static::validationRules())->validate();
         });

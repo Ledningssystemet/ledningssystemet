@@ -1,20 +1,18 @@
+
+
+
 <?php
-
 namespace App\Models;
-
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Support\Facades\Validator;
-
 class ObjectTag extends Model
 {
     use HasFactory;
-
     protected $table = 'object_tags';
-
     protected $fillable = ['tag_id', 'object_tags_id', 'object_tags_type'];
 
     public static function validationRules(): array
@@ -28,6 +26,7 @@ class ObjectTag extends Model
 
     protected static function booted(): void
     {
+
         static::saving(function (self $model): void {
             Validator::make($model->attributesToArray(), static::validationRules())->validate();
         });

@@ -1,21 +1,19 @@
+
+
+
 <?php
-
 namespace App\Models;
-
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Support\Facades\Validator;
-
 class SupplierRequirement extends Model
 {
     use HasFactory;
-
     protected $table = 'supplier_requirements';
-
-    protected $fillable = ['name', 'description', 'supplier_category_id', 'reassessment', 'partner_object_uid', 'partner_object_updated_at'];
+    protected $fillable = ['name', 'description', 'supplier_category_id', 'reassessment'];
 
     protected function casts(): array
     {
@@ -23,7 +21,6 @@ class SupplierRequirement extends Model
             'reassessment' => 'boolean',
             'created_at' => 'datetime',
             'updated_at' => 'datetime',
-            'partner_object_updated_at' => 'datetime',
         ];
     }
 
@@ -34,13 +31,12 @@ class SupplierRequirement extends Model
             'description' => ['nullable', 'string'],
             'supplier_category_id' => ['required', 'integer', 'min:0', 'exists:supplier_categories,id'],
             'reassessment' => ['required', 'boolean'],
-            'partner_object_uid' => ['nullable', 'string', 'max:36'],
-            'partner_object_updated_at' => ['nullable', 'date'],
         ];
     }
 
     protected static function booted(): void
     {
+
         static::saving(function (self $model): void {
             Validator::make($model->attributesToArray(), static::validationRules())->validate();
         });

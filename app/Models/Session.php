@@ -1,18 +1,16 @@
+
+
+
 <?php
-
 namespace App\Models;
-
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Support\Facades\Validator;
-
 class Session extends Model
 {
     use HasFactory;
-
     protected $table = 'sessions';
-
     protected $fillable = ['user_id', 'ip_address', 'user_agent', 'payload', 'last_activity'];
 
     public static function validationRules(): array
@@ -28,6 +26,7 @@ class Session extends Model
 
     protected static function booted(): void
     {
+
         static::saving(function (self $model): void {
             Validator::make($model->attributesToArray(), static::validationRules())->validate();
         });

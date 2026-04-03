@@ -1,19 +1,17 @@
+
+
+
 <?php
-
 namespace App\Models;
-
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Support\Facades\Validator;
-
 class AssetInformationType extends Model
 {
     use HasFactory;
-
     protected $table = 'asset_information_type';
-
     protected $fillable = ['asset_id', 'information_type_id', 'process_id'];
 
     public static function validationRules(): array
@@ -27,6 +25,7 @@ class AssetInformationType extends Model
 
     protected static function booted(): void
     {
+
         static::saving(function (self $model): void {
             Validator::make($model->attributesToArray(), static::validationRules())->validate();
         });

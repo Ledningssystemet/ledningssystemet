@@ -1,7 +1,8 @@
+
+
+
 <?php
-
 namespace App\Models;
-
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -9,14 +10,11 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Support\Facades\Validator;
-
 class Process extends Model
 {
     use HasFactory;
-
     protected $table = 'processes';
-
-    protected $fillable = ['uid', 'name', 'description', 'bpmn', 'publishedbpmn', 'svg', 'department_id', 'responsible_user_id', 'isstartprocess', 'legalbasisdescription', 'thirdcountrytransferdescription', 'thirdcountrytransferprotectiondescription', 'securitymeasuredescription', 'dataprocessor', 'data_processor_processing_activities'];
+    protected $fillable = ['name', 'description', 'bpmn', 'publishedbpmn', 'svg', 'department_id', 'responsible_user_id', 'isstartprocess', 'legalbasisdescription', 'thirdcountrytransferdescription', 'thirdcountrytransferprotectiondescription', 'securitymeasuredescription', 'dataprocessor', 'data_processor_processing_activities'];
 
     protected function casts(): array
     {
@@ -31,7 +29,6 @@ class Process extends Model
     public static function validationRules(): array
     {
         return [
-            'uid' => ['nullable', 'string', 'max:36'],
             'name' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
             'bpmn' => ['nullable', 'string'],
@@ -51,6 +48,7 @@ class Process extends Model
 
     protected static function booted(): void
     {
+
         static::saving(function (self $model): void {
             Validator::make($model->attributesToArray(), static::validationRules())->validate();
         });

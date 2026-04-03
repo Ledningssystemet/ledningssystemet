@@ -1,18 +1,16 @@
+
+
+
 <?php
-
 namespace App\Models;
-
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Support\Facades\Validator;
-
 class SystemConfiguration extends Model
 {
     use HasFactory;
-
     protected $table = 'system_configurations';
-
     protected $fillable = ['name', 'value'];
 
     protected function casts(): array
@@ -33,6 +31,7 @@ class SystemConfiguration extends Model
 
     protected static function booted(): void
     {
+
         static::saving(function (self $model): void {
             Validator::make($model->attributesToArray(), static::validationRules())->validate();
         });

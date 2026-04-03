@@ -1,27 +1,24 @@
+
+
+
 <?php
-
 namespace App\Models;
-
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Support\Facades\Validator;
-
 class ActivityFlowTemplateItem extends Model
 {
     use HasFactory;
-
     protected $table = 'activity_flow_template_items';
-
-    protected $fillable = ['name', 'type', 'ordinal', 'description', 'waitforpreceeding', 'dueoffsetdays', 'activity_flow_template_id', 'partner_object_uid', 'partner_object_updated_at'];
+    protected $fillable = ['name', 'type', 'ordinal', 'description', 'waitforpreceeding', 'dueoffsetdays', 'activity_flow_template_id'];
 
     protected function casts(): array
     {
         return [
             'waitforpreceeding' => 'boolean',
-            'partner_object_updated_at' => 'datetime',
             'created_at' => 'datetime',
             'updated_at' => 'datetime',
         ];
@@ -37,13 +34,12 @@ class ActivityFlowTemplateItem extends Model
             'waitforpreceeding' => ['required', 'boolean'],
             'dueoffsetdays' => ['required', 'integer', 'min:0'],
             'activity_flow_template_id' => ['required', 'integer', 'min:0', 'exists:activity_flow_templates,id'],
-            'partner_object_uid' => ['nullable', 'string', 'max:36'],
-            'partner_object_updated_at' => ['nullable', 'date'],
         ];
     }
 
     protected static function booted(): void
     {
+
         static::saving(function (self $model): void {
             Validator::make($model->attributesToArray(), static::validationRules())->validate();
         });

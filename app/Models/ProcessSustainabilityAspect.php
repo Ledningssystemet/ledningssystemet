@@ -1,7 +1,8 @@
+
+
+
 <?php
-
 namespace App\Models;
-
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -9,13 +10,10 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Support\Facades\Validator;
-
 class ProcessSustainabilityAspect extends Model
 {
     use HasFactory;
-
     protected $table = 'process_sustainability_aspects';
-
     protected $fillable = ['name', 'description', 'impact_description', 'monitoring_description', 'governance_description', 'sustainability_aspect_id', 'process_id'];
 
     protected function casts(): array
@@ -41,6 +39,7 @@ class ProcessSustainabilityAspect extends Model
 
     protected static function booted(): void
     {
+
         static::saving(function (self $model): void {
             Validator::make($model->attributesToArray(), static::validationRules())->validate();
         });

@@ -1,19 +1,17 @@
+
+
+
 <?php
-
 namespace App\Models;
-
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Support\Facades\Validator;
-
 class CustomProperty extends Model
 {
     use HasFactory;
-
     protected $table = 'custom_properties';
-
     protected $fillable = ['name', 'description', 'context', 'type', 'options', 'ordinal', 'display_on_card', 'user_editable', 'required'];
 
     protected function casts(): array
@@ -44,6 +42,7 @@ class CustomProperty extends Model
 
     protected static function booted(): void
     {
+
         static::saving(function (self $model): void {
             Validator::make($model->attributesToArray(), static::validationRules())->validate();
         });

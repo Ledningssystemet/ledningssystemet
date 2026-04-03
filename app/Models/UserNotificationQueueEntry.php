@@ -1,19 +1,17 @@
+
+
+
 <?php
-
 namespace App\Models;
-
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Support\Facades\Validator;
-
 class UserNotificationQueueEntry extends Model
 {
     use HasFactory;
-
     protected $table = 'user_notification_queue_entries';
-
     protected $fillable = ['user_id', 'user_notification_channel_id', 'sender_id', 'title', 'message', 'clickurl'];
 
     protected function casts(): array
@@ -38,6 +36,7 @@ class UserNotificationQueueEntry extends Model
 
     protected static function booted(): void
     {
+
         static::saving(function (self $model): void {
             Validator::make($model->attributesToArray(), static::validationRules())->validate();
         });

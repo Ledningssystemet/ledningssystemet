@@ -1,20 +1,18 @@
+
+
+
 <?php
-
 namespace App\Models;
-
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Support\Facades\Validator;
-
 class ObjectMessage extends Model
 {
     use HasFactory;
-
     protected $table = 'object_messages';
-
-    protected $fillable = ['uid', 'comment', 'created_by', 'object_id', 'object_type'];
+    protected $fillable = ['comment', 'created_by', 'object_id', 'object_type'];
 
     protected function casts(): array
     {
@@ -27,7 +25,6 @@ class ObjectMessage extends Model
     public static function validationRules(): array
     {
         return [
-            'uid' => ['nullable', 'string', 'max:36'],
             'comment' => ['required', 'string'],
             'created_by' => ['required', 'string', 'max:255'],
             'object_id' => ['required', 'integer', 'min:0'],
@@ -37,6 +34,7 @@ class ObjectMessage extends Model
 
     protected static function booted(): void
     {
+
         static::saving(function (self $model): void {
             Validator::make($model->attributesToArray(), static::validationRules())->validate();
         });

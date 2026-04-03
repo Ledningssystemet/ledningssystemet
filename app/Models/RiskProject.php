@@ -1,7 +1,8 @@
+
+
+
 <?php
-
 namespace App\Models;
-
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -9,13 +10,10 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Support\Facades\Validator;
-
 class RiskProject extends Model
 {
     use HasFactory;
-
     protected $table = 'risk_projects';
-
     protected $fillable = ['name', 'scopedescription', 'purposedescription', 'responsible_user_id', 'department_id', 'start_date', 'end_date', 'archived_at', 'risk_project_type_id'];
 
     protected function casts(): array
@@ -46,6 +44,7 @@ class RiskProject extends Model
 
     protected static function booted(): void
     {
+
         static::saving(function (self $model): void {
             Validator::make($model->attributesToArray(), static::validationRules())->validate();
         });

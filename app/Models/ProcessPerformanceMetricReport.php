@@ -1,19 +1,17 @@
+
+
+
 <?php
-
 namespace App\Models;
-
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Support\Facades\Validator;
-
 class ProcessPerformanceMetricReport extends Model
 {
     use HasFactory;
-
     protected $table = 'process_performance_metric_reports';
-
     protected $fillable = ['process_performance_metric_id', 'reported_by_id', 'value', 'reportedprecision', 'reporting_date_at', 'comment'];
 
     protected function casts(): array
@@ -39,6 +37,7 @@ class ProcessPerformanceMetricReport extends Model
 
     protected static function booted(): void
     {
+
         static::saving(function (self $model): void {
             Validator::make($model->attributesToArray(), static::validationRules())->validate();
         });

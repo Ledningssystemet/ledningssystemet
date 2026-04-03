@@ -1,19 +1,17 @@
+
+
+
 <?php
-
 namespace App\Models;
-
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Support\Facades\Validator;
-
 class ControlRiskProjectTypeRiskTemplate extends Model
 {
     use HasFactory;
-
     protected $table = 'control_risk_project_type_risk_template';
-
     protected $fillable = ['control_id', 'risk_project_type_risk_template_id'];
 
     protected function casts(): array
@@ -34,6 +32,7 @@ class ControlRiskProjectTypeRiskTemplate extends Model
 
     protected static function booted(): void
     {
+
         static::saving(function (self $model): void {
             Validator::make($model->attributesToArray(), static::validationRules())->validate();
         });

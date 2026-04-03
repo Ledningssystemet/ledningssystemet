@@ -1,7 +1,8 @@
+
+
+
 <?php
-
 namespace App\Models;
-
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -9,19 +10,15 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Support\Facades\Validator;
-
 class Control extends Model
 {
     use HasFactory;
-
     protected $table = 'controls';
-
-    protected $fillable = ['uid', 'partner_id', 'partner_object_uid', 'partner_object_updated_at', 'name', 'description', 'responsible_user_id', 'statusdescription', 'not_applicable_at', 'reviewed_at'];
+    protected $fillable = ['name', 'description', 'responsible_user_id', 'statusdescription', 'not_applicable_at', 'reviewed_at'];
 
     protected function casts(): array
     {
         return [
-            'partner_object_updated_at' => 'datetime',
             'created_at' => 'datetime',
             'updated_at' => 'datetime',
             'not_applicable_at' => 'datetime',
@@ -32,10 +29,6 @@ class Control extends Model
     public static function validationRules(): array
     {
         return [
-            'uid' => ['nullable', 'string', 'max:36'],
-            'partner_id' => ['nullable', 'integer', 'min:0', 'exists:partners,id'],
-            'partner_object_uid' => ['nullable', 'string', 'max:36'],
-            'partner_object_updated_at' => ['nullable', 'date'],
             'name' => ['required', 'string', 'max:255'],
             'description' => ['required', 'string'],
             'responsible_user_id' => ['nullable', 'integer', 'min:0', 'exists:users,id'],
@@ -47,6 +40,7 @@ class Control extends Model
 
     protected static function booted(): void
     {
+
         static::saving(function (self $model): void {
             Validator::make($model->attributesToArray(), static::validationRules())->validate();
         });
@@ -56,11 +50,7 @@ class Control extends Model
     {
         return $plural ? 'Controls' : 'Control';
     }
-
-    public function int_partner(): BelongsTo
-    {
-        return $this->belongsTo(Partner::class, 'partner_id');
-    }
+    
 
     public function int_responsible_user(): BelongsTo
     {

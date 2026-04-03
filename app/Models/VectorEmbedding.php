@@ -1,19 +1,17 @@
+
+
+
 <?php
-
 namespace App\Models;
-
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Support\Facades\Validator;
-
 class VectorEmbedding extends Model
 {
     use HasFactory;
-
     protected $table = 'vector_embeddings';
-
     protected $fillable = ['embeddable_type', 'embeddable_id', 'provider', 'embedding_model', 'dimensions', 'content_hash', 'content', 'embedding'];
 
     protected function casts(): array
@@ -40,6 +38,7 @@ class VectorEmbedding extends Model
 
     protected static function booted(): void
     {
+
         static::saving(function (self $model): void {
             Validator::make($model->attributesToArray(), static::validationRules())->validate();
         });

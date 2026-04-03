@@ -1,18 +1,16 @@
+
+
+
 <?php
-
 namespace App\Models;
-
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Support\Facades\Validator;
-
 class Announcement extends Model
 {
     use HasFactory;
-
     protected $table = 'announcements';
-
     protected $fillable = ['remote_id', 'severity', 'header', 'description', 'visible_until'];
 
     protected function casts(): array
@@ -37,6 +35,7 @@ class Announcement extends Model
 
     protected static function booted(): void
     {
+
         static::saving(function (self $model): void {
             Validator::make($model->attributesToArray(), static::validationRules())->validate();
         });

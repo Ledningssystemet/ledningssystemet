@@ -1,20 +1,18 @@
+
+
+
 <?php
-
 namespace App\Models;
-
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Support\Facades\Validator;
-
 class ControlAction extends Model
 {
     use HasFactory;
-
     protected $table = 'control_actions';
-
     protected $fillable = ['name', 'description', 'control_id', 'responsible_id', 'due', 'finished_at', 'originaldue', 'estimated_cost'];
 
     protected function casts(): array
@@ -44,6 +42,7 @@ class ControlAction extends Model
 
     protected static function booted(): void
     {
+
         static::saving(function (self $model): void {
             Validator::make($model->attributesToArray(), static::validationRules())->validate();
         });

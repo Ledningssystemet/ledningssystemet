@@ -1,7 +1,8 @@
+
+
+
 <?php
-
 namespace App\Models;
-
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -9,19 +10,15 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Support\Facades\Validator;
-
 class RiskProjectTypeRiskTemplate extends Model
 {
     use HasFactory;
-
     protected $table = 'risk_project_type_risk_templates';
-
-    protected $fillable = ['uid', 'name', 'risk_project_type_id', 'partner_object_uid', 'partner_object_updated_at', 'scenariodescription', 'consequencedescription', 'probability_id', 'consequence_id'];
+    protected $fillable = ['name', 'risk_project_type_id', 'scenariodescription', 'consequencedescription', 'probability_id', 'consequence_id'];
 
     protected function casts(): array
     {
         return [
-            'partner_object_updated_at' => 'datetime',
             'created_at' => 'datetime',
             'updated_at' => 'datetime',
         ];
@@ -30,11 +27,8 @@ class RiskProjectTypeRiskTemplate extends Model
     public static function validationRules(): array
     {
         return [
-            'uid' => ['nullable', 'string', 'max:36'],
             'name' => ['required', 'string', 'max:255'],
             'risk_project_type_id' => ['nullable', 'integer', 'min:0', 'exists:risk_project_types,id'],
-            'partner_object_uid' => ['nullable', 'string', 'max:36'],
-            'partner_object_updated_at' => ['nullable', 'date'],
             'scenariodescription' => ['nullable', 'string'],
             'consequencedescription' => ['nullable', 'string'],
             'probability_id' => ['nullable', 'integer', 'min:0', 'exists:probability_levels,id'],
@@ -44,6 +38,7 @@ class RiskProjectTypeRiskTemplate extends Model
 
     protected static function booted(): void
     {
+
         static::saving(function (self $model): void {
             Validator::make($model->attributesToArray(), static::validationRules())->validate();
         });

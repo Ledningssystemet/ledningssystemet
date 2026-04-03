@@ -1,19 +1,17 @@
+
+
+
 <?php
-
 namespace App\Models;
-
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Support\Facades\Validator;
-
 class RoleCompetence extends Model
 {
     use HasFactory;
-
     protected $table = 'role_competence';
-
     protected $fillable = ['competence_id', 'role_id', 'acceptable_competence_level_id', 'desired_competence_level_id'];
 
     protected function casts(): array
@@ -36,6 +34,7 @@ class RoleCompetence extends Model
 
     protected static function booted(): void
     {
+
         static::saving(function (self $model): void {
             Validator::make($model->attributesToArray(), static::validationRules())->validate();
         });

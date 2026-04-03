@@ -1,20 +1,18 @@
+
+
+
 <?php
-
 namespace App\Models;
-
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Support\Facades\Validator;
-
 class CustomPropertyObject extends Model
 {
     use HasFactory;
-
     protected $table = 'custom_property_object';
-
     protected $fillable = ['custom_property_id', 'object_id', 'object_type', 'value'];
 
     protected function casts(): array
@@ -37,6 +35,7 @@ class CustomPropertyObject extends Model
 
     protected static function booted(): void
     {
+
         static::saving(function (self $model): void {
             Validator::make($model->attributesToArray(), static::validationRules())->validate();
         });

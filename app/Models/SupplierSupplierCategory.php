@@ -1,19 +1,17 @@
+
+
+
 <?php
-
 namespace App\Models;
-
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Support\Facades\Validator;
-
 class SupplierSupplierCategory extends Model
 {
     use HasFactory;
-
     protected $table = 'supplier_supplier_category';
-
     protected $fillable = ['supplier_id', 'supplier_category_id', 'applicable', 'updated_by_name'];
 
     protected function casts(): array
@@ -37,6 +35,7 @@ class SupplierSupplierCategory extends Model
 
     protected static function booted(): void
     {
+
         static::saving(function (self $model): void {
             Validator::make($model->attributesToArray(), static::validationRules())->validate();
         });

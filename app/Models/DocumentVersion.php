@@ -1,19 +1,17 @@
+
+
+
 <?php
-
 namespace App\Models;
-
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Support\Facades\Validator;
-
 class DocumentVersion extends Model
 {
     use HasFactory;
-
     protected $table = 'document_versions';
-
     protected $fillable = ['library_document_id', 'approver_id', 'contents', 'major_version', 'minor_version', 'approved_at', 'finished_at'];
 
     protected function casts(): array
@@ -41,6 +39,7 @@ class DocumentVersion extends Model
 
     protected static function booted(): void
     {
+
         static::saving(function (self $model): void {
             Validator::make($model->attributesToArray(), static::validationRules())->validate();
         });

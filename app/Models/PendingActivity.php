@@ -1,20 +1,18 @@
+
+
+
 <?php
-
 namespace App\Models;
-
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Support\Facades\Validator;
-
 class PendingActivity extends Model
 {
     use HasFactory;
-
     protected $table = 'pending_activities';
-
     protected $fillable = ['description', 'dependant_activity_id', 'activity_flow_id', 'activity_flow_template_item_id', 'responsible_user_id', 'dependant_pending_activity_id'];
 
     protected function casts(): array
@@ -39,6 +37,7 @@ class PendingActivity extends Model
 
     protected static function booted(): void
     {
+
         static::saving(function (self $model): void {
             Validator::make($model->attributesToArray(), static::validationRules())->validate();
         });

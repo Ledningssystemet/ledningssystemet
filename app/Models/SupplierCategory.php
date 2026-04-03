@@ -1,28 +1,25 @@
+
+
+
 <?php
-
 namespace App\Models;
-
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Support\Facades\Validator;
-
 class SupplierCategory extends Model
 {
     use HasFactory;
-
     protected $table = 'supplier_categories';
-
-    protected $fillable = ['name', 'description', 'reassessment_interval', 'partner_id', 'partner_object_uid', 'partner_object_updated_at', 'formulaname', 'defaultvalue'];
+    protected $fillable = ['name', 'description', 'reassessment_interval', 'formulaname', 'defaultvalue'];
 
     protected function casts(): array
     {
         return [
             'created_at' => 'datetime',
             'updated_at' => 'datetime',
-            'partner_object_updated_at' => 'datetime',
             'defaultvalue' => 'boolean',
         ];
     }
@@ -33,9 +30,6 @@ class SupplierCategory extends Model
             'name' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
             'reassessment_interval' => ['nullable', 'string', 'max:255'],
-            'partner_id' => ['nullable', 'integer', 'min:0', 'exists:partners,id'],
-            'partner_object_uid' => ['nullable', 'string', 'max:36'],
-            'partner_object_updated_at' => ['nullable', 'date'],
             'formulaname' => ['nullable', 'string', 'max:255'],
             'defaultvalue' => ['nullable', 'boolean'],
         ];
@@ -43,6 +37,7 @@ class SupplierCategory extends Model
 
     protected static function booted(): void
     {
+
         static::saving(function (self $model): void {
             Validator::make($model->attributesToArray(), static::validationRules())->validate();
         });
@@ -52,11 +47,7 @@ class SupplierCategory extends Model
     {
         return $plural ? 'Supplier Categories' : 'Supplier Category';
     }
-
-    public function int_partner(): BelongsTo
-    {
-        return $this->belongsTo(Partner::class, 'partner_id');
-    }
+    
 
     public function int_supplier_requirements(): HasMany
     {

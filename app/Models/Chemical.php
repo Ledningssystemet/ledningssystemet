@@ -1,18 +1,16 @@
+
+
+
 <?php
-
 namespace App\Models;
-
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Support\Facades\Validator;
-
 class Chemical extends Model
 {
     use HasFactory;
-
     protected $table = 'chemicals';
-
     protected $fillable = ['name', 'manufacturer', 'description', 'usagedescription', 'storagedescription', 'consumptiondescription', 'riskdescription', 'handlingguidance', 'ohs_danger_properties', 'sdbfilename', 'sdbcontenttype', 'sdbcontentlength', 'sdbfilecontent'];
 
     protected function casts(): array
@@ -44,6 +42,7 @@ class Chemical extends Model
 
     protected static function booted(): void
     {
+
         static::saving(function (self $model): void {
             Validator::make($model->attributesToArray(), static::validationRules())->validate();
         });

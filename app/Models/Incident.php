@@ -1,21 +1,19 @@
+
+
+
 <?php
-
 namespace App\Models;
-
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Support\Facades\Validator;
-
 class Incident extends Model
 {
     use HasFactory;
-
     protected $table = 'incidents';
-
-    protected $fillable = ['uid', 'name', 'started_at', 'finished_at', 'eventdescription', 'participants', 'retrospective', 'responsible_user_id'];
+    protected $fillable = ['name', 'started_at', 'finished_at', 'eventdescription', 'participants', 'retrospective', 'responsible_user_id'];
 
     protected function casts(): array
     {
@@ -30,7 +28,6 @@ class Incident extends Model
     public static function validationRules(): array
     {
         return [
-            'uid' => ['nullable', 'string', 'max:36'],
             'name' => ['required', 'string', 'max:255'],
             'started_at' => ['required', 'date'],
             'finished_at' => ['nullable', 'date'],
@@ -43,6 +40,7 @@ class Incident extends Model
 
     protected static function booted(): void
     {
+
         static::saving(function (self $model): void {
             Validator::make($model->attributesToArray(), static::validationRules())->validate();
         });
