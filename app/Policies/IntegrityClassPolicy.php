@@ -19,7 +19,7 @@ class IntegrityClassPolicy
     /**
      * Determine whether the user can view the model.
      */
-    public function view(User $user, IntegrityClass $integrityClass): bool
+    public function view(User $user, IntegrityClass $integrityClass = new IntegrityClass): bool
     {
         return false;
     }
@@ -35,7 +35,7 @@ class IntegrityClassPolicy
     /**
      * Determine whether the user can update the model.
      */
-    public function update(User $user, IntegrityClass $integrityClass): bool
+    public function update(User $user, IntegrityClass $integrityClass = new IntegrityClass): bool
     {
         return false;
     }
@@ -43,7 +43,7 @@ class IntegrityClassPolicy
     /**
      * Determine whether the user can delete the model.
      */
-    public function delete(User $user, IntegrityClass $integrityClass): bool
+    public function delete(User $user, IntegrityClass $integrityClass = new IntegrityClass): bool
     {
         return false;
     }
@@ -51,7 +51,7 @@ class IntegrityClassPolicy
     /**
      * Determine whether the user can restore the model.
      */
-    public function restore(User $user, IntegrityClass $integrityClass): bool
+    public function restore(User $user, IntegrityClass $integrityClass = new IntegrityClass): bool
     {
         return false;
     }
@@ -59,7 +59,7 @@ class IntegrityClassPolicy
     /**
      * Determine whether the user can permanently delete the model.
      */
-    public function forceDelete(User $user, IntegrityClass $integrityClass): bool
+    public function forceDelete(User $user, IntegrityClass $integrityClass = new IntegrityClass): bool
     {
         return false;
     }

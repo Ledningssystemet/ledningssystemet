@@ -13,15 +13,21 @@ class ControlPolicy
      */
     public function viewAny(User $user): bool
     {
-        return false;
+        if ($user->haveAnyAccessRights(['superadmin.edit']))
+            return true;
+
+        return $user->haveAnyAccessRights(['controls.read', 'controls.edit']);
     }
 
     /**
      * Determine whether the user can view the model.
      */
-    public function view(User $user, Control $control): bool
+    public function view(User $user, Control $control = new Control): bool
     {
-        return false;
+        if ($user->haveAnyAccessRights(['superadmin.edit']))
+            return true;
+
+        return $user->haveAnyAccessRights(['controls.read', 'controls.edit']);
     }
 
     /**
@@ -29,29 +35,35 @@ class ControlPolicy
      */
     public function create(User $user): bool
     {
-        return false;
+        return $user->haveAnyAccessRights(['controls.edit', 'superadmin.edit']);
     }
 
     /**
      * Determine whether the user can update the model.
      */
-    public function update(User $user, Control $control): bool
+    public function update(User $user, Control $control = new Control): bool
     {
-        return false;
+        if ($user->haveAnyAccessRights(['superadmin.edit']))
+            return true;
+
+        return $user->haveAnyAccessRights(['controls.edit']);
     }
 
     /**
      * Determine whether the user can delete the model.
      */
-    public function delete(User $user, Control $control): bool
+    public function delete(User $user, Control $control = new Control): bool
     {
-        return false;
+        if ($user->haveAnyAccessRights(['superadmin.edit']))
+            return true;
+
+        return $user->can('update', $control);
     }
 
     /**
      * Determine whether the user can restore the model.
      */
-    public function restore(User $user, Control $control): bool
+    public function restore(User $user, Control $control = new Control): bool
     {
         return false;
     }
@@ -59,7 +71,7 @@ class ControlPolicy
     /**
      * Determine whether the user can permanently delete the model.
      */
-    public function forceDelete(User $user, Control $control): bool
+    public function forceDelete(User $user, Control $control = new Control): bool
     {
         return false;
     }

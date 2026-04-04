@@ -1,5 +1,7 @@
 <?php
+
 namespace App\Models;
+
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -7,10 +9,13 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Support\Facades\Validator;
+
 class InformationType extends Model
 {
     use HasFactory;
+
     protected $table = 'information_types';
+
     protected $fillable = ['name', 'description', 'responsible_user_id', 'confidentiality_class_id', 'integrity_class_id', 'availability_class_id', 'retention', 'piidescription', 'confidentiality_ground_id', 'diary_id', 'archivingdescription', 'archiveshippingtime', 'archivemedia', 'sortinginformation'];
 
     protected function casts(): array
@@ -41,9 +46,25 @@ class InformationType extends Model
         ];
     }
 
+    public static function crudSearch(): array
+    {
+        return [
+            'direct' => [
+                'name',
+                'description',
+                'piidescription',
+                'archivingdescription',
+                'archivemedia',
+                'sortinginformation',
+            ],
+            'relations' => [
+                // 'relation.path' => ['name'],
+            ],
+        ];
+    }
+
     protected static function booted(): void
     {
-
         static::saving(function (self $model): void {
             Validator::make($model->attributesToArray(), static::validationRules())->validate();
         });
@@ -144,11 +165,6 @@ class InformationType extends Model
         return $this->morphMany(Finding::class, 'context', 'context_type', 'context_id');
     }
 
-    public function int_ignored_risks_as_context(): MorphMany
-    {
-        return $this->morphMany(IgnoredRisk::class, 'context', 'context_type', 'context_id');
-    }
-
     public function int_object_histories_as_object(): MorphMany
     {
         return $this->morphMany(ObjectHistory::class, 'object', 'object_type', 'object_id');
@@ -172,11 +188,6 @@ class InformationType extends Model
     public function int_personal_access_tokens_as_tokenable(): MorphMany
     {
         return $this->morphMany(PersonalAccessToken::class, 'tokenable', 'tokenable_type', 'tokenable_id');
-    }
-
-    public function int_risk_template_evaluation_attempts_as_context(): MorphMany
-    {
-        return $this->morphMany(RiskTemplateEvaluationAttempt::class, 'context', 'context_type', 'context_id');
     }
 
     public function int_risks_as_context(): MorphMany

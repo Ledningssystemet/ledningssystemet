@@ -6,14 +6,19 @@ use App\Http\Controllers\Auth\OtpChallengeController;
 use App\Http\Controllers\Auth\ResetPasswordController;
 use App\Http\Controllers\OAuthController;
 use Illuminate\Support\Facades\Route;
+use Inertia\Inertia;
 
 Route::middleware('auth')->group(function (): void {
-    Route::get('/', function () {
-        return view('welcome');
-    })->name('home');
-
+    /**
+     * Logout
+     */
     Route::post('/logout', [LoginController::class, 'destroy'])->name('logout');
+
+    Route::get('/', function () {
+        return Inertia::render('UserDashboard');
+    });
 });
+
 
 Route::middleware('guest')->group(function (): void {
     Route::get('/login', [LoginController::class, 'create'])->name('login');

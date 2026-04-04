@@ -13,15 +13,15 @@ class CustomPropertyPolicy
      */
     public function viewAny(User $user): bool
     {
-        return false;
+        return $user->haveAnyAccessRights(['systemadministrator.edit']);
     }
 
     /**
      * Determine whether the user can view the model.
      */
-    public function view(User $user, CustomProperty $customProperty): bool
+    public function view(User $user, CustomProperty $customProperty = new CustomProperty): bool
     {
-        return false;
+        return $user->haveAnyAccessRights(['systemadministrator.edit']);
     }
 
     /**
@@ -29,29 +29,29 @@ class CustomPropertyPolicy
      */
     public function create(User $user): bool
     {
-        return false;
+        return $user->haveAnyAccessRights(['systemadministrator.edit']);
     }
 
     /**
      * Determine whether the user can update the model.
      */
-    public function update(User $user, CustomProperty $customProperty): bool
+    public function update(User $user, CustomProperty $customProperty = new CustomProperty): bool
     {
-        return false;
+        return $user->haveAnyAccessRights(['systemadministrator.edit']);
     }
 
     /**
      * Determine whether the user can delete the model.
      */
-    public function delete(User $user, CustomProperty $customProperty): bool
+    public function delete(User $user, CustomProperty $customProperty = new CustomProperty): bool
     {
-        return false;
+        return $user->haveAnyAccessRights(['systemadministrator.edit']);
     }
 
     /**
      * Determine whether the user can restore the model.
      */
-    public function restore(User $user, CustomProperty $customProperty): bool
+    public function restore(User $user, CustomProperty $customProperty = new CustomProperty): bool
     {
         return false;
     }
@@ -59,7 +59,7 @@ class CustomPropertyPolicy
     /**
      * Determine whether the user can permanently delete the model.
      */
-    public function forceDelete(User $user, CustomProperty $customProperty): bool
+    public function forceDelete(User $user, CustomProperty $customProperty = new CustomProperty): bool
     {
         return false;
     }

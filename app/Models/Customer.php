@@ -1,5 +1,7 @@
 <?php
+
 namespace App\Models;
+
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -7,10 +9,13 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Support\Facades\Validator;
+
 class Customer extends Model
 {
     use HasFactory;
+
     protected $table = 'customers';
+
     protected $fillable = ['name', 'legal_reg', 'ext_id', 'dpo_name', 'dpo_email', 'description', 'responsible_user_id'];
 
     protected function casts(): array
@@ -34,9 +39,25 @@ class Customer extends Model
         ];
     }
 
+    public static function crudSearch(): array
+    {
+        return [
+            'direct' => [
+                'name',
+                'legal_reg',
+                'ext_id',
+                'dpo_name',
+                'dpo_email',
+                'description',
+            ],
+            'relations' => [
+                // 'relation.path' => ['name'],
+            ],
+        ];
+    }
+
     protected static function booted(): void
     {
-
         static::saving(function (self $model): void {
             Validator::make($model->attributesToArray(), static::validationRules())->validate();
         });
@@ -61,7 +82,6 @@ class Customer extends Model
     {
         return $this->hasMany(CustomerProcess::class, 'customer_id', 'id');
     }
-    
 
     public function int_processes(): BelongsToMany
     {
@@ -81,11 +101,6 @@ class Customer extends Model
     public function int_findings_as_context(): MorphMany
     {
         return $this->morphMany(Finding::class, 'context', 'context_type', 'context_id');
-    }
-
-    public function int_ignored_risks_as_context(): MorphMany
-    {
-        return $this->morphMany(IgnoredRisk::class, 'context', 'context_type', 'context_id');
     }
 
     public function int_object_histories_as_object(): MorphMany
@@ -111,11 +126,6 @@ class Customer extends Model
     public function int_personal_access_tokens_as_tokenable(): MorphMany
     {
         return $this->morphMany(PersonalAccessToken::class, 'tokenable', 'tokenable_type', 'tokenable_id');
-    }
-
-    public function int_risk_template_evaluation_attempts_as_context(): MorphMany
-    {
-        return $this->morphMany(RiskTemplateEvaluationAttempt::class, 'context', 'context_type', 'context_id');
     }
 
     public function int_risks_as_context(): MorphMany

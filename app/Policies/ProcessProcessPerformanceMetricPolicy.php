@@ -19,7 +19,7 @@ class ProcessProcessPerformanceMetricPolicy
     /**
      * Determine whether the user can view the model.
      */
-    public function view(User $user, ProcessProcessPerformanceMetric $processProcessPerformanceMetric): bool
+    public function view(User $user, ProcessProcessPerformanceMetric $processProcessPerformanceMetric = new ProcessProcessPerformanceMetric): bool
     {
         return false;
     }
@@ -35,7 +35,7 @@ class ProcessProcessPerformanceMetricPolicy
     /**
      * Determine whether the user can update the model.
      */
-    public function update(User $user, ProcessProcessPerformanceMetric $processProcessPerformanceMetric): bool
+    public function update(User $user, ProcessProcessPerformanceMetric $processProcessPerformanceMetric = new ProcessProcessPerformanceMetric): bool
     {
         return false;
     }
@@ -43,7 +43,7 @@ class ProcessProcessPerformanceMetricPolicy
     /**
      * Determine whether the user can delete the model.
      */
-    public function delete(User $user, ProcessProcessPerformanceMetric $processProcessPerformanceMetric): bool
+    public function delete(User $user, ProcessProcessPerformanceMetric $processProcessPerformanceMetric = new ProcessProcessPerformanceMetric): bool
     {
         return false;
     }
@@ -51,7 +51,7 @@ class ProcessProcessPerformanceMetricPolicy
     /**
      * Determine whether the user can restore the model.
      */
-    public function restore(User $user, ProcessProcessPerformanceMetric $processProcessPerformanceMetric): bool
+    public function restore(User $user, ProcessProcessPerformanceMetric $processProcessPerformanceMetric = new ProcessProcessPerformanceMetric): bool
     {
         return false;
     }
@@ -59,7 +59,7 @@ class ProcessProcessPerformanceMetricPolicy
     /**
      * Determine whether the user can permanently delete the model.
      */
-    public function forceDelete(User $user, ProcessProcessPerformanceMetric $processProcessPerformanceMetric): bool
+    public function forceDelete(User $user, ProcessProcessPerformanceMetric $processProcessPerformanceMetric = new ProcessProcessPerformanceMetric): bool
     {
         return false;
     }

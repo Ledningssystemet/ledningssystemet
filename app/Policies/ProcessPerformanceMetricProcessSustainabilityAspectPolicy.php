@@ -19,7 +19,7 @@ class ProcessPerformanceMetricProcessSustainabilityAspectPolicy
     /**
      * Determine whether the user can view the model.
      */
-    public function view(User $user, ProcessPerformanceMetricProcessSustainabilityAspect $processPerformanceMetricProcessSustainabilityAspect): bool
+    public function view(User $user, ProcessPerformanceMetricProcessSustainabilityAspect $processPerformanceMetricProcessSustainabilityAspect = new ProcessPerformanceMetricProcessSustainabilityAspect): bool
     {
         return false;
     }
@@ -35,7 +35,7 @@ class ProcessPerformanceMetricProcessSustainabilityAspectPolicy
     /**
      * Determine whether the user can update the model.
      */
-    public function update(User $user, ProcessPerformanceMetricProcessSustainabilityAspect $processPerformanceMetricProcessSustainabilityAspect): bool
+    public function update(User $user, ProcessPerformanceMetricProcessSustainabilityAspect $processPerformanceMetricProcessSustainabilityAspect = new ProcessPerformanceMetricProcessSustainabilityAspect): bool
     {
         return false;
     }
@@ -43,7 +43,7 @@ class ProcessPerformanceMetricProcessSustainabilityAspectPolicy
     /**
      * Determine whether the user can delete the model.
      */
-    public function delete(User $user, ProcessPerformanceMetricProcessSustainabilityAspect $processPerformanceMetricProcessSustainabilityAspect): bool
+    public function delete(User $user, ProcessPerformanceMetricProcessSustainabilityAspect $processPerformanceMetricProcessSustainabilityAspect = new ProcessPerformanceMetricProcessSustainabilityAspect): bool
     {
         return false;
     }
@@ -51,7 +51,7 @@ class ProcessPerformanceMetricProcessSustainabilityAspectPolicy
     /**
      * Determine whether the user can restore the model.
      */
-    public function restore(User $user, ProcessPerformanceMetricProcessSustainabilityAspect $processPerformanceMetricProcessSustainabilityAspect): bool
+    public function restore(User $user, ProcessPerformanceMetricProcessSustainabilityAspect $processPerformanceMetricProcessSustainabilityAspect = new ProcessPerformanceMetricProcessSustainabilityAspect): bool
     {
         return false;
     }
@@ -59,7 +59,7 @@ class ProcessPerformanceMetricProcessSustainabilityAspectPolicy
     /**
      * Determine whether the user can permanently delete the model.
      */
-    public function forceDelete(User $user, ProcessPerformanceMetricProcessSustainabilityAspect $processPerformanceMetricProcessSustainabilityAspect): bool
+    public function forceDelete(User $user, ProcessPerformanceMetricProcessSustainabilityAspect $processPerformanceMetricProcessSustainabilityAspect = new ProcessPerformanceMetricProcessSustainabilityAspect): bool
     {
         return false;
     }

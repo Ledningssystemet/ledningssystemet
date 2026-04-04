@@ -1,14 +1,19 @@
 <?php
+
 namespace App\Models;
+
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Support\Facades\Validator;
+
 class VectorEmbedding extends Model
 {
     use HasFactory;
+
     protected $table = 'vector_embeddings';
+
     protected $fillable = ['embeddable_type', 'embeddable_id', 'provider', 'embedding_model', 'dimensions', 'content_hash', 'content', 'embedding'];
 
     protected function casts(): array
@@ -33,9 +38,24 @@ class VectorEmbedding extends Model
         ];
     }
 
+    public static function crudSearch(): array
+    {
+        return [
+            'direct' => [
+                'embeddable_type',
+                'provider',
+                'embedding_model',
+                'content_hash',
+                'content',
+            ],
+            'relations' => [
+                // 'relation.path' => ['name'],
+            ],
+        ];
+    }
+
     protected static function booted(): void
     {
-
         static::saving(function (self $model): void {
             Validator::make($model->attributesToArray(), static::validationRules())->validate();
         });
@@ -66,11 +86,6 @@ class VectorEmbedding extends Model
         return $this->morphMany(Finding::class, 'context', 'context_type', 'context_id');
     }
 
-    public function int_ignored_risks_as_context(): MorphMany
-    {
-        return $this->morphMany(IgnoredRisk::class, 'context', 'context_type', 'context_id');
-    }
-
     public function int_object_histories_as_object(): MorphMany
     {
         return $this->morphMany(ObjectHistory::class, 'object', 'object_type', 'object_id');
@@ -94,11 +109,6 @@ class VectorEmbedding extends Model
     public function int_personal_access_tokens_as_tokenable(): MorphMany
     {
         return $this->morphMany(PersonalAccessToken::class, 'tokenable', 'tokenable_type', 'tokenable_id');
-    }
-
-    public function int_risk_template_evaluation_attempts_as_context(): MorphMany
-    {
-        return $this->morphMany(RiskTemplateEvaluationAttempt::class, 'context', 'context_type', 'context_id');
     }
 
     public function int_risks_as_context(): MorphMany

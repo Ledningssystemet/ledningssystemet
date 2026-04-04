@@ -1,43 +1,47 @@
 <?php
+
 namespace App\Models;
+
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Support\Facades\Validator;
-class PersonalAccessToken extends Model
+use Laravel\Sanctum\PersonalAccessToken as SanctumPersonalAccessToken;
+
+/**
+ * Use Sanctum's token model behavior and keep project-specific helpers/relations.
+ */
+class PersonalAccessToken extends SanctumPersonalAccessToken
 {
     use HasFactory;
-    protected $table = 'personal_access_tokens';
-    protected $fillable = ['tokenable_type', 'tokenable_id', 'name', 'token', 'abilities', 'last_used_at', 'expires_at'];
-    protected $hidden = ['token'];
 
-    protected function casts(): array
-    {
-        return [
-            'last_used_at' => 'datetime',
-            'expires_at' => 'datetime',
-            'created_at' => 'datetime',
-            'updated_at' => 'datetime',
-        ];
-    }
+    protected $fillable = ['name', 'token', 'abilities', 'expires_at'];
+
 
     public static function validationRules(): array
     {
         return [
-            'tokenable_type' => ['required', 'string', 'max:255'],
-            'tokenable_id' => ['required', 'integer', 'min:0'],
             'name' => ['required', 'string', 'max:255'],
-            'token' => ['required', 'string', 'max:64'],
-            'abilities' => ['nullable', 'string'],
-            'last_used_at' => ['nullable', 'date'],
-            'expires_at' => ['nullable', 'date'],
+        ];
+    }
+
+    public static function crudSearch(): array
+    {
+        return [
+            'direct' => [
+                'tokenable_type',
+                'name',
+                'token',
+                'abilities',
+            ],
+            'relations' => [
+                // 'relation.path' => ['name'],
+            ],
         ];
     }
 
     protected static function booted(): void
     {
-
         static::saving(function (self $model): void {
             Validator::make($model->attributesToArray(), static::validationRules())->validate();
         });
@@ -68,11 +72,6 @@ class PersonalAccessToken extends Model
         return $this->morphMany(Finding::class, 'context', 'context_type', 'context_id');
     }
 
-    public function int_ignored_risks_as_context(): MorphMany
-    {
-        return $this->morphMany(IgnoredRisk::class, 'context', 'context_type', 'context_id');
-    }
-
     public function int_object_histories_as_object(): MorphMany
     {
         return $this->morphMany(ObjectHistory::class, 'object', 'object_type', 'object_id');
@@ -91,11 +90,6 @@ class PersonalAccessToken extends Model
     public function int_object_tags_as_object_tags(): MorphMany
     {
         return $this->morphMany(ObjectTag::class, 'object_tags', 'object_tags_type', 'object_tags_id');
-    }
-
-    public function int_risk_template_evaluation_attempts_as_context(): MorphMany
-    {
-        return $this->morphMany(RiskTemplateEvaluationAttempt::class, 'context', 'context_type', 'context_id');
     }
 
     public function int_risks_as_context(): MorphMany

@@ -13,15 +13,21 @@ class ComplianceEvaluationRequirementFindingPolicy
      */
     public function viewAny(User $user): bool
     {
-        return false;
+        if ($user->haveAnyAccessRights(['superadmin.edit']))
+            return true;
+
+        return $user->haveAnyAccessRights(['complianceevaluations.read', 'complianceevaluations.edit']);
     }
 
     /**
      * Determine whether the user can view the model.
      */
-    public function view(User $user, ComplianceEvaluationRequirementFinding $complianceEvaluationRequirementFinding): bool
+    public function view(User $user, ComplianceEvaluationRequirementFinding $complianceEvaluationRequirementFinding = new ComplianceEvaluationRequirementFinding): bool
     {
-        return false;
+        if ($user->haveAnyAccessRights(['superadmin.edit']))
+            return true;
+
+        return $user->haveAnyAccessRights(['complianceevaluations.read', 'complianceevaluations.edit']);
     }
 
     /**
@@ -29,29 +35,35 @@ class ComplianceEvaluationRequirementFindingPolicy
      */
     public function create(User $user): bool
     {
-        return false;
+        return $user->haveAnyAccessRights(['complianceevaluations.edit', 'superadmin.edit']);
     }
 
     /**
      * Determine whether the user can update the model.
      */
-    public function update(User $user, ComplianceEvaluationRequirementFinding $complianceEvaluationRequirementFinding): bool
+    public function update(User $user, ComplianceEvaluationRequirementFinding $complianceEvaluationRequirementFinding = new ComplianceEvaluationRequirementFinding): bool
     {
-        return false;
+        if ($user->haveAnyAccessRights(['superadmin.edit']))
+            return true;
+
+        return $user->haveAnyAccessRights(['complianceevaluations.edit']);
     }
 
     /**
      * Determine whether the user can delete the model.
      */
-    public function delete(User $user, ComplianceEvaluationRequirementFinding $complianceEvaluationRequirementFinding): bool
+    public function delete(User $user, ComplianceEvaluationRequirementFinding $complianceEvaluationRequirementFinding = new ComplianceEvaluationRequirementFinding): bool
     {
-        return false;
+        if ($user->haveAnyAccessRights(['superadmin.edit']))
+            return true;
+
+        return $user->can('update', $complianceEvaluationRequirementFinding);
     }
 
     /**
      * Determine whether the user can restore the model.
      */
-    public function restore(User $user, ComplianceEvaluationRequirementFinding $complianceEvaluationRequirementFinding): bool
+    public function restore(User $user, ComplianceEvaluationRequirementFinding $complianceEvaluationRequirementFinding = new ComplianceEvaluationRequirementFinding): bool
     {
         return false;
     }
@@ -59,7 +71,7 @@ class ComplianceEvaluationRequirementFindingPolicy
     /**
      * Determine whether the user can permanently delete the model.
      */
-    public function forceDelete(User $user, ComplianceEvaluationRequirementFinding $complianceEvaluationRequirementFinding): bool
+    public function forceDelete(User $user, ComplianceEvaluationRequirementFinding $complianceEvaluationRequirementFinding = new ComplianceEvaluationRequirementFinding): bool
     {
         return false;
     }

@@ -19,7 +19,7 @@ class AIQueryPolicy
     /**
      * Determine whether the user can view the model.
      */
-    public function view(User $user, AIQuery $aIQuery): bool
+    public function view(User $user, AIQuery $aIQuery = new AIQuery): bool
     {
         return false;
     }
@@ -35,7 +35,7 @@ class AIQueryPolicy
     /**
      * Determine whether the user can update the model.
      */
-    public function update(User $user, AIQuery $aIQuery): bool
+    public function update(User $user, AIQuery $aIQuery = new AIQuery): bool
     {
         return false;
     }
@@ -43,7 +43,7 @@ class AIQueryPolicy
     /**
      * Determine whether the user can delete the model.
      */
-    public function delete(User $user, AIQuery $aIQuery): bool
+    public function delete(User $user, AIQuery $aIQuery = new AIQuery): bool
     {
         return false;
     }
@@ -51,7 +51,7 @@ class AIQueryPolicy
     /**
      * Determine whether the user can restore the model.
      */
-    public function restore(User $user, AIQuery $aIQuery): bool
+    public function restore(User $user, AIQuery $aIQuery = new AIQuery): bool
     {
         return false;
     }
@@ -59,7 +59,7 @@ class AIQueryPolicy
     /**
      * Determine whether the user can permanently delete the model.
      */
-    public function forceDelete(User $user, AIQuery $aIQuery): bool
+    public function forceDelete(User $user, AIQuery $aIQuery = new AIQuery): bool
     {
         return false;
     }

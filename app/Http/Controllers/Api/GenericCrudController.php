@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\GenericCrudIndexRequest;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -31,7 +32,12 @@ class GenericCrudController extends Controller
         $query = $modelClass::query();
 
         $this->applyFilters($query, $request->input('filter', []), $metadata);
-        $this->applySearch($query, $request->string('search')->toString(), $metadata['searchable']);
+        $this->applySearch(
+            $query,
+            $request->string('search')->toString(),
+            $metadata['searchable'],
+            $metadata['searchable_relations']
+        );
 
         $selectedColumns = $this->parseSelectedColumns($request, $metadata['selectable']);
         if ($selectedColumns !== []) {
@@ -160,6 +166,39 @@ class GenericCrudController extends Controller
         }
 
         $model = new $modelClass();
+        $describedModel = $this->describeModel($model);
+        $columnTypes = $describedModel['types'];
+        $columns = $describedModel['columns'];
+        $selectable = $describedModel['selectable'];
+        $numericTypes = ['tinyint', 'smallint', 'mediumint', 'integer', 'int', 'bigint', 'decimal', 'numeric', 'float', 'double', 'real'];
+        $booleanTypes = ['bool', 'boolean'];
+
+        $filterable = [];
+
+        foreach ($columns as $column) {
+            $type = $columnTypes[$column] ?? 'string';
+
+            if (in_array($type, $numericTypes, true) || in_array($type, $booleanTypes, true)) {
+                $filterable[$column] = $type;
+            }
+        }
+
+        $crudSearch = $this->resolveCrudSearch($model, $describedModel['searchable']);
+
+        return $this->metadataCache[$modelClass] = [
+            'types' => $columnTypes,
+            'selectable' => $selectable,
+            'filterable' => $filterable,
+            'searchable' => $crudSearch['direct'],
+            'searchable_relations' => $crudSearch['relations'],
+        ];
+    }
+
+    /**
+     * @return array{columns: array<int, string>, types: array<string, string>, selectable: array<int, string>, searchable: array<int, string>}
+     */
+    private function describeModel(Model $model): array
+    {
         $table = $model->getTable();
         $connection = Schema::connection($model->getConnectionName());
         $columns = $connection->getColumnListing($table);
@@ -192,31 +231,138 @@ class GenericCrudController extends Controller
             ? array_values(array_intersect($columns, $visible))
             : array_values(array_diff($columns, $hidden));
 
-        $textTypes = ['char', 'string', 'text', 'tinytext', 'mediumtext', 'longtext', 'varchar'];
-        $numericTypes = ['tinyint', 'smallint', 'mediumint', 'integer', 'int', 'bigint', 'decimal', 'numeric', 'float', 'double', 'real'];
-        $booleanTypes = ['bool', 'boolean'];
-
-        $filterable = [];
-        $searchable = [];
-
-        foreach ($columns as $column) {
-            $type = $columnTypes[$column] ?? 'string';
-
-            if (in_array($type, $numericTypes, true) || in_array($type, $booleanTypes, true)) {
-                $filterable[$column] = $type;
-            }
-
-            if (in_array($column, $selectable, true) && in_array($type, $textTypes, true)) {
-                $searchable[] = $column;
-            }
-        }
-
-        return $this->metadataCache[$modelClass] = [
+        return [
+            'columns' => $columns,
             'types' => $columnTypes,
             'selectable' => $selectable,
-            'filterable' => $filterable,
-            'searchable' => $searchable,
+            'searchable' => $this->textSearchableColumns($selectable, $columnTypes),
         ];
+    }
+
+    /**
+     * @param array<int, string> $selectableColumns
+     * @param array<string, string> $columnTypes
+     * @return array<int, string>
+     */
+    private function textSearchableColumns(array $selectableColumns, array $columnTypes): array
+    {
+        $textTypes = ['char', 'string', 'text', 'tinytext', 'mediumtext', 'longtext', 'varchar'];
+
+        return array_values(array_filter(
+            $selectableColumns,
+            static fn (string $column): bool => in_array($columnTypes[$column] ?? 'string', $textTypes, true)
+        ));
+    }
+
+    /**
+     * @param array<int, string> $defaultSearchable
+     * @return array{direct: array<int, string>, relations: array<string, array<int, string>>}
+     */
+    private function resolveCrudSearch(Model $model, array $defaultSearchable): array
+    {
+        $modelClass = $model::class;
+        if (! method_exists($modelClass, 'crudSearch')) {
+            return [
+                'direct' => $defaultSearchable,
+                'relations' => [],
+            ];
+        }
+
+        $configuredSearch = $modelClass::crudSearch();
+        if (! is_array($configuredSearch)) {
+            return [
+                'direct' => $defaultSearchable,
+                'relations' => [],
+            ];
+        }
+
+        $allowedDirectColumns = array_fill_keys($defaultSearchable, true);
+        $configuredDirect = $configuredSearch['direct'] ?? $defaultSearchable;
+        if (! is_array($configuredDirect)) {
+            $configuredDirect = $defaultSearchable;
+        }
+
+        $direct = [];
+        foreach ($configuredDirect as $column) {
+            if (! is_string($column) || ! isset($allowedDirectColumns[$column])) {
+                continue;
+            }
+
+            $direct[] = $column;
+        }
+
+        return [
+            'direct' => array_values(array_unique($direct)),
+            'relations' => $this->normalizeCrudSearchRelations($model, $configuredSearch['relations'] ?? []),
+        ];
+    }
+
+    /**
+     * @return array<string, array<int, string>>
+     */
+    private function normalizeCrudSearchRelations(Model $model, mixed $configuredRelations): array
+    {
+        if (! is_array($configuredRelations)) {
+            return [];
+        }
+
+        $normalizedRelations = [];
+
+        foreach ($configuredRelations as $relationPath => $columns) {
+            if (! is_string($relationPath) || trim($relationPath) === '' || ! is_array($columns)) {
+                continue;
+            }
+
+            $relatedModel = $this->resolveRelatedModelForPath($model, $relationPath);
+            if (! $relatedModel instanceof Model) {
+                continue;
+            }
+
+            $allowedColumns = array_fill_keys($this->describeModel($relatedModel)['searchable'], true);
+            $validColumns = [];
+
+            foreach ($columns as $column) {
+                if (! is_string($column) || ! isset($allowedColumns[$column])) {
+                    continue;
+                }
+
+                $validColumns[] = $column;
+            }
+
+            if ($validColumns === []) {
+                continue;
+            }
+
+            $normalizedRelations[$relationPath] = array_values(array_unique($validColumns));
+        }
+
+        return $normalizedRelations;
+    }
+
+    private function resolveRelatedModelForPath(Model $model, string $relationPath): ?Model
+    {
+        $currentModel = $model;
+
+        foreach (explode('.', $relationPath) as $segment) {
+            $segment = trim($segment);
+            if ($segment === '' || ! method_exists($currentModel, $segment)) {
+                return null;
+            }
+
+            try {
+                $relation = $currentModel->{$segment}();
+            } catch (Throwable) {
+                return null;
+            }
+
+            if (! $relation instanceof Relation) {
+                return null;
+            }
+
+            $currentModel = $relation->getRelated();
+        }
+
+        return $currentModel;
     }
 
     /**
@@ -245,16 +391,27 @@ class GenericCrudController extends Controller
 
     /**
      * @param array<int, string> $searchableColumns
+     * @param array<string, array<int, string>> $searchableRelations
      */
-    private function applySearch(mixed $query, string $search, array $searchableColumns): void
+    private function applySearch(mixed $query, string $search, array $searchableColumns, array $searchableRelations = []): void
     {
-        if ($search === '' || $searchableColumns === []) {
+        if ($search === '' || ($searchableColumns === [] && $searchableRelations === [])) {
             return;
         }
 
-        $query->where(function ($subQuery) use ($search, $searchableColumns): void {
+        $query->where(function ($subQuery) use ($search, $searchableColumns, $searchableRelations): void {
             foreach ($searchableColumns as $column) {
                 $subQuery->orWhere($column, 'like', "%{$search}%");
+            }
+
+            foreach ($searchableRelations as $relationPath => $columns) {
+                $subQuery->orWhereHas($relationPath, function ($relationQuery) use ($search, $columns): void {
+                    $relationQuery->where(function ($nestedQuery) use ($search, $columns): void {
+                        foreach ($columns as $column) {
+                            $nestedQuery->orWhere($column, 'like', "%{$search}%");
+                        }
+                    });
+                });
             }
         });
     }

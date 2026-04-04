@@ -13,15 +13,21 @@ class IncidentPolicy
      */
     public function viewAny(User $user): bool
     {
-        return false;
+        if ($user->haveAnyAccessRights(['superadmin.edit']))
+            return true;
+
+        return $user->haveAnyAccessRights(['incidents.read', 'incidents.edit']);
     }
 
     /**
      * Determine whether the user can view the model.
      */
-    public function view(User $user, Incident $incident): bool
+    public function view(User $user, Incident $incident = new Incident): bool
     {
-        return false;
+        if ($user->haveAnyAccessRights(['superadmin.edit']))
+            return true;
+
+        return $user->haveAnyAccessRights(['incidents.read', 'incidents.edit']);
     }
 
     /**
@@ -29,29 +35,35 @@ class IncidentPolicy
      */
     public function create(User $user): bool
     {
-        return false;
+        return $user->haveAnyAccessRights(['incidents.edit', 'superadmin.edit']);
     }
 
     /**
      * Determine whether the user can update the model.
      */
-    public function update(User $user, Incident $incident): bool
+    public function update(User $user, Incident $incident = new Incident): bool
     {
-        return false;
+        if ($user->haveAnyAccessRights(['superadmin.edit']))
+            return true;
+
+        return $user->haveAnyAccessRights(['incidents.edit']);
     }
 
     /**
      * Determine whether the user can delete the model.
      */
-    public function delete(User $user, Incident $incident): bool
+    public function delete(User $user, Incident $incident = new Incident): bool
     {
-        return false;
+        if ($user->haveAnyAccessRights(['superadmin.edit']))
+            return true;
+
+        return $user->can('update', $incident);
     }
 
     /**
      * Determine whether the user can restore the model.
      */
-    public function restore(User $user, Incident $incident): bool
+    public function restore(User $user, Incident $incident = new Incident): bool
     {
         return false;
     }
@@ -59,7 +71,7 @@ class IncidentPolicy
     /**
      * Determine whether the user can permanently delete the model.
      */
-    public function forceDelete(User $user, Incident $incident): bool
+    public function forceDelete(User $user, Incident $incident = new Incident): bool
     {
         return false;
     }

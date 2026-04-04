@@ -19,7 +19,7 @@ class ControlRequirementPolicy
     /**
      * Determine whether the user can view the model.
      */
-    public function view(User $user, ControlRequirement $controlRequirement): bool
+    public function view(User $user, ControlRequirement $controlRequirement = new ControlRequirement): bool
     {
         return false;
     }
@@ -35,7 +35,7 @@ class ControlRequirementPolicy
     /**
      * Determine whether the user can update the model.
      */
-    public function update(User $user, ControlRequirement $controlRequirement): bool
+    public function update(User $user, ControlRequirement $controlRequirement = new ControlRequirement): bool
     {
         return false;
     }
@@ -43,7 +43,7 @@ class ControlRequirementPolicy
     /**
      * Determine whether the user can delete the model.
      */
-    public function delete(User $user, ControlRequirement $controlRequirement): bool
+    public function delete(User $user, ControlRequirement $controlRequirement = new ControlRequirement): bool
     {
         return false;
     }
@@ -51,7 +51,7 @@ class ControlRequirementPolicy
     /**
      * Determine whether the user can restore the model.
      */
-    public function restore(User $user, ControlRequirement $controlRequirement): bool
+    public function restore(User $user, ControlRequirement $controlRequirement = new ControlRequirement): bool
     {
         return false;
     }
@@ -59,7 +59,7 @@ class ControlRequirementPolicy
     /**
      * Determine whether the user can permanently delete the model.
      */
-    public function forceDelete(User $user, ControlRequirement $controlRequirement): bool
+    public function forceDelete(User $user, ControlRequirement $controlRequirement = new ControlRequirement): bool
     {
         return false;
     }

@@ -13,15 +13,15 @@ class FindingPolicy
      */
     public function viewAny(User $user): bool
     {
-        return false;
+        return (!config('ledningssystemet.disable_finding', false)) && $user->haveAnyAccessRights(['findings.read', 'findings.edit']);
     }
 
     /**
      * Determine whether the user can view the model.
      */
-    public function view(User $user, Finding $finding): bool
+    public function view(User $user, Finding $finding = new Finding): bool
     {
-        return false;
+        return (!config('ledningssystemet.disable_finding', false)) && $user->haveAnyAccessRights(['findings.read', 'findings.edit']);
     }
 
     /**
@@ -29,29 +29,32 @@ class FindingPolicy
      */
     public function create(User $user): bool
     {
-        return false;
+        return (!config('ledningssystemet.disable_finding', false));
     }
 
     /**
      * Determine whether the user can update the model.
      */
-    public function update(User $user, Finding $finding): bool
+    public function update(User $user, Finding $finding = new Finding): bool
     {
-        return false;
+        return (!config('ledningssystemet.disable_finding', false)) && $user->haveAnyAccessRights(['findings.edit']);
     }
 
     /**
      * Determine whether the user can delete the model.
      */
-    public function delete(User $user, Finding $finding): bool
+    public function delete(User $user, Finding $finding = new Finding): bool
     {
-        return false;
+        if ($user->haveAnyAccessRights(['superadmin.edit']))
+            return true;
+
+        return $user->can('update', $finding);
     }
 
     /**
      * Determine whether the user can restore the model.
      */
-    public function restore(User $user, Finding $finding): bool
+    public function restore(User $user, Finding $finding = new Finding): bool
     {
         return false;
     }
@@ -59,7 +62,7 @@ class FindingPolicy
     /**
      * Determine whether the user can permanently delete the model.
      */
-    public function forceDelete(User $user, Finding $finding): bool
+    public function forceDelete(User $user, Finding $finding = new Finding): bool
     {
         return false;
     }

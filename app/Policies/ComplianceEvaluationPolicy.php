@@ -13,15 +13,21 @@ class ComplianceEvaluationPolicy
      */
     public function viewAny(User $user): bool
     {
-        return false;
+        if ($user->haveAnyAccessRights(['superadmin.edit']))
+            return true;
+
+        return $user->haveAnyAccessRights(['complianceevaluations.read', 'complianceevaluations.edit']);
     }
 
     /**
      * Determine whether the user can view the model.
      */
-    public function view(User $user, ComplianceEvaluation $complianceEvaluation): bool
+    public function view(User $user, ComplianceEvaluation $complianceEvaluation = new ComplianceEvaluation): bool
     {
-        return false;
+        if ($user->haveAnyAccessRights(['superadmin.edit']))
+            return true;
+
+        return $user->haveAnyAccessRights(['complianceevaluations.read', 'complianceevaluations.edit']);
     }
 
     /**
@@ -29,29 +35,35 @@ class ComplianceEvaluationPolicy
      */
     public function create(User $user): bool
     {
-        return false;
+        return $user->haveAnyAccessRights(['complianceevaluations.edit', 'superadmin.edit']);
     }
 
     /**
      * Determine whether the user can update the model.
      */
-    public function update(User $user, ComplianceEvaluation $complianceEvaluation): bool
+    public function update(User $user, ComplianceEvaluation $complianceEvaluation = new ComplianceEvaluation): bool
     {
-        return false;
+        if ($user->haveAnyAccessRights(['superadmin.edit']))
+            return true;
+
+        return $user->haveAnyAccessRights(['complianceevaluations.edit']);
     }
 
     /**
      * Determine whether the user can delete the model.
      */
-    public function delete(User $user, ComplianceEvaluation $complianceEvaluation): bool
+    public function delete(User $user, ComplianceEvaluation $complianceEvaluation = new ComplianceEvaluation): bool
     {
-        return false;
+        if ($user->haveAnyAccessRights(['superadmin.edit']))
+            return true;
+
+        return $user->can('update', $complianceEvaluation);
     }
 
     /**
      * Determine whether the user can restore the model.
      */
-    public function restore(User $user, ComplianceEvaluation $complianceEvaluation): bool
+    public function restore(User $user, ComplianceEvaluation $complianceEvaluation = new ComplianceEvaluation): bool
     {
         return false;
     }
@@ -59,7 +71,7 @@ class ComplianceEvaluationPolicy
     /**
      * Determine whether the user can permanently delete the model.
      */
-    public function forceDelete(User $user, ComplianceEvaluation $complianceEvaluation): bool
+    public function forceDelete(User $user, ComplianceEvaluation $complianceEvaluation = new ComplianceEvaluation): bool
     {
         return false;
     }

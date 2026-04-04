@@ -13,15 +13,27 @@ class SupplierPolicy
      */
     public function viewAny(User $user): bool
     {
-        return false;
+        if (config('ledningssystemet.disable_supplier', false))
+            return false;
+
+        if ($user->haveAnyAccessRights(['superadmin.edit']))
+            return true;
+
+        return $user->haveAnyAccessRights(['suppliers.read', 'suppliers.edit']);
     }
 
     /**
      * Determine whether the user can view the model.
      */
-    public function view(User $user, Supplier $supplier): bool
+    public function view(User $user, Supplier $supplier = new Supplier): bool
     {
-        return false;
+        if (config('ledningssystemet.disable_supplier', false))
+            return false;
+
+        if ($user->haveAnyAccessRights(['superadmin.edit']))
+            return true;
+
+        return $user->haveAnyAccessRights(['suppliers.read', 'suppliers.edit']);
     }
 
     /**
@@ -29,29 +41,35 @@ class SupplierPolicy
      */
     public function create(User $user): bool
     {
-        return false;
+        return (!config('ledningssystemet.disable_supplier', false)) && $user->haveAnyAccessRights(['suppliers.edit', 'superadmin.edit']);
     }
 
     /**
      * Determine whether the user can update the model.
      */
-    public function update(User $user, Supplier $supplier): bool
+    public function update(User $user, Supplier $supplier = new Supplier): bool
     {
-        return false;
+        if ($user->haveAnyAccessRights(['superadmin.edit']))
+            return true;
+
+        return (!config('ledningssystemet.disable_supplier', false)) && $user->haveAnyAccessRights(['suppliers.edit']);
     }
 
     /**
      * Determine whether the user can delete the model.
      */
-    public function delete(User $user, Supplier $supplier): bool
+    public function delete(User $user, Supplier $supplier = new Supplier): bool
     {
-        return false;
+        if ($user->haveAnyAccessRights(['superadmin.edit']))
+            return true;
+
+        return $user->can('update', $supplier);
     }
 
     /**
      * Determine whether the user can restore the model.
      */
-    public function restore(User $user, Supplier $supplier): bool
+    public function restore(User $user, Supplier $supplier = new Supplier): bool
     {
         return false;
     }
@@ -59,7 +77,7 @@ class SupplierPolicy
     /**
      * Determine whether the user can permanently delete the model.
      */
-    public function forceDelete(User $user, Supplier $supplier): bool
+    public function forceDelete(User $user, Supplier $supplier = new Supplier): bool
     {
         return false;
     }

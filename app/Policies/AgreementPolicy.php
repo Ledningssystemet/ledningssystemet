@@ -13,15 +13,21 @@ class AgreementPolicy
      */
     public function viewAny(User $user): bool
     {
-        return false;
+        if ($user->haveAnyAccessRights(['superadmin.edit']))
+            return true;
+
+        return $user->haveAnyAccessRights(['agreements.read', 'agreements.edit']);
     }
 
     /**
      * Determine whether the user can view the model.
      */
-    public function view(User $user, Agreement $agreement): bool
+    public function view(User $user, Agreement $agreement = new Agreement): bool
     {
-        return false;
+        if ($user->haveAnyAccessRights(['superadmin.edit']))
+            return true;
+
+        return $user->haveAnyAccessRights(['agreements.read', 'agreements.edit']);
     }
 
     /**
@@ -29,29 +35,32 @@ class AgreementPolicy
      */
     public function create(User $user): bool
     {
-        return false;
+        return $user->haveAnyAccessRights(['agreements.edit', 'superadmin.edit']);
     }
 
     /**
      * Determine whether the user can update the model.
      */
-    public function update(User $user, Agreement $agreement): bool
+    public function update(User $user, Agreement $agreement = new Agreement): bool
     {
-        return false;
+        return $user->haveAnyAccessRights(['agreements.edit']);
     }
 
     /**
      * Determine whether the user can delete the model.
      */
-    public function delete(User $user, Agreement $agreement): bool
+    public function delete(User $user, Agreement $agreement = new Agreement): bool
     {
-        return false;
+        if ($user->haveAnyAccessRights(['superadmin.edit']))
+            return true;
+
+        return $user->can('update', $agreement);
     }
 
     /**
      * Determine whether the user can restore the model.
      */
-    public function restore(User $user, Agreement $agreement): bool
+    public function restore(User $user, Agreement $agreement = new Agreement): bool
     {
         return false;
     }
@@ -59,7 +68,7 @@ class AgreementPolicy
     /**
      * Determine whether the user can permanently delete the model.
      */
-    public function forceDelete(User $user, Agreement $agreement): bool
+    public function forceDelete(User $user, Agreement $agreement = new Agreement): bool
     {
         return false;
     }

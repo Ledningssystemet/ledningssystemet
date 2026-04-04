@@ -13,15 +13,21 @@ class ProcessPerformanceMetricPolicy
      */
     public function viewAny(User $user): bool
     {
-        return false;
+        if ($user->haveAnyAccessRights(['superadmin.edit']))
+            return true;
+
+        return $user->haveAnyAccessRights(['processmetrics.read', 'processmetrics.edit']);
     }
 
     /**
      * Determine whether the user can view the model.
      */
-    public function view(User $user, ProcessPerformanceMetric $processPerformanceMetric): bool
+    public function view(User $user, ProcessPerformanceMetric $processPerformanceMetric = new ProcessPerformanceMetric): bool
     {
-        return false;
+        if ($user->haveAnyAccessRights(['superadmin.edit']))
+            return true;
+
+        return $user->haveAnyAccessRights(['processmetrics.read', 'processmetrics.edit']);
     }
 
     /**
@@ -29,29 +35,35 @@ class ProcessPerformanceMetricPolicy
      */
     public function create(User $user): bool
     {
-        return false;
+        return $user->haveAnyAccessRights(['processmetrics.edit', 'superadmin.edit']);
     }
 
     /**
      * Determine whether the user can update the model.
      */
-    public function update(User $user, ProcessPerformanceMetric $processPerformanceMetric): bool
+    public function update(User $user, ProcessPerformanceMetric $processPerformanceMetric = new ProcessPerformanceMetric): bool
     {
-        return false;
+        if ($user->haveAnyAccessRights(['superadmin.edit']))
+            return true;
+
+        return $user->haveAnyAccessRights(['processmetrics.edit']);
     }
 
     /**
      * Determine whether the user can delete the model.
      */
-    public function delete(User $user, ProcessPerformanceMetric $processPerformanceMetric): bool
+    public function delete(User $user, ProcessPerformanceMetric $processPerformanceMetric = new ProcessPerformanceMetric): bool
     {
-        return false;
+        if ($user->haveAnyAccessRights(['superadmin.edit']))
+            return true;
+
+        return $user->can('update', $processPerformanceMetric);
     }
 
     /**
      * Determine whether the user can restore the model.
      */
-    public function restore(User $user, ProcessPerformanceMetric $processPerformanceMetric): bool
+    public function restore(User $user, ProcessPerformanceMetric $processPerformanceMetric = new ProcessPerformanceMetric): bool
     {
         return false;
     }
@@ -59,7 +71,7 @@ class ProcessPerformanceMetricPolicy
     /**
      * Determine whether the user can permanently delete the model.
      */
-    public function forceDelete(User $user, ProcessPerformanceMetric $processPerformanceMetric): bool
+    public function forceDelete(User $user, ProcessPerformanceMetric $processPerformanceMetric = new ProcessPerformanceMetric): bool
     {
         return false;
     }

@@ -13,15 +13,21 @@ class IncidentLogPolicy
      */
     public function viewAny(User $user): bool
     {
-        return false;
+        if ($user->haveAnyAccessRights(['superadmin.edit']))
+            return true;
+
+        return $user->haveAnyAccessRights(['incidents.read', 'incidents.edit']);
     }
 
     /**
      * Determine whether the user can view the model.
      */
-    public function view(User $user, IncidentLog $incidentLog): bool
+    public function view(User $user, IncidentLog $incidentLog = new IncidentLog): bool
     {
-        return false;
+        if ($user->haveAnyAccessRights(['superadmin.edit']))
+            return true;
+
+        return $user->haveAnyAccessRights(['incidents.read', 'incidents.edit']);
     }
 
     /**
@@ -29,29 +35,35 @@ class IncidentLogPolicy
      */
     public function create(User $user): bool
     {
-        return false;
+        return $user->haveAnyAccessRights(['incidents.edit', 'superadmin.edit']);
     }
 
     /**
      * Determine whether the user can update the model.
      */
-    public function update(User $user, IncidentLog $incidentLog): bool
+    public function update(User $user, IncidentLog $incidentLog = new IncidentLog): bool
     {
-        return false;
+        if ($user->haveAnyAccessRights(['superadmin.edit']))
+            return true;
+
+        return $user->haveAnyAccessRights(['incidents.edit']);
     }
 
     /**
      * Determine whether the user can delete the model.
      */
-    public function delete(User $user, IncidentLog $incidentLog): bool
+    public function delete(User $user, IncidentLog $incidentLog = new IncidentLog): bool
     {
-        return false;
+        if ($user->haveAnyAccessRights(['superadmin.edit']))
+            return true;
+
+        return $user->can('update', $incidentLog);
     }
 
     /**
      * Determine whether the user can restore the model.
      */
-    public function restore(User $user, IncidentLog $incidentLog): bool
+    public function restore(User $user, IncidentLog $incidentLog = new IncidentLog): bool
     {
         return false;
     }
@@ -59,7 +71,7 @@ class IncidentLogPolicy
     /**
      * Determine whether the user can permanently delete the model.
      */
-    public function forceDelete(User $user, IncidentLog $incidentLog): bool
+    public function forceDelete(User $user, IncidentLog $incidentLog = new IncidentLog): bool
     {
         return false;
     }

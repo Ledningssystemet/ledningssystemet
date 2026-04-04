@@ -133,18 +133,6 @@ CREATE TABLE `ai_queries` (
                               CONSTRAINT `aq_ui` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_swedish_ci;
 
-CREATE TABLE `announcements` (
-                                 `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-                                 `remote_id` bigint(20) unsigned NOT NULL,
-                                 `severity` enum('info','warning','danger') NOT NULL,
-                                 `header` varchar(255) NOT NULL,
-                                 `description` mediumtext NOT NULL,
-                                 `visible_until` date NOT NULL,
-                                 `created_at` timestamp NULL DEFAULT NULL,
-                                 `updated_at` timestamp NULL DEFAULT NULL,
-                                 PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_swedish_ci;
-
 CREATE TABLE `asset_asset_dependancy` (
                                           `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
                                           `dependant_asset_id` bigint(20) unsigned NOT NULL,
@@ -1608,16 +1596,6 @@ CREATE TABLE `sustainability_metrics` (
                                           `updated_at` timestamp NULL DEFAULT NULL,
                                           PRIMARY KEY (`id`),
                                           UNIQUE KEY `sustainability_metrics_name_unique` (`name`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_swedish_ci;
-
-CREATE TABLE `system_configurations` (
-                                         `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-                                         `name` varchar(255) NOT NULL,
-                                         `created_at` timestamp NULL DEFAULT NULL,
-                                         `updated_at` timestamp NULL DEFAULT NULL,
-                                         `value` mediumblob DEFAULT NULL,
-                                         PRIMARY KEY (`id`),
-                                         UNIQUE KEY `system_configurations_name_unique` (`name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_swedish_ci;
 
 CREATE TABLE `tags` (

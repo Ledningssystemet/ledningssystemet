@@ -13,6 +13,22 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->redirectGuestsTo('/login');
+
+        $middleware->web(append: [
+            \App\Http\Middleware\HandleInertiaRequests::class,
+        ]);
+
+        // Prepend Sanctum's stateful-domain middleware to the API group.
+        // This allows the Inertia SPA to authenticate API routes via the
+        // existing PHP session cookie, while external clients can still
+        // use a Bearer token (Personal Access Token).
+        $middleware->api(prepend: [
+            \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
+        ]);
+
+        $middleware->alias([
+            'session.authenticated' => \App\Http\Middleware\EnsureSessionAuthenticated::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

@@ -13,15 +13,15 @@ class UserNotificationChannelPolicy
      */
     public function viewAny(User $user): bool
     {
-        return false;
+        return true;
     }
 
     /**
      * Determine whether the user can view the model.
      */
-    public function view(User $user, UserNotificationChannel $userNotificationChannel): bool
+    public function view(User $user, UserNotificationChannel $userNotificationChannel = new UserNotificationChannel): bool
     {
-        return false;
+        return (($userNotificationChannel->user_id == $user->id) || $user->haveAnyAccessRights(['systemadministrator.edit']));
     }
 
     /**
@@ -29,29 +29,32 @@ class UserNotificationChannelPolicy
      */
     public function create(User $user): bool
     {
-        return false;
+        return true;
     }
 
     /**
      * Determine whether the user can update the model.
      */
-    public function update(User $user, UserNotificationChannel $userNotificationChannel): bool
+    public function update(User $user, UserNotificationChannel $userNotificationChannel = new UserNotificationChannel): bool
     {
-        return false;
+        return (($userNotificationChannel->user_id == $user->id) || $user->haveAnyAccessRights(['systemadministrator.edit']));
     }
 
     /**
      * Determine whether the user can delete the model.
      */
-    public function delete(User $user, UserNotificationChannel $userNotificationChannel): bool
+    public function delete(User $user, UserNotificationChannel $userNotificationChannel = new UserNotificationChannel): bool
     {
-        return false;
+        if ($user->haveAnyAccessRights(['superadmin.edit']))
+            return true;
+
+        return $user->can('update', $userNotificationChannel);
     }
 
     /**
      * Determine whether the user can restore the model.
      */
-    public function restore(User $user, UserNotificationChannel $userNotificationChannel): bool
+    public function restore(User $user, UserNotificationChannel $userNotificationChannel = new UserNotificationChannel): bool
     {
         return false;
     }
@@ -59,7 +62,7 @@ class UserNotificationChannelPolicy
     /**
      * Determine whether the user can permanently delete the model.
      */
-    public function forceDelete(User $user, UserNotificationChannel $userNotificationChannel): bool
+    public function forceDelete(User $user, UserNotificationChannel $userNotificationChannel = new UserNotificationChannel): bool
     {
         return false;
     }

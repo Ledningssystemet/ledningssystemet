@@ -19,7 +19,7 @@ class ControlActionMappingPolicy
     /**
      * Determine whether the user can view the model.
      */
-    public function view(User $user, ControlActionMapping $controlActionMapping): bool
+    public function view(User $user, ControlActionMapping $controlActionMapping = new ControlActionMapping): bool
     {
         return false;
     }
@@ -35,7 +35,7 @@ class ControlActionMappingPolicy
     /**
      * Determine whether the user can update the model.
      */
-    public function update(User $user, ControlActionMapping $controlActionMapping): bool
+    public function update(User $user, ControlActionMapping $controlActionMapping = new ControlActionMapping): bool
     {
         return false;
     }
@@ -43,7 +43,7 @@ class ControlActionMappingPolicy
     /**
      * Determine whether the user can delete the model.
      */
-    public function delete(User $user, ControlActionMapping $controlActionMapping): bool
+    public function delete(User $user, ControlActionMapping $controlActionMapping = new ControlActionMapping): bool
     {
         return false;
     }
@@ -51,7 +51,7 @@ class ControlActionMappingPolicy
     /**
      * Determine whether the user can restore the model.
      */
-    public function restore(User $user, ControlActionMapping $controlActionMapping): bool
+    public function restore(User $user, ControlActionMapping $controlActionMapping = new ControlActionMapping): bool
     {
         return false;
     }
@@ -59,7 +59,7 @@ class ControlActionMappingPolicy
     /**
      * Determine whether the user can permanently delete the model.
      */
-    public function forceDelete(User $user, ControlActionMapping $controlActionMapping): bool
+    public function forceDelete(User $user, ControlActionMapping $controlActionMapping = new ControlActionMapping): bool
     {
         return false;
     }

@@ -1,5 +1,7 @@
 <?php
+
 namespace App\Models;
+
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -8,12 +10,19 @@ use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Cache;
+use Laravel\Sanctum\HasApiTokens;
+
 class User extends Authenticatable
 {
-    use HasFactory, Notifiable;
+    use HasApiTokens, HasFactory, Notifiable;
+
     protected $table = 'users';
-    protected $fillable = ['name', 'email', 'email_verified_at', 'password', 'enabled', 'remember_token', 'external_id', 'title', 'manager_user_id', 'site_id', 'last_login_at'];
+
+    protected $fillable = ['name', 'email', 'enabled', 'title', 'manager_user_id', 'site_id'];
+
     protected $hidden = ['password', 'remember_token'];
+
 
     protected function casts(): array
     {
@@ -31,21 +40,32 @@ class User extends Authenticatable
         return [
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'max:255'],
-            'email_verified_at' => ['nullable', 'date'],
-            'password' => ['required', 'string', 'max:255'],
             'enabled' => ['required', 'boolean'],
-            'remember_token' => ['nullable', 'string', 'max:100'],
-            'external_id' => ['nullable', 'string', 'max:255'],
             'title' => ['nullable', 'string', 'max:255'],
             'manager_user_id' => ['nullable', 'integer', 'min:0', 'exists:users,id'],
             'site_id' => ['nullable', 'integer', 'min:0', 'exists:sites,id'],
-            'last_login_at' => ['nullable', 'date'],
+        ];
+    }
+
+    public static function crudSearch(): array
+    {
+        return [
+            'direct' => [
+                'name',
+                'email',
+                'password',
+                'remember_token',
+                'external_id',
+                'title',
+            ],
+            'relations' => [
+                // 'relation.path' => ['name'],
+            ],
         ];
     }
 
     protected static function booted(): void
     {
-
         static::saving(function (self $model): void {
             Validator::make($model->attributesToArray(), static::validationRules())->validate();
         });
@@ -54,6 +74,107 @@ class User extends Authenticatable
     public static function getPrettyName($plural = false): string
     {
         return $plural ? 'Users' : 'User';
+    }
+
+    /**
+     * Get user claims
+     */
+    public function userclaims()
+    {
+        return Cache::rememberForever('User.userclaims.'.$this->id, function(){
+            $claims = [];
+
+            // Calculate claims
+            foreach($this->int_access_groups()->pluck('claims') as $claimarray)
+            {
+                if((null == $claimarray) ||
+                    ("" == $claimarray))
+                    continue;
+
+                $claimobj = is_array($claimarray) ? $claimarray : json_decode($claimarray, true);
+
+                if(is_array($claimobj))
+                    $claims = array_merge($claims, $claimobj);
+            }
+
+            $claims = array_unique($claims);
+
+            // Return
+            return $claims;
+        });
+    }
+
+    /**
+     * Does user have all access rights
+     */
+    public function haveAllAccessRights($claims)
+    {
+        $userclaims = $this->userclaims();
+        if(0 < count(array_intersect(['superadmin.edit'], $userclaims)))
+            return true;
+
+        return (count($claims) == count(array_intersect($claims, $this->userclaims())));
+    }
+
+    /**
+     * Does user have any access rights
+     */
+    public function haveAnyAccessRights($claims)
+    {
+        $userclaims = $this->userclaims();
+        if(0 < count(array_intersect(['superadmin.edit'], $userclaims)))
+            return true;
+
+        return (0 < count(array_intersect($claims, $userclaims)));
+    }
+
+    /**
+     * Does user have access rights
+     */
+    public function haveAccessRight($claim)
+    {
+        return $this->haveAnyAccessRights([$claim]);
+    }
+
+    /**
+     * Get user communication preferences
+     */
+    public function getUserCommunicationPreferences()
+    {
+        // Try to get settings
+        $usersettings = DB::table('user_status_email_settings')->where('user_id', $this->id)->first();
+
+        return array(
+            'monday' => (null == $usersettings) ? false : $usersettings->monday,
+            'tuesday' => (null == $usersettings) ? false : $usersettings->tuesday,
+            'wednesday' => (null == $usersettings) ? false : $usersettings->wednesday,
+            'thursday' => (null == $usersettings) ? false : $usersettings->thursday,
+            'friday' => (null == $usersettings) ? false : $usersettings->friday,
+            'saturday' => (null == $usersettings) ? false : $usersettings->saturday,
+            'sunday' => (null == $usersettings) ? false : $usersettings->sunday,
+        );
+    }
+
+    /**
+     * Set user communication preferences
+     */
+    public function setUserCommunicationPreferences($usersettings)
+    {
+        DB::table('user_status_email_settings')
+            ->updateOrInsert(['user_id' => $this->id], $usersettings);
+
+        return $this->getUserCommunicationPreferences();
+    }
+
+    /**
+     * Issue a new API token
+     */
+    public function issuetoken(){
+        if(request()->user()->cannot('create', \App\Models\PersonalAccessToken::class))
+            abort(403);
+
+        return $this->createToken(request()->input('name', date("Y-m-d H:i:s")));
+
     }
 
     public function int_manager_user(): BelongsTo
@@ -286,11 +407,6 @@ class User extends Authenticatable
         return $this->morphMany(Finding::class, 'context', 'context_type', 'context_id');
     }
 
-    public function int_ignored_risks_as_context(): MorphMany
-    {
-        return $this->morphMany(IgnoredRisk::class, 'context', 'context_type', 'context_id');
-    }
-
     public function int_object_histories_as_object(): MorphMany
     {
         return $this->morphMany(ObjectHistory::class, 'object', 'object_type', 'object_id');
@@ -314,11 +430,6 @@ class User extends Authenticatable
     public function int_personal_access_tokens_as_tokenable(): MorphMany
     {
         return $this->morphMany(PersonalAccessToken::class, 'tokenable', 'tokenable_type', 'tokenable_id');
-    }
-
-    public function int_risk_template_evaluation_attempts_as_context(): MorphMany
-    {
-        return $this->morphMany(RiskTemplateEvaluationAttempt::class, 'context', 'context_type', 'context_id');
     }
 
     public function int_risks_as_context(): MorphMany

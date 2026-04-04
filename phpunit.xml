@@ -23,7 +23,7 @@
         <env name="APP_LOCALE" value="sv"/>
         <env name="LOGIN_ALLOW_PASSWORDLOGIN" value="true"/>
         <env name="BCRYPT_ROUNDS" value="4"/>
-        <env name="CACHE_DRIVER" value="array"/>
+        <env name="CACHE_DRIVER" value="file"/>
         <env name="DB_CONNECTION" value="mariadb"/>
         <env name="DB_DATABASE" value="ledningssystemet_testing"/>
         <env name="DB_USERNAME" value="testing"/>

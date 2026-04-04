@@ -13,15 +13,15 @@ class LibraryDocumentPolicy
      */
     public function viewAny(User $user): bool
     {
-        return false;
+        return true;
     }
 
     /**
      * Determine whether the user can view the model.
      */
-    public function view(User $user, LibraryDocument $libraryDocument): bool
+    public function view(User $user, LibraryDocument $libraryDocument = new LibraryDocument): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -29,29 +29,33 @@ class LibraryDocumentPolicy
      */
     public function create(User $user): bool
     {
-        return false;
+        return $user->haveAnyAccessRights(['managementtools.edit', 'superadmin.edit']);
     }
 
     /**
      * Determine whether the user can update the model.
      */
-    public function update(User $user, LibraryDocument $libraryDocument): bool
+    public function update(User $user, LibraryDocument $libraryDocument = new LibraryDocument): bool
     {
-        return false;
+        if ($user->haveAnyAccessRights(['superadmin.edit']))
+            return true;
+
+        return ($user->haveAnyAccessRights(['managementtools.edit']) ||
+                ($user->id == $libraryDocument->responsible_user_id));
     }
 
     /**
      * Determine whether the user can delete the model.
      */
-    public function delete(User $user, LibraryDocument $libraryDocument): bool
+    public function delete(User $user, LibraryDocument $libraryDocument = new LibraryDocument): bool
     {
-        return false;
+        return $user->haveAnyAccessRights(['managementtools.edit', 'superadmin.edit']);
     }
 
     /**
      * Determine whether the user can restore the model.
      */
-    public function restore(User $user, LibraryDocument $libraryDocument): bool
+    public function restore(User $user, LibraryDocument $libraryDocument = new LibraryDocument): bool
     {
         return false;
     }
@@ -59,7 +63,7 @@ class LibraryDocumentPolicy
     /**
      * Determine whether the user can permanently delete the model.
      */
-    public function forceDelete(User $user, LibraryDocument $libraryDocument): bool
+    public function forceDelete(User $user, LibraryDocument $libraryDocument = new LibraryDocument): bool
     {
         return false;
     }

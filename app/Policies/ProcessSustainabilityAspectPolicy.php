@@ -19,7 +19,7 @@ class ProcessSustainabilityAspectPolicy
     /**
      * Determine whether the user can view the model.
      */
-    public function view(User $user, ProcessSustainabilityAspect $processSustainabilityAspect): bool
+    public function view(User $user, ProcessSustainabilityAspect $processSustainabilityAspect = new ProcessSustainabilityAspect): bool
     {
         return false;
     }
@@ -35,7 +35,7 @@ class ProcessSustainabilityAspectPolicy
     /**
      * Determine whether the user can update the model.
      */
-    public function update(User $user, ProcessSustainabilityAspect $processSustainabilityAspect): bool
+    public function update(User $user, ProcessSustainabilityAspect $processSustainabilityAspect = new ProcessSustainabilityAspect): bool
     {
         return false;
     }
@@ -43,7 +43,7 @@ class ProcessSustainabilityAspectPolicy
     /**
      * Determine whether the user can delete the model.
      */
-    public function delete(User $user, ProcessSustainabilityAspect $processSustainabilityAspect): bool
+    public function delete(User $user, ProcessSustainabilityAspect $processSustainabilityAspect = new ProcessSustainabilityAspect): bool
     {
         return false;
     }
@@ -51,7 +51,7 @@ class ProcessSustainabilityAspectPolicy
     /**
      * Determine whether the user can restore the model.
      */
-    public function restore(User $user, ProcessSustainabilityAspect $processSustainabilityAspect): bool
+    public function restore(User $user, ProcessSustainabilityAspect $processSustainabilityAspect = new ProcessSustainabilityAspect): bool
     {
         return false;
     }
@@ -59,7 +59,7 @@ class ProcessSustainabilityAspectPolicy
     /**
      * Determine whether the user can permanently delete the model.
      */
-    public function forceDelete(User $user, ProcessSustainabilityAspect $processSustainabilityAspect): bool
+    public function forceDelete(User $user, ProcessSustainabilityAspect $processSustainabilityAspect = new ProcessSustainabilityAspect): bool
     {
         return false;
     }

@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
+use RuntimeException;
 
 class LoginController extends Controller
 {
@@ -46,7 +47,9 @@ class LoginController extends Controller
             'use_otp' => ['sometimes', 'boolean'],
         ]);
 
-        if (! Auth::attempt(['email' => $credentials['email'], 'password' => $credentials['password']], (bool) ($credentials['remember'] ?? false))) {
+        $remember = (bool) ($credentials['remember'] ?? false);
+
+        if (! $this->attemptLogin($credentials['email'], $credentials['password'], $remember)) {
             return back()->withInput($request->only('email'))->withErrors([
                 'email' => 'Felaktiga inloggningsuppgifter.',
             ]);
@@ -110,6 +113,43 @@ class LoginController extends Controller
     private function otpCacheKey(int $userId): string
     {
         return 'auth:otp:'.$userId;
+    }
+
+    private function attemptLogin(string $email, string $password, bool $remember): bool
+    {
+        try {
+            return Auth::attempt(['email' => $email, 'password' => $password], $remember);
+        } catch (RuntimeException $exception) {
+            if (! str_contains($exception->getMessage(), 'does not use the Bcrypt algorithm')) {
+                throw $exception;
+            }
+
+            return $this->attemptLegacyBcryptLogin($email, $password, $remember);
+        }
+    }
+
+    private function attemptLegacyBcryptLogin(string $email, string $password, bool $remember): bool
+    {
+        $user = User::query()->where('email', $email)->first();
+
+        if (! $user instanceof User || ! is_string($user->password) || $user->password === '') {
+            return false;
+        }
+
+        if (! str_starts_with($user->password, '$2a$') && ! str_starts_with($user->password, '$2b$')) {
+            return false;
+        }
+
+        if (! password_verify($password, $user->password)) {
+            return false;
+        }
+
+        Auth::login($user, $remember);
+
+        // Upgrade legacy bcrypt variants to the framework default hash format.
+        $user->forceFill(['password' => Hash::make($password)])->save();
+
+        return true;
     }
 }
 

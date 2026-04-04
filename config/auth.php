@@ -43,10 +43,9 @@ return [
             'provider' => 'users',
         ],
 
-        'sanctum' => [
-            'driver' => 'session',
-            'provider' => 'users',
-        ],
+        // Note: the 'sanctum' guard is registered automatically by
+        // Laravel\Sanctum\SanctumServiceProvider. Do NOT define it here –
+        // a duplicate session-driver entry would break token authentication.
     ],
 
     /*

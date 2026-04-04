@@ -19,7 +19,7 @@ class SupplierRequirementPolicy
     /**
      * Determine whether the user can view the model.
      */
-    public function view(User $user, SupplierRequirement $supplierRequirement): bool
+    public function view(User $user, SupplierRequirement $supplierRequirement = new SupplierRequirement): bool
     {
         return false;
     }
@@ -35,7 +35,7 @@ class SupplierRequirementPolicy
     /**
      * Determine whether the user can update the model.
      */
-    public function update(User $user, SupplierRequirement $supplierRequirement): bool
+    public function update(User $user, SupplierRequirement $supplierRequirement = new SupplierRequirement): bool
     {
         return false;
     }
@@ -43,7 +43,7 @@ class SupplierRequirementPolicy
     /**
      * Determine whether the user can delete the model.
      */
-    public function delete(User $user, SupplierRequirement $supplierRequirement): bool
+    public function delete(User $user, SupplierRequirement $supplierRequirement = new SupplierRequirement): bool
     {
         return false;
     }
@@ -51,7 +51,7 @@ class SupplierRequirementPolicy
     /**
      * Determine whether the user can restore the model.
      */
-    public function restore(User $user, SupplierRequirement $supplierRequirement): bool
+    public function restore(User $user, SupplierRequirement $supplierRequirement = new SupplierRequirement): bool
     {
         return false;
     }
@@ -59,7 +59,7 @@ class SupplierRequirementPolicy
     /**
      * Determine whether the user can permanently delete the model.
      */
-    public function forceDelete(User $user, SupplierRequirement $supplierRequirement): bool
+    public function forceDelete(User $user, SupplierRequirement $supplierRequirement = new SupplierRequirement): bool
     {
         return false;
     }

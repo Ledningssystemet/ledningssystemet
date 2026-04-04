@@ -13,15 +13,15 @@ class ActivityPolicy
      */
     public function viewAny(User $user): bool
     {
-        return false;
+        return true;
     }
 
     /**
      * Determine whether the user can view the model.
      */
-    public function view(User $user, Activity $activity): bool
+    public function view(User $user, Activity $activity = new Activity): bool
     {
-        return false;
+        return (($activity->responsible_user_id == $user->id) || $user->haveAnyAccessRights(['managementtools.edit']));
     }
 
     /**
@@ -29,29 +29,32 @@ class ActivityPolicy
      */
     public function create(User $user): bool
     {
-        return false;
+        return true;
     }
 
     /**
      * Determine whether the user can update the model.
      */
-    public function update(User $user, Activity $activity): bool
+    public function update(User $user, Activity $activity = new Activity): bool
     {
-        return false;
+        return (($activity->responsible_user_id == $user->id) || $user->haveAnyAccessRights(['managementtools.edit']));
     }
 
     /**
      * Determine whether the user can delete the model.
      */
-    public function delete(User $user, Activity $activity): bool
+    public function delete(User $user, Activity $activity = new Activity): bool
     {
-        return false;
+        if ($user->haveAnyAccessRights(['superadmin.edit']))
+            return true;
+
+        return $user->can('update', $activity);
     }
 
     /**
      * Determine whether the user can restore the model.
      */
-    public function restore(User $user, Activity $activity): bool
+    public function restore(User $user, Activity $activity = new Activity): bool
     {
         return false;
     }
@@ -59,7 +62,7 @@ class ActivityPolicy
     /**
      * Determine whether the user can permanently delete the model.
      */
-    public function forceDelete(User $user, Activity $activity): bool
+    public function forceDelete(User $user, Activity $activity = new Activity): bool
     {
         return false;
     }

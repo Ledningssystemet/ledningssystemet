@@ -1,0 +1,27 @@
+/* React Grid Layout overrides */
+.react-grid-item.react-grid-placeholder {
+  background: hsl(var(--accent) / 0.2) !important;
+  border: 2px dashed hsl(var(--accent)) !important;
+  border-radius: 0.75rem;
+  opacity: 1 !important;
+}
+.react-grid-item > .react-resizable-handle::after {
+  border-color: hsl(var(--muted-foreground) / 0.4) !important;
+}
+.react-grid-item > .react-resizable-handle { z-index: 20; }
+
+.card-shine { position: relative; overflow: hidden; }
+.card-shine::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+  background: linear-gradient(90deg, hsl(213,65%,34%), hsl(205,75%,47%), hsl(197,82%,49%));
+  border-radius: var(--radius) var(--radius) 0 0;
+}
+.status-dot { width: 0.625rem; height: 0.625rem; border-radius: 9999px; display: inline-block; flex-shrink: 0; }
+.status-dot-success { background-color: hsl(var(--success)); }
+.status-dot-warning { background-color: hsl(var(--warning)); }
+.status-dot-danger  { background-color: hsl(var(--destructive)); }
+.risk-cell-green   { background-color: hsl(160,60%,90%); color: hsl(160,60%,25%); }
+.risk-cell-yellow  { background-color: hsl(38,92%,90%);  color: hsl(38,60%,25%); }
+.risk-cell-orange  { background-color: hsl(25,90%,90%);  color: hsl(25,70%,30%); }
+.risk-cell-red     { background-color: hsl(0,72%,90%);   color: hsl(0,60%,30%); }
+.risk-cell-darkred { background-color: hsl(0,72%,45%);   color: hsl(0,0%,100%); }

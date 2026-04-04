@@ -1,5 +1,7 @@
 <?php
+
 namespace App\Models;
+
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -7,10 +9,13 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Support\Facades\Validator;
+
 class Finding extends Model
 {
     use HasFactory;
+
     protected $table = 'findings';
+
     protected $fillable = ['name', 'description', 'department_id', 'finished_at', 'nonconformity', 'consequence', 'rootcause', 'immediateaction', 'preventativeaction', 'compliance_evaluation_requirement_finding_id', 'context_type', 'context_id', 'created_by', 'estimated_cost', 'distribution_analysis'];
 
     protected function casts(): array
@@ -44,9 +49,27 @@ class Finding extends Model
         ];
     }
 
+    public static function crudSearch(): array
+    {
+        return [
+            'direct' => [
+                'name',
+                'description',
+                'consequence',
+                'rootcause',
+                'immediateaction',
+                'preventativeaction',
+                'context_type',
+                'distribution_analysis',
+            ],
+            'relations' => [
+                // 'relation.path' => ['name'],
+            ],
+        ];
+    }
+
     protected static function booted(): void
     {
-
         static::saving(function (self $model): void {
             Validator::make($model->attributesToArray(), static::validationRules())->validate();
         });
@@ -92,11 +115,6 @@ class Finding extends Model
         return $this->morphMany(File::class, 'object', 'object_type', 'object_id');
     }
 
-    public function int_ignored_risks_as_context(): MorphMany
-    {
-        return $this->morphMany(IgnoredRisk::class, 'context', 'context_type', 'context_id');
-    }
-
     public function int_object_histories_as_object(): MorphMany
     {
         return $this->morphMany(ObjectHistory::class, 'object', 'object_type', 'object_id');
@@ -120,11 +138,6 @@ class Finding extends Model
     public function int_personal_access_tokens_as_tokenable(): MorphMany
     {
         return $this->morphMany(PersonalAccessToken::class, 'tokenable', 'tokenable_type', 'tokenable_id');
-    }
-
-    public function int_risk_template_evaluation_attempts_as_context(): MorphMany
-    {
-        return $this->morphMany(RiskTemplateEvaluationAttempt::class, 'context', 'context_type', 'context_id');
     }
 
     public function int_risks_as_context(): MorphMany

@@ -13,15 +13,15 @@ class AvailabilityClassPolicy
      */
     public function viewAny(User $user): bool
     {
-        return false;
+        return $user->haveAnyAccessRights(['managementtools.edit']);
     }
 
     /**
      * Determine whether the user can view the model.
      */
-    public function view(User $user, AvailabilityClass $availabilityClass): bool
+    public function view(User $user, AvailabilityClass $availabilityClass = new AvailabilityClass): bool
     {
-        return false;
+        return $user->haveAnyAccessRights(['managementtools.edit']);
     }
 
     /**
@@ -29,29 +29,32 @@ class AvailabilityClassPolicy
      */
     public function create(User $user): bool
     {
-        return false;
+        return $user->haveAnyAccessRights(['managementtools.edit', 'superadmin.edit']);
     }
 
     /**
      * Determine whether the user can update the model.
      */
-    public function update(User $user, AvailabilityClass $availabilityClass): bool
+    public function update(User $user, AvailabilityClass $availabilityClass = new AvailabilityClass): bool
     {
-        return false;
+        return $user->haveAnyAccessRights(['managementtools.edit']);
     }
 
     /**
      * Determine whether the user can delete the model.
      */
-    public function delete(User $user, AvailabilityClass $availabilityClass): bool
+    public function delete(User $user, AvailabilityClass $availabilityClass = new AvailabilityClass): bool
     {
-        return false;
+        if ($user->haveAnyAccessRights(['superadmin.edit']))
+            return true;
+
+        return $user->can('update', $availabilityClass);
     }
 
     /**
      * Determine whether the user can restore the model.
      */
-    public function restore(User $user, AvailabilityClass $availabilityClass): bool
+    public function restore(User $user, AvailabilityClass $availabilityClass = new AvailabilityClass): bool
     {
         return false;
     }
@@ -59,7 +62,7 @@ class AvailabilityClassPolicy
     /**
      * Determine whether the user can permanently delete the model.
      */
-    public function forceDelete(User $user, AvailabilityClass $availabilityClass): bool
+    public function forceDelete(User $user, AvailabilityClass $availabilityClass = new AvailabilityClass): bool
     {
         return false;
     }
