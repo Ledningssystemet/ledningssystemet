@@ -1,0 +1,37 @@
+{
+  "compilerOptions": {
+    "jsx": "react-jsx",
+    "jsxImportSource": "react",
+    "baseUrl": ".",
+    "target": "ES2020",
+    "useDefineForClassFields": true,
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "strict": true,
+    "noImplicitAny": true,
+    "noImplicitThis": true,
+    "strictNullChecks": true,
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "types": ["vite/client"],
+    "paths": {
+      "@/*": ["./resources/js/*"],
+      "@/Components/*": ["./resources/js/Components/*"],
+      "@/Pages/*": ["./resources/js/Pages/*"],
+      "@/Layouts/*": ["./resources/js/Layouts/*"],
+      "@/hooks/*": ["./resources/js/hooks/*"],
+      "@/Lib/*": ["./resources/js/Lib/*"],
+      "@/Assets/*": ["./resources/js/Assets/*"],
+      "@/types/*": ["./resources/js/types/*"]
+    }
+  },
+  "include": [
+    "resources/js/**/*",
+    "resources/js/vite-env.d.ts"
+  ],
+  "exclude": ["node_modules"]
+}
+

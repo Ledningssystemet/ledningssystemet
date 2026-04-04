@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from "react";
+import React, { useState, useCallback, useMemo } from "react";
 import { ResponsiveGridLayout, useContainerWidth } from "react-grid-layout";
 
 type LayoutItem = { i: string; x: number; y: number; w: number; h: number; minW?: number; minH?: number };
@@ -34,7 +34,7 @@ const allWidgets: WidgetConfig[] = [
   { id: "tasks", label: "Uppgifter", icon: ClipboardList, component: TaskList, defaultSize: { w: 4, h: 8, minW: 3, minH: 4 } },
   { id: "goals", label: "Mål & Planer", icon: Target, component: GoalsCard, defaultSize: { w: 4, h: 5, minW: 3, minH: 4 } },
   { id: "process", label: "Processer", icon: GitBranch, component: ProcessCard, defaultSize: { w: 4, h: 5, minW: 3, minH: 4 } },
-  { id: "toprisks", label: "Topprrisker", icon: AlertTriangle, component: TopRisks, defaultSize: { w: 4, h: 5, minW: 3, minH: 4 } },
+  { id: "toprisks", label: "Topprisker", icon: AlertTriangle, component: TopRisks, defaultSize: { w: 4, h: 5, minW: 3, minH: 4 } },
   { id: "riskmatrix", label: "Riskmatris", icon: BarChart3, component: RiskOverview, defaultSize: { w: 4, h: 5, minW: 3, minH: 4 } },
 ];
 
@@ -96,9 +96,9 @@ export default function DashboardGrid() {
     saveState({ layouts: newLayouts, visibleWidgets: newVisible });
   }, []);
 
-  const handleLayoutChange = useCallback((_layout: LayoutItem[], allLayouts: Layouts) => {
-    setLayouts(allLayouts);
-    persist(allLayouts, visibleWidgets);
+  const handleLayoutChange = useCallback((_layout: any, allLayouts: Partial<Record<string, any>>) => {
+    setLayouts(allLayouts as Layouts);
+    persist(allLayouts as Layouts, visibleWidgets);
   }, [persist, visibleWidgets]);
 
   const removeWidget = useCallback((id: string) => {
