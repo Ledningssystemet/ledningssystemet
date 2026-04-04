@@ -93,7 +93,8 @@ class OAuthController extends Controller
         }
 
         if (! $user) {
-            $user = User::query()->create([
+            $user = new User();
+            $user->forceFill([
                 'name' => $displayName,
                 'email' => $email,
                 'password' => Hash::make(Str::random(64)),
@@ -103,6 +104,7 @@ class OAuthController extends Controller
                 'email_verified_at' => Carbon::now(),
                 'last_login_at' => Carbon::now(),
             ]);
+            $user->save();
 
             return $user;
         }
@@ -115,7 +117,7 @@ class OAuthController extends Controller
             throw new AccessDeniedHttpException('This account is already linked to another external identity.');
         }
 
-        $user->fill([
+        $user->forceFill([
             'name' => $displayName,
             'externalproviderid' => $provider,
             'external_id' => $externalId,
@@ -128,5 +130,4 @@ class OAuthController extends Controller
     }
 
 }
-
 

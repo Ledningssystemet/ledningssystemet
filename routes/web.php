@@ -12,11 +12,11 @@ Route::middleware('auth')->group(function (): void {
     /**
      * Logout
      */
-    Route::post('/logout', [LoginController::class, 'destroy'])->name('logout');
+    Route::match(['get', 'post'], '/logout', [LoginController::class, 'destroy'])->name('logout');
 
     Route::get('/', function () {
         return Inertia::render('UserDashboard');
-    });
+    })->name('home');
 });
 
 

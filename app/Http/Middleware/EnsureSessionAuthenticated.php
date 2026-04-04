@@ -24,7 +24,7 @@ class EnsureSessionAuthenticated
             ], JsonResponse::HTTP_UNAUTHORIZED);
         }
 
-        if ($user->currentAccessToken() !== null) {
+        if ($request->bearerToken() !== null) {
             return response()->json([
                 'message' => 'This endpoint requires session authentication.',
             ], JsonResponse::HTTP_FORBIDDEN);
@@ -33,4 +33,3 @@ class EnsureSessionAuthenticated
         return $next($request);
     }
 }
-

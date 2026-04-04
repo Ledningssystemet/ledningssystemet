@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Laravel\Socialite\Contracts\Provider;
 use Laravel\Socialite\Contracts\User as OAuthUserContract;
@@ -23,11 +24,8 @@ class OAuthAuthenticationTest extends TestCase
         config()->set('authentication.oauth.client_secret', 'client-secret');
         config()->set('authentication.oauth.redirect', 'http://localhost/oauth/workplace/callback');
 
-        if (! in_array('sqlite', \PDO::getAvailableDrivers(), true)) {
-            $this->markTestSkipped('The pdo_sqlite extension is required for OAuth feature tests.');
-        }
-
         // Keep tests independent from the baseline SQL migration format.
+        DB::statement('SET FOREIGN_KEY_CHECKS=0');
         Schema::dropIfExists('users');
         Schema::create('users', function (Blueprint $table): void {
             $table->id();
@@ -39,9 +37,13 @@ class OAuthAuthenticationTest extends TestCase
             $table->rememberToken();
             $table->string('externalproviderid')->nullable()->unique();
             $table->string('external_id')->nullable()->unique();
+            $table->string('title')->nullable();
+            $table->unsignedBigInteger('manager_user_id')->nullable();
+            $table->unsignedBigInteger('site_id')->nullable();
             $table->timestamp('last_login_at')->nullable();
             $table->timestamps();
         });
+        DB::statement('SET FOREIGN_KEY_CHECKS=1');
     }
 
     public function test_workplace_redirect_route_redirects_to_provider(): void
@@ -99,4 +101,3 @@ class OAuthAuthenticationTest extends TestCase
         $response->assertNotFound();
     }
 }
-

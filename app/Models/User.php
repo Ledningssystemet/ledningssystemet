@@ -9,8 +9,9 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
 use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable
@@ -19,7 +20,7 @@ class User extends Authenticatable
 
     protected $table = 'users';
 
-    protected $fillable = ['name', 'email', 'enabled', 'title', 'manager_user_id', 'site_id'];
+    protected $fillable = ['name', 'email', 'password', 'enabled', 'title', 'manager_user_id', 'site_id'];
 
     protected $hidden = ['password', 'remember_token'];
 
@@ -28,6 +29,7 @@ class User extends Authenticatable
     {
         return [
             'email_verified_at' => 'datetime',
+            'password' => 'hashed',
             'enabled' => 'boolean',
             'created_at' => 'datetime',
             'updated_at' => 'datetime',
@@ -40,6 +42,7 @@ class User extends Authenticatable
         return [
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'max:255'],
+            'password' => ['nullable', 'string', 'min:8', 'max:255'],
             'enabled' => ['required', 'boolean'],
             'title' => ['nullable', 'string', 'max:255'],
             'manager_user_id' => ['nullable', 'integer', 'min:0', 'exists:users,id'],
@@ -81,7 +84,9 @@ class User extends Authenticatable
      */
     public function userclaims()
     {
-        return Cache::rememberForever('User.userclaims.'.$this->id, function(){
+        $claimsCacheVersion = $this->updated_at?->getTimestamp() ?? 0;
+
+        return Cache::rememberForever('User.userclaims.'.$this->id.'.'.$claimsCacheVersion, function(){
             $claims = [];
 
             // Calculate claims

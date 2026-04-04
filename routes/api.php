@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\GenericCrudController;
 use App\Http\Controllers\Api\MenuBadgeController;
 use App\Http\Controllers\Api\MenuController;
+use App\Http\Controllers\Api\SessionStatusController;
 use App\Http\Controllers\Api\TokenController;
 use Illuminate\Support\Facades\Route;
 
@@ -11,6 +12,9 @@ Route::middleware('auth:sanctum')->group(function (): void {
     // Navigation – works with both session (SPA) and Bearer token (external)
     Route::get('/menu', [MenuController::class, 'index'])->name('api.menu');
     Route::get('/menu/badges', [MenuBadgeController::class, 'index'])->name('api.menu.badges');
+    Route::get('/session/ping', [SessionStatusController::class, 'show'])
+        ->middleware('session.authenticated')
+        ->name('api.session.ping');
 
     // Personal Access Tokens (scoped to authenticated user)
     Route::get('/tokens', [TokenController::class, 'index'])->name('api.tokens.index');

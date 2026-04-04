@@ -22,6 +22,9 @@ class PersonalAccessToken extends SanctumPersonalAccessToken
     {
         return [
             'name' => ['required', 'string', 'max:255'],
+            'token' => ['nullable', 'string', 'max:64'],
+            'abilities' => ['nullable', 'array'],
+            'expires_at' => ['nullable', 'date'],
         ];
     }
 
