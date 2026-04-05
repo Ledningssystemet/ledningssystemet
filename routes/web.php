@@ -15,8 +15,12 @@ Route::middleware('auth')->group(function (): void {
     Route::match(['get', 'post'], '/logout', [LoginController::class, 'destroy'])->name('logout');
 
     Route::get('/', function () {
-        return Inertia::render('UserDashboard');
-    })->name('home');
+        return redirect()->route('home');
+    });
+
+    Route::get('/app/{path?}', function () {
+        return Inertia::render('AppShell');
+    })->where('path', '.*')->name('home');
 });
 
 

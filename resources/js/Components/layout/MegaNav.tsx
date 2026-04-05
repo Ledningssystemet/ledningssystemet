@@ -3,6 +3,15 @@ import { cn } from "@/Lib/utils";
 import logoWhite from "@/Assets/logo_se_white.svg";
 import logo from "@/Assets/logo_se.svg";
 import {
+    APP_DASHBOARD_PATH,
+    APP_HELP_PATH,
+    APP_HOME_PATH,
+    APP_OBSERVATION_PATH,
+    APP_SETTINGS_PATH,
+    getMenuItemPath,
+    isExternalUrl,
+} from "@/app/routes";
+import {
     Home, LayoutDashboard, ChevronDown, Menu, X,
     ClipboardList, UserCircle, FileText,
     Scale, GitBranch, Shield, Globe,
@@ -16,6 +25,7 @@ import type { MenuCategoryDto, BadgeDto, BadgeSeverity } from "@/types/menu";
 import { useMenuData } from "@/hooks/useMenuData";
 import { useMenuBadges } from "@/hooks/useMenuBadges";
 import { useTranslations } from "@/hooks/useTranslations";
+import { Link, NavLink, useLocation } from "react-router-dom";
 
 // ─── Icon registry ────────────────────────────────────────────────────────────
 type IconComponent = React.ComponentType<LucideProps>;
@@ -49,18 +59,40 @@ function getSolidBadgeClasses(severity: BadgeSeverity = "info") {
     }
 }
 
-function isExternalUrl(href?: string) {
-    return Boolean(href && /^(https?:)?\/\//.test(href));
+function getTopLevelNavClasses(isActive: boolean) {
+    return cn(
+        "flex items-center gap-1.5 px-3 py-2 rounded-md text-sm font-medium transition-colors",
+        isActive
+            ? "text-primary-foreground bg-primary-foreground/10"
+            : "text-primary-foreground/70 hover:text-primary-foreground hover:bg-primary-foreground/10",
+    );
+}
+
+function getDropdownItemClasses(isActive: boolean) {
+    return cn(
+        "w-full flex items-start gap-3 px-3 py-2.5 rounded-lg transition-colors group text-left",
+        isActive ? "bg-muted/70" : "hover:bg-muted/70",
+    );
+}
+
+function getMobileItemClasses(isActive: boolean) {
+    return cn(
+        "w-full flex items-center gap-2.5 px-3 py-2 rounded-md transition-colors text-sm",
+        isActive
+            ? "bg-muted text-foreground"
+            : "text-muted-foreground hover:bg-muted hover:text-foreground",
+    );
 }
 
 // ─── Mega-menu dropdown ───────────────────────────────────────────────────────
 interface MegaMenuDropdownProps {
     category: MenuCategoryDto;
     itemBadges: Record<string, BadgeDto>;
+    activePath: string;
     onClose: () => void;
 }
 
-function MegaMenuDropdown({ category, itemBadges, onClose }: MegaMenuDropdownProps) {
+function MegaMenuDropdown({ category, itemBadges, activePath, onClose }: MegaMenuDropdownProps) {
     return (
         <div className="absolute top-full left-0 right-0 z-50 animate-in fade-in slide-in-from-top-1 duration-150">
             <div className="bg-card border-b border-border shadow-lg">
@@ -111,10 +143,12 @@ function MegaMenuDropdown({ category, itemBadges, onClose }: MegaMenuDropdownPro
                                             </>
                                         );
 
-                                        const className = "w-full flex items-start gap-3 px-3 py-2.5 rounded-lg hover:bg-muted/70 transition-colors group text-left";
+                                        const external = isExternalUrl(item.href);
+                                        const target = getMenuItemPath(item);
+                                        const isActive = !external && activePath === target;
+                                        const className = getDropdownItemClasses(isActive);
 
-                                        if (item.href) {
-                                            const external = isExternalUrl(item.href);
+                                        if (external && item.href) {
                                             return (
                                                 <a key={item.key} href={item.href}
                                                     target={external ? "_blank" : undefined}
@@ -125,9 +159,10 @@ function MegaMenuDropdown({ category, itemBadges, onClose }: MegaMenuDropdownPro
                                             );
                                         }
                                         return (
-                                            <button key={item.key} type="button" onClick={onClose} className={className}>
+                                            <Link key={item.key} to={target ?? APP_HOME_PATH}
+                                                onClick={onClose} className={className}>
                                                 {content}
-                                            </button>
+                                            </Link>
                                         );
                                     })}
                                 </div>
@@ -147,9 +182,10 @@ interface MobileMenuProps {
     onClose: () => void;
     categories: MenuCategoryDto[];
     itemBadges: Record<string, BadgeDto>;
+    activePath: string;
 }
 
-function MobileMenu({ open, onClose, categories, itemBadges }: MobileMenuProps) {
+function MobileMenu({ open, onClose, categories, itemBadges, activePath }: MobileMenuProps) {
     const { t } = useTranslations();
     const [expandedCategory, setExpandedCategory] = useState<string | null>(null);
 
@@ -176,16 +212,26 @@ function MobileMenu({ open, onClose, categories, itemBadges }: MobileMenuProps) 
                         />
                     </div>
 
-                    <button type="button" onClick={onClose}
-                        className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg bg-primary/5 text-primary font-medium text-sm mb-1">
+                    <Link to={APP_HOME_PATH} onClick={onClose}
+                        className={cn(
+                            "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg font-medium text-sm mb-1 transition-colors",
+                            activePath === APP_HOME_PATH
+                                ? "bg-primary/5 text-primary"
+                                : "text-foreground hover:bg-muted",
+                        )}>
                         <Home className="h-4 w-4" />
                         {t('ui.common.home')}
-                    </button>
-                    <button type="button" onClick={onClose}
-                        className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-muted text-foreground text-sm mb-1">
+                    </Link>
+                    <Link to={APP_DASHBOARD_PATH} onClick={onClose}
+                        className={cn(
+                            "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm mb-1 transition-colors",
+                            activePath === APP_DASHBOARD_PATH
+                                ? "bg-primary/5 text-primary font-medium"
+                                : "text-foreground hover:bg-muted",
+                        )}>
                         <LayoutDashboard className="h-4 w-4" />
                         {t('ui.common.dashboard')}
-                    </button>
+                    </Link>
 
                     {categories.map((cat) => {
                         const CatIcon = resolveIcon(cat.categoryIcon ?? "Home");
@@ -226,9 +272,10 @@ function MobileMenu({ open, onClose, categories, itemBadges }: MobileMenuProps) 
                                                     )}
                                                 </>
                                             );
-                                            const className = "w-full flex items-center gap-2.5 px-3 py-2 rounded-md hover:bg-muted transition-colors text-sm text-muted-foreground hover:text-foreground";
-                                            if (item.href) {
-                                                const external = isExternalUrl(item.href);
+                                            const external = isExternalUrl(item.href);
+                                            const target = getMenuItemPath(item);
+                                            const className = getMobileItemClasses(!external && activePath === target);
+                                            if (external && item.href) {
                                                 return (
                                                     <a key={item.key} href={item.href}
                                                         target={external ? "_blank" : undefined}
@@ -239,9 +286,9 @@ function MobileMenu({ open, onClose, categories, itemBadges }: MobileMenuProps) 
                                                 );
                                             }
                                             return (
-                                                <button key={item.key} type="button" onClick={onClose} className={className}>
+                                                <Link key={item.key} to={target ?? APP_HOME_PATH} onClick={onClose} className={className}>
                                                     {content}
-                                                </button>
+                                                </Link>
                                             );
                                         })}
                                     </div>
@@ -253,16 +300,26 @@ function MobileMenu({ open, onClose, categories, itemBadges }: MobileMenuProps) 
 
                 <div className="border-t border-border p-3 mt-2">
                     <div className="flex gap-2">
-                        <button type="button"
-                            className="flex-1 flex items-center justify-center gap-2 py-2 text-xs rounded-md bg-muted text-muted-foreground hover:text-foreground transition-colors">
+                        <Link to={APP_SETTINGS_PATH} onClick={onClose}
+                            className={cn(
+                                "flex-1 flex items-center justify-center gap-2 py-2 text-xs rounded-md transition-colors",
+                                activePath === APP_SETTINGS_PATH
+                                    ? "bg-primary/5 text-primary"
+                                    : "bg-muted text-muted-foreground hover:text-foreground",
+                            )}>
                             <Settings className="h-3.5 w-3.5" />
                             {t('ui.common.settings')}
-                        </button>
-                        <button type="button"
-                            className="flex-1 flex items-center justify-center gap-2 py-2 text-xs rounded-md bg-muted text-muted-foreground hover:text-foreground transition-colors">
+                        </Link>
+                        <Link to={APP_HELP_PATH} onClick={onClose}
+                            className={cn(
+                                "flex-1 flex items-center justify-center gap-2 py-2 text-xs rounded-md transition-colors",
+                                activePath === APP_HELP_PATH
+                                    ? "bg-primary/5 text-primary"
+                                    : "bg-muted text-muted-foreground hover:text-foreground",
+                            )}>
                             <HelpCircle className="h-3.5 w-3.5" />
                             {t('ui.common.help')}
-                        </button>
+                        </Link>
                     </div>
                 </div>
             </div>
@@ -275,6 +332,7 @@ export default function MegaNav() {
     const { t } = useTranslations();
     const categories = useMenuData();
     const { itemBadges, categoryBadges } = useMenuBadges();
+    const location = useLocation();
 
     const [openMenu, setOpenMenu] = useState<string | null>(null);
     const [mobileOpen, setMobileOpen] = useState(false);
@@ -298,6 +356,11 @@ export default function MegaNav() {
         };
     }, []);
 
+    useEffect(() => {
+        setOpenMenu(null);
+        setMobileOpen(false);
+    }, [location.pathname]);
+
     return (
         <>
             <nav ref={navRef} className="relative topbar-gradient border-b border-border/10 flex-shrink-0 z-50">
@@ -310,27 +373,27 @@ export default function MegaNav() {
                     </button>
 
                     {/* Logo */}
-                    <div className="flex items-center mr-8">
+                    <Link to={APP_HOME_PATH} className="flex items-center mr-8" onClick={() => setOpenMenu(null)}>
                         <img src={logoWhite} alt="Ledningssystemet.se" className="h-7" />
-                    </div>
+                    </Link>
 
                     {/* Desktop nav */}
                     <div className="hidden lg:flex items-center gap-1 flex-1" onMouseLeave={handleMouseLeave}>
                         {/* Hem */}
-                        <button type="button"
-                            className="flex items-center gap-1.5 px-3 py-2 rounded-md text-sm font-medium text-primary-foreground/90 hover:text-primary-foreground hover:bg-primary-foreground/10 transition-colors"
+                        <NavLink to={APP_HOME_PATH} end
+                            className={({ isActive }) => getTopLevelNavClasses(isActive)}
                             onClick={() => setOpenMenu(null)} onMouseEnter={() => handleMouseEnter("")}>
                             <Home className="h-4 w-4" />
                             <span className="hidden xl:inline">{t('ui.common.home')}</span>
-                        </button>
+                        </NavLink>
 
                         {/* Dashboard */}
-                        <button type="button"
-                            className="flex items-center gap-1.5 px-3 py-2 rounded-md text-sm font-medium text-primary-foreground/70 hover:text-primary-foreground hover:bg-primary-foreground/10 transition-colors"
+                        <NavLink to={APP_DASHBOARD_PATH}
+                            className={({ isActive }) => getTopLevelNavClasses(isActive)}
                             onClick={() => setOpenMenu(null)} onMouseEnter={() => handleMouseEnter("")}>
                             <LayoutDashboard className="h-4 w-4" />
                             <span className="hidden xl:inline">{t('ui.common.dashboard')}</span>
-                        </button>
+                        </NavLink>
 
                         {/* Dynamic categories */}
                         {categories.map((cat) => {
@@ -368,17 +431,27 @@ export default function MegaNav() {
 
                     {/* Right side */}
                     <div className="flex items-center gap-2 ml-auto">
-                        <button type="button"
-                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium bg-accent text-accent-foreground hover:bg-accent/90 transition-colors">
+                        <NavLink to={APP_OBSERVATION_PATH}
+                            className={({ isActive }) => cn(
+                                "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors",
+                                isActive
+                                    ? "bg-accent/90 text-accent-foreground ring-1 ring-accent-foreground/20"
+                                    : "bg-accent text-accent-foreground hover:bg-accent/90",
+                            )}>
                             <AlertTriangle className="h-3.5 w-3.5" />
                             <span className="hidden md:inline">{t('ui.nav.observation')}</span>
-                        </button>
+                        </NavLink>
 
-                        <button type="button"
-                            className="relative p-2 rounded-md text-primary-foreground/70 hover:text-primary-foreground hover:bg-primary-foreground/5 transition-colors"
+                        <NavLink to={APP_SETTINGS_PATH}
+                            className={({ isActive }) => cn(
+                                "relative p-2 rounded-md transition-colors",
+                                isActive
+                                    ? "text-primary-foreground bg-primary-foreground/10"
+                                    : "text-primary-foreground/70 hover:text-primary-foreground hover:bg-primary-foreground/5",
+                            )}
                             title={t('ui.nav.system_settings')}>
                             <Settings className="h-4 w-4" />
-                        </button>
+                        </NavLink>
 
                         <div className="w-px h-6 bg-primary-foreground/15 mx-1 hidden sm:block" />
 
@@ -408,6 +481,7 @@ export default function MegaNav() {
                         <MegaMenuDropdown
                             category={openCategory}
                             itemBadges={itemBadges}
+                            activePath={location.pathname}
                             onClose={() => setOpenMenu(null)}
                         />
                     </div>
@@ -419,6 +493,7 @@ export default function MegaNav() {
                 onClose={() => setMobileOpen(false)}
                 categories={categories}
                 itemBadges={itemBadges}
+                activePath={location.pathname}
             />
         </>
     );
