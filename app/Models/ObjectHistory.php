@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasMessages;
+use App\Models\Concerns\HasTags;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
@@ -11,6 +13,8 @@ use Illuminate\Support\Facades\Validator;
 class ObjectHistory extends Model
 {
     use HasFactory;
+    use HasMessages;
+    use HasTags;
 
     protected $table = 'object_histories';
 
@@ -83,20 +87,11 @@ class ObjectHistory extends Model
         return $this->morphMany(Finding::class, 'context', 'context_type', 'context_id');
     }
 
-    public function int_object_messages_as_object(): MorphMany
-    {
-        return $this->morphMany(ObjectMessage::class, 'object', 'object_type', 'object_id');
-    }
-
     public function int_object_properties_as_object_properties(): MorphMany
     {
         return $this->morphMany(ObjectProperty::class, 'object_properties', 'object_properties_type', 'object_properties_id');
     }
 
-    public function int_object_tags_as_object_tags(): MorphMany
-    {
-        return $this->morphMany(ObjectTag::class, 'object_tags', 'object_tags_type', 'object_tags_id');
-    }
 
     public function int_personal_access_tokens_as_tokenable(): MorphMany
     {

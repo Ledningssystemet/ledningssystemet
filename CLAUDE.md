@@ -21,6 +21,10 @@ Den säkerställer konsistent kodstandard, struktur och dokumentation.
    - Länka till relaterad dokumentation
    - Dokumentera snabbstart tidigt
 
+## Regler för testfall
+1. **Skapa testfall** för nya funktioner och buggar innan buggar fixas
+2. **Testa** funktioner och buggar i en ny fil i `tests/` katalogen
+
 ## 🚫 Vad AI INTE Ska Göra
 
 1. **SKAPA INTE exempelfiler** såsom:
@@ -62,6 +66,7 @@ Den säkerställer konsistent kodstandard, struktur och dokumentation.
    - Tailwind CSS för styling
    - Lucide React för ikoner
    - Axios för API-anrop
+
 
 ## 📝 Dokumentationsstruktur
 

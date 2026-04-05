@@ -1,6 +1,19 @@
 <?php
 
 return [
+	'customers' => [
+		'title' => 'Customers',
+		'description' => 'Manage customer registry, contacts, and customer requirements.',
+		'column_name' => 'Name',
+		'column_legal_reg' => 'Reg. number',
+		'column_ext_id' => 'External ID',
+		'column_dpo_name' => 'DPO Name',
+		'column_dpo_email' => 'DPO Email',
+		'column_description' => 'Description',
+		'column_tags' => 'Tags',
+		'column_created_at' => 'Created',
+	],
+
 	'my_profile' => [
 		'title' => 'My profile',
 		'description' => 'Manage your personal details, contact information, and profile settings.',
@@ -143,4 +156,3 @@ return [
 		],
 	],
 ];
-

@@ -47,6 +47,16 @@ return [
 		'not_found_description' => 'Vi kunde inte hitta nagon React-sida for den har adressen under /app.',
 	],
 
+	'crud' => [
+		'action_cancel' => 'Avbryt',
+		'action_save' => 'Spara',
+		'inline_tags_open_aria' => 'Redigera taggar for :field',
+		'inline_tags_title' => 'Redigera taggar for :field',
+		'inline_tags_description' => 'Valj befintliga taggar eller skapa nya och spara andringen.',
+		'inline_tags_placeholder' => 'Valj eller skapa tagg...',
+		'inline_tags_save_error' => 'Kunde inte spara taggar.',
+	],
+
 	'widget' => [
 		'add' => 'Lagg till widget',
 		'reset' => 'Aterstall',

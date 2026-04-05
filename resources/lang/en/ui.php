@@ -47,6 +47,16 @@ return [
 		'not_found_description' => 'We could not find a React page for this address under /app.',
 	],
 
+	'crud' => [
+		'action_cancel' => 'Cancel',
+		'action_save' => 'Save',
+		'inline_tags_open_aria' => 'Edit tags for :field',
+		'inline_tags_title' => 'Edit tags for :field',
+		'inline_tags_description' => 'Select existing tags or create new ones, then save the change.',
+		'inline_tags_placeholder' => 'Select or create tag...',
+		'inline_tags_save_error' => 'Could not save tags.',
+	],
+
 	'widget' => [
 		'add' => 'Add widget',
 		'reset' => 'Reset',

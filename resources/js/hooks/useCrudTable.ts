@@ -55,7 +55,7 @@ export function useCrudTable(options: UseCrudTableOptions) {
 
       // Add pagination
       if (paginate) {
-        params.append('paginate', 'true');
+        params.append('paginate', '1');
         params.append('per_page', String(state.pagination.perPage));
         params.append('page', String(state.pagination.page));
       }
@@ -269,4 +269,3 @@ export function useCrudTable(options: UseCrudTableOptions) {
     refresh,
   };
 }
-

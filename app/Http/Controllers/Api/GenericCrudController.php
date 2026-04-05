@@ -43,6 +43,8 @@ class GenericCrudController extends Controller
             ->allowedFilters(...$allowedFilters)
             ->allowedSorts(...$metadata['selectable']);
 
+        ['with' => $with, 'withCount' => $withCount] = $this->parseExtends($request, $modelClass);
+
         $this->applySearch(
             $query,
             $search,
@@ -52,7 +54,16 @@ class GenericCrudController extends Controller
 
         $selectedColumns = $this->parseSelectedColumns($request, $metadata['selectable']);
         if ($selectedColumns !== []) {
+            $selectedColumns = $this->ensurePrimaryKeySelected($modelClass, $selectedColumns);
             $query->select($selectedColumns);
+        }
+
+        if ($with !== []) {
+            $query->with($with);
+        }
+
+        if ($withCount !== []) {
+            $query->withCount($withCount);
         }
 
         $paginate = $request->has('paginate')
@@ -103,11 +114,28 @@ class GenericCrudController extends Controller
 
         $metadata = $this->metadataFor($modelClass);
         $selectedColumns = $this->parseSelectedColumns($request, $metadata['selectable']);
+        ['with' => $with, 'withCount' => $withCount] = $this->parseExtends($request, $modelClass);
 
         if ($selectedColumns !== []) {
-            $model = $modelClass::query()
-                ->select($selectedColumns)
-                ->findOrFail($id);
+            $selectedColumns = $this->ensurePrimaryKeySelected($modelClass, $selectedColumns);
+        }
+
+        if ($selectedColumns !== [] || $with !== [] || $withCount !== []) {
+            $modelQuery = $modelClass::query();
+
+            if ($selectedColumns !== []) {
+                $modelQuery->select($selectedColumns);
+            }
+
+            if ($with !== []) {
+                $modelQuery->with($with);
+            }
+
+            if ($withCount !== []) {
+                $modelQuery->withCount($withCount);
+            }
+
+            $model = $modelQuery->findOrFail($id);
         }
 
         return response()->json($model);
@@ -440,15 +468,124 @@ class GenericCrudController extends Controller
 
         $columns = array_values(array_filter(array_map('trim', explode(',', $raw))));
 
-        foreach ($columns as $column) {
-            if (! in_array($column, $selectableColumns, true)) {
+        return array_values(array_unique(array_intersect($columns, $selectableColumns)));
+    }
+
+    /**
+     * @param class-string<Model> $modelClass
+     * @return array{with: array<int, string>, withCount: array<int, string>}
+     */
+    private function parseExtends(Request $request, string $modelClass): array
+    {
+        $raw = $request->query('extends', $request->query('extend', ''));
+        if (! is_string($raw) || trim($raw) === '') {
+            return ['with' => [], 'withCount' => []];
+        }
+
+        $tokens = array_values(array_unique(array_filter(array_map(
+            static fn (string $token): string => Str::lower(trim($token)),
+            explode(',', $raw)
+        ))));
+
+        if ($tokens === []) {
+            return ['with' => [], 'withCount' => []];
+        }
+
+        $available = $this->availableExtendsFor($modelClass);
+        $with = [];
+        $withCount = [];
+
+        foreach ($tokens as $token) {
+            if (Str::endsWith($token, '_count')) {
+                $baseToken = substr($token, 0, -6);
+                $relation = $available[$baseToken] ?? null;
+
+                if ($relation === null) {
+                    throw ValidationException::withMessages([
+                        'extends' => ["Extend [{$token}] is not allowed."],
+                    ]);
+                }
+
+                $withCount[] = $relation.' as '.$token;
+
+                continue;
+            }
+
+            $relation = $available[$token] ?? null;
+            if ($relation === null) {
                 throw ValidationException::withMessages([
-                    '$select' => ["Selected field [{$column}] is not allowed."],
+                    'extends' => ["Extend [{$token}] is not allowed."],
                 ]);
+            }
+
+            $with[] = $relation;
+        }
+
+        return [
+            'with' => array_values(array_unique($with)),
+            'withCount' => array_values(array_unique($withCount)),
+        ];
+    }
+
+    /**
+     * @param class-string<Model> $modelClass
+     * @return array<string, string>
+     */
+    private function availableExtendsFor(string $modelClass): array
+    {
+        $model = new $modelClass();
+
+        $resolved = [];
+
+        $resolved['messages'] = $this->resolveRelationMethod($model, ['messages', 'int_object_messages_as_object']);
+        $resolved['message'] = $resolved['messages'];
+        $resolved['object_messages'] = $resolved['messages'];
+
+        $resolved['tags'] = $this->resolveRelationMethod($model, ['int_object_tags_as_object_tags', 'tags']);
+        $resolved['tag'] = $resolved['tags'];
+        $resolved['object_tags'] = $resolved['tags'];
+
+        $resolved['history'] = $this->resolveRelationMethod($model, ['history', 'int_object_histories_as_object']);
+        $resolved['histories'] = $resolved['history'];
+        $resolved['object_histories'] = $resolved['history'];
+
+        return array_filter($resolved, static fn (mixed $relation): bool => is_string($relation) && $relation !== '');
+    }
+
+    private function resolveRelationMethod(Model $model, array $candidates): ?string
+    {
+        foreach ($candidates as $method) {
+            if (! is_string($method) || ! method_exists($model, $method)) {
+                continue;
+            }
+
+            try {
+                $relation = $model->{$method}();
+            } catch (Throwable) {
+                continue;
+            }
+
+            if ($relation instanceof Relation) {
+                return $method;
             }
         }
 
-        return $columns;
+        return null;
+    }
+
+    /**
+     * @param class-string<Model> $modelClass
+     * @param array<int, string> $selectedColumns
+     * @return array<int, string>
+     */
+    private function ensurePrimaryKeySelected(string $modelClass, array $selectedColumns): array
+    {
+        $primaryKey = (new $modelClass())->getKeyName();
+        if (! in_array($primaryKey, $selectedColumns, true)) {
+            $selectedColumns[] = $primaryKey;
+        }
+
+        return array_values(array_unique($selectedColumns));
     }
 
     /**

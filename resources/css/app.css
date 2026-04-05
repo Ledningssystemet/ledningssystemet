@@ -41,6 +41,13 @@
     --radius: 0.5rem;
     --font-heading: 'Quicksand', sans-serif;
     --font-body: 'Inter', sans-serif;
+    --crud-toolbar-bg: 0 0% 100%;
+    --crud-row-hover: 217 91% 97%;
+    --crud-row-selected: 217 91% 94%;
+    --crud-master-bg: 0 0% 100%;
+    --crud-detail-bg: 220 20% 98%;
+    --crud-badge: 217 91% 50%;
+    --crud-badge-foreground: 0 0% 100%;
 }
 
 .dark {
@@ -95,4 +102,15 @@ h1, h2, h3, h4, h5, h6 { font-family: var(--font-heading); }
     height: 4px;
     background: linear-gradient(90deg, transparent, hsl(205,75%,47%) 30%, hsl(197,82%,49%) 70%, transparent);
     opacity: 0.3;
+}
+
+/* Add to @layer components */
+@layer components {
+    .crud-toolbar {
+        @apply flex items-center gap-3 p-3 rounded-lg border;
+        background: hsl(var(--crud-toolbar-bg));
+    }
+    .crud-row-hover { transition: background-color 0.15s ease; }
+    .crud-row-hover:hover { background: hsl(var(--crud-row-hover)); }
+    .crud-row-selected { background: hsl(var(--crud-row-selected)) !important; }
 }

@@ -2,6 +2,9 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasHistory;
+use App\Models\Concerns\HasMessages;
+use App\Models\Concerns\HasTags;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -13,10 +16,22 @@ use Illuminate\Support\Facades\Validator;
 class Customer extends Model
 {
     use HasFactory;
+    use HasHistory;
+    use HasMessages;
+    use HasTags;
 
     protected $table = 'customers';
 
-    protected $fillable = ['name', 'legal_reg', 'ext_id', 'dpo_name', 'dpo_email', 'description', 'responsible_user_id'];
+    protected $fillable = ['name', 'legal_reg', 'ext_id', 'dpo_name', 'dpo_email', 'description', 'responsible_user_id', 'tags'];
+
+    protected $appends = ['tags'];
+
+    /**
+     * @var array<int, string>
+     */
+    private array $pendingTags = [];
+
+    private bool $hasPendingTagsUpdate = false;
 
     protected function casts(): array
     {
@@ -36,6 +51,8 @@ class Customer extends Model
             'dpo_email' => ['nullable', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
             'responsible_user_id' => ['nullable', 'integer', 'min:0', 'exists:users,id'],
+            'tags' => ['sometimes', 'array'],
+            'tags.*' => ['nullable', 'string', 'max:25'],
         ];
     }
 
@@ -61,6 +78,75 @@ class Customer extends Model
         static::saving(function (self $model): void {
             Validator::make($model->attributesToArray(), static::validationRules())->validate();
         });
+
+        static::saved(function (self $model): void {
+            $model->syncPendingTags();
+        });
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    public function getTagsAttribute(): array
+    {
+        return $this->int_object_tags_as_object_tags()
+            ->with('int_tag:id,name')
+            ->get()
+            ->map(static fn (ObjectTag $objectTag): string => (string) ($objectTag->int_tag?->name ?? ''))
+            ->filter(static fn (string $name): bool => $name !== '')
+            ->unique()
+            ->values()
+            ->all();
+    }
+
+    /**
+     * @param array<int, string>|string|null $value
+     */
+    public function setTagsAttribute(array|string|null $value): void
+    {
+        $rawTags = is_array($value)
+            ? $value
+            : ($value === null || trim((string) $value) === '' ? [] : [(string) $value]);
+
+        $this->pendingTags = collect($rawTags)
+            ->map(static fn (mixed $tag): string => trim((string) $tag))
+            ->filter(static fn (string $tag): bool => $tag !== '')
+            ->unique()
+            ->values()
+            ->all();
+
+        $this->hasPendingTagsUpdate = true;
+    }
+
+    private function syncPendingTags(): void
+    {
+        if (! $this->hasPendingTagsUpdate) {
+            return;
+        }
+
+        if ($this->pendingTags === []) {
+            $this->int_object_tags_as_object_tags()->delete();
+
+            $this->pendingTags = [];
+            $this->hasPendingTagsUpdate = false;
+
+            return;
+        }
+
+        $tagIds = collect($this->pendingTags)
+            ->map(static fn (string $tagName): int => (int) Tag::query()->firstOrCreate(['name' => $tagName])->id)
+            ->all();
+
+        $this->int_object_tags_as_object_tags()->delete();
+
+        foreach ($tagIds as $tagId) {
+            $this->int_object_tags_as_object_tags()->create([
+                'tag_id' => $tagId,
+            ]);
+        }
+
+        $this->pendingTags = [];
+        $this->hasPendingTagsUpdate = false;
     }
 
     public static function getPrettyName($plural = false): string
@@ -103,25 +189,11 @@ class Customer extends Model
         return $this->morphMany(Finding::class, 'context', 'context_type', 'context_id');
     }
 
-    public function int_object_histories_as_object(): MorphMany
-    {
-        return $this->morphMany(ObjectHistory::class, 'object', 'object_type', 'object_id');
-    }
-
-    public function int_object_messages_as_object(): MorphMany
-    {
-        return $this->morphMany(ObjectMessage::class, 'object', 'object_type', 'object_id');
-    }
-
     public function int_object_properties_as_object_properties(): MorphMany
     {
         return $this->morphMany(ObjectProperty::class, 'object_properties', 'object_properties_type', 'object_properties_id');
     }
 
-    public function int_object_tags_as_object_tags(): MorphMany
-    {
-        return $this->morphMany(ObjectTag::class, 'object_tags', 'object_tags_type', 'object_tags_id');
-    }
 
     public function int_personal_access_tokens_as_tokenable(): MorphMany
     {

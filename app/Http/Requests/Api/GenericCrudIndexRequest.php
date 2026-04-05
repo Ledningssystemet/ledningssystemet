@@ -11,6 +11,21 @@ class GenericCrudIndexRequest extends FormRequest
         return true;
     }
 
+    protected function prepareForValidation(): void
+    {
+        $paginate = $this->query('paginate');
+
+        if (is_string($paginate)) {
+            $normalized = filter_var($paginate, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
+
+            if ($normalized !== null) {
+                $this->merge([
+                    'paginate' => $normalized,
+                ]);
+            }
+        }
+    }
+
     /**
      * @return array<string, mixed>
      */
@@ -26,7 +41,8 @@ class GenericCrudIndexRequest extends FormRequest
             'filter.search' => ['sometimes', 'string', 'max:255'],
             '$select' => ['sometimes', 'string'],
             'select' => ['sometimes', 'string'],
+            'extends' => ['sometimes', 'string'],
+            'extend' => ['sometimes', 'string'],
         ];
     }
 }
-

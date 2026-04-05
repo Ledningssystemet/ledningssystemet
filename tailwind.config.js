@@ -50,6 +50,15 @@ const designSystemExtend = {
             DEFAULT: 'hsl(var(--card))',
             foreground: 'hsl(var(--card-foreground))',
         },
+        crud: {
+            toolbar: "hsl(var(--crud-toolbar-bg))",
+            "row-hover": "hsl(var(--crud-row-hover))",
+            "row-selected": "hsl(var(--crud-row-selected))",
+            master: "hsl(var(--crud-master-bg))",
+            detail: "hsl(var(--crud-detail-bg))",
+            badge: "hsl(var(--crud-badge))",
+            "badge-foreground": "hsl(var(--crud-badge-foreground))",
+        },
     },
     borderRadius: {
         lg: 'var(--radius)',

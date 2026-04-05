@@ -49,6 +49,24 @@ class MenuCategoryBuilder
             ],
         ];
 
+        $categories[] = [
+            'label' => __('menu.categories.registers_resources'),
+            'categoryIcon' => 'Building2',
+            'columns' => [
+                [
+                    'heading' => __('menu.headings.relations'),
+                    'items' => [
+                        [
+                            'key' => 'customers',
+                            'label' => __('menu.items.customers.label'),
+                            'icon' => 'Building2',
+                            'description' => __('menu.items.customers.description'),
+                        ],
+                    ],
+                ],
+            ],
+        ];
+
         return $categories;
     }
 

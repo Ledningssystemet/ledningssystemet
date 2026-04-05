@@ -1,6 +1,19 @@
 <?php
 
 return [
+	'customers' => [
+		'title' => 'Kunder',
+		'description' => 'Hantera kundregister, kontaktpersoner och kundkrav.',
+		'column_name' => 'Namn',
+		'column_legal_reg' => 'Org.nr / Reg.nr',
+		'column_ext_id' => 'Extern ID',
+		'column_dpo_name' => 'DPO Namn',
+		'column_dpo_email' => 'DPO E-post',
+		'column_description' => 'Beskrivning',
+		'column_tags' => 'Taggar',
+		'column_created_at' => 'Skapad',
+	],
+
 	'my_profile' => [
 		'title' => 'Min profil',
 		'description' => 'Hantera dina personliga uppgifter, kontaktinformation och profilinställningar.',
@@ -143,4 +156,3 @@ return [
 		],
 	],
 ];
-
