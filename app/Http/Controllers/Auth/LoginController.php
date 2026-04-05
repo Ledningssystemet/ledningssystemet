@@ -51,7 +51,7 @@ class LoginController extends Controller
 
         if (! $this->attemptLogin($credentials['email'], $credentials['password'], $remember)) {
             return back()->withInput($request->only('email'))->withErrors([
-                'email' => 'Felaktiga inloggningsuppgifter.',
+                'email' => __('auth.errors.invalid_credentials'),
             ]);
         }
 
@@ -63,7 +63,7 @@ class LoginController extends Controller
             Auth::logout();
 
             return to_route('login')->withErrors([
-                'email' => 'Kunde inte slutfora inloggningen.',
+                'email' => __('auth.errors.login_failed'),
             ]);
         }
 
@@ -105,8 +105,11 @@ class LoginController extends Controller
             'expires_at' => $expiresAt->toIso8601String(),
         ], $expiresAt);
 
-        Mail::raw("Din engangskod ar: {$otpCode}. Koden ar giltig i ".AuthFlow::mfaOtpTtlMinutes().' minuter.', function ($message) use ($user): void {
-            $message->to($user->email)->subject('Engangskod for inloggning');
+        Mail::raw(__('auth.otp.email_body', [
+            'code' => $otpCode,
+            'minutes' => AuthFlow::mfaOtpTtlMinutes(),
+        ]), function ($message) use ($user): void {
+            $message->to($user->email)->subject(__('auth.otp.email_subject'));
         });
     }
 

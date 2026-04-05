@@ -1,13 +1,15 @@
 import { CheckCircle2, AlertTriangle, ClipboardList, TrendingUp } from "lucide-react";
-
-const stats = [
-  { label: "Öppna aktiviteter", value: "24", icon: ClipboardList, trend: "+3 denna vecka", color: "text-secondary" },
-  { label: "Förfallna kontroller", value: "7", icon: AlertTriangle, trend: "Kräver åtgärd", color: "text-destructive" },
-  { label: "Avslutade mål", value: "4/9", icon: CheckCircle2, trend: "44% klart", color: "text-success" },
-  { label: "Riskpoäng (medel)", value: "3.2", icon: TrendingUp, trend: "↓ 0.4 senaste månaden", color: "text-accent" },
-];
+import { useTranslations } from "@/hooks/useTranslations";
 
 export default function StatsRow() {
+  const { t } = useTranslations();
+  const stats = [
+    { label: t('pages.dashboard.stats.open_activities'), value: "24", icon: ClipboardList, trend: t('pages.dashboard.stats.trend_open_activities'), color: "text-secondary" },
+    { label: t('pages.dashboard.stats.overdue_controls'), value: "7", icon: AlertTriangle, trend: t('pages.dashboard.stats.trend_overdue_controls'), color: "text-destructive" },
+    { label: t('pages.dashboard.stats.completed_goals'), value: "4/9", icon: CheckCircle2, trend: t('pages.dashboard.stats.trend_completed_goals'), color: "text-success" },
+    { label: t('pages.dashboard.stats.risk_score_avg'), value: "3.2", icon: TrendingUp, trend: t('pages.dashboard.stats.trend_risk_score_avg'), color: "text-accent" },
+  ];
+
   return (
     <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
       {stats.map((stat) => (

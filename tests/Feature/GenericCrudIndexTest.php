@@ -87,6 +87,22 @@ class GenericCrudIndexTest extends TestCase
         $this->assertCount(1, $response->json('data'));
     }
 
+    public function test_it_can_sort_when_requested(): void
+    {
+        Gate::before(static fn (): bool => true);
+
+        $this->actingAs($this->createUser('Auth User', 'auth-sort@example.com', true), 'sanctum');
+        $this->createUser('SortMarker Zulu', 'zulu.sort@example.com', true);
+        $this->createUser('SortMarker Alpha', 'alpha.sort@example.com', true);
+
+        $response = $this->getJson('/api/crud/users?paginate=0&search=SortMarker&sort=name&%24select=id,name');
+
+        $response->assertOk();
+        $response->assertJsonCount(2);
+        $this->assertSame('SortMarker Alpha', $response->json('0.name'));
+        $this->assertSame('SortMarker Zulu', $response->json('1.name'));
+    }
+
     public function test_it_can_store_model_via_generic_endpoint(): void
     {
         Gate::before(static fn (): bool => true);

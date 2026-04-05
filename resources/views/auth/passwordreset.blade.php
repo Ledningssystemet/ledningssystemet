@@ -37,28 +37,28 @@
                         <span class="input-group-text input-rounded">
                            <span class="material-symbols-rounded">lock</span>
                         </span>
-                        <input class="form-control input-rounded" name="password" type="password" placeholder="Password" required>
+                        <input class="form-control input-rounded" name="password" type="password" placeholder="{{ __('auth.reset_password.new_password') }}" required>
                      </div>
                      <div class="input-group mb-4">
                         <span class="input-group-text input-rounded">
                            <span class="material-symbols-rounded">lock</span>
                         </span>
-                        <input class="form-control input-rounded" name="password_confirmation" type="password" placeholder="Repeat password" required>
+                        <input class="form-control input-rounded" name="password_confirmation" type="password" placeholder="{{ __('auth.reset_password.confirm_password') }}" required>
                      </div>
-                        
+
                      @else
                         <div class="input-group mb-3">
                            <span class="input-group-text input-rounded">
                               <span class="material-symbols-rounded">mail</span>
                            </span>
-                           <input class="form-control input-rounded" name="email" type="email" placeholder="Email" required>
+                           <input class="form-control input-rounded" name="email" type="email" placeholder="{{ __('auth.login.email') }}" required>
                         </div>
                      @endif
                      <div class="row">
                         <div class="col-12">
                            <button class="btn btn-outline-dark px-4" type="submit">
                            <span class="material-symbols-rounded">lock_reset</span>
-                           {{ __("Reset password") }}
+                           {{ __('auth.forgot_password.heading') }}
                            </button>
                         </div>
                      </div>

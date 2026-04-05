@@ -1,15 +1,15 @@
 <!DOCTYPE html>
-<html lang="sv">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <title>Verifiera OTP</title>
+        <title>{{ __('auth.otp.title') }}</title>
         @vite(['resources/css/app.css', 'resources/js/app.jsx'])
     </head>
     <body class="min-h-screen bg-gray-100 text-gray-900">
         <main class="mx-auto max-w-md px-6 py-16">
-            <h1 class="text-2xl font-semibold">Verifiera engangskod</h1>
-            <p class="mt-3 text-sm text-gray-700">Ange den sexsiffriga kod som skickats till din e-post. Koden galler i {{ $ttlMinutes }} minuter.</p>
+            <h1 class="text-2xl font-semibold">{{ __('auth.otp.heading') }}</h1>
+            <p class="mt-3 text-sm text-gray-700">{{ __('auth.otp.description', ['minutes' => $ttlMinutes]) }}</p>
 
             @if (session('status'))
                 <p class="mt-4 rounded border border-green-300 bg-green-50 px-4 py-3 text-sm text-green-800">{{ session('status') }}</p>
@@ -19,19 +19,19 @@
                 @csrf
 
                 <div>
-                    <label for="otp" class="block text-sm font-medium">OTP-kod</label>
+                    <label for="otp" class="block text-sm font-medium">{{ __('auth.otp.code') }}</label>
                     <input id="otp" type="text" name="otp" inputmode="numeric" pattern="[0-9]*" maxlength="6" required class="mt-1 w-full rounded border border-gray-300 px-3 py-2">
                     @error('otp')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                     @enderror
                 </div>
 
-                <button type="submit" class="w-full rounded bg-gray-900 px-4 py-2 text-sm font-medium text-white">Verifiera och logga in</button>
+                <button type="submit" class="w-full rounded bg-gray-900 px-4 py-2 text-sm font-medium text-white">{{ __('auth.otp.verify') }}</button>
             </form>
 
             <form method="POST" action="{{ route('otp.resend') }}" class="mt-4">
                 @csrf
-                <button type="submit" class="text-sm text-blue-700 underline">Skicka ny kod</button>
+                <button type="submit" class="text-sm text-blue-700 underline">{{ __('auth.otp.resend') }}</button>
             </form>
         </main>
     </body>

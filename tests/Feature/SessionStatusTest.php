@@ -65,7 +65,7 @@ class SessionStatusTest extends TestCase
             ->getJson('/api/session/ping');
 
         $response->assertForbidden();
-        $response->assertJsonPath('message', 'This endpoint requires session authentication.');
+        $response->assertJsonPath('message', __('api.errors.session_auth_required'));
     }
 
     private function createUser(string $name, string $email, bool $enabled): User

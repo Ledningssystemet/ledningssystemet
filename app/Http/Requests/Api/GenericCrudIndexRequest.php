@@ -21,7 +21,9 @@ class GenericCrudIndexRequest extends FormRequest
             'page' => ['sometimes', 'integer', 'min:1'],
             'per_page' => ['sometimes', 'integer', 'min:1', 'max:1000'],
             'search' => ['sometimes', 'string', 'max:255'],
+            'sort' => ['sometimes', 'string', 'max:255'],
             'filter' => ['sometimes', 'array'],
+            'filter.search' => ['sometimes', 'string', 'max:255'],
             '$select' => ['sometimes', 'string'],
             'select' => ['sometimes', 'string'],
         ];

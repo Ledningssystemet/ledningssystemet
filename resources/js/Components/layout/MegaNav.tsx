@@ -15,6 +15,7 @@ import {
 import type { MenuCategoryDto, BadgeDto, BadgeSeverity } from "@/types/menu";
 import { useMenuData } from "@/hooks/useMenuData";
 import { useMenuBadges } from "@/hooks/useMenuBadges";
+import { useTranslations } from "@/hooks/useTranslations";
 
 // ─── Icon registry ────────────────────────────────────────────────────────────
 type IconComponent = React.ComponentType<LucideProps>;
@@ -50,21 +51,6 @@ function getSolidBadgeClasses(severity: BadgeSeverity = "info") {
 
 function isExternalUrl(href?: string) {
     return Boolean(href && /^(https?:)?\/\//.test(href));
-}
-
-// ─── Nav skeleton ─────────────────────────────────────────────────────────────
-function NavSkeleton() {
-    return (
-        <div className="hidden lg:flex items-center gap-1 flex-1 animate-pulse">
-            {Array.from({ length: 4 }).map((_, i) => (
-                <div
-                    key={i}
-                    className="h-8 rounded-md bg-primary-foreground/20"
-                    style={{ width: `${72 + i * 16}px` }}
-                />
-            ))}
-        </div>
-    );
 }
 
 // ─── Mega-menu dropdown ───────────────────────────────────────────────────────
@@ -161,10 +147,10 @@ interface MobileMenuProps {
     onClose: () => void;
     categories: MenuCategoryDto[];
     itemBadges: Record<string, BadgeDto>;
-    menuLoading: boolean;
 }
 
-function MobileMenu({ open, onClose, categories, itemBadges, menuLoading }: MobileMenuProps) {
+function MobileMenu({ open, onClose, categories, itemBadges }: MobileMenuProps) {
+    const { t } = useTranslations();
     const [expandedCategory, setExpandedCategory] = useState<string | null>(null);
 
     if (!open) return null;
@@ -185,7 +171,7 @@ function MobileMenu({ open, onClose, categories, itemBadges, menuLoading }: Mobi
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
                         <input
                             type="text"
-                            placeholder="Sök i systemet..."
+                            placeholder={t('ui.common.search_placeholder')}
                             className="w-full bg-muted text-foreground text-sm rounded-lg pl-9 pr-3 py-2.5 border border-border focus:outline-none focus:ring-2 focus:ring-ring"
                         />
                     </div>
@@ -193,84 +179,76 @@ function MobileMenu({ open, onClose, categories, itemBadges, menuLoading }: Mobi
                     <button type="button" onClick={onClose}
                         className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg bg-primary/5 text-primary font-medium text-sm mb-1">
                         <Home className="h-4 w-4" />
-                        Hem
+                        {t('ui.common.home')}
                     </button>
                     <button type="button" onClick={onClose}
                         className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-muted text-foreground text-sm mb-1">
                         <LayoutDashboard className="h-4 w-4" />
-                        Dashboard
+                        {t('ui.common.dashboard')}
                     </button>
 
-                    {menuLoading ? (
-                        <div className="space-y-2 mt-2 animate-pulse">
-                            {Array.from({ length: 4 }).map((_, i) => (
-                                <div key={i} className="h-10 rounded-lg bg-muted" />
-                            ))}
-                        </div>
-                    ) : (
-                        categories.map((cat) => {
-                            const CatIcon = resolveIcon(cat.categoryIcon ?? "Home");
-                            const allItems = cat.columns.flatMap((c) => c.items);
-                            return (
-                                <div key={cat.label} className="mt-1">
-                                    <button type="button"
-                                        onClick={() => setExpandedCategory(
-                                            expandedCategory === cat.label ? null : cat.label
-                                        )}
-                                        className="w-full flex items-center justify-between px-3 py-2.5 rounded-lg hover:bg-muted transition-colors text-sm font-medium text-foreground">
-                                        <span className="flex items-center gap-2">
-                                            <CatIcon className="h-4 w-4 text-muted-foreground" />
-                                            {cat.label}
-                                        </span>
-                                        <ChevronDown className={cn(
-                                            "h-4 w-4 transition-transform",
-                                            expandedCategory === cat.label && "rotate-180",
-                                        )} />
-                                    </button>
-
-                                    {expandedCategory === cat.label && (
-                                        <div className="ml-2 border-l-2 border-border pl-2 mt-1 mb-2 space-y-0.5">
-                                            {allItems.map((item) => {
-                                                const ItemIcon = resolveIcon(item.icon);
-                                                const badge = itemBadges[item.key];
-                                                const content = (
-                                                    <>
-                                                        <ItemIcon className="h-4 w-4" />
-                                                        <span>{item.label}</span>
-                                                        {badge && (
-                                                            <span className={cn(
-                                                                "text-[10px] font-bold px-1.5 py-0.5 rounded-full ml-auto",
-                                                                getSubtleBadgeClasses(badge.severity),
-                                                            )}>
-                                                                {badge.count}
-                                                            </span>
-                                                        )}
-                                                    </>
-                                                );
-                                                const className = "w-full flex items-center gap-2.5 px-3 py-2 rounded-md hover:bg-muted transition-colors text-sm text-muted-foreground hover:text-foreground";
-                                                if (item.href) {
-                                                    const external = isExternalUrl(item.href);
-                                                    return (
-                                                        <a key={item.key} href={item.href}
-                                                            target={external ? "_blank" : undefined}
-                                                            rel={external ? "noreferrer noopener" : undefined}
-                                                            onClick={onClose} className={className}>
-                                                            {content}
-                                                        </a>
-                                                    );
-                                                }
-                                                return (
-                                                    <button key={item.key} type="button" onClick={onClose} className={className}>
-                                                        {content}
-                                                    </button>
-                                                );
-                                            })}
-                                        </div>
+                    {categories.map((cat) => {
+                        const CatIcon = resolveIcon(cat.categoryIcon ?? "Home");
+                        const allItems = cat.columns.flatMap((c) => c.items);
+                        return (
+                            <div key={cat.label} className="mt-1">
+                                <button type="button"
+                                    onClick={() => setExpandedCategory(
+                                        expandedCategory === cat.label ? null : cat.label
                                     )}
-                                </div>
-                            );
-                        })
-                    )}
+                                    className="w-full flex items-center justify-between px-3 py-2.5 rounded-lg hover:bg-muted transition-colors text-sm font-medium text-foreground">
+                                    <span className="flex items-center gap-2">
+                                        <CatIcon className="h-4 w-4 text-muted-foreground" />
+                                        {cat.label}
+                                    </span>
+                                    <ChevronDown className={cn(
+                                        "h-4 w-4 transition-transform",
+                                        expandedCategory === cat.label && "rotate-180",
+                                    )} />
+                                </button>
+
+                                {expandedCategory === cat.label && (
+                                    <div className="ml-2 border-l-2 border-border pl-2 mt-1 mb-2 space-y-0.5">
+                                        {allItems.map((item) => {
+                                            const ItemIcon = resolveIcon(item.icon);
+                                            const badge = itemBadges[item.key];
+                                            const content = (
+                                                <>
+                                                    <ItemIcon className="h-4 w-4" />
+                                                    <span>{item.label}</span>
+                                                    {badge && (
+                                                        <span className={cn(
+                                                            "text-[10px] font-bold px-1.5 py-0.5 rounded-full ml-auto",
+                                                            getSubtleBadgeClasses(badge.severity),
+                                                        )}>
+                                                            {badge.count}
+                                                        </span>
+                                                    )}
+                                                </>
+                                            );
+                                            const className = "w-full flex items-center gap-2.5 px-3 py-2 rounded-md hover:bg-muted transition-colors text-sm text-muted-foreground hover:text-foreground";
+                                            if (item.href) {
+                                                const external = isExternalUrl(item.href);
+                                                return (
+                                                    <a key={item.key} href={item.href}
+                                                        target={external ? "_blank" : undefined}
+                                                        rel={external ? "noreferrer noopener" : undefined}
+                                                        onClick={onClose} className={className}>
+                                                        {content}
+                                                    </a>
+                                                );
+                                            }
+                                            return (
+                                                <button key={item.key} type="button" onClick={onClose} className={className}>
+                                                    {content}
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
+                                )}
+                            </div>
+                        );
+                    })}
                 </div>
 
                 <div className="border-t border-border p-3 mt-2">
@@ -278,12 +256,12 @@ function MobileMenu({ open, onClose, categories, itemBadges, menuLoading }: Mobi
                         <button type="button"
                             className="flex-1 flex items-center justify-center gap-2 py-2 text-xs rounded-md bg-muted text-muted-foreground hover:text-foreground transition-colors">
                             <Settings className="h-3.5 w-3.5" />
-                            Inställningar
+                            {t('ui.common.settings')}
                         </button>
                         <button type="button"
                             className="flex-1 flex items-center justify-center gap-2 py-2 text-xs rounded-md bg-muted text-muted-foreground hover:text-foreground transition-colors">
                             <HelpCircle className="h-3.5 w-3.5" />
-                            Hjälp
+                            {t('ui.common.help')}
                         </button>
                     </div>
                 </div>
@@ -294,7 +272,8 @@ function MobileMenu({ open, onClose, categories, itemBadges, menuLoading }: Mobi
 
 // ─── Main component ───────────────────────────────────────────────────────────
 export default function MegaNav() {
-    const { categories, loading: menuLoading, error: menuError } = useMenuData();
+    const { t } = useTranslations();
+    const categories = useMenuData();
     const { itemBadges, categoryBadges } = useMenuBadges();
 
     const [openMenu, setOpenMenu] = useState<string | null>(null);
@@ -342,7 +321,7 @@ export default function MegaNav() {
                             className="flex items-center gap-1.5 px-3 py-2 rounded-md text-sm font-medium text-primary-foreground/90 hover:text-primary-foreground hover:bg-primary-foreground/10 transition-colors"
                             onClick={() => setOpenMenu(null)} onMouseEnter={() => handleMouseEnter("")}>
                             <Home className="h-4 w-4" />
-                            <span className="hidden xl:inline">Hem</span>
+                            <span className="hidden xl:inline">{t('ui.common.home')}</span>
                         </button>
 
                         {/* Dashboard */}
@@ -350,49 +329,41 @@ export default function MegaNav() {
                             className="flex items-center gap-1.5 px-3 py-2 rounded-md text-sm font-medium text-primary-foreground/70 hover:text-primary-foreground hover:bg-primary-foreground/10 transition-colors"
                             onClick={() => setOpenMenu(null)} onMouseEnter={() => handleMouseEnter("")}>
                             <LayoutDashboard className="h-4 w-4" />
-                            <span className="hidden xl:inline">Dashboard</span>
+                            <span className="hidden xl:inline">{t('ui.common.dashboard')}</span>
                         </button>
 
                         {/* Dynamic categories */}
-                        {menuLoading ? (
-                            <NavSkeleton />
-                        ) : menuError ? (
-                            <span className="text-xs text-primary-foreground/40 px-3 italic">
-                                Menyn kunde inte laddas
-                            </span>
-                        ) : (
-                            categories.map((cat) => {
-                                const CatIcon = resolveIcon(cat.categoryIcon ?? "Home");
-                                const badge = categoryBadges[cat.label];
-                                return (
-                                    <button key={cat.label} type="button"
-                                        className={cn(
-                                            "relative flex items-center gap-1.5 px-3 py-2 rounded-md text-sm font-medium transition-colors whitespace-nowrap",
-                                            openMenu === cat.label
-                                                ? "text-primary-foreground bg-primary-foreground/10"
-                                                : "text-primary-foreground/70 hover:text-primary-foreground hover:bg-primary-foreground/5",
-                                        )}
-                                        onClick={() => setOpenMenu(openMenu === cat.label ? null : cat.label)}
-                                        onMouseEnter={() => handleMouseEnter(cat.label)}
-                                        title={cat.label}>
-                                        <CatIcon className="h-4 w-4 xl:hidden flex-shrink-0" />
-                                        <span className="hidden xl:inline">{cat.label}</span>
-                                        {badge && (
-                                            <span className={cn(
-                                                "text-[10px] font-bold min-w-[18px] text-center px-1 py-0.5 rounded-full leading-none",
-                                                getSolidBadgeClasses(badge.severity),
-                                            )}>
-                                                {badge.count}
-                                            </span>
-                                        )}
-                                        <ChevronDown className={cn(
-                                            "h-3.5 w-3.5 transition-transform duration-200 flex-shrink-0",
-                                            openMenu === cat.label && "rotate-180",
-                                        )} />
-                                    </button>
-                                );
-                            })
-                        )}
+                        {categories.map((cat) => {
+                            const CatIcon = resolveIcon(cat.categoryIcon ?? "Home");
+                            const badge = categoryBadges[cat.label];
+                            return (
+                                <button key={cat.label} type="button"
+                                    className={cn(
+                                        "relative flex items-center gap-1.5 px-3 py-2 rounded-md text-sm font-medium transition-colors whitespace-nowrap",
+                                        openMenu === cat.label
+                                            ? "text-primary-foreground bg-primary-foreground/10"
+                                            : "text-primary-foreground/70 hover:text-primary-foreground hover:bg-primary-foreground/5",
+                                    )}
+                                    onClick={() => setOpenMenu(openMenu === cat.label ? null : cat.label)}
+                                    onMouseEnter={() => handleMouseEnter(cat.label)}
+                                    title={cat.label}>
+                                    <CatIcon className="h-4 w-4 xl:hidden flex-shrink-0" />
+                                    <span className="hidden xl:inline">{cat.label}</span>
+                                    {badge && (
+                                        <span className={cn(
+                                            "text-[10px] font-bold min-w-[18px] text-center px-1 py-0.5 rounded-full leading-none",
+                                            getSolidBadgeClasses(badge.severity),
+                                        )}>
+                                            {badge.count}
+                                        </span>
+                                    )}
+                                    <ChevronDown className={cn(
+                                        "h-3.5 w-3.5 transition-transform duration-200 flex-shrink-0",
+                                        openMenu === cat.label && "rotate-180",
+                                    )} />
+                                </button>
+                            );
+                        })}
                     </div>
 
                     {/* Right side */}
@@ -400,12 +371,12 @@ export default function MegaNav() {
                         <button type="button"
                             className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium bg-accent text-accent-foreground hover:bg-accent/90 transition-colors">
                             <AlertTriangle className="h-3.5 w-3.5" />
-                            <span className="hidden md:inline">Observation</span>
+                            <span className="hidden md:inline">{t('ui.nav.observation')}</span>
                         </button>
 
                         <button type="button"
                             className="relative p-2 rounded-md text-primary-foreground/70 hover:text-primary-foreground hover:bg-primary-foreground/5 transition-colors"
-                            title="Systeminställningar">
+                            title={t('ui.nav.system_settings')}>
                             <Settings className="h-4 w-4" />
                         </button>
 
@@ -419,8 +390,8 @@ export default function MegaNav() {
 
                         <div className="flex items-center gap-2 pl-1">
                             <div className="hidden md:block text-right">
-                                <div className="text-xs font-medium text-primary-foreground/90">Rickard Svenningsson</div>
-                                <div className="text-[10px] text-primary-foreground/50">Svestra AB</div>
+                                <div className="text-xs font-medium text-primary-foreground/90">{t('ui.nav.profile_name_placeholder')}</div>
+                                <div className="text-[10px] text-primary-foreground/50">{t('ui.nav.company_name_placeholder')}</div>
                             </div>
                             <div className="h-8 w-8 rounded-full bg-accent/20 border border-accent/30 flex items-center justify-center">
                                 <User className="h-4 w-4 text-accent" />
@@ -448,7 +419,6 @@ export default function MegaNav() {
                 onClose={() => setMobileOpen(false)}
                 categories={categories}
                 itemBadges={itemBadges}
-                menuLoading={menuLoading}
             />
         </>
     );

@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Services\MenuCategoryBuilder;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -37,7 +38,19 @@ class HandleInertiaRequests extends Middleware
     {
         return [
             ...parent::share($request),
-            //
+            'locale' => app()->getLocale(),
+            'navigation' => [
+                'menu' => [
+                    // Lazy share to avoid computing the menu on requests that do not need it.
+                    'categories' => fn () => app(MenuCategoryBuilder::class)->build(),
+                ],
+            ],
+            'translations' => [
+                'auth' => trans('auth'),
+                'ui' => trans('ui'),
+                'pages' => trans('pages'),
+                'menu' => trans('menu'),
+            ],
         ];
     }
 }

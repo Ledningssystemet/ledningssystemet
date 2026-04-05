@@ -1,30 +1,32 @@
 import { Check, Minus, X } from "lucide-react";
+import { useTranslations } from "@/hooks/useTranslations";
 
 interface Goal {
-  title: string;
+  titleKey: string;
   status: "achieved" | "acceptable" | "unacceptable";
 }
 
 const goals: Goal[] = [
-  { title: "Genomförda träningspass Segloravägen 24", status: "achieved" },
-  { title: "Källekullen Psykologi AB – Minskade ledtider", status: "acceptable" },
-  { title: "Ledningssystemet.se – Förbättringar och funktionstillväxt", status: "acceptable" },
-  { title: "Minst 20 debiterbara hostade instanser", status: "unacceptable" },
-  { title: "Ordersystemet.se – Uppstart nyutveckling", status: "unacceptable" },
-  { title: "Partnerportal – Utveckling av innehåll", status: "unacceptable" },
+  { titleKey: "training_sessions", status: "achieved" },
+  { titleKey: "psychology_cycle_time", status: "acceptable" },
+  { titleKey: "platform_growth", status: "acceptable" },
+  { titleKey: "hosted_instances", status: "unacceptable" },
+  { titleKey: "ordersystem_start", status: "unacceptable" },
+  { titleKey: "partner_portal_content", status: "unacceptable" },
 ];
 
-const statusConfig = {
-  achieved: { label: "Mål uppnått", dotClass: "status-dot-success", icon: Check },
-  acceptable: { label: "Acceptabel", dotClass: "status-dot-warning", icon: Minus },
-  unacceptable: { label: "Oacceptabel", dotClass: "status-dot-danger", icon: X },
-};
-
 export default function GoalsCard() {
+  const { t } = useTranslations();
+  const statusConfig = {
+    achieved: { label: t('pages.dashboard.goals.status_achieved'), dotClass: "status-dot-success", icon: Check },
+    acceptable: { label: t('pages.dashboard.goals.status_acceptable'), dotClass: "status-dot-warning", icon: Minus },
+    unacceptable: { label: t('pages.dashboard.goals.status_unacceptable'), dotClass: "status-dot-danger", icon: X },
+  };
+
   return (
     <div className="bg-card rounded-xl border border-border card-shine">
       <div className="p-4 pb-3">
-        <h3 className="font-heading font-semibold text-card-foreground">Bolagsmål</h3>
+        <h3 className="font-heading font-semibold text-card-foreground">{t('pages.dashboard.goals.title')}</h3>
         <div className="flex gap-4 mt-2">
           {(["achieved", "acceptable", "unacceptable"] as const).map((s) => (
             <div key={s} className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
@@ -44,7 +46,7 @@ export default function GoalsCard() {
             >
               <span className={`status-dot ${cfg.dotClass}`} />
               <span className="text-sm text-card-foreground group-hover:text-primary transition-colors flex-1">
-                {goal.title}
+                {t(`pages.dashboard.goals.items.${goal.titleKey}`)}
               </span>
             </button>
           );

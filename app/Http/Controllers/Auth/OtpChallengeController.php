@@ -42,13 +42,13 @@ class OtpChallengeController extends Controller
         $payload = Cache::get($this->otpCacheKey($userId));
 
         if (! is_array($payload) || ! isset($payload['hash'], $payload['expires_at'])) {
-            return back()->withErrors(['otp' => 'Engangskoden har gatt ut. Begar en ny kod.']);
+            return back()->withErrors(['otp' => __('auth.otp.expired')]);
         }
 
         $expiresAt = Carbon::parse((string) $payload['expires_at']);
 
         if ($expiresAt->isPast() || ! Hash::check((string) $request->string('otp'), (string) $payload['hash'])) {
-            return back()->withErrors(['otp' => 'Ogiltig engangskod.']);
+            return back()->withErrors(['otp' => __('auth.otp.invalid')]);
         }
 
         $user = User::query()->find($userId);
@@ -92,11 +92,14 @@ class OtpChallengeController extends Controller
             'expires_at' => $expiresAt->toIso8601String(),
         ], $expiresAt);
 
-        Mail::raw("Din nya engangskod ar: {$otpCode}. Koden ar giltig i ".AuthFlow::mfaOtpTtlMinutes().' minuter.', function ($message) use ($user): void {
-            $message->to($user->email)->subject('Ny engangskod for inloggning');
+        Mail::raw(__('auth.otp.email_resend_body', [
+            'code' => $otpCode,
+            'minutes' => AuthFlow::mfaOtpTtlMinutes(),
+        ]), function ($message) use ($user): void {
+            $message->to($user->email)->subject(__('auth.otp.email_resend_subject'));
         });
 
-        return back()->with('status', 'En ny engangskod har skickats.');
+        return back()->with('status', __('auth.otp.resent'));
     }
 
     private function clearOtpState(Request $request, int $userId): void

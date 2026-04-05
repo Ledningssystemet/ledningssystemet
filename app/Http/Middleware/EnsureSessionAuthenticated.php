@@ -20,13 +20,13 @@ class EnsureSessionAuthenticated
 
         if ($user === null) {
             return response()->json([
-                'message' => 'Unauthenticated.',
+                'message' => __('api.errors.unauthenticated'),
             ], JsonResponse::HTTP_UNAUTHORIZED);
         }
 
         if ($request->bearerToken() !== null) {
             return response()->json([
-                'message' => 'This endpoint requires session authentication.',
+                'message' => __('api.errors.session_auth_required'),
             ], JsonResponse::HTTP_FORBIDDEN);
         }
 

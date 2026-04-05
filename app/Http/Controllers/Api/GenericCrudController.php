@@ -12,6 +12,8 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
+use Spatie\QueryBuilder\AllowedFilter;
+use Spatie\QueryBuilder\QueryBuilder;
 use Symfony\Component\HttpFoundation\Response;
 use Throwable;
 
@@ -29,12 +31,21 @@ class GenericCrudController extends Controller
 
         $metadata = $this->metadataFor($modelClass);
 
-        $query = $modelClass::query();
+        $search = trim($request->string('search')->toString());
 
-        $this->applyFilters($query, $request->input('filter', []), $metadata);
+        $allowedFilters = [];
+
+        foreach (array_keys($metadata['filterable']) as $column) {
+            $allowedFilters[] = AllowedFilter::exact($column);
+        }
+
+        $query = QueryBuilder::for($modelClass::query())
+            ->allowedFilters(...$allowedFilters)
+            ->allowedSorts(...$metadata['selectable']);
+
         $this->applySearch(
             $query,
-            $request->string('search')->toString(),
+            $search,
             $metadata['searchable'],
             $metadata['searchable_relations']
         );

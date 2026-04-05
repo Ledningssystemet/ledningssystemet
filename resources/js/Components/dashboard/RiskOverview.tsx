@@ -1,4 +1,5 @@
 import { cn } from "@/Lib/utils";
+import { useTranslations } from "@/hooks/useTranslations";
 
 const riskData = [
   [0, 3, 0, 0, 0],
@@ -14,14 +15,26 @@ const rowColors = [
   ["risk-cell-green", "risk-cell-green", "risk-cell-green", "risk-cell-green", "risk-cell-yellow"],
 ];
 
-const consequences = ["Obetydlig", "Lindrig", "Måttlig", "Betydande", "Allvarlig"];
-const likelihoods = ["Mycket troligt", "Troligt", "Möjligt", "Osannolikt"];
-
 export default function RiskOverview() {
+  const { t } = useTranslations();
+  const consequences = [
+    t('pages.dashboard.risk_overview.consequences.0'),
+    t('pages.dashboard.risk_overview.consequences.1'),
+    t('pages.dashboard.risk_overview.consequences.2'),
+    t('pages.dashboard.risk_overview.consequences.3'),
+    t('pages.dashboard.risk_overview.consequences.4'),
+  ];
+  const likelihoods = [
+    t('pages.dashboard.risk_overview.likelihoods.0'),
+    t('pages.dashboard.risk_overview.likelihoods.1'),
+    t('pages.dashboard.risk_overview.likelihoods.2'),
+    t('pages.dashboard.risk_overview.likelihoods.3'),
+  ];
+
   return (
     <div className="bg-card rounded-xl border border-border card-shine">
       <div className="p-4 pb-3">
-        <h3 className="font-heading font-semibold text-card-foreground">Risköversikt</h3>
+        <h3 className="font-heading font-semibold text-card-foreground">{t('pages.dashboard.risk_overview.title')}</h3>
       </div>
       <div className="px-4 pb-4">
         <div className="grid grid-cols-6 gap-px bg-border rounded-lg overflow-hidden text-xs">
@@ -34,7 +47,7 @@ export default function RiskOverview() {
           ))}
           {/* Data rows */}
           {riskData.map((row, ri) => (
-            <>
+            <div key={`row-${ri}`} className="contents">
               <div key={`label-${ri}`} className="bg-muted p-1.5 flex items-center justify-center font-medium text-muted-foreground text-[10px] text-center leading-tight">
                 {likelihoods[ri]}
               </div>
@@ -49,7 +62,7 @@ export default function RiskOverview() {
                   {val > 0 ? val : ""}
                 </div>
               ))}
-            </>
+            </div>
           ))}
         </div>
       </div>

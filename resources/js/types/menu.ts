@@ -20,9 +20,6 @@ export interface MenuCategoryDto {
     columns: MenuColumnDto[];
 }
 
-export interface MenuResponse {
-    categories: MenuCategoryDto[];
-}
 
 export interface BadgeDto {
     count: string;

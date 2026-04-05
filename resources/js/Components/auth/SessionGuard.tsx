@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { useTranslations } from '@/hooks/useTranslations';
 
 const SESSION_EXPIRED_EVENT = 'session:expired';
 const SESSION_PING_URL = '/api/session/ping';
@@ -8,6 +9,7 @@ const HEARTBEAT_TICK_MS = 60 * 1000;
 const ACTIVE_WINDOW_MS = 15 * 60 * 1000;
 
 export default function SessionGuard() {
+  const { t } = useTranslations();
   const [sessionExpired, setSessionExpired] = useState(false);
   const [isVerifying, setIsVerifying] = useState(false);
 
@@ -147,11 +149,10 @@ export default function SessionGuard() {
         className="w-full max-w-lg rounded-xl border border-border bg-card p-6 shadow-2xl"
       >
         <h2 id="session-expired-title" className="text-lg font-semibold text-card-foreground">
-          Din session har avslutats
+          {t('auth.session.expired_title')}
         </h2>
         <p className="mt-2 text-sm text-muted-foreground">
-          Du verkar vara utloggad. Oppna inloggningen i en ny flik och logga in dar for att undvika att
-          forlora andringar du har gjort i den har fliken.
+          {t('auth.session.expired_message')}
         </p>
 
         <div className="mt-5 flex flex-col gap-2 sm:flex-row sm:justify-end">
@@ -161,7 +162,7 @@ export default function SessionGuard() {
             disabled={isVerifying}
             className="inline-flex items-center justify-center rounded-md border border-border px-4 py-2 text-sm font-medium text-card-foreground hover:bg-muted disabled:cursor-not-allowed disabled:opacity-60"
           >
-            {isVerifying ? 'Kontrollerar...' : 'Jag har loggat in'}
+            {isVerifying ? t('auth.session.checking') : t('auth.session.restored')}
           </button>
 
           <button
@@ -169,7 +170,7 @@ export default function SessionGuard() {
             onClick={openLoginInNewTab}
             className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
           >
-            Oppna inloggning i ny flik
+            {t('auth.session.open_login_tab')}
           </button>
         </div>
       </div>
