@@ -3,9 +3,7 @@ import type { MenuCategoryDto, MenuItemDto } from "@/types/menu";
 export const APP_BASE_PATH = "/app";
 export const APP_HOME_PATH = "/";
 export const APP_DASHBOARD_PATH = "/dashboard";
-export const APP_OBSERVATION_PATH = "/observation";
 export const APP_SETTINGS_PATH = "/settings";
-export const APP_HELP_PATH = "/help";
 
 export interface AppSectionRoute {
     key: string;

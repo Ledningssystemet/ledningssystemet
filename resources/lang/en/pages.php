@@ -1,6 +1,60 @@
 <?php
 
 return [
+	'my_profile' => [
+		'title' => 'My profile',
+		'description' => 'Manage your personal details, contact information, and profile settings.',
+		'section_personal_info' => 'Personal information',
+		'section_contact' => 'Contact details',
+		'section_account' => 'Account settings',
+		'name_label' => 'Name',
+		'email_label' => 'Email',
+		'role_label' => 'Role',
+		'edit_profile' => 'Edit profile',
+		'no_data' => 'No profile information available yet.',
+	],
+
+	'my_tasks' => [
+		'title' => 'My tasks',
+		'description' => 'Overview of your assigned tasks, activities, and controls.',
+		'open_tasks' => 'Open tasks',
+		'completed_tasks' => 'Completed tasks',
+		'overdue_tasks' => 'Overdue tasks',
+		'no_tasks' => 'No tasks found.',
+		'filter_all' => 'All',
+		'filter_open' => 'Open',
+		'filter_done' => 'Done',
+		'filter_overdue' => 'Overdue',
+		'status_open' => 'Open',
+		'status_done' => 'Done',
+		'status_overdue' => 'Overdue',
+	],
+
+	'my_documents' => [
+		'title' => 'My documents',
+		'description' => 'Your saved documents, reports, and files.',
+		'recent_documents' => 'Recent documents',
+		'no_documents' => 'No documents found.',
+		'upload_document' => 'Upload document',
+		'search_placeholder' => 'Search your documents...',
+		'file_name' => 'File name',
+		'file_type' => 'Type',
+		'uploaded_at' => 'Uploaded',
+	],
+
+	'settings' => [
+		'title' => 'Settings',
+		'description' => 'Manage your personal settings, notifications, and system preferences.',
+		'section_general' => 'General',
+		'section_notifications' => 'Notifications',
+		'section_appearance' => 'Appearance',
+		'language_label' => 'Language',
+		'theme_label' => 'Theme',
+		'notifications_label' => 'Notifications',
+		'save_changes' => 'Save changes',
+		'coming_soon' => 'Settings are being built.',
+	],
+
 	'dashboard' => [
 		'widgets' => [
 			'stats' => 'Key figures',

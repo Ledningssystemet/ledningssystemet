@@ -1,6 +1,60 @@
 <?php
 
 return [
+	'my_profile' => [
+		'title' => 'Min profil',
+		'description' => 'Hantera dina personliga uppgifter, kontaktinformation och profilinställningar.',
+		'section_personal_info' => 'Personlig information',
+		'section_contact' => 'Kontaktuppgifter',
+		'section_account' => 'Kontoinställningar',
+		'name_label' => 'Namn',
+		'email_label' => 'E-post',
+		'role_label' => 'Roll',
+		'edit_profile' => 'Redigera profil',
+		'no_data' => 'Ingen profilinformation tillgänglig ännu.',
+	],
+
+	'my_tasks' => [
+		'title' => 'Mina uppgifter',
+		'description' => 'Översikt över dina tilldelade uppgifter, aktiviteter och kontroller.',
+		'open_tasks' => 'Öppna uppgifter',
+		'completed_tasks' => 'Avslutade uppgifter',
+		'overdue_tasks' => 'Försenade uppgifter',
+		'no_tasks' => 'Inga uppgifter hittades.',
+		'filter_all' => 'Alla',
+		'filter_open' => 'Öppna',
+		'filter_done' => 'Avslutade',
+		'filter_overdue' => 'Försenade',
+		'status_open' => 'Öppen',
+		'status_done' => 'Avslutad',
+		'status_overdue' => 'Försenad',
+	],
+
+	'my_documents' => [
+		'title' => 'Mina dokument',
+		'description' => 'Dina sparade dokument, rapporter och filer.',
+		'recent_documents' => 'Senaste dokument',
+		'no_documents' => 'Inga dokument hittades.',
+		'upload_document' => 'Ladda upp dokument',
+		'search_placeholder' => 'Sök bland dina dokument...',
+		'file_name' => 'Filnamn',
+		'file_type' => 'Typ',
+		'uploaded_at' => 'Uppladdad',
+	],
+
+	'settings' => [
+		'title' => 'Inställningar',
+		'description' => 'Hantera dina personliga inställningar, notifieringar och systeminställningar.',
+		'section_general' => 'Allmänt',
+		'section_notifications' => 'Notifieringar',
+		'section_appearance' => 'Utseende',
+		'language_label' => 'Språk',
+		'theme_label' => 'Tema',
+		'notifications_label' => 'Notifieringar',
+		'save_changes' => 'Spara ändringar',
+		'coming_soon' => 'Inställningar under uppbyggnad.',
+	],
+
 	'dashboard' => [
 		'widgets' => [
 			'stats' => 'Nyckeltal',

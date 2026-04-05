@@ -30,12 +30,6 @@ export default function AppNotFoundPage() {
                                 >
                                     {t('ui.app.go_to_home')}
                                 </Link>
-                                <Link
-                                    to={APP_DASHBOARD_PATH}
-                                    className="inline-flex items-center rounded-md border border-border bg-background px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted"
-                                >
-                                    {t('ui.app.go_to_dashboard')}
-                                </Link>
                             </div>
                         </div>
                     </div>

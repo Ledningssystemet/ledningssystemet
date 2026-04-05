@@ -4,9 +4,7 @@ import logoWhite from "@/Assets/logo_se_white.svg";
 import logo from "@/Assets/logo_se.svg";
 import {
     APP_DASHBOARD_PATH,
-    APP_HELP_PATH,
     APP_HOME_PATH,
-    APP_OBSERVATION_PATH,
     APP_SETTINGS_PATH,
     getMenuItemPath,
     isExternalUrl,
@@ -310,16 +308,6 @@ function MobileMenu({ open, onClose, categories, itemBadges, activePath }: Mobil
                             <Settings className="h-3.5 w-3.5" />
                             {t('ui.common.settings')}
                         </Link>
-                        <Link to={APP_HELP_PATH} onClick={onClose}
-                            className={cn(
-                                "flex-1 flex items-center justify-center gap-2 py-2 text-xs rounded-md transition-colors",
-                                activePath === APP_HELP_PATH
-                                    ? "bg-primary/5 text-primary"
-                                    : "bg-muted text-muted-foreground hover:text-foreground",
-                            )}>
-                            <HelpCircle className="h-3.5 w-3.5" />
-                            {t('ui.common.help')}
-                        </Link>
                     </div>
                 </div>
             </div>
@@ -410,7 +398,7 @@ export default function MegaNav() {
                                     onClick={() => setOpenMenu(openMenu === cat.label ? null : cat.label)}
                                     onMouseEnter={() => handleMouseEnter(cat.label)}
                                     title={cat.label}>
-                                    <CatIcon className="h-4 w-4 xl:hidden flex-shrink-0" />
+                                    <CatIcon className="h-4 w-4 flex-shrink-0" />
                                     <span className="hidden xl:inline">{cat.label}</span>
                                     {badge && (
                                         <span className={cn(
@@ -431,17 +419,6 @@ export default function MegaNav() {
 
                     {/* Right side */}
                     <div className="flex items-center gap-2 ml-auto">
-                        <NavLink to={APP_OBSERVATION_PATH}
-                            className={({ isActive }) => cn(
-                                "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors",
-                                isActive
-                                    ? "bg-accent/90 text-accent-foreground ring-1 ring-accent-foreground/20"
-                                    : "bg-accent text-accent-foreground hover:bg-accent/90",
-                            )}>
-                            <AlertTriangle className="h-3.5 w-3.5" />
-                            <span className="hidden md:inline">{t('ui.nav.observation')}</span>
-                        </NavLink>
-
                         <NavLink to={APP_SETTINGS_PATH}
                             className={({ isActive }) => cn(
                                 "relative p-2 rounded-md transition-colors",

@@ -1,61 +1,88 @@
+import { useEffect } from 'react';
+import AppLayout from '@/Layouts/AppLayout';
 import { useTranslations } from '@/hooks/useTranslations';
+import { APP_HOME_PATH } from '@/app/routes';
+import { Link } from 'react-router-dom';
+import { Settings } from 'lucide-react';
 import type { AppSectionRoute } from '@/app/routes';
-import AppPageShell from './AppPageShell';
-
-const content = {
-    sv: {
-        toneLabel: 'Personligt',
-        summary: 'Samla användarinställningar, preferenser och framtida systemval på en egen appsida.',
-        highlights: [
-            'Visa personliga inställningar utan att lämna React-appen',
-            'Förbered plats för notifieringar, språk och standardvyer',
-            'Isolera systemnära val från Blade-baserade administrationssidor',
-        ],
-        nextSteps: [
-            'Bygg formulär för personliga preferenser',
-            'Lägg till sektion för notifieringskanaler',
-            'Förbered framtida systeminställningar per roll eller kund',
-        ],
-    },
-    en: {
-        toneLabel: 'Personal',
-        summary: 'Collect user settings, preferences, and future system choices on a dedicated app page.',
-        highlights: [
-            'Show personal settings without leaving the React app',
-            'Prepare space for notifications, language, and default views',
-            'Isolate system-related choices from Blade-based admin pages',
-        ],
-        nextSteps: [
-            'Build forms for personal preferences',
-            'Add a section for notification channels',
-            'Prepare future system settings per role or customer',
-        ],
-    },
-};
 
 interface SettingsPageProps {
     route: AppSectionRoute;
 }
 
 export default function SettingsPage({ route }: SettingsPageProps) {
-    const { locale } = useTranslations();
-    const localeKey = locale.toLowerCase().startsWith('sv') ? 'sv' : 'en';
-    const data = content[localeKey];
+    const { t } = useTranslations();
+
+    useEffect(() => {
+        const previousTitle = document.title;
+        document.title = t('ui.app.page_title_suffix', { page: t('pages.settings.title') });
+        return () => {
+            document.title = previousTitle;
+        };
+    }, [t]);
 
     return (
-        <AppPageShell
-            title={route.label}
-            description={route.description}
-            categoryLabel={route.categoryLabel}
-            sectionLabel={route.sectionLabel}
-            toneLabel={data.toneLabel}
-            routeKey={route.key}
-            summary={data.summary}
-            highlightsTitle={localeKey === 'sv' ? 'Fokusområden' : 'Focus areas'}
-            highlights={data.highlights}
-            nextStepsTitle={localeKey === 'sv' ? 'Föreslagna nästa steg' : 'Suggested next steps'}
-            nextSteps={data.nextSteps}
-        />
+        <AppLayout>
+            <div className="space-y-6">
+                {/* Breadcrumb */}
+                <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <Link to={APP_HOME_PATH} className="transition-colors hover:text-foreground">
+                        {t('ui.app.breadcrumb_home')}
+                    </Link>
+                    <span>/</span>
+                    <span>{t('pages.settings.title')}</span>
+                </nav>
+
+                {/* Page header */}
+                <section className="rounded-2xl border border-border bg-card p-6 shadow-sm">
+                    <div className="flex items-center gap-4">
+                        <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
+                            <Settings className="h-6 w-6 text-primary" />
+                        </div>
+                        <div>
+                            <h1 className="text-2xl font-semibold tracking-tight text-foreground">
+                                {t('pages.settings.title')}
+                            </h1>
+                            <p className="mt-1 text-sm text-muted-foreground">
+                                {route.description ?? t('pages.settings.description')}
+                            </p>
+                        </div>
+                    </div>
+                </section>
+
+                <div className="grid gap-6 lg:grid-cols-2">
+                    {/* General */}
+                    <section className="rounded-2xl border border-border bg-card p-6 shadow-sm">
+                        <h2 className="text-base font-semibold text-foreground">
+                            {t('pages.settings.section_general')}
+                        </h2>
+                        <div className="mt-4 space-y-4">
+                            <div className="rounded-xl bg-muted/50 px-4 py-3">
+                                <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                                    {t('pages.settings.language_label')}
+                                </p>
+                                <p className="mt-1 text-sm font-medium text-foreground">—</p>
+                            </div>
+                            <div className="rounded-xl bg-muted/50 px-4 py-3">
+                                <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                                    {t('pages.settings.theme_label')}
+                                </p>
+                                <p className="mt-1 text-sm font-medium text-foreground">—</p>
+                            </div>
+                        </div>
+                    </section>
+
+                    {/* Notifications */}
+                    <section className="rounded-2xl border border-border bg-card p-6 shadow-sm">
+                        <h2 className="text-base font-semibold text-foreground">
+                            {t('pages.settings.section_notifications')}
+                        </h2>
+                        <div className="mt-4 rounded-xl bg-muted/50 px-4 py-3">
+                            <p className="text-sm text-muted-foreground">{t('pages.settings.coming_soon')}</p>
+                        </div>
+                    </section>
+                </div>
+            </div>
+        </AppLayout>
     );
 }
-
