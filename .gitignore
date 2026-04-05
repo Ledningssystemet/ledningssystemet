@@ -16,4 +16,5 @@ composer.lock
 .phpunit.cache
 .idea
 /package-lock.json
-/doc/*
+/doc
+
