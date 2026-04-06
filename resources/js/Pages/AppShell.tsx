@@ -1,7 +1,6 @@
 import { useMemo, Suspense } from 'react';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import {
-    APP_DASHBOARD_PATH,
     APP_HOME_PATH,
     APP_SETTINGS_PATH,
     buildMenuRoutes,
@@ -35,7 +34,6 @@ export default function AppShell() {
             <Suspense fallback={<PageLoader />}>
                 <Routes>
                     <Route path={APP_HOME_PATH} element={<UserDashboard />} />
-                    <Route path={APP_DASHBOARD_PATH} element={<UserDashboard />} />
                     {utilityRoutes.map((route) => {
                         const element = resolveAppRouteElement({
                             key: route.key,

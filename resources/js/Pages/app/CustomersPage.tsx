@@ -1,11 +1,11 @@
 import { useEffect } from 'react';
-import AppLayout from '@/Layouts/AppLayout';
+import AppLayout from '@/layouts/AppLayout';
 import { useTranslations } from '@/hooks/useTranslations';
 import { APP_HOME_PATH } from '@/app/routes';
 import { Link } from 'react-router-dom';
 import { Building2 } from 'lucide-react';
-import { CrudModule } from '@/Components/crud';
-import type { CrudModuleConfig } from '@/Components/crud';
+import { CrudModule } from '@/components/crud';
+import type { CrudModuleConfig } from '@/components/crud';
 import type { AppSectionRoute } from '@/app/routes';
 
 interface CustomersPageProps {

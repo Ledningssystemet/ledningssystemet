@@ -21,7 +21,7 @@ class MenuCategoryBuilder
 
         $categories[] = [
             'label' => __('menu.categories.my_work'),
-            'categoryIcon' => 'ClipboardList',
+            'categoryIcon' => 'UserRoundCheck',
             'columns' => [
                 [
                     'heading' => __('menu.headings.personal'),

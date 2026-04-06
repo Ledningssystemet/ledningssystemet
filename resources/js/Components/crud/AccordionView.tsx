@@ -3,9 +3,9 @@ import {
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from "@/Components/ui/accordion";
-import { Button } from "@/Components/ui/button";
-import { Badge } from "@/Components/ui/badge";
+} from "@/components/ui/accordion";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { FieldConfig, ItemBadgeConfig, ItemStatus } from "./types";
 import { Pencil } from "lucide-react";
 import { StatusDot, statusRowClass } from "./StatusIndicator";

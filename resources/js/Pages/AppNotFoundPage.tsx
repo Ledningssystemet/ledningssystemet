@@ -1,4 +1,4 @@
-import AppLayout from '@/Layouts/AppLayout';
+import AppLayout from '@/layouts/AppLayout';
 import { useTranslations } from '@/hooks/useTranslations';
 import { APP_DASHBOARD_PATH, APP_HOME_PATH } from '@/app/routes';
 import { Link } from 'react-router-dom';

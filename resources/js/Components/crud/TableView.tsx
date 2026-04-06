@@ -1,6 +1,6 @@
-import { Checkbox } from "@/Components/ui/checkbox";
-import { Button } from "@/Components/ui/button";
-import { Badge } from "@/Components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { FieldConfig, ItemBadgeConfig, ItemStatus } from "./types";
 import { Pencil, Trash2 } from "lucide-react";
 import { StatusDot, statusRowClass } from "./StatusIndicator";

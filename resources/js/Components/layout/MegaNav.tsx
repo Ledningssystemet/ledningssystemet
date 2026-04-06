@@ -1,11 +1,9 @@
-import { useState, useRef, useEffect } from "react";
-import { cn } from "@/Lib/utils";
-import logoWhite from "@/Assets/logo_se_white.svg";
-import logo from "@/Assets/logo_se.svg";
+import React, { useState, useRef, useEffect } from "react";
+import { cn } from "@/lib/utils";
+import logoWhite from "@/assets/logo_se_white.svg";
+import logo from "@/assets/logo_se.svg";
 import {
-    APP_DASHBOARD_PATH,
     APP_HOME_PATH,
-    APP_SETTINGS_PATH,
     getMenuItemPath,
     isExternalUrl,
 } from "@/app/routes";
@@ -16,7 +14,7 @@ import {
     Truck, FileSignature, CheckCircle2, Leaf, FlaskConical,
     Database, AlertTriangle,
     Settings, HelpCircle, Search, Bell, User,
-    FolderOpen, RefreshCcw, ScanSearch,
+    FolderOpen, RefreshCcw, ScanSearch, UserRoundCheck,
     type LucideProps,
 } from "lucide-react";
 import type { MenuCategoryDto, BadgeDto, BadgeSeverity } from "@/types/menu";
@@ -24,6 +22,17 @@ import { useMenuData } from "@/hooks/useMenuData";
 import { useMenuBadges } from "@/hooks/useMenuBadges";
 import { useTranslations } from "@/hooks/useTranslations";
 import { Link, NavLink, useLocation } from "react-router-dom";
+import { usePage } from "@inertiajs/react";
+import type { PageProps } from "@inertiajs/core";
+
+interface SharedProps extends PageProps{
+    auth?: {
+        user?: {
+            name?: string | null;
+            email?: string | null;
+        } | null;
+    };
+}
 
 // ─── Icon registry ────────────────────────────────────────────────────────────
 type IconComponent = React.ComponentType<LucideProps>;
@@ -33,7 +42,7 @@ const iconRegistry: Record<string, IconComponent> = {
     Database, FileSignature, FileText, FlaskConical, FolderOpen,
     GitBranch, Globe, Home, HelpCircle, LayoutDashboard, Leaf,
     Menu, RefreshCcw, Scale, ScanSearch, Search, Settings,
-    Shield, Truck, User, UserCircle, X,
+    Shield, Truck, User, UserCircle, X, UserRoundCheck,
 };
 
 function resolveIcon(name: string): IconComponent {
@@ -220,16 +229,6 @@ function MobileMenu({ open, onClose, categories, itemBadges, activePath }: Mobil
                         <Home className="h-4 w-4" />
                         {t('ui.common.home')}
                     </Link>
-                    <Link to={APP_DASHBOARD_PATH} onClick={onClose}
-                        className={cn(
-                            "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm mb-1 transition-colors",
-                            activePath === APP_DASHBOARD_PATH
-                                ? "bg-primary/5 text-primary font-medium"
-                                : "text-foreground hover:bg-muted",
-                        )}>
-                        <LayoutDashboard className="h-4 w-4" />
-                        {t('ui.common.dashboard')}
-                    </Link>
 
                     {categories.map((cat) => {
                         const CatIcon = resolveIcon(cat.categoryIcon ?? "Home");
@@ -295,21 +294,6 @@ function MobileMenu({ open, onClose, categories, itemBadges, activePath }: Mobil
                         );
                     })}
                 </div>
-
-                <div className="border-t border-border p-3 mt-2">
-                    <div className="flex gap-2">
-                        <Link to={APP_SETTINGS_PATH} onClick={onClose}
-                            className={cn(
-                                "flex-1 flex items-center justify-center gap-2 py-2 text-xs rounded-md transition-colors",
-                                activePath === APP_SETTINGS_PATH
-                                    ? "bg-primary/5 text-primary"
-                                    : "bg-muted text-muted-foreground hover:text-foreground",
-                            )}>
-                            <Settings className="h-3.5 w-3.5" />
-                            {t('ui.common.settings')}
-                        </Link>
-                    </div>
-                </div>
             </div>
         </div>
     );
@@ -337,6 +321,13 @@ export default function MegaNav() {
     const handleMouseLeave = () => {
         timeoutRef.current = setTimeout(() => setOpenMenu(null), 150);
     };
+
+    const page = usePage<SharedProps>();
+    const user = page.props.auth?.user;
+    const profileName =
+        user?.name?.trim() || user?.email || t("ui.nav.profile_name_placeholder");
+
+    const profileEmail = user?.email;
 
     useEffect(() => {
         return () => {
@@ -375,14 +366,6 @@ export default function MegaNav() {
                             <span className="hidden xl:inline">{t('ui.common.home')}</span>
                         </NavLink>
 
-                        {/* Dashboard */}
-                        <NavLink to={APP_DASHBOARD_PATH}
-                            className={({ isActive }) => getTopLevelNavClasses(isActive)}
-                            onClick={() => setOpenMenu(null)} onMouseEnter={() => handleMouseEnter("")}>
-                            <LayoutDashboard className="h-4 w-4" />
-                            <span className="hidden xl:inline">{t('ui.common.dashboard')}</span>
-                        </NavLink>
-
                         {/* Dynamic categories */}
                         {categories.map((cat) => {
                             const CatIcon = resolveIcon(cat.categoryIcon ?? "Home");
@@ -419,29 +402,13 @@ export default function MegaNav() {
 
                     {/* Right side */}
                     <div className="flex items-center gap-2 ml-auto">
-                        <NavLink to={APP_SETTINGS_PATH}
-                            className={({ isActive }) => cn(
-                                "relative p-2 rounded-md transition-colors",
-                                isActive
-                                    ? "text-primary-foreground bg-primary-foreground/10"
-                                    : "text-primary-foreground/70 hover:text-primary-foreground hover:bg-primary-foreground/5",
-                            )}
-                            title={t('ui.nav.system_settings')}>
-                            <Settings className="h-4 w-4" />
-                        </NavLink>
 
                         <div className="w-px h-6 bg-primary-foreground/15 mx-1 hidden sm:block" />
 
-                        <button type="button"
-                            className="relative p-2 rounded-md text-primary-foreground/70 hover:text-primary-foreground hover:bg-primary-foreground/5 transition-colors">
-                            <Bell className="h-4 w-4" />
-                            <span className="absolute top-1 right-1 w-2 h-2 bg-accent rounded-full" />
-                        </button>
-
                         <div className="flex items-center gap-2 pl-1">
                             <div className="hidden md:block text-right">
-                                <div className="text-xs font-medium text-primary-foreground/90">{t('ui.nav.profile_name_placeholder')}</div>
-                                <div className="text-[10px] text-primary-foreground/50">{t('ui.nav.company_name_placeholder')}</div>
+                                <div className="text-xs font-medium text-primary-foreground/90">{profileName}</div>
+                                <div className="text-[10px] text-primary-foreground/50">{profileEmail}</div>
                             </div>
                             <div className="h-8 w-8 rounded-full bg-accent/20 border border-accent/30 flex items-center justify-center">
                                 <User className="h-4 w-4 text-accent" />

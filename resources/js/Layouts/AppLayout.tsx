@@ -1,6 +1,6 @@
 import { ReactNode } from 'react';
-import SessionGuard from '@/Components/auth/SessionGuard';
-import MegaNav from '@/Components/layout/MegaNav';
+import SessionGuard from '@/components/auth/SessionGuard';
+import MegaNav from '@/components/layout/MegaNav';
 
 interface AppLayoutProps {
   children: ReactNode;

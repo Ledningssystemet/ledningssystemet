@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
-import AppLayout from '@/Layouts/AppLayout';
+import AppLayout from '@/layouts/AppLayout';
 import { useTranslations } from '@/hooks/useTranslations';
 import { APP_HOME_PATH } from '@/app/routes';
 import { Link } from 'react-router-dom';
 import { ClipboardList } from 'lucide-react';
-import { cn } from '@/Lib/utils';
+import { cn } from '@/lib/utils';
 import type { AppSectionRoute } from '@/app/routes';
 
 interface MyTasksPageProps {

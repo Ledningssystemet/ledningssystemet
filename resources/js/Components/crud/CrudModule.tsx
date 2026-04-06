@@ -18,7 +18,7 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/Components/ui/alert-dialog";
+} from "@/components/ui/alert-dialog";
 
 interface CrudModuleProps {
   config: CrudModuleConfig;

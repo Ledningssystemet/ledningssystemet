@@ -4,7 +4,7 @@ import { ResponsiveGridLayout, useContainerWidth } from "react-grid-layout";
 type LayoutItem = { i: string; x: number; y: number; w: number; h: number; minW?: number; minH?: number };
 type Layouts = Record<string, LayoutItem[]>;
 import Cookies from "js-cookie";
-import { cn } from "@/Lib/utils";
+import { cn } from "@/lib/utils";
 import { useTranslations } from "@/hooks/useTranslations";
 import {
   GripVertical, X, Plus, Settings2, RotateCcw,

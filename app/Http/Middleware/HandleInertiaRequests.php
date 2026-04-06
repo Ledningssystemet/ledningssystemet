@@ -39,6 +39,15 @@ class HandleInertiaRequests extends Middleware
         return [
             ...parent::share($request),
             'locale' => app()->getLocale(),
+            'auth' => [
+                'user' => fn () => $request->user()
+                    ? [
+                        'id' => $request->user()->id,
+                        'name' => $request->user()->name,
+                        'email' => $request->user()->email,
+                    ]
+                    : null,
+            ],
             'navigation' => [
                 'menu' => [
                     // Lazy share to avoid computing the menu on requests that do not need it.

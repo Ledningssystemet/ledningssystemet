@@ -19,12 +19,12 @@
     "types": ["vite/client"],
     "paths": {
       "@/*": ["./resources/js/*"],
-      "@/Components/*": ["./resources/js/Components/*"],
-      "@/Pages/*": ["./resources/js/Pages/*"],
-      "@/Layouts/*": ["./resources/js/Layouts/*"],
+      "@/components/*": ["./resources/js/components/*"],
+      "@/pages/*": ["./resources/js/pages/*"],
+      "@/layouts/*": ["./resources/js/layouts/*"],
       "@/hooks/*": ["./resources/js/hooks/*"],
-      "@/Lib/*": ["./resources/js/Lib/*"],
-      "@/Assets/*": ["./resources/js/Assets/*"],
+      "@/lib/*": ["./resources/js/lib/*"],
+      "@/assets/*": ["./resources/js/assets/*"],
       "@/types/*": ["./resources/js/types/*"]
     }
   },

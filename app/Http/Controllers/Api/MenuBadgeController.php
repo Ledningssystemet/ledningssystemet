@@ -18,19 +18,17 @@ class MenuBadgeController extends Controller
 
         // ── Mina uppgifter (pending activities assigned to user) ─────────
         try {
-            if (Gate::allows('viewAny', \App\Models\PendingActivity::class)) {
-                $count = \App\Models\PendingActivity::query()
-                    ->where('user_id', $user->id)
+            if (Gate::allows('viewAny', \App\Models\Activity::class)) {
+                $count = \App\Models\Activity::query()
+                    ->where('responsible_user_id', $user->id)
+                    ->whereNull('completed_at')
+                    ->where('due', '>=', now())
                     ->count();
 
                 if ($count > 0) {
-                    $items['mina-uppgifter'] = [
+                    $items['my-tasks'] = [
                         'count'    => (string) $count,
                         'severity' => 'danger',
-                    ];
-                    $categories['Mitt arbete'] = [
-                        'count'    => (string) $count,
-                        'severity' => 'info',
                     ];
                 }
             }

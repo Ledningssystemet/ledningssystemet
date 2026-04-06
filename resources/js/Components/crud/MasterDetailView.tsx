@@ -1,10 +1,10 @@
 import { FieldConfig, ItemBadgeConfig, ItemStatus } from "./types";
-import { Button } from "@/Components/ui/button";
-import { Badge } from "@/Components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Pencil } from "lucide-react";
-import { ScrollArea } from "@/Components/ui/scroll-area";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { StatusDot, statusRowClass } from "./StatusIndicator";
-import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/Components/ui/resizable";
+import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
 import { InlineTagsEditor } from "./InlineTagsEditor";
 
 interface MasterDetailViewProps {
