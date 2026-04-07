@@ -57,6 +57,7 @@ return [
 			'reset_preferred_process' => 'Aterstall startprocess',
 			'reset_preferred_process_tooltip' => 'Ta bort ditt eget val av startprocess och ga tillbaka till standard',
 			'preferred_process_saved' => ':process ar nu din foretredd process',
+			'show_details' => 'Visa detaljer',
 		],
 
 		'risk_overview' => [

@@ -71,6 +71,13 @@ export default function ProcessCard({ data, loading, error, setSelectedProcessId
     setSelectedProcessId(defaultProcessId);
   };
 
+  const handleSubProcessClick = (name: string) => {
+    const match = data.processOptions.find((process) => process.name === name);
+    if (match) {
+      setSelectedProcessId(match.id);
+    }
+  };
+
   if (loading) {
     return <div className="bg-card rounded-xl border border-border p-4 text-sm text-muted-foreground">{t('pages.dashboard.shared.loading')}</div>;
   }
@@ -162,6 +169,8 @@ export default function ProcessCard({ data, loading, error, setSelectedProcessId
                 emptyMessage={t('pages.dashboard.process.no_published_bpmn')}
                 invalidMessage={t('pages.dashboard.process.invalid_bpmn')}
                 fitButtonLabel={t('pages.dashboard.process.fit_to_screen')}
+                showDetailsLabel={t('pages.dashboard.process.show_details')}
+                onSubProcessClick={handleSubProcessClick}
                 className="flex-1 min-h-[18rem]"
               />
             </>
@@ -179,6 +188,7 @@ export default function ProcessCard({ data, loading, error, setSelectedProcessId
         emptyMessage={t('pages.dashboard.process.no_published_bpmn')}
         invalidMessage={t('pages.dashboard.process.invalid_bpmn')}
         fitButtonLabel={t('pages.dashboard.process.fit_to_screen')}
+        showDetailsLabel={t('pages.dashboard.process.show_details')}
         processId={data.selectedProcessId}
         processOptions={data.processOptions}
         selectedProcessId={data.selectedProcessId}
@@ -191,6 +201,7 @@ export default function ProcessCard({ data, loading, error, setSelectedProcessId
         setAsStartProcessTooltip={t('pages.dashboard.process.set_as_preferred_process_tooltip')}
         resetStartProcessLabel={t('pages.dashboard.process.reset_preferred_process')}
         resetStartProcessTooltip={t('pages.dashboard.process.reset_preferred_process_tooltip')}
+        onSubProcessClick={handleSubProcessClick}
       />
     </>
   );

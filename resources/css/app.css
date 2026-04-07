@@ -108,6 +108,13 @@ h1, h2, h3, h4, h5, h6 { font-family: var(--font-heading); }
     display: none !important;
 }
 
+/* Hide built-in drilldown arrow/button for collapsed sub processes. */
+.bpmn-viewer .bjs-drilldown,
+.bpmn-viewer .djs-overlay-drilldown {
+    display: none !important;
+    pointer-events: none !important;
+}
+
 /* Add to @layer components */
 @layer components {
     .crud-toolbar {

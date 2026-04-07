@@ -21,6 +21,7 @@ interface ProcessMapDialogProps {
   emptyMessage: string;
   invalidMessage: string;
   fitButtonLabel: string;
+  showDetailsLabel?: string;
   processId?: number | null;
   processOptions: DashboardProcessOption[];
   selectedProcessId: number | null;
@@ -33,6 +34,7 @@ interface ProcessMapDialogProps {
   setAsStartProcessTooltip?: string;
   resetStartProcessLabel?: string;
   resetStartProcessTooltip?: string;
+  onSubProcessClick?: (name: string) => void;
 }
 
 export default function ProcessMapDialog({
@@ -45,6 +47,7 @@ export default function ProcessMapDialog({
   emptyMessage,
   invalidMessage,
   fitButtonLabel,
+  showDetailsLabel,
   processId,
   processOptions,
   selectedProcessId,
@@ -57,6 +60,7 @@ export default function ProcessMapDialog({
   setAsStartProcessTooltip,
   resetStartProcessLabel,
   resetStartProcessTooltip,
+  onSubProcessClick,
 }: ProcessMapDialogProps) {
   const { t } = useTranslations();
 
@@ -131,6 +135,8 @@ export default function ProcessMapDialog({
             emptyMessage={emptyMessage}
             invalidMessage={invalidMessage}
             fitButtonLabel={fitButtonLabel}
+            showDetailsLabel={showDetailsLabel}
+            onSubProcessClick={onSubProcessClick}
             className="h-full min-h-0"
           />
         </div>

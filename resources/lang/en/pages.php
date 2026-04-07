@@ -148,6 +148,7 @@ return [
 			'reset_preferred_process' => 'Reset start process',
 			'reset_preferred_process_tooltip' => 'Clear your custom start process and go back to the default start process',
 			'preferred_process_saved' => ':process is now your preferred process',
+			'show_details' => 'Show details',
 			'organizations' => [
 				'svestra' => 'Svestra',
 				'kallekullen' => 'Kallekullen',
