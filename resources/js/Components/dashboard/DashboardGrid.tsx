@@ -6,6 +6,8 @@ type Layouts = Record<string, LayoutItem[]>;
 import Cookies from "js-cookie";
 import { cn } from "@/lib/utils";
 import { useTranslations } from "@/hooks/useTranslations";
+import { useDashboardData } from "@/hooks/useDashboardData";
+import { DashboardWidgetProps } from "@/types/dashboard";
 import {
   GripVertical, X, Plus, Settings2, RotateCcw,
   ClipboardList, Target, AlertTriangle, GitBranch,
@@ -26,7 +28,7 @@ interface WidgetConfig {
   id: string;
   labelKey: string;
   icon: React.ElementType;
-  component: React.ComponentType;
+  component: React.ComponentType<DashboardWidgetProps>;
   defaultSize: { w: number; h: number; minW?: number; minH?: number };
 }
 
@@ -85,6 +87,7 @@ function saveState(state: SavedState) {
 
 export default function DashboardGrid() {
   const { t } = useTranslations();
+  const { data, loading, error, setSelectedProcessId } = useDashboardData();
   const { containerRef, width } = useContainerWidth();
   const saved = useMemo(() => loadState(), []);
   const [layouts, setLayouts] = useState<Layouts>(saved?.layouts ?? defaultLayouts);
@@ -234,7 +237,12 @@ export default function DashboardGrid() {
                 </div>
               )}
               <div className={cn("h-full overflow-auto", editing && "pt-7")}>
-                <Widget />
+                <Widget
+                  data={data}
+                  loading={loading}
+                  error={error ? t('pages.dashboard.shared.load_error') : null}
+                  setSelectedProcessId={setSelectedProcessId}
+                />
               </div>
             </div>
           );

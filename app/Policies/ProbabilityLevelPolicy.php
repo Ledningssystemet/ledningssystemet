@@ -13,7 +13,7 @@ class ProbabilityLevelPolicy
      */
     public function viewAny(User $user): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -21,7 +21,7 @@ class ProbabilityLevelPolicy
      */
     public function view(User $user, ProbabilityLevel $probabilityLevel = new ProbabilityLevel): bool
     {
-        return false;
+        return true;
     }
 
     /**

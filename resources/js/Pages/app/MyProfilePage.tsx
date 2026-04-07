@@ -3,7 +3,7 @@ import AppLayout from '@/layouts/AppLayout';
 import { useTranslations } from '@/hooks/useTranslations';
 import { APP_HOME_PATH } from '@/app/routes';
 import { Link } from 'react-router-dom';
-import { UserCircle, Mail, Shield, ChevronRight } from 'lucide-react';
+import { UserCircle, Mail, Shield, ChevronRight, Bell } from 'lucide-react';
 import type { AppSectionRoute } from '@/app/routes';
 
 interface MyProfilePageProps {
@@ -102,6 +102,19 @@ export default function MyProfilePage({ route }: MyProfilePageProps) {
                                 {t('pages.my_profile.edit_profile')}
                                 <ChevronRight className="h-4 w-4 text-muted-foreground" />
                             </button>
+                        </div>
+                    </section>
+
+                    {/* Notifications */}
+                    <section className="rounded-2xl border border-border bg-card p-6 shadow-sm lg:col-span-2">
+                        <h2 className="text-base font-semibold text-foreground">
+                            <span className="inline-flex items-center gap-2">
+                                <Bell className="h-4 w-4 text-muted-foreground" />
+                                {t('pages.settings.section_notifications')}
+                            </span>
+                        </h2>
+                        <div className="mt-4 rounded-xl bg-muted/50 px-4 py-3">
+                            <p className="text-sm text-muted-foreground">{t('pages.settings.coming_soon')}</p>
                         </div>
                     </section>
                 </div>

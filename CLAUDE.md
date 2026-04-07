@@ -15,7 +15,7 @@ Den säkerställer konsistent kodstandard, struktur och dokumentation.
    - Vara deskriptiv: `INTEGRATION_GUIDE.md` inte `guide.md`
    - Svenska filnamn är OK: `INSTALLATION_GUIDE.md`
 
-3. **Innehål i dokumentation:**
+3. **Innehåll i dokumentation:**
    - Använd tydliga rubriker (#, ##, ###)
    - Inkludera praktiska kodexempel
    - Länka till relaterad dokumentation
@@ -39,8 +39,10 @@ Den säkerställer konsistent kodstandard, struktur och dokumentation.
    - Länka mellan dokument istället för att upprepa information
    - Kontrollera vad som redan existerar innan du skapar nytt
 
-4. ** SKAPA INTE hårdkodade strängar:**
+4. ** Alla strängar skall översättas:**
+   - Systemet skall stödja både svenska och engelska men grundspråket är engelska
    - Alla texter skall använda översättningsfunktionen och skall finnas på svenska och engelska i respektive språkfil under resources/lang/
+   - Strängar som inte behöver pluraliseringsinställningar behöver inte läggas in som referens utan kan översättas direkt i den svenska översättningsfilen
 
 ## ✅ Vad AI Ska Göra
 
@@ -175,6 +177,46 @@ Innan du skapar något:
 - [ ] Är det en dokumentationsfil? (ska det gå i `doc/`?)
 - [ ] Följer det kodstilen? (TypeScript, Tailwind, etc)
 - [ ] Finns relevant dokumentation redan? (länka istället för att upprepa)
+
+## Information om BPMN-formatet i våra processer
+Vi använder endast ett subset av de olika komponenter som finns i BPMN i våra processer.
+Dessutom har de olika semantisk betydelse i vårt system än i det generella BPMN-formatet.
+Vi har dessutom lite regler som inte finns i BPMN.
+Vi exekverar inte heller BPMN utan använder det bara för att kunna visualisera våra processkartor och för att kunna extrahera information från processerna som används i systemet.
+När vi tolkar information i en processkarta så använder vi namnet på komponenterna för att kunna extrahera information.
+
+De komponenter vi använder är:
+- startEvent: Denna används bara som visuell markör för var en process börjar. Den har ingen semantisk betydelse i vårt system.
+- endEvent: Denna används bara som visuell markör för var en process slutar. Den har ingen semantisk betydelse i vårt system.
+- task: Denna används för att representera en arbetsuppgift i processen (modell ProcessActivity). Den har semantisk betydelse i vårt system och representerar en aktivitet som ska utföras.
+- exclusiveGateway: Denna används för att representera en beslutspunkt i processen där endast en av flera möjliga vägar kan väljas. När vi räknar ut vilken arbetsuppgift som följer på en annan så behandlar vi en gateway som att den inte fanns, utan att alla objekt som ingår i gatewayen var sammankopplade med varandra.
+- sequenceFlow: Denna används för att representera flödet mellan de olika komponenterna i processen. Den har semantisk betydelse i vårt system och representerar flödet mellan de olika komponenterna i processen.
+- dataObjectReference: Detta representerar en informationstyp (modell InformationType). När processen publiceras så kommer informationstypen skapas om den inte redan finns.
+- dataStoreReference: Detta representerar en lagringsplats för information, en tillgång (modell Asset). När processen publiceras så kommer tillgången skapas om den inte redan finns.
+- textAnnotation: Denna används bara visuellt för att kunna visa textinformation i processkartan för användare.
+- subProcess: Denna används bara visuellt för att kunna länka till andra processer i processkartan. Den har ingen semantisk betydelse i vårt system men vi håller koll på kopplingen för att kunna uppdatera namn på processer i associerade processkartor. För att kunna använda subProcess så är det namnet som används för att länka till en annan processkarta.
+
+
+Vi tillåter bara följande associationer i våra processer, och följer alltså inte BPMN standard:
+- startEvent → task
+- task → task
+- task → exclusiveGateway
+- exclusiveGateway → task
+- task → endEvent
+- task → dataObjectReference
+- dataObjectReference → dataStoreReference
+- task  → subProcess
+- textAnnotations till alla komponenter
+
+
+Man får inte publicera en processkarta som:
+- Har en startEvent som inte har en task som efterföljare
+- Har en endEvent som inte har en associerad task
+- Har dataObjectReference som inte har en associerad task
+- Har dataStoreReference som inte har en associerad dataObjectReference
+- Har en subProcess med ett namn som inte överensstämmer med en process som finns i systemet
+- Där dataObjectReference inte är associerad med en dataStoreReference. Det får finnas flera dataObjectReference med samma namn, och det räcker att en av dem är associerad med en dataStoreReference.
+
 
 ## 🚀 Framtida Utvidgningar
 

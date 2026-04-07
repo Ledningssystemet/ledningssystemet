@@ -104,6 +104,10 @@ h1, h2, h3, h4, h5, h6 { font-family: var(--font-heading); }
     opacity: 0.3;
 }
 
+.bpmn-viewer .bjs-powered-by {
+    display: none !important;
+}
+
 /* Add to @layer components */
 @layer components {
     .crud-toolbar {

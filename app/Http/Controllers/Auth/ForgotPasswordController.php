@@ -7,6 +7,7 @@ use App\Support\AuthFlow;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Password;
+use Inertia\Inertia;
 
 class ForgotPasswordController extends Controller
 {
@@ -16,7 +17,7 @@ class ForgotPasswordController extends Controller
             return to_route('oauth.redirect');
         }
 
-        return view('auth.forgot-password');
+        return Inertia::render('auth/ForgotPassword');
     }
 
     public function store(Request $request): RedirectResponse

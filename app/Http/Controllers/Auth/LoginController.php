@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
+use Inertia\Inertia;
 use RuntimeException;
 
 class LoginController extends Controller
@@ -26,7 +27,7 @@ class LoginController extends Controller
             return to_route('oauth.redirect');
         }
 
-        return view('auth.login', [
+        return Inertia::render('auth/Login', [
             'showPasswordForm' => AuthFlow::passwordLoginEnabled(),
             'showOauthButton' => AuthFlow::oauthConfigured(),
             'mfaEnabled' => AuthFlow::mfaEnabled(),

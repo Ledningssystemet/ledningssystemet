@@ -1,35 +1,23 @@
 import { cn } from "@/lib/utils";
 import { useTranslations } from "@/hooks/useTranslations";
+import { DashboardWidgetProps } from "@/types/dashboard";
 
-const riskData = [
-  [0, 3, 0, 0, 0],
-  [16, 4, 0, 0, 0],
-  [22, 38, 14, 0, 1],
-  [10, 12, 60, 14, 2],
-];
-
-const rowColors = [
-  ["risk-cell-green", "risk-cell-yellow", "risk-cell-orange", "risk-cell-red", "risk-cell-darkred"],
-  ["risk-cell-green", "risk-cell-green", "risk-cell-yellow", "risk-cell-orange", "risk-cell-red"],
-  ["risk-cell-green", "risk-cell-green", "risk-cell-green", "risk-cell-yellow", "risk-cell-orange"],
-  ["risk-cell-green", "risk-cell-green", "risk-cell-green", "risk-cell-green", "risk-cell-yellow"],
-];
-
-export default function RiskOverview() {
+export default function RiskOverview({ data, loading, error }: DashboardWidgetProps) {
   const { t } = useTranslations();
-  const consequences = [
-    t('pages.dashboard.risk_overview.consequences.0'),
-    t('pages.dashboard.risk_overview.consequences.1'),
-    t('pages.dashboard.risk_overview.consequences.2'),
-    t('pages.dashboard.risk_overview.consequences.3'),
-    t('pages.dashboard.risk_overview.consequences.4'),
-  ];
-  const likelihoods = [
-    t('pages.dashboard.risk_overview.likelihoods.0'),
-    t('pages.dashboard.risk_overview.likelihoods.1'),
-    t('pages.dashboard.risk_overview.likelihoods.2'),
-    t('pages.dashboard.risk_overview.likelihoods.3'),
-  ];
+  const consequences = data.riskMatrixMeta.consequences;
+  const likelihoods = data.riskMatrixMeta.probabilities;
+
+  if (loading) {
+    return <div className="bg-card rounded-xl border border-border p-4 text-sm text-muted-foreground">{t('pages.dashboard.shared.loading')}</div>;
+  }
+
+  if (error) {
+    return <div className="bg-card rounded-xl border border-border p-4 text-sm text-destructive">{error}</div>;
+  }
+
+  if (consequences.length === 0 || likelihoods.length === 0) {
+    return <div className="bg-card rounded-xl border border-border p-4 text-sm text-muted-foreground">{t('pages.dashboard.risk_overview.no_configuration')}</div>;
+  }
 
   return (
     <div className="bg-card rounded-xl border border-border card-shine">
@@ -37,26 +25,31 @@ export default function RiskOverview() {
         <h3 className="font-heading font-semibold text-card-foreground">{t('pages.dashboard.risk_overview.title')}</h3>
       </div>
       <div className="px-4 pb-4">
-        <div className="grid grid-cols-6 gap-px bg-border rounded-lg overflow-hidden text-xs">
+        <div
+          className="grid gap-px bg-border rounded-lg overflow-hidden text-xs"
+          style={{ gridTemplateColumns: `repeat(${consequences.length + 1}, minmax(0, 1fr))` }}
+        >
           {/* Header row */}
           <div className="bg-muted p-2 flex items-center justify-center font-medium text-muted-foreground" />
           {consequences.map((c) => (
-            <div key={c} className="bg-muted p-1.5 flex items-center justify-center font-medium text-muted-foreground text-center text-[10px] leading-tight">
-              {c}
+            <div key={c.id} className="bg-muted p-1.5 flex items-center justify-center font-medium text-muted-foreground text-center text-[10px] leading-tight">
+              {c.name}
             </div>
           ))}
           {/* Data rows */}
-          {riskData.map((row, ri) => (
+          {data.riskMatrix.map((row, ri) => (
             <div key={`row-${ri}`} className="contents">
               <div key={`label-${ri}`} className="bg-muted p-1.5 flex items-center justify-center font-medium text-muted-foreground text-[10px] text-center leading-tight">
-                {likelihoods[ri]}
+                {likelihoods[ri]?.name ?? ''}
               </div>
               {row.map((val, ci) => (
                 <div
                   key={`${ri}-${ci}`}
+                  title={data.riskMatrixMeta.cellMeta[ri]?.[ci]?.riskLevelName ?? undefined}
+                  style={{ backgroundColor: data.riskMatrixMeta.cellMeta[ri]?.[ci]?.backgroundColor ?? undefined }}
                   className={cn(
                     "p-2 flex items-center justify-center font-bold text-sm transition-transform hover:scale-105 cursor-pointer",
-                    rowColors[ri][ci]
+                    data.riskMatrixMeta.cellMeta[ri]?.[ci]?.className ?? 'risk-cell-green'
                   )}
                 >
                   {val > 0 ? val : ""}

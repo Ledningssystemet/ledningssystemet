@@ -13,7 +13,7 @@ class ConsequenceLevelPolicy
      */
     public function viewAny(User $user): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -21,7 +21,7 @@ class ConsequenceLevelPolicy
      */
     public function view(User $user, ConsequenceLevel $consequenceLevel = new ConsequenceLevel): bool
     {
-        return false;
+        return true;
     }
 
     /**

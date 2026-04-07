@@ -1,9 +1,11 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useMemo } from "react";
 import { cn } from "@/lib/utils";
 import logoWhite from "@/assets/logo_se_white.svg";
 import logo from "@/assets/logo_se.svg";
 import {
     APP_HOME_PATH,
+    APP_MY_PROFILE_PATH,
+    buildMenuRoutes,
     getMenuItemPath,
     isExternalUrl,
 } from "@/app/routes";
@@ -13,8 +15,10 @@ import {
     Scale, GitBranch, Shield, Globe,
     Truck, FileSignature, CheckCircle2, Leaf, FlaskConical,
     Database, AlertTriangle,
-    Settings, HelpCircle, Search, Bell, User,
+    Settings, HelpCircle, Search, Bell, User, LogOut, SlidersHorizontal,
     FolderOpen, RefreshCcw, ScanSearch, UserRoundCheck,
+    Briefcase, Users, Building2, Target, TrendingUp, Tag,
+    GraduationCap, Key, Layers, Brain,
     type LucideProps,
 } from "lucide-react";
 import type { MenuCategoryDto, BadgeDto, BadgeSeverity } from "@/types/menu";
@@ -38,11 +42,11 @@ interface SharedProps extends PageProps{
 type IconComponent = React.ComponentType<LucideProps>;
 
 const iconRegistry: Record<string, IconComponent> = {
-    AlertTriangle, Bell, CheckCircle2, ChevronDown, ClipboardList,
+    AlertTriangle, Bell, Brain, Briefcase, Building2, CheckCircle2, ChevronDown, ClipboardList,
     Database, FileSignature, FileText, FlaskConical, FolderOpen,
-    GitBranch, Globe, Home, HelpCircle, LayoutDashboard, Leaf,
+    GitBranch, Globe, GraduationCap, Home, HelpCircle, Key, LayoutDashboard, Layers, Leaf,
     Menu, RefreshCcw, Scale, ScanSearch, Search, Settings,
-    Shield, Truck, User, UserCircle, X, UserRoundCheck,
+    Shield, Tag, Target, TrendingUp, Truck, User, UserCircle, Users, X, UserRoundCheck,
 };
 
 function resolveIcon(name: string): IconComponent {
@@ -91,12 +95,60 @@ function getMobileItemClasses(isActive: boolean) {
     );
 }
 
+function getProfileMenuItemClasses(isActive = false) {
+    return cn(
+        "flex w-full items-center gap-2.5 rounded-md px-3 py-2 text-sm transition-colors",
+        isActive
+            ? "bg-muted text-foreground"
+            : "text-foreground hover:bg-muted",
+    );
+}
+
 // ─── Mega-menu dropdown ───────────────────────────────────────────────────────
 interface MegaMenuDropdownProps {
     category: MenuCategoryDto;
     itemBadges: Record<string, BadgeDto>;
     activePath: string;
     onClose: () => void;
+}
+
+function deriveCategoryBadges(
+    categories: MenuCategoryDto[],
+    itemBadges: Record<string, BadgeDto>,
+): Record<string, BadgeDto> {
+    const severityRank: Record<BadgeSeverity, number> = {
+        info: 0,
+        warning: 1,
+        danger: 2,
+    };
+
+    const badges: Record<string, BadgeDto> = {};
+
+    for (const category of categories) {
+        const categoryItems = category.columns.flatMap((column) => column.items);
+        const childBadges = categoryItems
+            .map((item) => itemBadges[item.key])
+            .filter((badge): badge is BadgeDto => Boolean(badge));
+
+        if (childBadges.length === 0) continue;
+
+        const totalCount = childBadges.reduce((sum, badge) => {
+            const parsedCount = Number.parseInt(badge.count, 10);
+            return sum + (Number.isNaN(parsedCount) ? 0 : parsedCount);
+        }, 0);
+
+        const worstSeverity = childBadges.reduce<BadgeSeverity>((worst, badge) => (
+            severityRank[badge.severity] > severityRank[worst] ? badge.severity : worst
+        ), "info");
+
+        badges[category.label] = {
+            // Fallback keeps parent indicator visible even when child counts are non-numeric.
+            count: String(totalCount > 0 ? totalCount : childBadges.length),
+            severity: worstSeverity,
+        };
+    }
+
+    return badges;
 }
 
 function MegaMenuDropdown({ category, itemBadges, activePath, onClose }: MegaMenuDropdownProps) {
@@ -106,9 +158,10 @@ function MegaMenuDropdown({ category, itemBadges, activePath, onClose }: MegaMen
                 <div className="max-w-[1600px] mx-auto px-6 py-6">
                     <div className={cn(
                         "grid gap-8",
-                        category.columns.length === 1 && "grid-cols-1 max-w-sm",
-                        category.columns.length === 2 && "grid-cols-2 max-w-2xl",
-                        category.columns.length >= 3 && "grid-cols-3",
+                        // Make each mega-menu column roughly ~2x wider than before.
+                        category.columns.length === 1 && "grid-cols-1 max-w-[44rem]",
+                        category.columns.length === 2 && "grid-cols-2 max-w-[84rem]",
+                        category.columns.length >= 3 && "grid-cols-3 max-w-[100rem]",
                     )}>
                         {category.columns.map((col, ci) => (
                             <div key={ci}>
@@ -190,9 +243,10 @@ interface MobileMenuProps {
     categories: MenuCategoryDto[];
     itemBadges: Record<string, BadgeDto>;
     activePath: string;
+    preferredHomePath: string;
 }
 
-function MobileMenu({ open, onClose, categories, itemBadges, activePath }: MobileMenuProps) {
+function MobileMenu({ open, onClose, categories, itemBadges, activePath, preferredHomePath }: MobileMenuProps) {
     const { t } = useTranslations();
     const [expandedCategory, setExpandedCategory] = useState<string | null>(null);
 
@@ -219,10 +273,10 @@ function MobileMenu({ open, onClose, categories, itemBadges, activePath }: Mobil
                         />
                     </div>
 
-                    <Link to={APP_HOME_PATH} onClick={onClose}
+                    <Link to={preferredHomePath} onClick={onClose}
                         className={cn(
                             "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg font-medium text-sm mb-1 transition-colors",
-                            activePath === APP_HOME_PATH
+                            activePath === preferredHomePath
                                 ? "bg-primary/5 text-primary"
                                 : "text-foreground hover:bg-muted",
                         )}>
@@ -303,18 +357,28 @@ function MobileMenu({ open, onClose, categories, itemBadges, activePath }: Mobil
 export default function MegaNav() {
     const { t } = useTranslations();
     const categories = useMenuData();
-    const { itemBadges, categoryBadges } = useMenuBadges();
+    const { itemBadges } = useMenuBadges();
     const location = useLocation();
+    const profilePreferencesPath = APP_MY_PROFILE_PATH;
+    const logoutPath = "/logout";
 
     const [openMenu, setOpenMenu] = useState<string | null>(null);
     const [mobileOpen, setMobileOpen] = useState(false);
+    const [profileMenuOpen, setProfileMenuOpen] = useState(false);
     const navRef = useRef<HTMLElement>(null);
+    const profileMenuRef = useRef<HTMLDivElement>(null);
     const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const categoryBadges = useMemo(
+        () => deriveCategoryBadges(categories, itemBadges),
+        [categories, itemBadges],
+    );
+    const preferredHomePath = APP_HOME_PATH;
 
     const openCategory = categories.find((c) => c.label === openMenu) ?? null;
 
     const handleMouseEnter = (label: string) => {
         if (timeoutRef.current) clearTimeout(timeoutRef.current);
+        setProfileMenuOpen(false);
         setOpenMenu(label || null);
     };
 
@@ -336,8 +400,31 @@ export default function MegaNav() {
     }, []);
 
     useEffect(() => {
+        const handlePointerDown = (event: MouseEvent) => {
+            if (!profileMenuRef.current?.contains(event.target as Node)) {
+                setProfileMenuOpen(false);
+            }
+        };
+
+        const handleKeyDown = (event: KeyboardEvent) => {
+            if (event.key === "Escape") {
+                setProfileMenuOpen(false);
+            }
+        };
+
+        document.addEventListener("mousedown", handlePointerDown);
+        document.addEventListener("keydown", handleKeyDown);
+
+        return () => {
+            document.removeEventListener("mousedown", handlePointerDown);
+            document.removeEventListener("keydown", handleKeyDown);
+        };
+    }, []);
+
+    useEffect(() => {
         setOpenMenu(null);
         setMobileOpen(false);
+        setProfileMenuOpen(false);
     }, [location.pathname]);
 
     return (
@@ -352,14 +439,14 @@ export default function MegaNav() {
                     </button>
 
                     {/* Logo */}
-                    <Link to={APP_HOME_PATH} className="flex items-center mr-8" onClick={() => setOpenMenu(null)}>
+                    <Link to={preferredHomePath} className="flex items-center mr-8" onClick={() => setOpenMenu(null)}>
                         <img src={logoWhite} alt="Ledningssystemet.se" className="h-7" />
                     </Link>
 
                     {/* Desktop nav */}
                     <div className="hidden lg:flex items-center gap-1 flex-1" onMouseLeave={handleMouseLeave}>
                         {/* Hem */}
-                        <NavLink to={APP_HOME_PATH} end
+                        <NavLink to={preferredHomePath} end
                             className={({ isActive }) => getTopLevelNavClasses(isActive)}
                             onClick={() => setOpenMenu(null)} onMouseEnter={() => handleMouseEnter("")}>
                             <Home className="h-4 w-4" />
@@ -385,10 +472,9 @@ export default function MegaNav() {
                                     <span className="hidden xl:inline">{cat.label}</span>
                                     {badge && (
                                         <span className={cn(
-                                            "text-[10px] font-bold min-w-[18px] text-center px-1 py-0.5 rounded-full leading-none",
+                                            "text-[10px] font-bold min-w-[12px] min-h-[12px] text-center px-1 py-0.5 rounded-full leading-none",
                                             getSolidBadgeClasses(badge.severity),
                                         )}>
-                                            {badge.count}
                                         </span>
                                     )}
                                     <ChevronDown className={cn(
@@ -405,14 +491,61 @@ export default function MegaNav() {
 
                         <div className="w-px h-6 bg-primary-foreground/15 mx-1 hidden sm:block" />
 
-                        <div className="flex items-center gap-2 pl-1">
-                            <div className="hidden md:block text-right">
-                                <div className="text-xs font-medium text-primary-foreground/90">{profileName}</div>
-                                <div className="text-[10px] text-primary-foreground/50">{profileEmail}</div>
-                            </div>
-                            <div className="h-8 w-8 rounded-full bg-accent/20 border border-accent/30 flex items-center justify-center">
-                                <User className="h-4 w-4 text-accent" />
-                            </div>
+                        <div ref={profileMenuRef} className="relative pl-1">
+                            <button
+                                type="button"
+                                aria-haspopup="menu"
+                                aria-expanded={profileMenuOpen}
+                                aria-label={t("ui.nav.account_menu_label")}
+                                onClick={() => {
+                                    setOpenMenu(null);
+                                    setProfileMenuOpen((prev) => !prev);
+                                }}
+                                className="flex items-center gap-2 rounded-lg px-2 py-1.5 transition-colors hover:bg-primary-foreground/10 focus:outline-none focus:ring-2 focus:ring-primary-foreground/30"
+                            >
+                                <div className="hidden md:block text-right">
+                                    <div className="text-xs font-medium text-primary-foreground/90">{profileName}</div>
+                                    <div className="text-[10px] text-primary-foreground/50">{profileEmail}</div>
+                                </div>
+                                <div className="h-8 w-8 rounded-full bg-accent/20 border border-accent/30 flex items-center justify-center">
+                                    <User className="h-4 w-4 text-accent" />
+                                </div>
+                                <ChevronDown className={cn(
+                                    "hidden h-4 w-4 text-primary-foreground/70 transition-transform sm:block",
+                                    profileMenuOpen && "rotate-180",
+                                )} />
+                            </button>
+
+                            {profileMenuOpen && (
+                                <div className="absolute right-0 top-full z-50 mt-2 w-56 overflow-hidden rounded-xl border border-border bg-card p-1.5 shadow-xl">
+                                    <div className="border-b border-border px-3 py-2">
+                                        <div className="truncate text-sm font-medium text-card-foreground">{profileName}</div>
+                                        {profileEmail && (
+                                            <div className="truncate text-xs text-muted-foreground">{profileEmail}</div>
+                                        )}
+                                    </div>
+
+                                    <div className="pt-1">
+                                        <Link
+                                            to={profilePreferencesPath}
+                                            onClick={() => setProfileMenuOpen(false)}
+                                            className={getProfileMenuItemClasses(location.pathname === profilePreferencesPath)}
+                                        >
+                                            <SlidersHorizontal className="h-4 w-4 text-muted-foreground" />
+                                            <span>{t("ui.nav.my_preferences")}</span>
+                                        </Link>
+
+                                        <a
+                                            href={logoutPath}
+                                            onClick={() => setProfileMenuOpen(false)}
+                                            className={getProfileMenuItemClasses()}
+                                        >
+                                            <LogOut className="h-4 w-4 text-muted-foreground" />
+                                            <span>{t("ui.nav.log_out")}</span>
+                                        </a>
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>
@@ -438,6 +571,7 @@ export default function MegaNav() {
                 categories={categories}
                 itemBadges={itemBadges}
                 activePath={location.pathname}
+                preferredHomePath={preferredHomePath}
             />
         </>
     );

@@ -1,18 +1,16 @@
 import { useTranslations } from "@/hooks/useTranslations";
+import { DashboardWidgetProps } from "@/types/dashboard";
 
-const riskKeys = [
-  "portal_intrusion",
-  "first_aid",
-  "fire_drill",
-  "backup_prod",
-  "intrusion_awareness",
-  "backup_server",
-  "backup_vulns",
-  "threat_monitoring",
-];
-
-export default function TopRisks() {
+export default function TopRisks({ data, loading, error }: DashboardWidgetProps) {
   const { t } = useTranslations();
+
+  if (loading) {
+    return <div className="bg-card rounded-xl border border-border p-4 text-sm text-muted-foreground">{t('pages.dashboard.shared.loading')}</div>;
+  }
+
+  if (error) {
+    return <div className="bg-card rounded-xl border border-border p-4 text-sm text-destructive">{error}</div>;
+  }
 
   return (
     <div className="bg-card rounded-xl border border-border card-shine">
@@ -22,14 +20,17 @@ export default function TopRisks() {
         </div>
       </div>
       <div className="divide-y divide-border">
-        {riskKeys.map((riskKey, i) => (
+        {data.topRisks.length === 0 && (
+          <div className="px-4 py-6 text-sm text-muted-foreground">{t('pages.dashboard.top_risks.no_risks')}</div>
+        )}
+        {data.topRisks.map((risk) => (
           <button
-            key={i}
+            key={risk.id}
             className="w-full flex items-start gap-3 px-4 py-2.5 text-left hover:bg-muted/50 transition-colors group"
           >
             <span className="status-dot status-dot-danger mt-1.5" />
             <span className="text-sm text-card-foreground group-hover:text-primary transition-colors leading-snug">
-              {t(`pages.dashboard.top_risks.items.${riskKey}`)}
+              {risk.title}
             </span>
           </button>
         ))}

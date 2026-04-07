@@ -13,7 +13,7 @@ class ConfidentialityGroundPolicy
      */
     public function viewAny(User $user): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -21,7 +21,7 @@ class ConfidentialityGroundPolicy
      */
     public function view(User $user, ConfidentialityGround $confidentialityGround = new ConfidentialityGround): bool
     {
-        return false;
+        return true;
     }
 
     /**

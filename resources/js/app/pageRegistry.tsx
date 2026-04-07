@@ -7,7 +7,6 @@ const pageComponents: Record<string, React.LazyExoticComponent<({ route }: { rou
     'my-tasks': lazy(() => import('@/pages/app/MyTasksPage')),
     'my-documents': lazy(() => import('@/pages/app/MyDocumentsPage')),
     customers: lazy(() => import('@/pages/app/CustomersPage')),
-    settings: lazy(() => import('@/pages/app/SettingsPage')),
 };
 
 export function resolveAppRouteElement(route: AppSectionRoute) {

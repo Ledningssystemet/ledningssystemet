@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
+use Inertia\Inertia;
 
 class OtpChallengeController extends Controller
 {
@@ -21,7 +22,7 @@ class OtpChallengeController extends Controller
             return to_route('login');
         }
 
-        return view('auth.otp-challenge', [
+        return Inertia::render('auth/OtpChallenge', [
             'ttlMinutes' => AuthFlow::mfaOtpTtlMinutes(),
         ]);
     }

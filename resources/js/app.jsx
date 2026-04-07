@@ -5,11 +5,18 @@ import { createRoot } from 'react-dom/client';
 import { createInertiaApp } from '@inertiajs/react';
 import { StrictMode } from 'react';
 
-const pages = import.meta.glob('./Pages/**/*.{jsx,tsx}');
+const pages = {
+    ...import.meta.glob('./pages/**/*.{jsx,tsx}'),
+    ...import.meta.glob('./Pages/**/*.{jsx,tsx}'),
+};
 
 createInertiaApp({
     resolve: async (name) => {
-        const page = pages[`./Pages/${name}.tsx`] ?? pages[`./Pages/${name}.jsx`];
+        const page =
+            pages[`./pages/${name}.tsx`] ??
+            pages[`./pages/${name}.jsx`] ??
+            pages[`./Pages/${name}.tsx`] ??
+            pages[`./Pages/${name}.jsx`];
 
         if (!page) {
             throw new Error(`Unknown Inertia page: ${name}`);

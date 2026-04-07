@@ -13,7 +13,7 @@ class CompetenceLevelPolicy
      */
     public function viewAny(User $user): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -21,7 +21,7 @@ class CompetenceLevelPolicy
      */
     public function view(User $user, CompetenceLevel $competenceLevel = new CompetenceLevel): bool
     {
-        return false;
+        return true;
     }
 
     /**

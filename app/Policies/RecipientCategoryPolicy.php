@@ -13,7 +13,7 @@ class RecipientCategoryPolicy
      */
     public function viewAny(User $user): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -21,7 +21,7 @@ class RecipientCategoryPolicy
      */
     public function view(User $user, RecipientCategory $recipientCategory = new RecipientCategory): bool
     {
-        return false;
+        return true;
     }
 
     /**

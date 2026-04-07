@@ -13,7 +13,7 @@ class AvailabilityClassPolicy
      */
     public function viewAny(User $user): bool
     {
-        return $user->haveAnyAccessRights(['managementtools.edit']);
+        return true;
     }
 
     /**
@@ -21,7 +21,7 @@ class AvailabilityClassPolicy
      */
     public function view(User $user, AvailabilityClass $availabilityClass = new AvailabilityClass): bool
     {
-        return $user->haveAnyAccessRights(['managementtools.edit']);
+        return true;
     }
 
     /**

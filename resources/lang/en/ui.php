@@ -15,6 +15,9 @@ return [
 		'system_settings' => 'System settings',
 		'profile_name_placeholder' => 'User',
 		'company_name_placeholder' => 'Company',
+		'account_menu_label' => 'Open account menu',
+		'my_preferences' => 'My preferences',
+		'log_out' => 'Log out',
 	],
 
 	'app' => [

@@ -13,7 +13,7 @@ class DataCategoryPolicy
      */
     public function viewAny(User $user): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -21,7 +21,7 @@ class DataCategoryPolicy
      */
     public function view(User $user, DataCategory $dataCategory = new DataCategory): bool
     {
-        return false;
+        return true;
     }
 
     /**

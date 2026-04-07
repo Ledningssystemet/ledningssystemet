@@ -13,7 +13,7 @@ class LegalBasisPolicy
      */
     public function viewAny(User $user): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -21,7 +21,7 @@ class LegalBasisPolicy
      */
     public function view(User $user, LegalBasis $legalBasis = new LegalBasis): bool
     {
-        return false;
+        return true;
     }
 
     /**

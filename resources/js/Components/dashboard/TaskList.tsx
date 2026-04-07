@@ -1,26 +1,18 @@
 import { ExternalLink } from "lucide-react";
 import { useTranslations } from "@/hooks/useTranslations";
+import { DashboardWidgetProps } from "@/types/dashboard";
 
-interface Task {
-  titleKey: string;
-  date: string;
-  status: "overdue" | "upcoming" | "done";
-  type: "activity" | "control";
-}
+export default function TaskList({ data, loading, error }: DashboardWidgetProps) {
+  const { t, locale } = useTranslations();
+  const tasks = data.tasks;
 
-const tasks: Task[] = [
-  { titleKey: "review_dependency_licenses", date: "2026-02-28", status: "overdue", type: "activity" },
-  { titleKey: "book_rise_workshop", date: "2026-02-28", status: "overdue", type: "activity" },
-  { titleKey: "check_backups", date: "2026-03-09", status: "overdue", type: "control" },
-  { titleKey: "report_kpis", date: "2026-03-09", status: "overdue", type: "activity" },
-  { titleKey: "check_cert_se", date: "2026-03-13", status: "overdue", type: "control" },
-  { titleKey: "check_law_source", date: "2026-03-13", status: "overdue", type: "control" },
-  { titleKey: "monthly_letter", date: "2026-03-16", status: "upcoming", type: "activity" },
-  { titleKey: "archive_binders_and_systems", date: "2026-03-31", status: "upcoming", type: "activity" },
-];
+  if (loading) {
+    return <div className="bg-card rounded-xl border border-border p-4 text-sm text-muted-foreground">{t('pages.dashboard.shared.loading')}</div>;
+  }
 
-export default function TaskList() {
-  const { t } = useTranslations();
+  if (error) {
+    return <div className="bg-card rounded-xl border border-border p-4 text-sm text-destructive">{error}</div>;
+  }
 
   return (
     <div className="bg-card rounded-xl border border-border card-shine">
@@ -33,9 +25,12 @@ export default function TaskList() {
         </div>
       </div>
       <div className="divide-y divide-border">
-        {tasks.map((task, i) => (
+        {tasks.length === 0 && (
+          <div className="px-4 py-6 text-sm text-muted-foreground">{t('pages.dashboard.tasks.no_tasks')}</div>
+        )}
+        {tasks.map((task) => (
           <button
-            key={i}
+            key={task.id}
             className="w-full flex items-start gap-3 px-4 py-3 text-left hover:bg-muted/50 transition-colors group"
           >
             <span
@@ -47,10 +42,12 @@ export default function TaskList() {
             />
             <div className="flex-1 min-w-0">
               <p className="text-sm text-card-foreground group-hover:text-primary transition-colors truncate">
-                {t(`pages.dashboard.tasks.items.${task.titleKey}`)}
+                {task.title}
               </p>
               <div className="flex items-center gap-2 mt-0.5">
-                <span className="text-[11px] text-muted-foreground">{task.date}</span>
+                <span className="text-[11px] text-muted-foreground">
+                  {task.date ? new Date(task.date).toLocaleDateString(locale) : '-'}
+                </span>
                 <span className="text-[10px] text-muted-foreground/60 bg-muted px-1.5 py-0.5 rounded">
                   {task.type === "activity" ? t('ui.task.activity') : t('ui.task.control')}
                 </span>

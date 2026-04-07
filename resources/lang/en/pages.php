@@ -61,6 +61,12 @@ return [
 		'section_general' => 'General',
 		'section_notifications' => 'Notifications',
 		'section_appearance' => 'Appearance',
+		'start_page_label' => 'Start page',
+		'start_page_help' => 'Choose which page should open by default when you enter the app.',
+		'start_page_save_button' => 'Save start page',
+		'start_page_saved' => 'Start page saved.',
+		'start_page_pending_changes' => 'You have unsaved changes. Click the button below to apply your start page.',
+		'start_page_no_pending_changes' => 'Current start page is already saved.',
 		'language_label' => 'Language',
 		'theme_label' => 'Theme',
 		'notifications_label' => 'Notifications',
@@ -69,6 +75,11 @@ return [
 	],
 
 	'dashboard' => [
+		'shared' => [
+			'loading' => 'Loading dashboard data...',
+			'load_error' => 'Could not load dashboard data.',
+		],
+
 		'widgets' => [
 			'stats' => 'Key figures',
 			'tasks' => 'Tasks',
@@ -91,6 +102,7 @@ return [
 
 		'tasks' => [
 			'title' => 'To do',
+			'no_tasks' => 'No tasks to show.',
 			'items' => [
 				'review_dependency_licenses' => 'Review licenses in third-party dependencies',
 				'book_rise_workshop' => 'Book RISE workshop (network certification)',
@@ -105,6 +117,7 @@ return [
 
 		'goals' => [
 			'title' => 'Company goals',
+			'no_goals' => 'No goals to show.',
 			'status_achieved' => 'Goal achieved',
 			'status_acceptable' => 'Acceptable',
 			'status_unacceptable' => 'Unacceptable',
@@ -120,6 +133,21 @@ return [
 
 		'process' => [
 			'title' => 'Process',
+			'fullscreen' => 'Open fullscreen',
+			'fullscreen_title' => 'Process map',
+			'fit_to_screen' => 'Fit to screen',
+			'start_process' => 'start',
+			'unassigned_department' => 'No department',
+			'zoom_hint' => 'Use mouse wheel and drag to navigate the map.',
+			'no_processes' => 'No processes available.',
+			'no_steps' => 'No process activities found for this process.',
+			'no_published_bpmn' => 'No published process map is available for this process.',
+			'invalid_bpmn' => 'The published process map could not be rendered.',
+			'set_as_preferred_process' => 'Set as preferred process',
+			'set_as_preferred_process_tooltip' => 'Display this process in the Process card when you open the dashboard',
+			'reset_preferred_process' => 'Reset start process',
+			'reset_preferred_process_tooltip' => 'Clear your custom start process and go back to the default start process',
+			'preferred_process_saved' => ':process is now your preferred process',
 			'organizations' => [
 				'svestra' => 'Svestra',
 				'kallekullen' => 'Kallekullen',
@@ -137,12 +165,14 @@ return [
 
 		'risk_overview' => [
 			'title' => 'Risk overview',
+			'no_configuration' => 'No risk matrix configuration available.',
 			'consequences' => ['Insignificant', 'Minor', 'Moderate', 'Significant', 'Severe'],
 			'likelihoods' => ['Very likely', 'Likely', 'Possible', 'Unlikely'],
 		],
 
 		'top_risks' => [
 			'title' => '10 highest risks',
+			'no_risks' => 'No risks to show.',
 			'items' => [
 				'portal_intrusion' => 'In the event of an intrusion in portal1.ledningssystemet.se (Admin portal clusterno0)',
 				'first_aid' => 'The organization has insufficient ability to provide first aid',

@@ -13,7 +13,7 @@ class ConfidentialityClassPolicy
      */
     public function viewAny(User $user): bool
     {
-        return $user->haveAnyAccessRights(['managementtools.edit']);
+        return true;
     }
 
     /**
@@ -21,7 +21,7 @@ class ConfidentialityClassPolicy
      */
     public function view(User $user, ConfidentialityClass $confidentialityClass = new ConfidentialityClass): bool
     {
-        return $user->haveAnyAccessRights(['managementtools.edit']);
+        return true;
     }
 
     /**

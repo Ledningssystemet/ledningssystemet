@@ -1,27 +1,23 @@
 import { Check, Minus, X } from "lucide-react";
 import { useTranslations } from "@/hooks/useTranslations";
+import { DashboardWidgetProps } from "@/types/dashboard";
 
-interface Goal {
-  titleKey: string;
-  status: "achieved" | "acceptable" | "unacceptable";
-}
-
-const goals: Goal[] = [
-  { titleKey: "training_sessions", status: "achieved" },
-  { titleKey: "psychology_cycle_time", status: "acceptable" },
-  { titleKey: "platform_growth", status: "acceptable" },
-  { titleKey: "hosted_instances", status: "unacceptable" },
-  { titleKey: "ordersystem_start", status: "unacceptable" },
-  { titleKey: "partner_portal_content", status: "unacceptable" },
-];
-
-export default function GoalsCard() {
+export default function GoalsCard({ data, loading, error }: DashboardWidgetProps) {
   const { t } = useTranslations();
+  const goals = data.goals;
   const statusConfig = {
     achieved: { label: t('pages.dashboard.goals.status_achieved'), dotClass: "status-dot-success", icon: Check },
     acceptable: { label: t('pages.dashboard.goals.status_acceptable'), dotClass: "status-dot-warning", icon: Minus },
     unacceptable: { label: t('pages.dashboard.goals.status_unacceptable'), dotClass: "status-dot-danger", icon: X },
   };
+
+  if (loading) {
+    return <div className="bg-card rounded-xl border border-border p-4 text-sm text-muted-foreground">{t('pages.dashboard.shared.loading')}</div>;
+  }
+
+  if (error) {
+    return <div className="bg-card rounded-xl border border-border p-4 text-sm text-destructive">{error}</div>;
+  }
 
   return (
     <div className="bg-card rounded-xl border border-border card-shine">
@@ -37,16 +33,19 @@ export default function GoalsCard() {
         </div>
       </div>
       <div className="divide-y divide-border">
-        {goals.map((goal, i) => {
+        {goals.length === 0 && (
+          <div className="px-4 py-6 text-sm text-muted-foreground">{t('pages.dashboard.goals.no_goals')}</div>
+        )}
+        {goals.map((goal) => {
           const cfg = statusConfig[goal.status];
           return (
             <button
-              key={i}
+              key={goal.id}
               className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-muted/50 transition-colors group"
             >
               <span className={`status-dot ${cfg.dotClass}`} />
               <span className="text-sm text-card-foreground group-hover:text-primary transition-colors flex-1">
-                {t(`pages.dashboard.goals.items.${goal.titleKey}`)}
+                {goal.title}
               </span>
             </button>
           );

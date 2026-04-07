@@ -13,7 +13,7 @@ class DepartmentPolicy
      */
     public function viewAny(User $user): bool
     {
-        return $user->haveAnyAccessRights(['managementtools.edit']);
+        return true;
     }
 
     /**
@@ -21,7 +21,7 @@ class DepartmentPolicy
      */
     public function view(User $user, Department $department = new Department): bool
     {
-        return $user->haveAnyAccessRights(['managementtools.edit']);
+        return true;
     }
 
     /**

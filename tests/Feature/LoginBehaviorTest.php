@@ -34,7 +34,8 @@ class LoginBehaviorTest extends TestCase
 
         $withoutOauth = $this->get('/login');
         $withoutOauth->assertOk();
-        $withoutOauth->assertDontSee('Logga in med ditt arbetsplatskonto');
+        $withoutOauth->assertSee('"component":"auth\\/Login"', false);
+        $withoutOauth->assertSee('"showOauthButton":false', false);
 
         config()->set('authentication.oauth.enabled', true);
         config()->set('authentication.oauth.provider', 'google');
@@ -44,7 +45,8 @@ class LoginBehaviorTest extends TestCase
 
         $withOauth = $this->get('/login');
         $withOauth->assertOk();
-        $withOauth->assertSee('Logga in med ditt arbetsplatskonto');
+        $withOauth->assertSee('"component":"auth\\/Login"', false);
+        $withOauth->assertSee('"showOauthButton":true', false);
     }
 
     public function test_login_page_shows_mfa_enforced_message_when_enabled_and_enforced(): void
@@ -56,7 +58,8 @@ class LoginBehaviorTest extends TestCase
         $response = $this->get('/login');
 
         $response->assertOk();
-        $response->assertSee('MFA ar obligatoriskt');
+        $response->assertSee('"component":"auth\\/Login"', false);
+        $response->assertSee('"mfaEnforced":true', false);
     }
 }
 

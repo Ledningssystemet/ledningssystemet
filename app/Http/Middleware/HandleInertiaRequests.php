@@ -60,6 +60,10 @@ class HandleInertiaRequests extends Middleware
                 'pages' => trans('pages'),
                 'menu' => trans('menu'),
             ],
+            'flash' => [
+                'status' => fn () => $request->session()->get('status'),
+                'oauth_error' => fn () => $request->session()->get('oauth_error'),
+            ],
         ];
     }
 }

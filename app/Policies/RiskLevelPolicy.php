@@ -13,7 +13,7 @@ class RiskLevelPolicy
      */
     public function viewAny(User $user): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -21,7 +21,7 @@ class RiskLevelPolicy
      */
     public function view(User $user, RiskLevel $riskLevel = new RiskLevel): bool
     {
-        return false;
+        return true;
     }
 
     /**

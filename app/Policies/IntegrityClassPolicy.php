@@ -13,7 +13,7 @@ class IntegrityClassPolicy
      */
     public function viewAny(User $user): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -21,7 +21,7 @@ class IntegrityClassPolicy
      */
     public function view(User $user, IntegrityClass $integrityClass = new IntegrityClass): bool
     {
-        return false;
+        return true;
     }
 
     /**

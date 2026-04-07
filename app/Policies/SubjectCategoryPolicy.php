@@ -13,7 +13,7 @@ class SubjectCategoryPolicy
      */
     public function viewAny(User $user): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -21,7 +21,7 @@ class SubjectCategoryPolicy
      */
     public function view(User $user, SubjectCategory $subjectCategory = new SubjectCategory): bool
     {
-        return false;
+        return true;
     }
 
     /**

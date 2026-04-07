@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
+use Inertia\Inertia;
 
 class ResetPasswordController extends Controller
 {
@@ -20,7 +21,7 @@ class ResetPasswordController extends Controller
             return to_route('oauth.redirect');
         }
 
-        return view('auth.reset-password', [
+        return Inertia::render('auth/ResetPassword', [
             'token' => $token,
             'email' => (string) $request->query('email', ''),
         ]);
