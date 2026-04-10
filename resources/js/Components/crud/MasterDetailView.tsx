@@ -1,4 +1,4 @@
-import { FieldConfig, ItemBadgeConfig, ItemStatus } from "./types";
+import { FieldConfig, ItemBadgeConfig, ItemStatus, SelectOption } from "./types";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Pencil } from "lucide-react";
@@ -6,6 +6,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { StatusDot, statusRowClass } from "./StatusIndicator";
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
 import { InlineTagsEditor } from "./InlineTagsEditor";
+import { useAllSelectOptions, resolveOptions } from "./optionsCache";
 
 interface MasterDetailViewProps {
   items: Record<string, any>[];
@@ -33,6 +34,7 @@ export function MasterDetailView({
   const labelField = fields.find((f) => f.masterLabel) || fields[0];
   const descField = fields.find((f) => f.masterDescription);
   const detailFields = fields.filter((f) => !f.hidden);
+  const optionsMap = useAllSelectOptions(fields);
 
   // Group detail fields by category
   const categories = groupByCategory(detailFields);
@@ -144,7 +146,7 @@ export function MasterDetailView({
                                 )
                                 : field.renderDetail
                                 ? field.renderDetail(value, activeItem)
-                                : renderDetailValue(value, field)}
+                                : renderDetailValue(value, field, optionsMap)}
                             </span>
                           </div>
                         );
@@ -175,14 +177,15 @@ function groupByCategory(fields: FieldConfig[]) {
   return Array.from(map.entries()).map(([category, fields]) => ({ category, fields }));
 }
 
-function renderDetailValue(value: any, field: FieldConfig) {
+function renderDetailValue(value: any, field: FieldConfig, optionsMap: Map<string, SelectOption[]>) {
   if (value == null) return "—";
   if (field.type === "boolean") return value ? "Ja" : "Nej";
   if ((field.type === "multiselect" || field.type === "tags" || field.type === "inline-tags") && Array.isArray(value)) {
+    const opts = resolveOptions(field, optionsMap);
     return (
       <div className="flex flex-wrap gap-1">
         {value.map((v: any) => {
-          const opt = field.options?.find((o) => o.value === v);
+          const opt = opts.find((o) => String(o.value) === String(v));
           return (
             <Badge key={v} variant="secondary" className="text-xs">
               {opt?.label || v}
@@ -192,8 +195,9 @@ function renderDetailValue(value: any, field: FieldConfig) {
       </div>
     );
   }
-  if (field.type === "select" && field.options) {
-    return field.options.find((o) => String(o.value) === String(value))?.label || value;
+  if (field.type === "select") {
+    const opts = resolveOptions(field, optionsMap);
+    return opts.find((o) => String(o.value) === String(value))?.label ?? String(value);
   }
   if (field.type === "textarea") {
     return <span className="whitespace-pre-line">{String(value)}</span>;

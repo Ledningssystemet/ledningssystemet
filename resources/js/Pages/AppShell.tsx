@@ -3,6 +3,7 @@ import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import {
     APP_HOME_PATH,
     APP_MY_PROFILE_PATH,
+    APP_PROCESS_EDITOR_PATH,
     buildMenuRoutes,
 } from '@/app/routes';
 import { resolveAppRouteElement } from '@/app/pageRegistry';
@@ -27,6 +28,7 @@ export default function AppShell() {
 
     const utilityRoutes = [
         { key: 'my-profile', path: APP_MY_PROFILE_PATH },
+        { key: 'process-editor', path: APP_PROCESS_EDITOR_PATH },
     ];
 
 
@@ -73,4 +75,3 @@ export default function AppShell() {
         </BrowserRouter>
     );
 }
-

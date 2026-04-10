@@ -63,6 +63,40 @@ function setCookie(name: string, value: string) {
   document.cookie = `${name}=${encodeURIComponent(value)};path=/;max-age=${60 * 60 * 24 * 365};SameSite=Lax`;
 }
 
+function toCookieScope(apiUrl: string): string {
+  return apiUrl.replace(/[^a-zA-Z0-9_-]/g, "_");
+}
+
+function scopedCookieKey(baseKey: string, apiUrl: string): string {
+  return `${baseKey}__${toCookieScope(apiUrl)}`;
+}
+
+function resolvePersistedSort(config: CrudModuleConfig): string {
+  const scoped = getCookie(scopedCookieKey("crud_sort", config.apiUrl));
+  const legacy = getCookie("crud_sort");
+  const candidate = scoped ?? legacy ?? "";
+
+  if (!candidate) {
+    return "";
+  }
+
+  const sortableFields = new Set(
+    config.fields
+      .filter((field) => field.sortable !== false)
+      .map((field) => field.key)
+  );
+
+  return sortableFields.has(candidate) ? candidate : "";
+}
+
+function resolvePersistedSortDirection(config: CrudModuleConfig): "asc" | "desc" {
+  const scoped = getCookie(scopedCookieKey("crud_sort_dir", config.apiUrl));
+  const legacy = getCookie("crud_sort_dir");
+  const candidate = scoped ?? legacy;
+
+  return candidate === "desc" ? "desc" : "asc";
+}
+
 function getPerPageFromCookie(fallback: number): number {
   const val = getCookie("crud_per_page");
   return val ? Number(val) : fallback;
@@ -75,8 +109,8 @@ export function useCrudModule(config: CrudModuleConfig) {
     activeItem: null,
     search: "",
     filters: {},
-    sort: getCookie("crud_sort") || "",
-    sortDirection: (getCookie("crud_sort_dir") as "asc" | "desc") || "asc",
+    sort: resolvePersistedSort(config),
+    sortDirection: resolvePersistedSortDirection(config),
     page: 1,
     perPage: getPerPageFromCookie(config.perPage || 25),
     totalPages: 1,
@@ -141,19 +175,19 @@ export function useCrudModule(config: CrudModuleConfig) {
   }, []);
 
   const setSort = useCallback((sort: string) => {
-    setCookie("crud_sort", sort);
+    setCookie(scopedCookieKey("crud_sort", config.apiUrl), sort);
     setState((s) => ({
       ...s,
       sort,
       sortDirection: s.sort === sort && s.sortDirection === "asc" ? "desc" : "asc",
       page: 1,
     }));
-  }, []);
+  }, [config.apiUrl]);
 
   const setSortDirection = useCallback((sortDirection: "asc" | "desc") => {
-    setCookie("crud_sort_dir", sortDirection);
+    setCookie(scopedCookieKey("crud_sort_dir", config.apiUrl), sortDirection);
     setState((s) => ({ ...s, sortDirection, page: 1 }));
-  }, []);
+  }, [config.apiUrl]);
 
   const setPage = useCallback((page: number) => {
     setState((s) => ({ ...s, page }));

@@ -2,7 +2,7 @@
  * CRUD Table Module Types
  */
 
-export type ViewMode = 'table' | 'accordion' | 'master-detail';
+export type ViewMode = 'master-detail' | 'table' | 'accordion';
 export type ColumnType = 'string' | 'number' | 'boolean' | 'date' | 'datetime' | 'custom';
 
 /**

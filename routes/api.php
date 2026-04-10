@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\GenericCrudController;
 use App\Http\Controllers\Api\MenuBadgeController;
+use App\Http\Controllers\Api\ProcessPublishController;
 use App\Http\Controllers\Api\SessionStatusController;
 use App\Http\Controllers\Api\TokenController;
 use Illuminate\Support\Facades\Route;
@@ -28,5 +29,8 @@ Route::middleware('auth:sanctum')->group(function (): void {
     Route::get('/crud/{resource}/{id}', [GenericCrudController::class, 'show'])->name('api.crud.show');
     Route::match(['put', 'patch'], '/crud/{resource}/{id}', [GenericCrudController::class, 'update'])->name('api.crud.update');
     Route::delete('/crud/{resource}/{id}', [GenericCrudController::class, 'destroy'])->name('api.crud.destroy');
+
+    // Process publishing with BPMN validation
+    Route::post('/processes/{process}/publish', [ProcessPublishController::class, 'store'])->name('api.processes.publish');
 });
 

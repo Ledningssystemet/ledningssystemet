@@ -3,6 +3,8 @@ import type { MenuCategoryDto, MenuItemDto } from "@/types/menu";
 export const APP_BASE_PATH = "/app";
 export const APP_HOME_PATH = "/";
 export const APP_MY_PROFILE_PATH = "/my-profile";
+export const APP_PROCESSES_PATH = "/processes";
+export const APP_PROCESS_EDITOR_PATH = "/processes/:processId/editor";
 
 export interface AppSectionRoute {
     key: string;
@@ -69,4 +71,6 @@ export function buildMenuRoutes(categories: MenuCategoryDto[]): AppSectionRoute[
     return Array.from(routes.values());
 }
 
-
+export function buildProcessEditorPath(processId: number | string): string {
+    return `/processes/${processId}/editor`;
+}

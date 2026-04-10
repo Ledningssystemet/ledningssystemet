@@ -1,10 +1,11 @@
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { FieldConfig, ItemBadgeConfig, ItemStatus } from "./types";
+import { FieldConfig, ItemBadgeConfig, ItemStatus, SelectOption } from "./types";
 import { Pencil, Trash2 } from "lucide-react";
 import { StatusDot, statusRowClass } from "./StatusIndicator";
 import { InlineTagsEditor } from "./InlineTagsEditor";
+import { useAllSelectOptions, resolveOptions } from "./optionsCache";
 
 interface TableViewProps {
   items: Record<string, any>[];
@@ -39,6 +40,7 @@ export function TableView({
 }: TableViewProps) {
   const visibleFields = fields.filter((f) => !f.hidden && !f.hiddenInTable);
   const allSelected = items.length > 0 && items.every((i) => selectedItems.has(i[primaryKey]));
+  const optionsMap = useAllSelectOptions(fields);
 
   return (
     <div className="border rounded-lg overflow-hidden">
@@ -98,7 +100,7 @@ export function TableView({
                         />
                       ) : field.masterLabel ? (
                         <div className="flex items-center gap-2">
-                          <span>{field.renderCell ? field.renderCell(item[field.key], item) : renderValue(item[field.key], field)}</span>
+                          <span>{field.renderCell ? field.renderCell(item[field.key], item) : renderValue(item[field.key], field, optionsMap)}</span>
                           {getItemBadge?.(item) && (
                             <Badge variant={getItemBadge(item)?.variant || "secondary"}>
                               {getItemBadge(item)?.label}
@@ -107,7 +109,7 @@ export function TableView({
                         </div>
                       ) : field.renderCell ? (
                         field.renderCell(item[field.key], item)
-                      ) : renderValue(item[field.key], field)}
+                      ) : renderValue(item[field.key], field, optionsMap)}
                     </td>
                   ))}
                   <td className="p-3">
@@ -154,7 +156,7 @@ export function TableView({
   );
 }
 
-function renderValue(value: any, field: FieldConfig) {
+function renderValue(value: any, field: FieldConfig, optionsMap: Map<string, SelectOption[]>) {
   if (value == null) return <span className="text-muted-foreground">—</span>;
 
   if (field.type === "boolean") {
@@ -172,10 +174,11 @@ function renderValue(value: any, field: FieldConfig) {
   }
 
   if ((field.type === "multiselect" || field.type === "tags" || field.type === "inline-tags") && Array.isArray(value)) {
+    const opts = resolveOptions(field, optionsMap);
     return (
       <div className="flex flex-wrap gap-1">
         {value.map((v: any) => {
-          const opt = field.options?.find((o) => o.value === v);
+          const opt = opts.find((o) => String(o.value) === String(v));
           return (
             <Badge key={v} variant="secondary" className="text-xs">
               {opt?.label || v}
@@ -186,9 +189,10 @@ function renderValue(value: any, field: FieldConfig) {
     );
   }
 
-  if (field.type === "select" && field.options) {
-    const opt = field.options.find((o) => String(o.value) === String(value));
-    return opt?.label || value;
+  if (field.type === "select") {
+    const opts = resolveOptions(field, optionsMap);
+    const opt = opts.find((o) => String(o.value) === String(value));
+    return opt?.label ?? String(value);
   }
 
   return String(value);

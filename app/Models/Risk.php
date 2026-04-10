@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 
 class Risk extends Model
 {
@@ -18,6 +19,26 @@ class Risk extends Model
     protected $table = 'risks';
 
     protected $fillable = ['name', 'context_type', 'department_id', 'context_id', 'scenariodescription', 'consequencedescription', 'riskowner_id', 'replacing_id', 'replacedby_id', 'assessed_at', 'replaced_at', 'created_by', 'probability_id', 'consequence_id', 'assessmentcomment', 'risk_project_id', 'post_probability_id', 'post_consequence_id'];
+
+
+    protected function name(): Attribute
+    {
+        // Get context object if it exists
+        $contextName = $this->int_context ? $this->int_context->name : null;
+
+        // Return $this->name but replace {name} with name of the context object.
+        // If context object does not exist, return $this->name as is.
+
+        if(null == $contextName) {
+            return Attribute::make(
+                get: fn ($value) => $value,
+            );
+        }
+
+        return Attribute::make(
+            get: fn ($value) => str_replace('{name}', $contextName, $value),
+        );
+    }
 
     protected function casts(): array
     {

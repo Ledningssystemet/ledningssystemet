@@ -32,10 +32,21 @@ export function EditDialog({
 
   useEffect(() => {
     if (open) {
-      setFormData(item ? { ...item } : {});
+      const initialData = item ? { ...item } : {};
+
+      // Ensure required boolean values are always present in create forms.
+      if (!item) {
+        for (const field of fields) {
+          if (field.type === "boolean" && initialData[field.key] === undefined) {
+            initialData[field.key] = false;
+          }
+        }
+      }
+
+      setFormData(initialData);
       setError(null);
     }
-  }, [open, item]);
+  }, [open, item, fields]);
 
   const editableFields = fields.filter(
     (f) => f.editable !== false && !f.hidden
