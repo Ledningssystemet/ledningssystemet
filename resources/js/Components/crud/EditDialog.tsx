@@ -108,6 +108,9 @@ export function EditDialog({
           {field.required && <span className="text-destructive">*</span>}
           {isInvalid && <AlertCircle className="h-3.5 w-3.5 text-destructive" />}
         </Label>
+        {field.helpText && (
+          <p className="text-xs text-muted-foreground">{field.helpText}</p>
+        )}
         {renderFieldInput(field, val, setValue)}
       </div>
     );

@@ -13,6 +13,8 @@ return [
         'redirect' => env('AUTH_OAUTH_REDIRECT_URI'),
         'tenant_id' => env('AUTH_OAUTH_TENANT_ID', 'common'),
         'workspace_domain' => env('AUTH_OAUTH_WORKSPACE_DOMAIN'),
+        'external_group_sync_enabled' => env('AUTH_EXTERNAL_GROUP_SYNC_ENABLED', false),
+        'external_provider_name' => env('AUTH_EXTERNAL_PROVIDER_NAME', 'External provider'),
     ],
 
     'mfa' => [
@@ -21,4 +23,3 @@ return [
         'otp_ttl' => env('AUTH_MFA_OTP_TTL', 10),
     ],
 ];
-

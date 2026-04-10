@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\AccessGroupOptionsController;
 use App\Http\Controllers\Api\GenericCrudController;
 use App\Http\Controllers\Api\MenuBadgeController;
 use App\Http\Controllers\Api\ProcessPublishController;
@@ -32,5 +33,8 @@ Route::middleware('auth:sanctum')->group(function (): void {
 
     // Process publishing with BPMN validation
     Route::post('/processes/{process}/publish', [ProcessPublishController::class, 'store'])->name('api.processes.publish');
-});
 
+    // Access Group options
+    Route::get('/access-groups/claims', [AccessGroupOptionsController::class, 'claims'])
+        ->name('api.access-groups.claims');
+});

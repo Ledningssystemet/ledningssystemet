@@ -64,6 +64,12 @@ class HandleInertiaRequests extends Middleware
                 'status' => fn () => $request->session()->get('status'),
                 'oauth_error' => fn () => $request->session()->get('oauth_error'),
             ],
+            'settings' => [
+                'access_groups' => [
+                    'external_sync_enabled' => (bool) config('authentication.oauth.external_group_sync_enabled', false),
+                    'external_provider_name' => (string) config('authentication.oauth.external_provider_name', 'External provider'),
+                ],
+            ],
         ];
     }
 }

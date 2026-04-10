@@ -13,7 +13,7 @@ class AccessGroupPolicy
      */
     public function viewAny(User $user): bool
     {
-        return false;
+        return $user->haveAnyAccessRights(['systemadministrator.edit', 'superadmin.edit']);
     }
 
     /**
@@ -21,7 +21,7 @@ class AccessGroupPolicy
      */
     public function view(User $user, AccessGroup $accessGroup = new AccessGroup): bool
     {
-        return false;
+        return $user->haveAnyAccessRights(['systemadministrator.edit', 'superadmin.edit']);
     }
 
     /**
@@ -29,7 +29,7 @@ class AccessGroupPolicy
      */
     public function create(User $user): bool
     {
-        return false;
+        return $user->haveAnyAccessRights(['systemadministrator.edit', 'superadmin.edit']);
     }
 
     /**
@@ -37,7 +37,7 @@ class AccessGroupPolicy
      */
     public function update(User $user, AccessGroup $accessGroup = new AccessGroup): bool
     {
-        return false;
+        return $user->haveAnyAccessRights(['systemadministrator.edit', 'superadmin.edit']);
     }
 
     /**
@@ -45,7 +45,7 @@ class AccessGroupPolicy
      */
     public function delete(User $user, AccessGroup $accessGroup = new AccessGroup): bool
     {
-        return false;
+        return $user->haveAnyAccessRights(['systemadministrator.edit', 'superadmin.edit']);
     }
 
     /**

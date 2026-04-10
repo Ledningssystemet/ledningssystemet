@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
 
 class AccessGroup extends Model
 {
@@ -16,7 +17,14 @@ class AccessGroup extends Model
 
     protected $table = 'access_groups';
 
-    protected $fillable = ['name', 'claims', 'risk_level_id', 'external_provider_group_id'];
+    protected $fillable = ['name', 'claims', 'risk_level_id', 'external_provider_group_id', 'user_ids'];
+
+    protected $appends = ['user_ids'];
+
+    /**
+     * @var array<int, int>|null
+     */
+    private ?array $pendingUserIds = null;
 
     protected function casts(): array
     {
@@ -32,8 +40,11 @@ class AccessGroup extends Model
         return [
             'name' => ['required', 'string', 'max:255'],
             'claims' => ['nullable', 'array'],
+            'claims.*' => ['string', 'max:255'],
             'risk_level_id' => ['nullable', 'integer', 'min:0', 'exists:risk_levels,id'],
             'external_provider_group_id' => ['nullable', 'integer', 'min:0', 'exists:external_provider_groups,id'],
+            'user_ids' => ['nullable', 'array'],
+            'user_ids.*' => ['integer', 'min:1', 'exists:users,id'],
         ];
     }
 
@@ -54,6 +65,10 @@ class AccessGroup extends Model
     {
         static::saving(function (self $model): void {
             Validator::make($model->attributesToArray(), static::validationRules())->validate();
+        });
+
+        static::saved(function (self $model): void {
+            $model->syncUsersIfNeeded();
         });
     }
 
@@ -131,5 +146,111 @@ class AccessGroup extends Model
     public function int_vector_embeddings_as_embeddable(): MorphMany
     {
         return $this->morphMany(VectorEmbedding::class, 'embeddable', 'embeddable_type', 'embeddable_id');
+    }
+
+    public static function allClaims(): array
+    {
+        static $claims = null;
+
+        if (is_array($claims)) {
+            return $claims;
+        }
+
+        $catalog = [
+            'superadmin.edit' => 'Superadmin - Edit',
+            'systemadministrator.edit' => 'System Administrator - Edit',
+        ];
+
+        foreach (glob(app_path('Policies/*.php')) ?: [] as $policyPath) {
+            $contents = @file_get_contents($policyPath);
+            if (! is_string($contents) || $contents === '') {
+                continue;
+            }
+
+            preg_match_all('/haveAnyAccessRights\(\s*\[(.*?)]\s*\)/s', $contents, $policyClaimBlocks);
+            foreach ($policyClaimBlocks[1] ?? [] as $claimBlock) {
+                preg_match_all("/'([^']+)'/", $claimBlock, $claimMatches);
+                foreach ($claimMatches[1] ?? [] as $claim) {
+                    $catalog[$claim] = static::claimLabel($claim);
+                }
+            }
+        }
+
+        asort($catalog, SORT_NATURAL | SORT_FLAG_CASE);
+
+        $claims = $catalog;
+
+        return $claims;
+    }
+
+    /**
+     * @return array<int, int>
+     */
+    public function getUserIdsAttribute(): array
+    {
+        $users = $this->relationLoaded('int_users')
+            ? $this->int_users
+            : $this->int_users()->select('users.id')->get();
+
+        return $users
+            ->pluck('id')
+            ->map(static fn (mixed $id): int => (int) $id)
+            ->values()
+            ->all();
+    }
+
+    public function setUserIdsAttribute(mixed $value): void
+    {
+        if ($value === null || $value === '') {
+            $this->pendingUserIds = [];
+
+            return;
+        }
+
+        if (! is_array($value)) {
+            return;
+        }
+
+        $normalized = collect($value)
+            ->filter(static fn (mixed $id): bool => $id !== null && $id !== '')
+            ->map(static fn (mixed $id): int => (int) $id)
+            ->filter(static fn (int $id): bool => $id > 0)
+            ->unique()
+            ->values()
+            ->all();
+
+        $this->pendingUserIds = $normalized;
+    }
+
+    private static function claimLabel(string $claim): string
+    {
+        [$resource, $ability] = array_pad(explode('.', $claim, 2), 2, '');
+
+        if ($ability === '') {
+            return Str::headline(str_replace(['-', '_'], ' ', $resource));
+        }
+
+        return Str::headline(str_replace(['-', '_'], ' ', $resource))
+            .' - '
+            .Str::headline(str_replace(['-', '_'], ' ', $ability));
+    }
+
+    private function syncUsersIfNeeded(): void
+    {
+        if ($this->pendingUserIds === null) {
+            return;
+        }
+
+        $currentUserIds = $this->int_users()->pluck('users.id')->map(static fn (mixed $id): int => (int) $id)->all();
+        $nextUserIds = $this->pendingUserIds;
+
+        $this->int_users()->sync($nextUserIds);
+
+        $touchedUserIds = array_values(array_unique(array_merge($currentUserIds, $nextUserIds)));
+        if ($touchedUserIds !== []) {
+            User::query()->whereIn('id', $touchedUserIds)->update(['updated_at' => now()]);
+        }
+
+        $this->pendingUserIds = null;
     }
 }

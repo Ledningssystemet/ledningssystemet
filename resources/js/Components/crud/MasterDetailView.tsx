@@ -1,7 +1,7 @@
 import { FieldConfig, ItemBadgeConfig, ItemStatus, SelectOption } from "./types";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Pencil } from "lucide-react";
+import { Pencil, Trash2 } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { StatusDot, statusRowClass } from "./StatusIndicator";
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
@@ -15,9 +15,11 @@ interface MasterDetailViewProps {
   activeItem: Record<string, any> | null;
   onSelectItem: (item: Record<string, any>) => void;
   onEdit: (item: Record<string, any>) => void;
+  onDelete: (id: string | number) => void;
   onInlineFieldUpdate?: (item: Record<string, any>, fieldKey: string, value: any) => Promise<void>;
   getItemStatus?: (item: Record<string, any>) => ItemStatus | null;
   getItemBadge?: (item: Record<string, any>) => ItemBadgeConfig | null;
+  deletableKey?: string;
 }
 
 export function MasterDetailView({
@@ -27,9 +29,11 @@ export function MasterDetailView({
   activeItem,
   onSelectItem,
   onEdit,
+  onDelete,
   onInlineFieldUpdate,
   getItemStatus,
   getItemBadge,
+  deletableKey,
 }: MasterDetailViewProps) {
   const labelField = fields.find((f) => f.masterLabel) || fields[0];
   const descField = fields.find((f) => f.masterDescription);
@@ -38,6 +42,11 @@ export function MasterDetailView({
 
   // Group detail fields by category
   const categories = groupByCategory(detailFields);
+
+  const activeItemId = activeItem?.[primaryKey];
+  const canDeleteActiveItem = Boolean(
+    activeItem && activeItemId !== undefined && activeItemId !== null && (deletableKey ? activeItem[deletableKey] !== false : true)
+  );
 
   return (
     <ResizablePanelGroup orientation="horizontal" className="border rounded-lg overflow-hidden" style={{ height: "calc(100vh - 220px)" }}>
@@ -113,10 +122,23 @@ export function MasterDetailView({
                       )}
                     </div>
                   </div>
-                  <Button variant="outline" size="sm" onClick={() => onEdit(activeItem)}>
-                    <Pencil className="h-4 w-4 mr-1" />
-                    Redigera
-                  </Button>
+                  <div className="flex items-center gap-2">
+                    <Button variant="outline" size="sm" onClick={() => onEdit(activeItem)}>
+                      <Pencil className="h-4 w-4 mr-1" />
+                      Redigera
+                    </Button>
+                    {canDeleteActiveItem && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="text-destructive hover:text-destructive"
+                        onClick={() => onDelete(activeItemId as string | number)}
+                      >
+                        <Trash2 className="h-4 w-4 mr-1" />
+                        Radera
+                      </Button>
+                    )}
+                  </div>
                 </div>
 
                 {categories.map(({ category, fields: catFields }) => (

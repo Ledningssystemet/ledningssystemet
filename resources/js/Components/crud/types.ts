@@ -23,6 +23,7 @@ export interface FieldConfig {
   label: string;
   type: FieldType;
   category?: string;
+  helpText?: string;
   filterable?: boolean;
   sortable?: boolean;
   editable?: boolean;

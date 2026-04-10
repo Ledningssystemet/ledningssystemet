@@ -166,9 +166,11 @@ export function CrudModule({ config }: CrudModuleProps) {
           activeItem={state.activeItem}
           onSelectItem={setActiveItem}
           onEdit={openEdit}
+          onDelete={confirmDelete}
           onInlineFieldUpdate={handleInlineFieldUpdate}
           getItemStatus={config.getItemStatus}
           getItemBadge={config.getItemBadge}
+          deletableKey={config.deletableKey}
         />
       )}
 
@@ -178,9 +180,11 @@ export function CrudModule({ config }: CrudModuleProps) {
           fields={config.fields}
           primaryKey={primaryKey}
           onEdit={openEdit}
+          onDelete={confirmDelete}
           onInlineFieldUpdate={handleInlineFieldUpdate}
           getItemStatus={config.getItemStatus}
           getItemBadge={config.getItemBadge}
+          deletableKey={config.deletableKey}
         />
       )}
 

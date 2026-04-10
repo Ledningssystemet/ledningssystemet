@@ -7,7 +7,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { FieldConfig, ItemBadgeConfig, ItemStatus, SelectOption } from "./types";
-import { Pencil } from "lucide-react";
+import { Pencil, Trash2 } from "lucide-react";
 import { StatusDot, statusRowClass } from "./StatusIndicator";
 import { InlineTagsEditor } from "./InlineTagsEditor";
 import { useAllSelectOptions, resolveOptions } from "./optionsCache";
@@ -17,9 +17,11 @@ interface AccordionViewProps {
   fields: FieldConfig[];
   primaryKey: string;
   onEdit: (item: Record<string, any>) => void;
+  onDelete: (id: string | number) => void;
   onInlineFieldUpdate?: (item: Record<string, any>, fieldKey: string, value: any) => Promise<void>;
   getItemStatus?: (item: Record<string, any>) => ItemStatus | null;
   getItemBadge?: (item: Record<string, any>) => ItemBadgeConfig | null;
+  deletableKey?: string;
 }
 
 export function AccordionView({
@@ -27,9 +29,11 @@ export function AccordionView({
   fields,
   primaryKey,
   onEdit,
+  onDelete,
   onInlineFieldUpdate,
   getItemStatus,
   getItemBadge,
+  deletableKey,
 }: AccordionViewProps) {
   const labelField = fields.find((f) => f.masterLabel) || fields[0];
   const descField = fields.find((f) => f.masterDescription);
@@ -49,6 +53,8 @@ export function AccordionView({
         <Accordion type="single" collapsible className="divide-y">
           {items.map((item) => {
             const status = getItemStatus?.(item) ?? null;
+            const itemId = item[primaryKey] as string | number;
+            const canDeleteItem = deletableKey ? item[deletableKey] !== false : true;
             return (
               <AccordionItem
                 key={item[primaryKey]}
@@ -111,11 +117,22 @@ export function AccordionView({
                         </div>
                       </div>
                     ))}
-                    <div className="pt-2 flex justify-end">
+                    <div className="pt-2 flex justify-end gap-2">
                       <Button variant="outline" size="sm" onClick={() => onEdit(item)}>
                         <Pencil className="h-4 w-4 mr-1" />
                         Redigera
                       </Button>
+                      {canDeleteItem && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="text-destructive hover:text-destructive"
+                          onClick={() => onDelete(itemId)}
+                        >
+                          <Trash2 className="h-4 w-4 mr-1" />
+                          Radera
+                        </Button>
+                      )}
                     </div>
                   </div>
                 </AccordionContent>
