@@ -18,7 +18,7 @@ import {
     Settings, HelpCircle, Search, Bell, User, LogOut, SlidersHorizontal,
     FolderOpen, RefreshCcw, ScanSearch, UserRoundCheck,
     Briefcase, Users, Building2, Target, TrendingUp, Tag,
-    GraduationCap, Key, Layers, Brain,
+    GraduationCap, Key, Layers, Brain, ChartNoAxesCombined,
     type LucideProps,
 } from "lucide-react";
 import type { MenuCategoryDto, BadgeDto, BadgeSeverity } from "@/types/menu";
@@ -46,7 +46,7 @@ const iconRegistry: Record<string, IconComponent> = {
     Database, FileSignature, FileText, FlaskConical, FolderOpen,
     GitBranch, Globe, GraduationCap, Home, HelpCircle, Key, LayoutDashboard, Layers, Leaf,
     Menu, RefreshCcw, Scale, ScanSearch, Search, Settings,
-    Shield, Tag, Target, TrendingUp, Truck, User, UserCircle, Users, X, UserRoundCheck,
+    Shield, Tag, Target, TrendingUp, Truck, User, UserCircle, Users, X, UserRoundCheck, ChartNoAxesCombined
 };
 
 function resolveIcon(name: string): IconComponent {

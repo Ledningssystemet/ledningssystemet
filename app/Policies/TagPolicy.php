@@ -37,7 +37,7 @@ class TagPolicy
      */
     public function update(User $user, Tag $tag = new Tag): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -45,7 +45,7 @@ class TagPolicy
      */
     public function delete(User $user, Tag $tag = new Tag): bool
     {
-        return false;
+        return true;
     }
 
     /**

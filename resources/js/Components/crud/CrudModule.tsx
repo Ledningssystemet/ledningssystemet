@@ -51,6 +51,14 @@ export function CrudModule({ config }: CrudModuleProps) {
   const [deleteConfirm, setDeleteConfirm] = useState<{ type: "single" | "mass"; id?: string | number } | null>(null);
 
   const primaryKey = config.primaryKey || "id";
+  const canCreate = config.canCreate !== false;
+  const canEdit = config.canEdit !== false;
+  const canDelete = config.canDelete !== false;
+  const canSelect = config.selectable ?? (canEdit || canDelete);
+  const noopToggleSelect = () => {};
+  const noopSelectAll = () => {};
+  const noopEdit = () => {};
+  const noopDelete = () => {};
 
   const openEdit = (item: Record<string, any> | null) => {
     setEditItem(item);
@@ -123,11 +131,11 @@ export function CrudModule({ config }: CrudModuleProps) {
         onSortDirectionChange={setSortDirection}
         viewMode={state.viewMode}
         onViewModeChange={setViewMode}
-        onAdd={() => openEdit(null)}
+        onAdd={canCreate ? () => openEdit(null) : undefined}
         selectedCount={state.selectedItems.size}
-        onMassEdit={state.selectedItems.size > 0 ? openMassEdit : undefined}
-        onMassDelete={state.selectedItems.size > 0 ? confirmMassDelete : undefined}
-        onClearSelection={state.selectedItems.size > 0 ? clearSelection : undefined}
+        onMassEdit={canSelect && canEdit && state.selectedItems.size > 0 ? openMassEdit : undefined}
+        onMassDelete={canSelect && canDelete && state.selectedItems.size > 0 ? confirmMassDelete : undefined}
+        onClearSelection={canSelect && state.selectedItems.size > 0 ? clearSelection : undefined}
         searchable={config.searchable !== false}
       />
 
@@ -145,11 +153,14 @@ export function CrudModule({ config }: CrudModuleProps) {
           items={state.items}
           fields={config.fields}
           primaryKey={primaryKey}
+          selectable={canSelect}
           selectedItems={state.selectedItems}
-          onToggleSelect={toggleSelect}
-          onSelectAll={selectAll}
-          onEdit={openEdit}
-          onDelete={confirmDelete}
+          onToggleSelect={canSelect ? toggleSelect : noopToggleSelect}
+          onSelectAll={canSelect ? selectAll : noopSelectAll}
+          canEdit={canEdit}
+          onEdit={canEdit ? openEdit : noopEdit}
+          canDelete={canDelete}
+          onDelete={canDelete ? confirmDelete : noopDelete}
           onInlineFieldUpdate={handleInlineFieldUpdate}
           getItemStatus={config.getItemStatus}
           getItemBadge={config.getItemBadge}
@@ -165,8 +176,10 @@ export function CrudModule({ config }: CrudModuleProps) {
           primaryKey={primaryKey}
           activeItem={state.activeItem}
           onSelectItem={setActiveItem}
-          onEdit={openEdit}
-          onDelete={confirmDelete}
+          canEdit={canEdit}
+          onEdit={canEdit ? openEdit : noopEdit}
+          canDelete={canDelete}
+          onDelete={canDelete ? confirmDelete : noopDelete}
           onInlineFieldUpdate={handleInlineFieldUpdate}
           getItemStatus={config.getItemStatus}
           getItemBadge={config.getItemBadge}
@@ -179,8 +192,10 @@ export function CrudModule({ config }: CrudModuleProps) {
           items={state.items}
           fields={config.fields}
           primaryKey={primaryKey}
-          onEdit={openEdit}
-          onDelete={confirmDelete}
+          canEdit={canEdit}
+          onEdit={canEdit ? openEdit : noopEdit}
+          canDelete={canDelete}
+          onDelete={canDelete ? confirmDelete : noopDelete}
           onInlineFieldUpdate={handleInlineFieldUpdate}
           getItemStatus={config.getItemStatus}
           getItemBadge={config.getItemBadge}
@@ -208,27 +223,29 @@ export function CrudModule({ config }: CrudModuleProps) {
       />
 
       {/* Mass edit dialog */}
-      <MassEditDialog
-        open={massEditOpen}
-        onOpenChange={setMassEditOpen}
-        fields={config.fields.filter((f) => f.editable !== false && !f.hidden)}
-        count={state.selectedItems.size}
-        onSave={async (data) => {
-          if (Object.keys(data).length === 0) return;
-          const ids = Array.from(state.selectedItems);
-          await Promise.all(
-            ids.map((id) =>
-              fetch(`${config.apiUrl}/${id}`, {
-                method: "PATCH",
-                headers: { "Content-Type": "application/json", Accept: "application/json" },
-                body: JSON.stringify(data),
-              })
-            )
-          );
-          await refetch();
-          setMassEditOpen(false);
-        }}
-      />
+      {canEdit && (
+        <MassEditDialog
+          open={massEditOpen}
+          onOpenChange={setMassEditOpen}
+          fields={config.fields.filter((f) => f.editable !== false && !f.hidden)}
+          count={state.selectedItems.size}
+          onSave={async (data) => {
+            if (Object.keys(data).length === 0) return;
+            const ids = Array.from(state.selectedItems);
+            await Promise.all(
+              ids.map((id) =>
+                fetch(`${config.apiUrl}/${id}`, {
+                  method: "PATCH",
+                  headers: { "Content-Type": "application/json", Accept: "application/json" },
+                  body: JSON.stringify(data),
+                })
+              )
+            );
+            await refetch();
+            setMassEditOpen(false);
+          }}
+        />
+      )}
 
       {/* Delete confirmation */}
       <AlertDialog open={!!deleteConfirm} onOpenChange={(open) => !open && setDeleteConfirm(null)}>

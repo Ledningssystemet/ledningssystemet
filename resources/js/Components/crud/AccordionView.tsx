@@ -16,8 +16,10 @@ interface AccordionViewProps {
   items: Record<string, any>[];
   fields: FieldConfig[];
   primaryKey: string;
-  onEdit: (item: Record<string, any>) => void;
-  onDelete: (id: string | number) => void;
+  canEdit?: boolean;
+  onEdit?: (item: Record<string, any>) => void;
+  canDelete?: boolean;
+  onDelete?: (id: string | number) => void;
   onInlineFieldUpdate?: (item: Record<string, any>, fieldKey: string, value: any) => Promise<void>;
   getItemStatus?: (item: Record<string, any>) => ItemStatus | null;
   getItemBadge?: (item: Record<string, any>) => ItemBadgeConfig | null;
@@ -28,7 +30,9 @@ export function AccordionView({
   items,
   fields,
   primaryKey,
+  canEdit = true,
   onEdit,
+  canDelete = true,
   onDelete,
   onInlineFieldUpdate,
   getItemStatus,
@@ -54,7 +58,8 @@ export function AccordionView({
           {items.map((item) => {
             const status = getItemStatus?.(item) ?? null;
             const itemId = item[primaryKey] as string | number;
-            const canDeleteItem = deletableKey ? item[deletableKey] !== false : true;
+            const canDeleteItem = canDelete && (deletableKey ? item[deletableKey] !== false : true);
+            const showActions = (canEdit && Boolean(onEdit)) || (canDeleteItem && Boolean(onDelete));
             return (
               <AccordionItem
                 key={item[primaryKey]}
@@ -117,23 +122,27 @@ export function AccordionView({
                         </div>
                       </div>
                     ))}
-                    <div className="pt-2 flex justify-end gap-2">
-                      <Button variant="outline" size="sm" onClick={() => onEdit(item)}>
-                        <Pencil className="h-4 w-4 mr-1" />
-                        Redigera
-                      </Button>
-                      {canDeleteItem && (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="text-destructive hover:text-destructive"
-                          onClick={() => onDelete(itemId)}
-                        >
-                          <Trash2 className="h-4 w-4 mr-1" />
-                          Radera
-                        </Button>
-                      )}
-                    </div>
+                    {showActions && (
+                      <div className="pt-2 flex justify-end gap-2">
+                        {canEdit && onEdit && (
+                          <Button variant="outline" size="sm" onClick={() => onEdit(item)}>
+                            <Pencil className="h-4 w-4 mr-1" />
+                            Redigera
+                          </Button>
+                        )}
+                        {canDeleteItem && onDelete && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="text-destructive hover:text-destructive"
+                            onClick={() => onDelete(itemId)}
+                          >
+                            <Trash2 className="h-4 w-4 mr-1" />
+                            Radera
+                          </Button>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </AccordionContent>
               </AccordionItem>

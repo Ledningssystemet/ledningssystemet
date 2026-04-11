@@ -174,6 +174,12 @@ class MenuCategoryBuilder
                     'heading' => __('Planning and evaluation'),
                     'items' => [
                         [
+                            'key' => 'company-dashboard',
+                            'label' => __('Company dashboard'),
+                            'icon' => 'ChartNoAxesCombined',
+                            'description' => __('Provides an overview of our continuous improvement'),
+                        ],
+                        [
                             'key' => 'process-performance',
                             'label' => __('Process performance'),
                             'icon' => 'TrendingUp',

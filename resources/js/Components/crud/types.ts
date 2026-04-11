@@ -27,6 +27,8 @@ export interface FieldConfig {
   filterable?: boolean;
   sortable?: boolean;
   editable?: boolean;
+  editableOnCreate?: boolean;
+  editableOnUpdate?: boolean;
   required?: boolean;
   placeholder?: string;
   options?: SelectOption[];
@@ -65,6 +67,14 @@ export interface CrudModuleConfig {
   perPage?: number;
   createTitle?: string;
   editTitle?: string;
+  /** Hide the create button and prevent opening a create dialog when false. */
+  canCreate?: boolean;
+  /** Hide edit actions across all items when false. */
+  canEdit?: boolean;
+  /** Hide delete actions across all items when false. */
+  canDelete?: boolean;
+  /** Hide table row selection and mass actions when false. */
+  selectable?: boolean;
   /** Function that returns a status for each item, shown as a colored indicator */
   getItemStatus?: (item: Record<string, any>) => ItemStatus | null;
   /** Optional badge shown next to item name/label */
@@ -73,6 +83,8 @@ export interface CrudModuleConfig {
   editableKey?: string;
   /** Key on each item indicating if it can be deleted (default: always true) */
   deletableKey?: string;
+  /** Callback invoked after a successful create/update save. */
+  onSaveSuccess?: (item: Record<string, any>, context: { isNew: boolean; payload: Record<string, any> }) => void | Promise<void>;
 }
 
 export type ViewMode = "master-detail" | "table" | "accordion";

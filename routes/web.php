@@ -4,6 +4,7 @@ use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\OtpChallengeController;
 use App\Http\Controllers\Auth\ResetPasswordController;
+use App\Http\Controllers\OpenApiDocumentationController;
 use App\Http\Controllers\OAuthController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -21,6 +22,10 @@ Route::middleware('auth')->group(function (): void {
     Route::get('/app/{path?}', function () {
         return Inertia::render('AppShell');
     })->where('path', '.*')->name('home');
+
+    Route::get('/openapi.json', [OpenApiDocumentationController::class, 'spec'])->name('openapi.spec');
+    Route::get('/api/docs', [OpenApiDocumentationController::class, 'show'])->name('openapi.docs');
+
 });
 
 

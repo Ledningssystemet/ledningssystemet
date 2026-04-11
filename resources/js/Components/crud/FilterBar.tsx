@@ -36,7 +36,7 @@ interface FilterBarProps {
   onSortDirectionChange: (dir: "asc" | "desc") => void;
   viewMode: ViewMode;
   onViewModeChange: (mode: ViewMode) => void;
-  onAdd: () => void;
+  onAdd?: () => void;
   selectedCount?: number;
   onMassEdit?: () => void;
   onMassDelete?: () => void;
@@ -225,10 +225,12 @@ export function FilterBar({
             </button>
           </div>
 
-          <Button onClick={onAdd} size="sm">
-            <Plus className="h-4 w-4 mr-1" />
-            Ny
-          </Button>
+          {onAdd && (
+            <Button onClick={onAdd} size="sm">
+              <Plus className="h-4 w-4 mr-1" />
+              Ny
+            </Button>
+          )}
         </div>
       </div>
 

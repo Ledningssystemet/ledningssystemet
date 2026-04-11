@@ -6,15 +6,24 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Validator;
 
 class Tag extends Model
 {
     use HasFactory;
 
+    /**
+     * @var array<string, string>
+     */
+    private static array $objectTypeLabelCache = [];
+
     protected $table = 'tags';
 
     protected $fillable = ['name'];
+
+    protected $appends = ['usageinformation'];
 
     protected function casts(): array
     {
@@ -53,6 +62,60 @@ class Tag extends Model
     public static function getPrettyName($plural = false): string
     {
         return $plural ? 'Tags' : 'Tag';
+    }
+
+    public function getUsageinformationAttribute(): string
+    {
+        $rows = DB::table('object_tags')
+            ->select('object_tags_type', DB::raw('COUNT(*) as total'))
+            ->where('tag_id', $this->getKey())
+            ->groupBy('object_tags_type')
+            ->orderByDesc('total')
+            ->get();
+
+        if ($rows->isEmpty()) {
+            return '';
+        }
+
+        $parts = $rows->map(function (object $row): string {
+            $type = (string) ($row->object_tags_type ?? '');
+            $total = (int) ($row->total ?? 0);
+            $label = $this->prettyTypeLabel($type);
+
+            return sprintf('%d %s', $total, $label);
+        });
+
+        return $parts->implode(', ');
+    }
+
+    private function prettyTypeLabel(string $objectType): string
+    {
+        $normalized = ltrim(trim($objectType), '\\');
+
+        if ($normalized === '') {
+            return 'objects';
+        }
+
+        if (isset(self::$objectTypeLabelCache[$normalized])) {
+            return self::$objectTypeLabelCache[$normalized];
+        }
+
+        $label = Str::headline(Str::plural(class_basename($normalized)));
+
+        if (class_exists($normalized) && method_exists($normalized, 'getPrettyName')) {
+            try {
+                $pretty = $normalized::getPrettyName(true);
+                if (is_string($pretty) && trim($pretty) !== '') {
+                    $label = $pretty;
+                }
+            } catch (\Throwable) {
+                // Fall back to class basename formatting.
+            }
+        }
+
+        self::$objectTypeLabelCache[$normalized] = $label;
+
+        return $label;
     }
 
     public function int_object_tags(): HasMany

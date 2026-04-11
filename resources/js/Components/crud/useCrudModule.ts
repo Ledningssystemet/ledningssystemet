@@ -273,11 +273,13 @@ export function useCrudModule(config: CrudModuleConfig) {
             activeItem: nextActiveItem,
           };
         });
+
+        await config.onSaveSuccess?.(savedItem, { isNew, payload: data });
       }
 
       await fetchItems();
     },
-    [config.apiUrl, primaryKey, fetchItems]
+    [config.apiUrl, primaryKey, fetchItems, config.onSaveSuccess]
   );
 
   const patchItem = useCallback(
@@ -317,11 +319,13 @@ export function useCrudModule(config: CrudModuleConfig) {
             activeItem: nextActiveItem,
           };
         });
+
+        await config.onSaveSuccess?.(savedItem, { isNew: false, payload: updates });
       }
 
       await fetchItems();
     },
-    [config.apiUrl, primaryKey, fetchItems]
+    [config.apiUrl, primaryKey, fetchItems, config.onSaveSuccess]
   );
 
   const deleteItem = useCallback(

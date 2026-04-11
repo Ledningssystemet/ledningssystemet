@@ -14,8 +14,10 @@ interface MasterDetailViewProps {
   primaryKey: string;
   activeItem: Record<string, any> | null;
   onSelectItem: (item: Record<string, any>) => void;
-  onEdit: (item: Record<string, any>) => void;
-  onDelete: (id: string | number) => void;
+  canEdit?: boolean;
+  onEdit?: (item: Record<string, any>) => void;
+  canDelete?: boolean;
+  onDelete?: (id: string | number) => void;
   onInlineFieldUpdate?: (item: Record<string, any>, fieldKey: string, value: any) => Promise<void>;
   getItemStatus?: (item: Record<string, any>) => ItemStatus | null;
   getItemBadge?: (item: Record<string, any>) => ItemBadgeConfig | null;
@@ -28,7 +30,9 @@ export function MasterDetailView({
   primaryKey,
   activeItem,
   onSelectItem,
+  canEdit = true,
   onEdit,
+  canDelete = true,
   onDelete,
   onInlineFieldUpdate,
   getItemStatus,
@@ -45,8 +49,9 @@ export function MasterDetailView({
 
   const activeItemId = activeItem?.[primaryKey];
   const canDeleteActiveItem = Boolean(
-    activeItem && activeItemId !== undefined && activeItemId !== null && (deletableKey ? activeItem[deletableKey] !== false : true)
+    canDelete && activeItem && activeItemId !== undefined && activeItemId !== null && (deletableKey ? activeItem[deletableKey] !== false : true)
   );
+  const showActions = canEdit || canDeleteActiveItem;
 
   return (
     <ResizablePanelGroup orientation="horizontal" className="border rounded-lg overflow-hidden" style={{ height: "calc(100vh - 220px)" }}>
@@ -122,23 +127,27 @@ export function MasterDetailView({
                       )}
                     </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Button variant="outline" size="sm" onClick={() => onEdit(activeItem)}>
-                      <Pencil className="h-4 w-4 mr-1" />
-                      Redigera
-                    </Button>
-                    {canDeleteActiveItem && (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="text-destructive hover:text-destructive"
-                        onClick={() => onDelete(activeItemId as string | number)}
-                      >
-                        <Trash2 className="h-4 w-4 mr-1" />
-                        Radera
-                      </Button>
-                    )}
-                  </div>
+                  {showActions && (
+                    <div className="flex items-center gap-2">
+                      {canEdit && onEdit && (
+                        <Button variant="outline" size="sm" onClick={() => onEdit(activeItem)}>
+                          <Pencil className="h-4 w-4 mr-1" />
+                          Redigera
+                        </Button>
+                      )}
+                      {canDeleteActiveItem && onDelete && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="text-destructive hover:text-destructive"
+                          onClick={() => onDelete(activeItemId as string | number)}
+                        >
+                          <Trash2 className="h-4 w-4 mr-1" />
+                          Radera
+                        </Button>
+                      )}
+                    </div>
+                  )}
                 </div>
 
                 {categories.map(({ category, fields: catFields }) => (

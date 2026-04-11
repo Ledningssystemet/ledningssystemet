@@ -11,11 +11,14 @@ interface TableViewProps {
   items: Record<string, any>[];
   fields: FieldConfig[];
   primaryKey: string;
+  selectable?: boolean;
   selectedItems: Set<string | number>;
-  onToggleSelect: (id: string | number) => void;
-  onSelectAll: () => void;
-  onEdit: (item: Record<string, any>) => void;
-  onDelete: (id: string | number) => void;
+  onToggleSelect?: (id: string | number) => void;
+  onSelectAll?: () => void;
+  canEdit?: boolean;
+  onEdit?: (item: Record<string, any>) => void;
+  canDelete?: boolean;
+  onDelete?: (id: string | number) => void;
   onInlineFieldUpdate?: (item: Record<string, any>, fieldKey: string, value: any) => Promise<void>;
   getItemStatus?: (item: Record<string, any>) => ItemStatus | null;
   getItemBadge?: (item: Record<string, any>) => ItemBadgeConfig | null;
@@ -27,10 +30,13 @@ export function TableView({
   items,
   fields,
   primaryKey,
+  selectable = true,
   selectedItems,
   onToggleSelect,
   onSelectAll,
+  canEdit = true,
   onEdit,
+  canDelete = true,
   onDelete,
   onInlineFieldUpdate,
   getItemStatus,
@@ -39,8 +45,9 @@ export function TableView({
   deletableKey,
 }: TableViewProps) {
   const visibleFields = fields.filter((f) => !f.hidden && !f.hiddenInTable);
-  const allSelected = items.length > 0 && items.every((i) => selectedItems.has(i[primaryKey]));
+  const allSelected = selectable && items.length > 0 && items.every((i) => selectedItems.has(i[primaryKey]));
   const optionsMap = useAllSelectOptions(fields);
+  const showActions = canEdit || canDelete;
 
   return (
     <div className="border rounded-lg overflow-hidden">
@@ -48,12 +55,14 @@ export function TableView({
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b bg-muted/50">
-              <th className="p-3 w-10">
-                <Checkbox
-                  checked={allSelected}
-                  onCheckedChange={onSelectAll}
-                />
-              </th>
+              {selectable && (
+                <th className="p-3 w-10">
+                  <Checkbox
+                    checked={allSelected}
+                    onCheckedChange={onSelectAll}
+                  />
+                </th>
+              )}
               {getItemStatus && <th className="p-3 w-8" />}
               {visibleFields.map((field) => (
                 <th
@@ -64,7 +73,7 @@ export function TableView({
                   {field.label}
                 </th>
               ))}
-              <th className="p-3 w-20" />
+              {showActions && <th className="p-3 w-20" />}
             </tr>
           </thead>
           <tbody>
@@ -78,12 +87,14 @@ export function TableView({
                   key={id}
                   className={`border-b crud-row-hover ${isSelected ? "crud-row-selected" : ""} ${statusRowClass(status)}`}
                 >
-                  <td className="p-3">
-                    <Checkbox
-                      checked={isSelected}
-                      onCheckedChange={() => onToggleSelect(id)}
-                    />
-                  </td>
+                  {selectable && (
+                    <td className="p-3">
+                      <Checkbox
+                        checked={isSelected}
+                        onCheckedChange={() => onToggleSelect?.(id)}
+                      />
+                    </td>
+                  )}
                   {getItemStatus && (
                     <td className="p-3">
                       <StatusDot status={status} />
@@ -112,37 +123,39 @@ export function TableView({
                       ) : renderValue(item[field.key], field, optionsMap)}
                     </td>
                   ))}
-                  <td className="p-3">
-                    <div className="flex items-center gap-1">
-                      {(editableKey ? item[editableKey] !== false : true) && (
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8"
-                          onClick={() => onEdit(item)}
-                        >
-                          <Pencil className="h-3.5 w-3.5" />
-                        </Button>
-                      )}
-                      {(deletableKey ? item[deletableKey] !== false : true) && (
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 text-destructive hover:text-destructive"
-                          onClick={() => onDelete(id)}
-                        >
-                          <Trash2 className="h-3.5 w-3.5" />
-                        </Button>
-                      )}
-                    </div>
-                  </td>
+                  {showActions && (
+                    <td className="p-3">
+                      <div className="flex items-center gap-1">
+                        {canEdit && (editableKey ? item[editableKey] !== false : true) && onEdit && (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8"
+                            onClick={() => onEdit(item)}
+                          >
+                            <Pencil className="h-3.5 w-3.5" />
+                          </Button>
+                        )}
+                        {canDelete && (deletableKey ? item[deletableKey] !== false : true) && onDelete && (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-destructive hover:text-destructive"
+                            onClick={() => onDelete(id)}
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </Button>
+                        )}
+                      </div>
+                    </td>
+                  )}
                 </tr>
               );
             })}
             {items.length === 0 && (
               <tr>
                 <td
-                  colSpan={visibleFields.length + (getItemStatus ? 3 : 2)}
+                  colSpan={visibleFields.length + (selectable ? 1 : 0) + (getItemStatus ? 1 : 0) + (showActions ? 1 : 0)}
                   className="p-8 text-center text-muted-foreground"
                 >
                   Inga resultat hittades

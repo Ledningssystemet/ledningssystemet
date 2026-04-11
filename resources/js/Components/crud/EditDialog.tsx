@@ -49,7 +49,21 @@ export function EditDialog({
   }, [open, item, fields]);
 
   const editableFields = fields.filter(
-    (f) => f.editable !== false && !f.hidden
+    (f) => {
+      if (f.hidden || f.editable === false) {
+        return false;
+      }
+
+      if (isNew && f.editableOnCreate === false) {
+        return false;
+      }
+
+      if (!isNew && f.editableOnUpdate === false) {
+        return false;
+      }
+
+      return true;
+    }
   );
 
   const categories = useMemo(() => {
