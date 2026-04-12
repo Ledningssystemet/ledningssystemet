@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { CrudModuleConfig } from "./types";
+import { useEffect, useState } from "react";
+import { CrudModuleConfig, RowActionConfig } from "./types";
 import { useCrudModule } from "./useCrudModule";
 import { FilterBar } from "./FilterBar";
 import { TableView } from "./TableView";
@@ -42,6 +42,7 @@ export function CrudModule({ config }: CrudModuleProps) {
     patchItem,
     deleteItem,
     massDelete,
+    reorderByOrdinal,
     refetch,
   } = useCrudModule(config);
 
@@ -51,14 +52,18 @@ export function CrudModule({ config }: CrudModuleProps) {
   const [deleteConfirm, setDeleteConfirm] = useState<{ type: "single" | "mass"; id?: string | number } | null>(null);
 
   const primaryKey = config.primaryKey || "id";
+  const hasOrdinalField = config.fields.some((field) => field.key === "ordinal");
+  const isSearchEnabled = !hasOrdinalField && config.searchable !== false;
   const canCreate = config.canCreate !== false;
   const canEdit = config.canEdit !== false;
   const canDelete = config.canDelete !== false;
   const canSelect = config.selectable ?? (canEdit || canDelete);
+
   const noopToggleSelect = () => {};
   const noopSelectAll = () => {};
   const noopEdit = () => {};
   const noopDelete = () => {};
+  const noopRowAction = async () => {};
 
   const openEdit = (item: Record<string, any> | null) => {
     setEditItem(item);
@@ -101,8 +106,19 @@ export function CrudModule({ config }: CrudModuleProps) {
     await patchItem(id, { [fieldKey]: value });
   };
 
+  const handleRowAction = async (action: RowActionConfig, item: Record<string, any>) => {
+    await action.onClick(item);
+    await refetch();
+  };
+
+  useEffect(() => {
+    if (hasOrdinalField && state.search) {
+      setSearch("");
+    }
+  }, [hasOrdinalField, setSearch, state.search]);
+
   return (
-    <div className="space-y-4">
+    <div className="min-w-0 space-y-4">
       {config.title && (
         <div className="flex items-center gap-3">
           <h1 className="text-2xl font-semibold">{config.title}</h1>
@@ -136,7 +152,10 @@ export function CrudModule({ config }: CrudModuleProps) {
         onMassEdit={canSelect && canEdit && state.selectedItems.size > 0 ? openMassEdit : undefined}
         onMassDelete={canSelect && canDelete && state.selectedItems.size > 0 ? confirmMassDelete : undefined}
         onClearSelection={canSelect && state.selectedItems.size > 0 ? clearSelection : undefined}
-        searchable={config.searchable !== false}
+        searchable={isSearchEnabled}
+        sortLocked={hasOrdinalField}
+        reorderEnabled={hasOrdinalField}
+        hideSortFilterControls={hasOrdinalField}
       />
 
       <CrudPagination
@@ -166,6 +185,10 @@ export function CrudModule({ config }: CrudModuleProps) {
           getItemBadge={config.getItemBadge}
           editableKey={config.editableKey}
           deletableKey={config.deletableKey}
+          rowActions={config.rowActions || []}
+          onRowAction={config.rowActions ? handleRowAction : noopRowAction}
+          reorderEnabled={hasOrdinalField}
+          onReorder={reorderByOrdinal}
         />
       )}
 
@@ -184,6 +207,10 @@ export function CrudModule({ config }: CrudModuleProps) {
           getItemStatus={config.getItemStatus}
           getItemBadge={config.getItemBadge}
           deletableKey={config.deletableKey}
+          rowActions={config.rowActions || []}
+          onRowAction={config.rowActions ? handleRowAction : noopRowAction}
+          reorderEnabled={hasOrdinalField}
+          onReorder={reorderByOrdinal}
         />
       )}
 
@@ -200,6 +227,10 @@ export function CrudModule({ config }: CrudModuleProps) {
           getItemStatus={config.getItemStatus}
           getItemBadge={config.getItemBadge}
           deletableKey={config.deletableKey}
+          rowActions={config.rowActions || []}
+          onRowAction={config.rowActions ? handleRowAction : noopRowAction}
+          reorderEnabled={hasOrdinalField}
+          onReorder={reorderByOrdinal}
         />
       )}
 

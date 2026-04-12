@@ -1,97 +1,78 @@
-# ledningssystemet
-Ledningssystemet.se
+# Ledningssystemet.se
 
-## Authentication
+Detta projekt innehåller plattformen Ledningssystemet.se, ett stödsystem för ett modernt ledningssystem: ett generellt, modulärt och flexibelt verktyg för att bygga, dokumentera och förvalta verksamheters systematik för ständig förbättring, i enlighet med standardkrav och lagkrav.
 
-Applikationen har nu ett enhetligt inloggningsflode med:
+Syftet är att ge organisationer en robust grund för systematiskt förbättringsarbete – utan låsningar mot specifika standarder eller proprietära mallar.
 
-- Losenordsinloggning
-- MFA via OTP (valfritt eller tvingat)
-- OAuth via **ett** arbetsplatskonto (Google **eller** Microsoft Entra)
+## 🎯 Vad systemet är
 
-### Login-lagen
+Kärnan tillhandahåller ett digitalt ramverk där organisationer bland annat kan:
 
-Styrs av `AUTH_LOGIN_MODE`:
+- Strukturera **processer**, roller och arbetssätt
+- Hantera **avvikelser**, förbättringar och korrigerande åtgärder
+- Dokumentera och versionera **styrande och stödjande dokument**
+- Sätta och följa upp **mål**, aktiviteter och nyckeltal
+- Genomföra och dokumentera **uppföljningar**, som ledningens genomgång
+- Skapa **spårbarhet och revisionsbarhet** i hela systemet
+- Hantera **intressenter och leverantörer** strukturerat
+- Sköta personaladministration avseende **kompetenser och kvalifikationer**
+- Och mycket mer...
 
-- `hybrid`: losenord + eventuell OAuth-knapp
-- `password`: endast losenord
-- `oauth`: endast OAuth (inloggningssidan omdirigerar direkt till OAuth)
+Systemet är standardoberoende men stödjer effektivt arbete enligt moderna ISO‑baserade ledningssystem och lagkrav som kräver systematik och uppföljning.
 
-### OAuth (generisk konfiguration)
+## 🧰 Kärnfunktionalitet (Open Source)
 
-Konfigurera i `.env`:
+### Process- och strukturstöd
+- Processkartläggning med automatisk tolkning och skapande av tillgångsförteckning, personuppgiftsbehandlingsregister och informationshanteringsplan
+- Klassificering av information och informationstillgångar
 
-```dotenv
-AUTH_OAUTH_ENABLED=true
-AUTH_OAUTH_PROVIDER=google
-AUTH_OAUTH_CLIENT_ID=
-AUTH_OAUTH_CLIENT_SECRET=
-AUTH_OAUTH_REDIRECT_URI="${APP_URL}/oauth/workplace/callback"
-AUTH_OAUTH_TENANT_ID=common
-AUTH_OAUTH_WORKSPACE_DOMAIN=
-```
+### Avvikelse- och förbättringshantering
+- Registrering av avvikelser och förbättringsförslag
+- Stöd för rotorsaksanalys
+- Spårbar kedja från upptäckt till åtgärd
 
-- `AUTH_OAUTH_PROVIDER=google` for Google Workspace
-- `AUTH_OAUTH_PROVIDER=microsoft` for Microsoft Entra
+### Mål och uppföljning
+- Definiera mål och indikatorer
+- Följa upp utveckling över tid
 
-OAuth-knappen visas bara nar OAuth ar korrekt konfigurerat.
+### Dokumenthantering
+- Uppladdning, godkännande, versionering
+- Rollbaserad åtkomst
 
-OAuth-routes:
+### Strukturerade uppföljningar
+- Stöd för exempelvis intern granskning och ledningens genomgång
 
-- `/oauth/workplace/redirect`
-- `/oauth/workplace/callback`
+### Leverantörs- och intressenthantering
+- Enkel registrering och uppföljning
 
-### MFA via OTP
+## 🌍 Varför släpps systemet fritt och öppet?
 
-Konfigurera i `.env`:
+Ledningssystemet Sverige AB väljer att släppa programvaran helt öppen därför att **verksamheter bör lägga sina resurser på sin kärnverksamhet**, inte på onödigt komplexa eller dyra verktyg för förbättringsarbete.
 
-```dotenv
-AUTH_MFA_ENABLED=false
-AUTH_MFA_ENFORCE=false
-AUTH_MFA_OTP_TTL=10
-```
+Det finns en överhängande risk att många organisationer lägger stora resurser på att utveckla eller köpa lösningar som redan finns, vilket leder till dubbelarbete och förslösade medel. Detta har i öppna forum uttryckts som att många riskerar att "uppfinna hjulet på nytt", vilket bör motverkas genom att dela verktyg öppet.
 
-- Nar `AUTH_MFA_ENABLED=true` kan anvandaren valja OTP vid inloggning.
-- Nar `AUTH_MFA_ENFORCE=true` maste OTP alltid verifieras.
+Filosofin bakom detta är att verksamheter ska kunna arbeta systematiskt utan att tvingas in i dyra eller byråkratiska lösningar. Ett enkelt och kostnadseffektivt angreppssätt bör underlätta efterlevnad, inte belasta ekonomin.
 
-### Auth-sidor
+Det är också offentligt framfört att vissa verksamheter – särskilt de som finansieras av skattemedel – bör kunna använda sådana verktyg utan licenskostnader under eget driftansvar, för att undvika onödiga utgifter och samtidigt stärka samhällsviktig verksamhet.
 
-Skapade under `resources/views/auth/`:
+Genom att öppna källkoden möjliggör vi:
 
-- `login.blade.php`
-- `forgot-password.blade.php`
-- `reset-password.blade.php`
-- `otp-challenge.blade.php`
+- **Fri anpassning** efter lokala behov
+- **Gemensam vidareutveckling**, där förbättringar kommer alla till del
+- **Transparens** som skapar förtroende
+- **Fokus på verkligt värdeskapande**: analys, styrning och förbättringsarbete
 
-Gaster omdirigeras till `/login` om de forsoker na skyddade routes.
+**Kort sagt:**
+Vi bygger detta öppet därför att det är bättre för samhället att vi tillsammans utvecklar ett bra, fritt och spårbart verktyg — och låter organisationer lägga sina resurser på sitt riktiga uppdrag.
 
-## Generic CRUD API
+## 🗂️ Sammanfattning
 
-En generisk API-yta finns under `/api/crud/{resource}` och ar skyddad av `auth:sanctum`-middleware.
+Den öppna kärnan av ledningssystemet är en flexibel och kostnadsfri plattform för att:
 
-Endpoints:
+- bygga ett modernt och robust ledningssystem
+- uppfylla standardkrav och lagkrav
+- minska administration och kostnader
+- skapa transparens och spårbarhet
+- möjliggöra samarbete och gemensam utveckling
 
-- `GET /api/crud/{resource}`
-- `POST /api/crud/{resource}`
-- `GET /api/crud/{resource}/{id}`
-- `PUT|PATCH /api/crud/{resource}/{id}`
-- `DELETE /api/crud/{resource}/{id}`
-
-Index (`GET`) stodjer:
-
-- policykontroll med `viewAny`
-- valbar paginering via `paginate=1` och `per_page`
-- filter pa numeriska och booleska kolumner via `filter[field]=value`
-- fritextsokning i synliga textfalt via `search=...`
-- val av returnerade kolumner via `$select=col1,col2` (eller `select=`)
-
-Exempel:
-
-```text
-GET /api/crud/users?paginate=1&per_page=25
-GET /api/crud/users?filter[enabled]=1&search=alice
-GET /api/crud/users?%24select=id,name,email
-```
-
-Resursmappning kan konfigureras i `config/generic_crud.php` via `resources`.
-
+Systemet är skapat för att stödja verksamheter i att fokusera på det som verkligen spelar roll — **kvalitet, säkerhet, samhällsnytta och ständig förbättring**.

@@ -27,7 +27,12 @@ const buildQueryString = (
     params.set("search", state.search);
   }
 
-  Object.entries(state.filters).forEach(([key, value]) => {
+  const allFilters = {
+    ...(config.fixedFilters || {}),
+    ...state.filters,
+  };
+
+  Object.entries(allFilters).forEach(([key, value]) => {
     if (value !== undefined && value !== "" && value !== null) {
       if (Array.isArray(value) && value.length > 0) {
         params.set(`filter[${key}]`, value.join(","));
@@ -36,6 +41,17 @@ const buildQueryString = (
       }
     }
   });
+
+  if (config.customQueryParams) {
+    const customParams = config.customQueryParams(state.filters) || {};
+    Object.entries(customParams).forEach(([key, value]) => {
+      if (value === undefined || value === null || value === "") {
+        return;
+      }
+
+      params.set(key, String(value));
+    });
+  }
 
   if (state.sort) {
     params.set("sort", state.sortDirection === "desc" ? `-${state.sort}` : state.sort);
@@ -103,14 +119,17 @@ function getPerPageFromCookie(fallback: number): number {
 }
 
 export function useCrudModule(config: CrudModuleConfig) {
+  const fixedFiltersSignature = JSON.stringify(config.fixedFilters || {});
+  const hasOrdinalField = config.fields.some((field) => field.key === "ordinal");
+
   const [state, setState] = useState<CrudState>(() => ({
     items: [],
     selectedItems: new Set(),
     activeItem: null,
     search: "",
     filters: {},
-    sort: resolvePersistedSort(config),
-    sortDirection: resolvePersistedSortDirection(config),
+    sort: hasOrdinalField ? "ordinal" : resolvePersistedSort(config),
+    sortDirection: hasOrdinalField ? "asc" : resolvePersistedSortDirection(config),
     page: 1,
     perPage: getPerPageFromCookie(config.perPage || 25),
     totalPages: 1,
@@ -160,7 +179,7 @@ export function useCrudModule(config: CrudModuleConfig) {
         setState((s) => ({ ...s, loading: false }));
       }
     }
-  }, [config.apiUrl, primaryKey, state.search, state.filters, state.sort, state.sortDirection, state.page, state.perPage]);
+  }, [config.apiUrl, fixedFiltersSignature, primaryKey, state.search, state.filters, state.sort, state.sortDirection, state.page, state.perPage]);
 
   useEffect(() => {
     fetchItems();
@@ -175,6 +194,11 @@ export function useCrudModule(config: CrudModuleConfig) {
   }, []);
 
   const setSort = useCallback((sort: string) => {
+    if (hasOrdinalField) {
+      setState((s) => ({ ...s, sort: "ordinal", sortDirection: "asc", page: 1 }));
+      return;
+    }
+
     setCookie(scopedCookieKey("crud_sort", config.apiUrl), sort);
     setState((s) => ({
       ...s,
@@ -182,12 +206,17 @@ export function useCrudModule(config: CrudModuleConfig) {
       sortDirection: s.sort === sort && s.sortDirection === "asc" ? "desc" : "asc",
       page: 1,
     }));
-  }, [config.apiUrl]);
+  }, [config.apiUrl, hasOrdinalField]);
 
   const setSortDirection = useCallback((sortDirection: "asc" | "desc") => {
+    if (hasOrdinalField) {
+      setState((s) => ({ ...s, sort: "ordinal", sortDirection: "asc", page: 1 }));
+      return;
+    }
+
     setCookie(scopedCookieKey("crud_sort_dir", config.apiUrl), sortDirection);
     setState((s) => ({ ...s, sortDirection, page: 1 }));
-  }, [config.apiUrl]);
+  }, [config.apiUrl, hasOrdinalField]);
 
   const setPage = useCallback((page: number) => {
     setState((s) => ({ ...s, page }));
@@ -234,6 +263,9 @@ export function useCrudModule(config: CrudModuleConfig) {
     async (data: Record<string, any>) => {
       const id = data[primaryKey];
       const isNew = !id;
+      const payload = isNew
+        ? { ...(config.createDefaults || {}), ...data }
+        : data;
       const url = isNew ? config.apiUrl : `${config.apiUrl}/${id}`;
       const method = isNew ? "POST" : "PUT";
 
@@ -243,7 +275,7 @@ export function useCrudModule(config: CrudModuleConfig) {
           "Content-Type": "application/json",
           Accept: "application/json",
         },
-        body: JSON.stringify(data),
+        body: JSON.stringify(payload),
       });
 
       if (!res.ok) {
@@ -274,12 +306,12 @@ export function useCrudModule(config: CrudModuleConfig) {
           };
         });
 
-        await config.onSaveSuccess?.(savedItem, { isNew, payload: data });
+        await config.onSaveSuccess?.(savedItem, { isNew, payload });
       }
 
       await fetchItems();
     },
-    [config.apiUrl, primaryKey, fetchItems, config.onSaveSuccess]
+    [config.apiUrl, config.createDefaults, primaryKey, fetchItems, config.onSaveSuccess]
   );
 
   const patchItem = useCallback(
@@ -376,6 +408,54 @@ export function useCrudModule(config: CrudModuleConfig) {
     setState((s) => ({ ...s, selectedItems: new Set() }));
   }, [config.apiUrl, state.selectedItems, fetchItems]);
 
+  const reorderByOrdinal = useCallback(
+    async (orderedIds: Array<string | number>) => {
+      if (!hasOrdinalField || orderedIds.length === 0) {
+        return;
+      }
+
+      const byId = new Map<string, Record<string, any>>(
+        state.items.map((item) => [String(item[primaryKey]), item])
+      );
+
+      const updates: Array<{ id: string | number; payload: Record<string, any> }> = [];
+      orderedIds.forEach((id, index) => {
+        const item = byId.get(String(id));
+        if (!item) {
+          return;
+        }
+
+        updates.push({
+          id,
+          payload: {
+            ...item,
+            ordinal: index + 1,
+          },
+        });
+      });
+
+      if (updates.length === 0) {
+        return;
+      }
+
+      await Promise.all(
+        updates.map(({ id, payload }) =>
+          fetch(`${config.apiUrl}/${id}`, {
+            method: "PATCH",
+            headers: {
+              "Content-Type": "application/json",
+              Accept: "application/json",
+            },
+            body: JSON.stringify(payload),
+          })
+        )
+      );
+
+      await fetchItems();
+    },
+    [config.apiUrl, fetchItems, hasOrdinalField, primaryKey, state.items]
+  );
+
   return {
     state,
     setSearch,
@@ -396,6 +476,7 @@ export function useCrudModule(config: CrudModuleConfig) {
     deleteItem,
     massUpdate,
     massDelete,
+    reorderByOrdinal,
     refetch: fetchItems,
   };
 }

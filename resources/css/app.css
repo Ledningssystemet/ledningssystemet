@@ -124,4 +124,8 @@ h1, h2, h3, h4, h5, h6 { font-family: var(--font-heading); }
     .crud-row-hover { transition: background-color 0.15s ease; }
     .crud-row-hover:hover { background: hsl(var(--crud-row-hover)); }
     .crud-row-selected { background: hsl(var(--crud-row-selected)) !important; }
+    [data-crud-dragging="true"] {
+        opacity: 0.45;
+        filter: saturate(0.75);
+    }
 }

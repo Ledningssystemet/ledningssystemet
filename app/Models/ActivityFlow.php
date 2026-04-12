@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Validator;
 
 class ActivityFlow extends Model
@@ -52,6 +53,36 @@ class ActivityFlow extends Model
 
     protected static function booted(): void
     {
+        static::created(function (self $model): void {
+            $templateItems = ActivityFlowTemplateItem::query()
+                ->where('activity_flow_template_id', $model->activity_flow_template_id)
+                ->where('type', 'item')
+                ->orderBy('ordinal')
+                ->get();
+
+            if ($templateItems->isEmpty()) {
+                return;
+            }
+
+            $startedAt = $model->started_at instanceof Carbon
+                ? $model->started_at->copy()->startOfDay()
+                : now()->startOfDay();
+
+            foreach ($templateItems as $templateItem) {
+                Activity::query()->create([
+                    'name' => $templateItem->name,
+                    'description' => $templateItem->description ?? $templateItem->name,
+                    'due' => $startedAt->copy()->addDays((int) $templateItem->dueoffsetdays)->toDateString(),
+                    'intervalnum' => 0,
+                    'intervaltype' => null,
+                    'completed_at' => null,
+                    'responsible_user_id' => $model->responsible_user_id,
+                    'activity_flow_id' => $model->id,
+                    'activity_flow_template_item_id' => $templateItem->id,
+                ]);
+            }
+        });
+
         static::saving(function (self $model): void {
             Validator::make($model->attributesToArray(), static::validationRules())->validate();
         });

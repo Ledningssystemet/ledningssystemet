@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\AccessGroupOptionsController;
+use App\Http\Controllers\Api\AgreementArchiveController;
 use App\Http\Controllers\Api\AdminApiTokenController;
 use App\Http\Controllers\Api\CrudResourceCatalogController;
 use App\Http\Controllers\Api\CustomPropertyContextController;
@@ -55,6 +56,7 @@ Route::middleware('auth:sanctum')->group(function (): void {
     Route::get('/crud/{resource}/{id}', [GenericCrudController::class, 'show'])->name('api.crud.show');
     Route::match(['put', 'patch'], '/crud/{resource}/{id}', [GenericCrudController::class, 'update'])->name('api.crud.update');
     Route::delete('/crud/{resource}/{id}', [GenericCrudController::class, 'destroy'])->name('api.crud.destroy');
+    Route::post('/agreements/{agreement}/archive', AgreementArchiveController::class)->name('api.agreements.archive');
 
     // Process publishing with BPMN validation
     Route::post('/processes/{process}/publish', [ProcessPublishController::class, 'store'])->name('api.processes.publish');

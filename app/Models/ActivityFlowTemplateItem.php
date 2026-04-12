@@ -31,7 +31,7 @@ class ActivityFlowTemplateItem extends Model
         return [
             'name' => ['required', 'string', 'max:255'],
             'type' => ['required', 'string', 'in:header,item'],
-            'ordinal' => ['required', 'integer', 'min:0'],
+            'ordinal' => ['nullable', 'integer', 'min:0'],
             'description' => ['nullable', 'string'],
             'waitforpreceeding' => ['required', 'boolean'],
             'dueoffsetdays' => ['required', 'integer', 'min:0'],
@@ -54,6 +54,18 @@ class ActivityFlowTemplateItem extends Model
 
     protected static function booted(): void
     {
+        static::creating(function (self $model): void {
+            if ($model->ordinal !== null) {
+                return;
+            }
+
+            $lastOrdinal = static::query()
+                ->where('activity_flow_template_id', $model->activity_flow_template_id)
+                ->max('ordinal');
+
+            $model->ordinal = $lastOrdinal !== null ? ((int) $lastOrdinal + 1) : 0;
+        });
+
         static::saving(function (self $model): void {
             Validator::make($model->attributesToArray(), static::validationRules())->validate();
         });

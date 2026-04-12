@@ -1,12 +1,16 @@
-import { FieldConfig, ItemBadgeConfig, ItemStatus, SelectOption } from "./types";
+import { FieldConfig, ItemBadgeConfig, ItemStatus, RowActionConfig, SelectOption } from "./types";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Pencil, Trash2 } from "lucide-react";
+import { GripVertical, Pencil, Trash2 } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { StatusDot, statusRowClass } from "./StatusIndicator";
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
 import { InlineTagsEditor } from "./InlineTagsEditor";
 import { useAllSelectOptions, resolveOptions } from "./optionsCache";
+import { DragEvent, Fragment, useEffect, useMemo, useRef, useState } from "react";
+import { setupDragPreview } from "./dragPreview";
+
+type DropPosition = "before" | "after";
 
 interface MasterDetailViewProps {
   items: Record<string, any>[];
@@ -18,10 +22,14 @@ interface MasterDetailViewProps {
   onEdit?: (item: Record<string, any>) => void;
   canDelete?: boolean;
   onDelete?: (id: string | number) => void;
+  rowActions?: RowActionConfig[];
+  onRowAction?: (action: RowActionConfig, item: Record<string, any>) => Promise<void>;
   onInlineFieldUpdate?: (item: Record<string, any>, fieldKey: string, value: any) => Promise<void>;
   getItemStatus?: (item: Record<string, any>) => ItemStatus | null;
   getItemBadge?: (item: Record<string, any>) => ItemBadgeConfig | null;
   deletableKey?: string;
+  reorderEnabled?: boolean;
+  onReorder?: (orderedIds: Array<string | number>) => Promise<void>;
 }
 
 export function MasterDetailView({
@@ -34,15 +42,81 @@ export function MasterDetailView({
   onEdit,
   canDelete = true,
   onDelete,
+  rowActions = [],
+  onRowAction,
   onInlineFieldUpdate,
   getItemStatus,
   getItemBadge,
   deletableKey,
+  reorderEnabled = false,
+  onReorder,
 }: MasterDetailViewProps) {
   const labelField = fields.find((f) => f.masterLabel) || fields[0];
   const descField = fields.find((f) => f.masterDescription);
   const detailFields = fields.filter((f) => !f.hidden);
   const optionsMap = useAllSelectOptions(fields);
+  const [draggedId, setDraggedId] = useState<string | number | null>(null);
+  const [dropTarget, setDropTarget] = useState<{ id: string | number; position: DropPosition } | null>(null);
+  const dragPreviewCleanupRef = useRef<(() => void) | null>(null);
+
+  useEffect(() => {
+    return () => {
+      dragPreviewCleanupRef.current?.();
+      dragPreviewCleanupRef.current = null;
+    };
+  }, []);
+
+  const rowIds = useMemo(
+    () => items
+      .map((item) => item[primaryKey])
+      .filter((id): id is string | number => id !== undefined && id !== null),
+    [items, primaryKey]
+  );
+
+  const canReorder = reorderEnabled && Boolean(onReorder) && rowIds.length > 1;
+
+  const getDropPosition = (event: DragEvent<HTMLElement>): DropPosition => {
+    const rect = event.currentTarget.getBoundingClientRect();
+    return event.clientY < rect.top + rect.height / 2 ? "before" : "after";
+  };
+
+  const handleDrop = async (targetId: string | number, position: DropPosition, event?: DragEvent<HTMLElement>) => {
+    const dragDataId = event?.dataTransfer?.getData("text/plain") || null;
+    const sourceId = draggedId ?? dragDataId;
+
+    if (!canReorder || sourceId === null || String(sourceId) === String(targetId)) {
+      setDraggedId(null);
+      setDropTarget(null);
+      return;
+    }
+
+    const resolvedSourceId = rowIds.find((id) => String(id) === String(sourceId));
+    const ordered = rowIds.filter((id) => String(id) !== String(sourceId));
+    const toIndex = ordered.findIndex((id) => String(id) === String(targetId));
+
+    if (resolvedSourceId === undefined || toIndex === -1) {
+      setDraggedId(null);
+      setDropTarget(null);
+      return;
+    }
+
+    const insertIndex = position === "before" ? toIndex : toIndex + 1;
+    ordered.splice(insertIndex, 0, resolvedSourceId);
+    await onReorder?.(ordered);
+
+    setDraggedId(null);
+    setDropTarget(null);
+  };
+
+  const handleDragStart = (id: string | number, event: DragEvent<HTMLElement>) => {
+    if (!canReorder) return;
+    event.stopPropagation();
+    setDraggedId(id);
+    event.dataTransfer.effectAllowed = "move";
+    event.dataTransfer.setData("text/plain", String(id));
+    dragPreviewCleanupRef.current?.();
+    dragPreviewCleanupRef.current = setupDragPreview(event);
+  };
 
   // Group detail fields by category
   const categories = groupByCategory(detailFields);
@@ -51,7 +125,10 @@ export function MasterDetailView({
   const canDeleteActiveItem = Boolean(
     canDelete && activeItem && activeItemId !== undefined && activeItemId !== null && (deletableKey ? activeItem[deletableKey] !== false : true)
   );
-  const showActions = canEdit || canDeleteActiveItem;
+  const visibleActiveRowActions = activeItem
+    ? rowActions.filter((action) => (action.isVisible ? action.isVisible(activeItem) : true))
+    : [];
+  const showActions = canEdit || canDeleteActiveItem || visibleActiveRowActions.length > 0;
 
   return (
     <ResizablePanelGroup orientation="horizontal" className="border rounded-lg overflow-hidden" style={{ height: "calc(100vh - 220px)" }}>
@@ -64,14 +141,50 @@ export function MasterDetailView({
               const status = getItemStatus?.(item) ?? null;
 
               return (
-                <button
-                  key={id}
-                  onClick={() => onSelectItem(item)}
-                  className={`w-full text-left p-4 transition-colors crud-row-hover ${statusRowClass(status)} ${
-                    isActive ? "crud-row-selected border-l-2 border-l-primary" : ""
-                  }`}
-                >
+                <Fragment key={id}>
+                  {dropTarget && String(dropTarget.id) === String(id) && dropTarget.position === "before" && draggedId !== null && String(draggedId) !== String(id) && (
+                    <div aria-hidden className="h-3 bg-success/20 border-y border-success/50" />
+                  )}
+                  <button
+                    data-crud-drag-item
+                    onClick={() => onSelectItem(item)}
+                    className={`w-full text-left p-4 transition-colors crud-row-hover ${statusRowClass(status)} ${
+                      isActive ? "crud-row-selected border-l-2 border-l-primary" : ""
+                    } ${draggedId !== null && String(draggedId) === String(id) ? "opacity-45" : ""}`}
+                    onDragOver={(event) => {
+                      if (!canReorder) return;
+                      event.preventDefault();
+                      event.dataTransfer.dropEffect = "move";
+                      setDropTarget({ id, position: getDropPosition(event) });
+                    }}
+                    onDrop={(event) => {
+                      if (!canReorder) return;
+                      event.preventDefault();
+                      const position = dropTarget && String(dropTarget.id) === String(id)
+                        ? dropTarget.position
+                        : getDropPosition(event);
+                      void handleDrop(id, position, event);
+                    }}
+                  >
                   <div className="flex items-center gap-2">
+                    {canReorder && (
+                      <span
+                        className="inline-flex cursor-grab text-muted-foreground active:cursor-grabbing"
+                        draggable={canReorder}
+                        onDragStart={(event) => handleDragStart(id, event)}
+                        onDragEnd={(event) => {
+                          event.stopPropagation();
+                          dragPreviewCleanupRef.current?.();
+                          dragPreviewCleanupRef.current = null;
+                          setDraggedId(null);
+                          setDropTarget(null);
+                        }}
+                        onClick={(event) => event.preventDefault()}
+                        title="Dra for att sortera"
+                      >
+                        <GripVertical className="h-4 w-4" />
+                      </span>
+                    )}
                     <StatusDot status={status} />
                     <div className="min-w-0">
                       <div className="flex items-center gap-2">
@@ -89,7 +202,11 @@ export function MasterDetailView({
                       )}
                     </div>
                   </div>
-                </button>
+                  </button>
+                  {dropTarget && String(dropTarget.id) === String(id) && dropTarget.position === "after" && draggedId !== null && String(draggedId) !== String(id) && (
+                    <div aria-hidden className="h-3 bg-success/20 border-y border-success/50" />
+                  )}
+                </Fragment>
               );
             })}
             {items.length === 0 && (
@@ -146,6 +263,17 @@ export function MasterDetailView({
                           Radera
                         </Button>
                       )}
+                      {activeItem && visibleActiveRowActions.map((action) => (
+                        <Button
+                          key={action.key}
+                          variant={action.variant || "outline"}
+                          size="sm"
+                          onClick={() => void onRowAction?.(action, activeItem)}
+                        >
+                          {action.icon ? <span className="mr-1 inline-flex">{action.icon}</span> : null}
+                          {action.label}
+                        </Button>
+                      ))}
                     </div>
                   )}
                 </div>

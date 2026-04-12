@@ -12,6 +12,10 @@ return [
     */
     'resources' => [
         'agreements' => App\Models\Agreement::class,
+        'activities' => App\Models\Activity::class,
+        'activity-flows' => App\Models\ActivityFlow::class,
+        'activity-flow-templates' => App\Models\ActivityFlowTemplate::class,
+        'activity-flow-template-items' => App\Models\ActivityFlowTemplateItem::class,
         'assets' => App\Models\Asset::class,
         'chemicals' => App\Models\Chemical::class,
         'competences' => App\Models\Competence::class,

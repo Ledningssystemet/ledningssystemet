@@ -11,4 +11,5 @@ export type {
   EditDialogProps,
   ItemStatus,
   ItemBadgeConfig,
+  RowActionConfig,
 } from "./types";

@@ -54,10 +54,25 @@ export interface ItemBadgeConfig {
   variant?: "default" | "secondary" | "destructive" | "outline";
 }
 
+export interface RowActionConfig {
+  key: string;
+  label: string;
+  icon?: ReactNode;
+  variant?: "default" | "secondary" | "destructive" | "outline" | "ghost";
+  isVisible?: (item: Record<string, any>) => boolean;
+  onClick: (item: Record<string, any>) => void | Promise<void>;
+}
+
 export interface CrudModuleConfig {
   apiUrl: string;
   title?: string;
   fields: FieldConfig[];
+  /** Static API filters always sent as filter[field]=value. Useful for child tables. */
+  fixedFilters?: Record<string, any>;
+  /** Additional top-level query params derived from current filter state. */
+  customQueryParams?: (filters: Record<string, any>) => Record<string, any>;
+  /** Values merged into payload when creating a new record. */
+  createDefaults?: Record<string, any>;
   /** Explicit list of API fields to request via $select for index fetches. */
   selectFields?: string[];
   primaryKey?: string;
@@ -85,6 +100,8 @@ export interface CrudModuleConfig {
   deletableKey?: string;
   /** Callback invoked after a successful create/update save. */
   onSaveSuccess?: (item: Record<string, any>, context: { isNew: boolean; payload: Record<string, any> }) => void | Promise<void>;
+  /** Optional row-level custom actions shown next to edit/delete actions. */
+  rowActions?: RowActionConfig[];
 }
 
 export type ViewMode = "master-detail" | "table" | "accordion";
@@ -103,6 +120,11 @@ export interface CrudState {
   total: number;
   loading: boolean;
   viewMode: ViewMode;
+}
+
+export interface OrdinalReorderResult {
+  id: string | number;
+  ordinal: number;
 }
 
 export interface EditDialogProps {

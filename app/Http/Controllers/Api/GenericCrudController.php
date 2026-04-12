@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
@@ -52,6 +53,10 @@ class GenericCrudController extends Controller
             $metadata['searchable_relations']
         );
 
+        if (method_exists($modelClass, 'applyCrudIndexFilters')) {
+            $modelClass::applyCrudIndexFilters($query, $request);
+        }
+
         $selectedColumns = $this->parseSelectedColumns($request, $metadata['selectable']);
         if ($selectedColumns !== []) {
             $selectedColumns = $this->ensurePrimaryKeySelected($modelClass, $selectedColumns);
@@ -94,13 +99,17 @@ class GenericCrudController extends Controller
             ? $request->only((new $modelClass())->getFillable())
             : $request->validate($rules);
 
-        $model = new $modelClass();
-        $model->fill($data);
-        if (method_exists($model, 'getHidden') && $model->getHidden() !== []) {
-            // Some models validate via attributesToArray() in saving hooks; make hidden fields visible for that validation pass.
-            $model->makeVisible($model->getHidden());
-        }
-        $model->save();
+        $model = DB::transaction(function () use ($modelClass, $data): Model {
+            $createdModel = new $modelClass();
+            $createdModel->fill($data);
+            if (method_exists($createdModel, 'getHidden') && $createdModel->getHidden() !== []) {
+                // Some models validate via attributesToArray() in saving hooks; make hidden fields visible for that validation pass.
+                $createdModel->makeVisible($createdModel->getHidden());
+            }
+            $createdModel->save();
+
+            return $createdModel;
+        });
 
         return response()->json($model->fresh(), Response::HTTP_CREATED);
     }

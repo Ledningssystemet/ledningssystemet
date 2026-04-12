@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { FieldConfig, ViewMode } from "./types";
+import { useAllSelectOptions, resolveOptions } from "./optionsCache";
 import {
   Search,
   Plus,
@@ -42,6 +43,9 @@ interface FilterBarProps {
   onMassDelete?: () => void;
   onClearSelection?: () => void;
   searchable?: boolean;
+  sortLocked?: boolean;
+  reorderEnabled?: boolean;
+  hideSortFilterControls?: boolean;
 }
 
 export function FilterBar({
@@ -62,9 +66,13 @@ export function FilterBar({
   onMassDelete,
   onClearSelection,
   searchable = true,
+  sortLocked = false,
+  reorderEnabled = false,
+  hideSortFilterControls = false,
 }: FilterBarProps) {
   const [localSearch, setLocalSearch] = useState(search);
   const [filterDialogOpen, setFilterDialogOpen] = useState(false);
+  const optionsMap = useAllSelectOptions(fields);
 
   useEffect(() => {
     setLocalSearch(search);
@@ -81,31 +89,36 @@ export function FilterBar({
     [onSearchChange]
   );
 
-  const filterableFields = fields.filter((f) => f.filterable && f.options);
+  const filterableFields = fields.filter(
+    (f) => f.filterable && ((f.options && f.options.length > 0) || !!f.optionsUrl)
+  );
   const sortableFields = fields.filter((f) => f.sortable);
+  const showSortFilterControls = !hideSortFilterControls;
 
   // Build active filter/sort badges
-  const activeBadges: { key: string; label: string; onRemove: () => void }[] = [];
+  const activeBadges: { key: string; label: string; onRemove: () => void; removable?: boolean }[] = [];
 
   for (const field of filterableFields) {
     const val = filters[field.key];
     if (val && val !== "") {
       if (Array.isArray(val) && val.length > 0) {
         const labels = val.map((v: any) => {
-          const opt = field.options?.find((o) => String(o.value) === String(v));
+          const opt = resolveOptions(field, optionsMap).find((o) => String(o.value) === String(v));
           return opt?.label || v;
         });
         activeBadges.push({
           key: field.key,
           label: `${field.label}: ${labels.join(", ")}`,
           onRemove: () => onFilterChange(field.key, field.type === "multiselect" ? [] : ""),
+          removable: true,
         });
       } else if (!Array.isArray(val)) {
-        const opt = field.options?.find((o) => String(o.value) === String(val));
+        const opt = resolveOptions(field, optionsMap).find((o) => String(o.value) === String(val));
         activeBadges.push({
           key: field.key,
           label: `${field.label}: ${opt?.label || val}`,
           onRemove: () => onFilterChange(field.key, ""),
+          removable: true,
         });
       }
     }
@@ -116,7 +129,17 @@ export function FilterBar({
     activeBadges.push({
       key: "__sort__",
       label: `Sorterat: ${sortField?.label || sort} (${sortDirection === "asc" ? "stigande" : "fallande"})`,
-      onRemove: () => onSortChange(""),
+      onRemove: () => (sortLocked ? undefined : onSortChange("")),
+      removable: !sortLocked,
+    });
+  }
+
+  if (sortLocked) {
+    activeBadges.push({
+      key: "__ordinal_lock__",
+      label: "Sortering: Låst till ordinal (stigande)",
+      onRemove: () => undefined,
+      removable: false,
     });
   }
 
@@ -128,13 +151,15 @@ export function FilterBar({
     filterableFields.forEach((f) =>
       onFilterChange(f.key, f.type === "multiselect" ? [] : "")
     );
-    onSortChange("");
+    if (!sortLocked) {
+      onSortChange("");
+    }
   };
 
   return (
     <>
       <div className="crud-toolbar flex-wrap">
-        {searchable && (
+        {showSortFilterControls && searchable && (
           <div className="relative flex-1 min-w-[200px] max-w-sm">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
@@ -149,25 +174,31 @@ export function FilterBar({
           </div>
         )}
 
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => setFilterDialogOpen(true)}
-        >
-          <SlidersHorizontal className="h-4 w-4 mr-1" />
-          Filter & sortering
-          {activeBadges.length > 0 && (
-            <span className="ml-1.5 inline-flex items-center justify-center h-5 w-5 rounded-full bg-primary text-primary-foreground text-xs font-medium">
-              {activeBadges.length}
-            </span>
-          )}
-        </Button>
+        {showSortFilterControls && (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setFilterDialogOpen(true)}
+          >
+            <SlidersHorizontal className="h-4 w-4 mr-1" />
+            Filter & sortering
+            {activeBadges.length > 0 && (
+              <span className="ml-1.5 inline-flex items-center justify-center h-5 w-5 rounded-full bg-primary text-primary-foreground text-xs font-medium">
+                {activeBadges.length}
+              </span>
+            )}
+          </Button>
+        )}
 
-        {hasActiveFilters && (
+        {showSortFilterControls && hasActiveFilters && (
           <Button variant="ghost" size="sm" onClick={clearAll}>
             <X className="h-4 w-4 mr-1" />
             Rensa
           </Button>
+        )}
+
+        {showSortFilterControls && reorderEnabled && (
+          <span className="text-xs text-muted-foreground">Dra handtaget for att sortera ordningen</span>
         )}
 
         <div className="flex items-center gap-1 ml-auto">
@@ -235,7 +266,7 @@ export function FilterBar({
       </div>
 
       {/* Active filter/sort badges */}
-      {activeBadges.length > 0 && (
+      {showSortFilterControls && activeBadges.length > 0 && (
         <div className="flex flex-wrap gap-1.5">
           {activeBadges.map((badge) => (
             <Badge
@@ -244,37 +275,43 @@ export function FilterBar({
               className="gap-1 pr-1 cursor-default"
             >
               {badge.label}
-              <button
-                onClick={badge.onRemove}
-                className="ml-0.5 rounded-full hover:bg-muted-foreground/20 p-0.5"
-              >
-                <X className="h-3 w-3" />
-              </button>
+              {badge.removable !== false && (
+                <button
+                  onClick={badge.onRemove}
+                  className="ml-0.5 rounded-full hover:bg-muted-foreground/20 p-0.5"
+                >
+                  <X className="h-3 w-3" />
+                </button>
+              )}
             </Badge>
           ))}
         </div>
       )}
 
       {/* Filter & sort dialog */}
-      <Dialog open={filterDialogOpen} onOpenChange={setFilterDialogOpen}>
-        <DialogContent
-          className="max-w-md"
-          onInteractOutside={(event) => event.preventDefault()}
-          onEscapeKeyDown={(event) => event.preventDefault()}
-        >
-          <DialogHeader>
-            <DialogTitle>Filter & sortering</DialogTitle>
-          </DialogHeader>
+      {showSortFilterControls && (
+        <Dialog open={filterDialogOpen} onOpenChange={setFilterDialogOpen}>
+          <DialogContent
+            className="max-w-md"
+            onInteractOutside={(event) => event.preventDefault()}
+            onEscapeKeyDown={(event) => event.preventDefault()}
+          >
+            <DialogHeader>
+              <DialogTitle>Filter & sortering</DialogTitle>
+            </DialogHeader>
 
           <div className="grid gap-4 py-2">
             {/* Filters */}
-            {filterableFields.map((field) => (
+            {filterableFields.map((field) => {
+              const options = resolveOptions(field, optionsMap);
+
+              return (
               <div key={field.key} className="grid gap-1.5">
                 <Label>{field.label}</Label>
                 {field.type === "multiselect" ? (
                   <select
                     multiple
-                    size={Math.min(5, field.options?.length || 1)}
+                    size={Math.min(5, options.length || 1)}
                     value={
                       Array.isArray(filters[field.key])
                         ? filters[field.key].map(String)
@@ -288,7 +325,7 @@ export function FilterBar({
                     }}
                     className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
                   >
-                    {field.options?.map((opt) => (
+                    {options.map((opt) => (
                       <option key={opt.value} value={String(opt.value)}>
                         {opt.label}
                       </option>
@@ -303,7 +340,7 @@ export function FilterBar({
                     className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
                   >
                     <option value="">Alla</option>
-                    {field.options?.map((opt) => (
+                    {options.map((opt) => (
                       <option key={String(opt.value)} value={String(opt.value)}>
                         {opt.label}
                       </option>
@@ -318,7 +355,7 @@ export function FilterBar({
                     className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
                   >
                     <option value="">Alla</option>
-                    {field.options?.map((opt) => (
+                    {options.map((opt) => (
                       <option key={opt.value} value={String(opt.value)}>
                         {opt.label}
                       </option>
@@ -326,10 +363,11 @@ export function FilterBar({
                   </select>
                 )}
               </div>
-            ))}
+              );
+            })}
 
             {/* Sort */}
-            {sortableFields.length > 0 && (
+            {sortableFields.length > 0 && !sortLocked && (
               <div className="grid gap-1.5">
                 <Label>Sortering</Label>
                 <div className="flex items-center gap-2">
@@ -373,16 +411,17 @@ export function FilterBar({
             )}
           </div>
 
-          <DialogFooter>
-            <Button variant="outline" size="sm" onClick={clearAll}>
-              Rensa alla
-            </Button>
-            <Button size="sm" onClick={() => setFilterDialogOpen(false)}>
-              Klar
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+            <DialogFooter>
+              <Button variant="outline" size="sm" onClick={clearAll}>
+                Rensa alla
+              </Button>
+              <Button size="sm" onClick={() => setFilterDialogOpen(false)}>
+                Klar
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      )}
     </>
   );
 }
