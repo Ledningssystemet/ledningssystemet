@@ -13,7 +13,7 @@ class SustainabilityAspectPolicy
      */
     public function viewAny(User $user): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -21,7 +21,7 @@ class SustainabilityAspectPolicy
      */
     public function view(User $user, SustainabilityAspect $sustainabilityAspect = new SustainabilityAspect): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -29,7 +29,7 @@ class SustainabilityAspectPolicy
      */
     public function create(User $user): bool
     {
-        return false;
+        return $user->haveAnyAccessRights(['managementtools.edit', 'superadmin.edit']);
     }
 
     /**
@@ -37,7 +37,7 @@ class SustainabilityAspectPolicy
      */
     public function update(User $user, SustainabilityAspect $sustainabilityAspect = new SustainabilityAspect): bool
     {
-        return false;
+        return $user->haveAnyAccessRights(['managementtools.edit']);
     }
 
     /**
@@ -45,7 +45,11 @@ class SustainabilityAspectPolicy
      */
     public function delete(User $user, SustainabilityAspect $sustainabilityAspect = new SustainabilityAspect): bool
     {
-        return false;
+        if ($user->haveAnyAccessRights(['superadmin.edit'])) {
+            return true;
+        }
+
+        return $user->can('update', $sustainabilityAspect);
     }
 
     /**

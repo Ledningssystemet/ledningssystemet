@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Controllers\Api\AccessGroupOptionsController;
+use App\Http\Controllers\Api\AssessmentSettingsRiskMappingController;
+use App\Http\Controllers\Api\UserProfileController;
 use App\Http\Controllers\Api\AgreementArchiveController;
 use App\Http\Controllers\Api\AdminApiTokenController;
 use App\Http\Controllers\Api\CrudResourceCatalogController;
@@ -56,6 +58,10 @@ Route::middleware('auth:sanctum')->group(function (): void {
     Route::get('/crud/{resource}/{id}', [GenericCrudController::class, 'show'])->name('api.crud.show');
     Route::match(['put', 'patch'], '/crud/{resource}/{id}', [GenericCrudController::class, 'update'])->name('api.crud.update');
     Route::delete('/crud/{resource}/{id}', [GenericCrudController::class, 'destroy'])->name('api.crud.destroy');
+    Route::get('/assessment-settings/risk-mappings', [AssessmentSettingsRiskMappingController::class, 'index'])
+        ->name('api.assessment-settings.risk-mappings.index');
+    Route::post('/assessment-settings/risk-mappings', [AssessmentSettingsRiskMappingController::class, 'store'])
+        ->name('api.assessment-settings.risk-mappings.store');
     Route::post('/agreements/{agreement}/archive', AgreementArchiveController::class)->name('api.agreements.archive');
 
     // Process publishing with BPMN validation
@@ -64,4 +70,11 @@ Route::middleware('auth:sanctum')->group(function (): void {
     // Access Group options
     Route::get('/access-groups/claims', [AccessGroupOptionsController::class, 'claims'])
         ->name('api.access-groups.claims');
+
+    // My profile
+    Route::get('/my-profile', [UserProfileController::class, 'show'])->name('api.my-profile.show');
+    Route::get('/my-profile/roles', [UserProfileController::class, 'roles'])->name('api.my-profile.roles');
+    Route::get('/my-profile/qualifications', [UserProfileController::class, 'qualifications'])->name('api.my-profile.qualifications');
+    Route::get('/my-profile/competences', [UserProfileController::class, 'competences'])->name('api.my-profile.competences');
+    Route::get('/my-profile/responsibilities', [UserProfileController::class, 'responsibilities'])->name('api.my-profile.responsibilities');
 });

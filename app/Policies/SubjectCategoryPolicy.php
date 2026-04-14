@@ -29,7 +29,7 @@ class SubjectCategoryPolicy
      */
     public function create(User $user): bool
     {
-        return false;
+        return $user->haveAnyAccessRights(['managementtools.edit', 'superadmin.edit']);
     }
 
     /**
@@ -37,7 +37,7 @@ class SubjectCategoryPolicy
      */
     public function update(User $user, SubjectCategory $subjectCategory = new SubjectCategory): bool
     {
-        return false;
+        return $user->haveAnyAccessRights(['managementtools.edit']);
     }
 
     /**
@@ -45,7 +45,11 @@ class SubjectCategoryPolicy
      */
     public function delete(User $user, SubjectCategory $subjectCategory = new SubjectCategory): bool
     {
-        return false;
+        if ($user->haveAnyAccessRights(['superadmin.edit'])) {
+            return true;
+        }
+
+        return $user->can('update', $subjectCategory);
     }
 
     /**

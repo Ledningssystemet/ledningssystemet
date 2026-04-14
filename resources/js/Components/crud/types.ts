@@ -3,10 +3,12 @@ import { ReactNode } from "react";
 export interface SelectOption {
   value: string | number;
   label: string;
+  imageUrl?: string;
 }
 
 export type FieldType =
   | "text"
+  | "color"
   | "number"
   | "select"
   | "multiselect"
@@ -16,7 +18,9 @@ export type FieldType =
   | "boolean"
   | "textarea"
   | "email"
-  | "url";
+  | "url"
+  | "file"
+  | "pictogram-multiselect";
 
 export interface FieldConfig {
   key: string;
@@ -31,6 +35,7 @@ export interface FieldConfig {
   editableOnUpdate?: boolean;
   required?: boolean;
   placeholder?: string;
+  accept?: string;
   options?: SelectOption[];
   optionsUrl?: string;
   createOptionUrl?: string;
@@ -61,12 +66,16 @@ export interface RowActionConfig {
   variant?: "default" | "secondary" | "destructive" | "outline" | "ghost";
   isVisible?: (item: Record<string, any>) => boolean;
   onClick: (item: Record<string, any>) => void | Promise<void>;
+  /** Whether to call refetch after onClick completes. Defaults to true. */
+  refreshOnComplete?: boolean;
 }
 
 export interface CrudModuleConfig {
   apiUrl: string;
   title?: string;
   fields: FieldConfig[];
+  /** Locked sort direction for tables that include an ordinal field. Defaults to asc. */
+  ordinalSortDirection?: "asc" | "desc";
   /** Static API filters always sent as filter[field]=value. Useful for child tables. */
   fixedFilters?: Record<string, any>;
   /** Additional top-level query params derived from current filter state. */

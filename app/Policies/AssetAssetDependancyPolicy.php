@@ -2,6 +2,7 @@
 
 namespace App\Policies;
 
+use App\Models\Asset;
 use App\Models\AssetAssetDependancy;
 use App\Models\User;
 use Illuminate\Auth\Access\Response;
@@ -13,7 +14,7 @@ class AssetAssetDependancyPolicy
      */
     public function viewAny(User $user): bool
     {
-        return false;
+        return  ($user->can('viewAny', Asset::class));
     }
 
     /**
@@ -21,7 +22,7 @@ class AssetAssetDependancyPolicy
      */
     public function view(User $user, AssetAssetDependancy $assetAssetDependancy = new AssetAssetDependancy): bool
     {
-        return false;
+        return  ($user->can('view', $assetAssetDependancy->int_depending_asset));
     }
 
     /**
@@ -29,7 +30,7 @@ class AssetAssetDependancyPolicy
      */
     public function create(User $user): bool
     {
-        return false;
+        return  ($user->can('create', Asset::class));
     }
 
     /**
@@ -37,7 +38,7 @@ class AssetAssetDependancyPolicy
      */
     public function update(User $user, AssetAssetDependancy $assetAssetDependancy = new AssetAssetDependancy): bool
     {
-        return false;
+        return  ($user->can('update', $assetAssetDependancy->int_depending_asset));
     }
 
     /**
@@ -45,7 +46,7 @@ class AssetAssetDependancyPolicy
      */
     public function delete(User $user, AssetAssetDependancy $assetAssetDependancy = new AssetAssetDependancy): bool
     {
-        return false;
+        return  ($user->can('delete', $assetAssetDependancy->int_depending_asset));
     }
 
     /**
@@ -53,7 +54,7 @@ class AssetAssetDependancyPolicy
      */
     public function restore(User $user, AssetAssetDependancy $assetAssetDependancy = new AssetAssetDependancy): bool
     {
-        return false;
+        return  ($user->can('restore', $assetAssetDependancy->int_depending_asset));
     }
 
     /**
@@ -61,6 +62,6 @@ class AssetAssetDependancyPolicy
      */
     public function forceDelete(User $user, AssetAssetDependancy $assetAssetDependancy = new AssetAssetDependancy): bool
     {
-        return false;
+        return  ($user->can('forceDelete', $assetAssetDependancy->int_depending_asset));
     }
 }

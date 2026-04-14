@@ -29,7 +29,7 @@ class IntegrityClassPolicy
      */
     public function create(User $user): bool
     {
-        return false;
+        return $user->haveAnyAccessRights(['managementtools.edit', 'superadmin.edit']);
     }
 
     /**
@@ -37,7 +37,7 @@ class IntegrityClassPolicy
      */
     public function update(User $user, IntegrityClass $integrityClass = new IntegrityClass): bool
     {
-        return false;
+        return $user->haveAnyAccessRights(['managementtools.edit']);
     }
 
     /**
@@ -45,7 +45,11 @@ class IntegrityClassPolicy
      */
     public function delete(User $user, IntegrityClass $integrityClass = new IntegrityClass): bool
     {
-        return false;
+        if ($user->haveAnyAccessRights(['superadmin.edit'])) {
+            return true;
+        }
+
+        return $user->can('update', $integrityClass);
     }
 
     /**

@@ -29,7 +29,7 @@ class ConfidentialityGroundPolicy
      */
     public function create(User $user): bool
     {
-        return false;
+        return $user->haveAnyAccessRights(['managementtools.edit', 'superadmin.edit']);
     }
 
     /**
@@ -37,7 +37,7 @@ class ConfidentialityGroundPolicy
      */
     public function update(User $user, ConfidentialityGround $confidentialityGround = new ConfidentialityGround): bool
     {
-        return false;
+        return $user->haveAnyAccessRights(['managementtools.edit']);
     }
 
     /**
@@ -45,7 +45,11 @@ class ConfidentialityGroundPolicy
      */
     public function delete(User $user, ConfidentialityGround $confidentialityGround = new ConfidentialityGround): bool
     {
-        return false;
+        if ($user->haveAnyAccessRights(['superadmin.edit'])) {
+            return true;
+        }
+
+        return $user->can('update', $confidentialityGround);
     }
 
     /**

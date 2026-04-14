@@ -108,7 +108,9 @@ export function CrudModule({ config }: CrudModuleProps) {
 
   const handleRowAction = async (action: RowActionConfig, item: Record<string, any>) => {
     await action.onClick(item);
-    await refetch();
+    if (action.refreshOnComplete !== false) {
+      await refetch();
+    }
   };
 
   useEffect(() => {

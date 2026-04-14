@@ -1,6 +1,51 @@
 import { useState, useCallback, useEffect, useRef } from "react";
 import { CrudModuleConfig, CrudState, ViewMode } from "./types";
 
+const containsFile = (value: any): boolean => {
+  if (typeof File !== "undefined" && value instanceof File) {
+    return true;
+  }
+
+  if (Array.isArray(value)) {
+    return value.some((item) => containsFile(item));
+  }
+
+  if (value && typeof value === "object") {
+    return Object.values(value).some((item) => containsFile(item));
+  }
+
+  return false;
+};
+
+const appendFormDataValue = (formData: FormData, key: string, value: any): void => {
+  if (value === undefined || value === null || value === "") {
+    return;
+  }
+
+  if (typeof File !== "undefined" && value instanceof File) {
+    formData.append(key, value);
+    return;
+  }
+
+  if (Array.isArray(value)) {
+    value.forEach((item) => {
+      if (typeof File !== "undefined" && item instanceof File) {
+        formData.append(`${key}[]`, item);
+      } else if (item !== undefined && item !== null && item !== "") {
+        formData.append(`${key}[]`, String(item));
+      }
+    });
+    return;
+  }
+
+  if (typeof value === "boolean") {
+    formData.append(key, value ? "1" : "0");
+    return;
+  }
+
+  formData.append(key, String(value));
+};
+
 const buildQueryString = (
   config: CrudModuleConfig,
   state: Pick<CrudState, "search" | "filters" | "sort" | "sortDirection" | "page" | "perPage">
@@ -121,6 +166,7 @@ function getPerPageFromCookie(fallback: number): number {
 export function useCrudModule(config: CrudModuleConfig) {
   const fixedFiltersSignature = JSON.stringify(config.fixedFilters || {});
   const hasOrdinalField = config.fields.some((field) => field.key === "ordinal");
+  const ordinalSortDirection = config.ordinalSortDirection ?? "asc";
 
   const [state, setState] = useState<CrudState>(() => ({
     items: [],
@@ -129,7 +175,7 @@ export function useCrudModule(config: CrudModuleConfig) {
     search: "",
     filters: {},
     sort: hasOrdinalField ? "ordinal" : resolvePersistedSort(config),
-    sortDirection: hasOrdinalField ? "asc" : resolvePersistedSortDirection(config),
+    sortDirection: hasOrdinalField ? ordinalSortDirection : resolvePersistedSortDirection(config),
     page: 1,
     perPage: getPerPageFromCookie(config.perPage || 25),
     totalPages: 1,
@@ -195,7 +241,7 @@ export function useCrudModule(config: CrudModuleConfig) {
 
   const setSort = useCallback((sort: string) => {
     if (hasOrdinalField) {
-      setState((s) => ({ ...s, sort: "ordinal", sortDirection: "asc", page: 1 }));
+      setState((s) => ({ ...s, sort: "ordinal", sortDirection: ordinalSortDirection, page: 1 }));
       return;
     }
 
@@ -206,17 +252,17 @@ export function useCrudModule(config: CrudModuleConfig) {
       sortDirection: s.sort === sort && s.sortDirection === "asc" ? "desc" : "asc",
       page: 1,
     }));
-  }, [config.apiUrl, hasOrdinalField]);
+  }, [config.apiUrl, hasOrdinalField, ordinalSortDirection]);
 
   const setSortDirection = useCallback((sortDirection: "asc" | "desc") => {
     if (hasOrdinalField) {
-      setState((s) => ({ ...s, sort: "ordinal", sortDirection: "asc", page: 1 }));
+      setState((s) => ({ ...s, sort: "ordinal", sortDirection: ordinalSortDirection, page: 1 }));
       return;
     }
 
     setCookie(scopedCookieKey("crud_sort_dir", config.apiUrl), sortDirection);
     setState((s) => ({ ...s, sortDirection, page: 1 }));
-  }, [config.apiUrl, hasOrdinalField]);
+  }, [config.apiUrl, hasOrdinalField, ordinalSortDirection]);
 
   const setPage = useCallback((page: number) => {
     setState((s) => ({ ...s, page }));
@@ -267,16 +313,35 @@ export function useCrudModule(config: CrudModuleConfig) {
         ? { ...(config.createDefaults || {}), ...data }
         : data;
       const url = isNew ? config.apiUrl : `${config.apiUrl}/${id}`;
-      const method = isNew ? "POST" : "PUT";
+      const payloadHasFile = Object.values(payload).some((value) => containsFile(value));
 
-      const res = await fetch(url, {
-        method,
+      const requestInit: RequestInit = {
+        method: isNew ? "POST" : "PUT",
         headers: {
-          "Content-Type": "application/json",
           Accept: "application/json",
         },
-        body: JSON.stringify(payload),
-      });
+      };
+
+      if (payloadHasFile) {
+        const formData = new FormData();
+        Object.entries(payload).forEach(([key, value]) => appendFormDataValue(formData, key, value));
+
+        if (!isNew) {
+          // Keep route compatibility by spoofing PUT when multipart is used.
+          formData.append("_method", "PUT");
+          requestInit.method = "POST";
+        }
+
+        requestInit.body = formData;
+      } else {
+        requestInit.headers = {
+          ...requestInit.headers,
+          "Content-Type": "application/json",
+        };
+        requestInit.body = JSON.stringify(payload);
+      }
+
+      const res = await fetch(url, requestInit);
 
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
@@ -425,11 +490,15 @@ export function useCrudModule(config: CrudModuleConfig) {
           return;
         }
 
+        const targetOrdinal = ordinalSortDirection === "desc"
+          ? orderedIds.length - index
+          : index + 1;
+
         updates.push({
           id,
           payload: {
             ...item,
-            ordinal: index + 1,
+            ordinal: targetOrdinal,
           },
         });
       });
@@ -453,7 +522,7 @@ export function useCrudModule(config: CrudModuleConfig) {
 
       await fetchItems();
     },
-    [config.apiUrl, fetchItems, hasOrdinalField, primaryKey, state.items]
+    [config.apiUrl, fetchItems, hasOrdinalField, ordinalSortDirection, primaryKey, state.items]
   );
 
   return {

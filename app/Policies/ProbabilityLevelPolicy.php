@@ -29,7 +29,7 @@ class ProbabilityLevelPolicy
      */
     public function create(User $user): bool
     {
-        return false;
+        return $user->haveAnyAccessRights(['managementtools.edit', 'superadmin.edit']);
     }
 
     /**
@@ -37,7 +37,7 @@ class ProbabilityLevelPolicy
      */
     public function update(User $user, ProbabilityLevel $probabilityLevel = new ProbabilityLevel): bool
     {
-        return false;
+        return $user->haveAnyAccessRights(['managementtools.edit']);
     }
 
     /**
@@ -45,7 +45,11 @@ class ProbabilityLevelPolicy
      */
     public function delete(User $user, ProbabilityLevel $probabilityLevel = new ProbabilityLevel): bool
     {
-        return false;
+        if ($user->haveAnyAccessRights(['superadmin.edit'])) {
+            return true;
+        }
+
+        return $user->can('update', $probabilityLevel);
     }
 
     /**

@@ -13,7 +13,7 @@ class SustainabilityMetricLevelPolicy
      */
     public function viewAny(User $user): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -21,7 +21,7 @@ class SustainabilityMetricLevelPolicy
      */
     public function view(User $user, SustainabilityMetricLevel $sustainabilityMetricLevel = new SustainabilityMetricLevel): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -29,7 +29,7 @@ class SustainabilityMetricLevelPolicy
      */
     public function create(User $user): bool
     {
-        return false;
+        return $user->haveAnyAccessRights(['managementtools.edit', 'superadmin.edit']);
     }
 
     /**
@@ -37,7 +37,7 @@ class SustainabilityMetricLevelPolicy
      */
     public function update(User $user, SustainabilityMetricLevel $sustainabilityMetricLevel = new SustainabilityMetricLevel): bool
     {
-        return false;
+        return $user->haveAnyAccessRights(['managementtools.edit']);
     }
 
     /**
@@ -45,7 +45,11 @@ class SustainabilityMetricLevelPolicy
      */
     public function delete(User $user, SustainabilityMetricLevel $sustainabilityMetricLevel = new SustainabilityMetricLevel): bool
     {
-        return false;
+        if ($user->haveAnyAccessRights(['superadmin.edit'])) {
+            return true;
+        }
+
+        return $user->can('update', $sustainabilityMetricLevel);
     }
 
     /**

@@ -202,6 +202,14 @@ function renderFieldInput(
   val: any,
   setValue: (key: string, value: any) => void
 ) {
+  const normalizeColorForInput = (value: any): string => {
+    if (typeof value !== "string") return "#000000";
+    const trimmed = value.trim();
+    if (trimmed === "") return "#000000";
+    const withoutHash = trimmed.startsWith("#") ? trimmed.slice(1) : trimmed;
+    return /^[0-9a-fA-F]{6}$/.test(withoutHash) ? `#${withoutHash}` : "#000000";
+  };
+
   switch (field.type) {
     case "textarea":
       return (
@@ -221,6 +229,14 @@ function renderFieldInput(
           placeholder={field.placeholder}
         />
       );
+    case "color":
+      return (
+        <Input
+          type="color"
+          value={normalizeColorForInput(val)}
+          onChange={(e) => setValue(field.key, e.target.value.replace(/^#/, ""))}
+        />
+      );
     case "date":
       return (
         <Input
@@ -228,6 +244,22 @@ function renderFieldInput(
           value={val || ""}
           onChange={(e) => setValue(field.key, e.target.value)}
         />
+      );
+    case "file":
+      return (
+        <div className="grid gap-2">
+          <Input
+            type="file"
+            accept={field.accept}
+            onChange={(e) => {
+              const file = e.target.files?.[0] ?? null;
+              setValue(field.key, file);
+            }}
+          />
+          {typeof val === "string" && val.trim() !== "" && (
+            <p className="text-xs text-muted-foreground">{val}</p>
+          )}
+        </div>
       );
     case "boolean":
       return (
@@ -269,6 +301,46 @@ function renderFieldInput(
           isMulti
         />
       );
+    case "pictogram-multiselect": {
+      const selectedValues = Array.isArray(val) ? val.map((item) => String(item)) : [];
+      const selectedSet = new Set(selectedValues);
+
+      return (
+        <div className="grid grid-cols-2 gap-2 md:grid-cols-3">
+          {(field.options || []).map((option) => {
+            const optionKey = String(option.value);
+            const isChecked = selectedSet.has(optionKey);
+
+            return (
+              <label
+                key={optionKey}
+                className={`flex cursor-pointer items-center gap-2 rounded-md border p-2 transition-colors ${
+                  isChecked ? "border-primary bg-primary/5" : "border-border hover:bg-muted/40"
+                }`}
+              >
+                <input
+                  type="checkbox"
+                  checked={isChecked}
+                  onChange={(event) => {
+                    const next = new Set(selectedValues);
+                    if (event.target.checked) {
+                      next.add(optionKey);
+                    } else {
+                      next.delete(optionKey);
+                    }
+                    setValue(field.key, Array.from(next));
+                  }}
+                />
+                {option.imageUrl && (
+                  <img src={option.imageUrl} alt={option.label} className="h-8 w-8 object-contain" />
+                )}
+                <span className="text-xs">{option.label}</span>
+              </label>
+            );
+          })}
+        </div>
+      );
+    }
     case "tags":
     case "inline-tags":
       return (

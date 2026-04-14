@@ -29,7 +29,7 @@ class ConsequenceLevelPolicy
      */
     public function create(User $user): bool
     {
-        return false;
+        return $user->haveAnyAccessRights(['managementtools.edit', 'superadmin.edit']);
     }
 
     /**
@@ -37,7 +37,7 @@ class ConsequenceLevelPolicy
      */
     public function update(User $user, ConsequenceLevel $consequenceLevel = new ConsequenceLevel): bool
     {
-        return false;
+        return $user->haveAnyAccessRights(['managementtools.edit']);
     }
 
     /**
@@ -45,7 +45,11 @@ class ConsequenceLevelPolicy
      */
     public function delete(User $user, ConsequenceLevel $consequenceLevel = new ConsequenceLevel): bool
     {
-        return false;
+        if ($user->haveAnyAccessRights(['superadmin.edit'])) {
+            return true;
+        }
+
+        return $user->can('update', $consequenceLevel);
     }
 
     /**

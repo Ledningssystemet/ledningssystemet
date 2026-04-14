@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" role="img" aria-label="GHS05">
+  <rect x="18" y="18" width="64" height="64" transform="rotate(45 50 50)" fill="#fff" stroke="#d90429" stroke-width="6"/>
+  <rect x="34" y="64" width="32" height="4" fill="#111"/>
+  <path d="M38 40 L46 44 L42 50 L34 46 Z" fill="#111"/>
+  <path d="M62 40 L54 44 L58 50 L66 46 Z" fill="#111"/>
+  <path d="M42 51 L40 57 L45 54 Z" fill="#111"/>
+  <path d="M58 51 L60 57 L55 54 Z" fill="#111"/>
+</svg>
+

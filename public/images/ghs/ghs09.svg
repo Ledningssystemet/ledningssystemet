@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" role="img" aria-label="GHS09">
+  <rect x="18" y="18" width="64" height="64" transform="rotate(45 50 50)" fill="#fff" stroke="#d90429" stroke-width="6"/>
+  <path d="M34 62 C42 58 47 58 54 62" stroke="#111" stroke-width="4" fill="none"/>
+  <path d="M62 42 L58 58 L70 52 Z" fill="#111"/>
+  <path d="M32 56 L38 50 L40 58 Z" fill="#111"/>
+</svg>
+

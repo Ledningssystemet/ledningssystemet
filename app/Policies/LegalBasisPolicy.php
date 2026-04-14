@@ -29,7 +29,7 @@ class LegalBasisPolicy
      */
     public function create(User $user): bool
     {
-        return false;
+        return $user->haveAnyAccessRights(['managementtools.edit', 'superadmin.edit']);
     }
 
     /**
@@ -37,7 +37,7 @@ class LegalBasisPolicy
      */
     public function update(User $user, LegalBasis $legalBasis = new LegalBasis): bool
     {
-        return false;
+        return $user->haveAnyAccessRights(['managementtools.edit']);
     }
 
     /**
@@ -45,7 +45,11 @@ class LegalBasisPolicy
      */
     public function delete(User $user, LegalBasis $legalBasis = new LegalBasis): bool
     {
-        return false;
+        if ($user->haveAnyAccessRights(['superadmin.edit'])) {
+            return true;
+        }
+
+        return $user->can('update', $legalBasis);
     }
 
     /**
