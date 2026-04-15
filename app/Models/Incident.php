@@ -2,12 +2,15 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use Spatie\QueryBuilder\QueryBuilder;
 
 class Incident extends Model
 {
@@ -65,6 +68,13 @@ class Incident extends Model
     public static function getPrettyName($plural = false): string
     {
         return $plural ? 'Incidents' : 'Incident';
+    }
+
+    public static function applyCrudIndexFilters(Builder|QueryBuilder $query, Request $request): void
+    {
+        if (! $request->boolean('show_finished')) {
+            $query->whereNull('finished_at');
+        }
     }
 
     public function int_responsible_user(): BelongsTo

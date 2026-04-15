@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\AccessGroupOptionsController;
 use App\Http\Controllers\Api\AssessmentSettingsRiskMappingController;
+use App\Http\Controllers\Api\EmployeeProfileController;
 use App\Http\Controllers\Api\UserProfileController;
 use App\Http\Controllers\Api\AgreementArchiveController;
 use App\Http\Controllers\Api\AdminApiTokenController;
@@ -92,4 +93,11 @@ Route::middleware('auth:sanctum')->group(function (): void {
     Route::get('/my-profile/qualifications', [UserProfileController::class, 'qualifications'])->name('api.my-profile.qualifications');
     Route::get('/my-profile/competences', [UserProfileController::class, 'competences'])->name('api.my-profile.competences');
     Route::get('/my-profile/responsibilities', [UserProfileController::class, 'responsibilities'])->name('api.my-profile.responsibilities');
+
+    // Employee profiles (overview of any employee's roles, responsibilities and competences)
+    Route::get('/employees/{userId}', [EmployeeProfileController::class, 'show'])->name('api.employees.show');
+    Route::get('/employees/{userId}/roles', [EmployeeProfileController::class, 'roles'])->name('api.employees.roles');
+    Route::get('/employees/{userId}/qualifications', [EmployeeProfileController::class, 'qualifications'])->name('api.employees.qualifications');
+    Route::get('/employees/{userId}/competences', [EmployeeProfileController::class, 'competences'])->name('api.employees.competences');
+    Route::get('/employees/{userId}/responsibilities', [EmployeeProfileController::class, 'responsibilities'])->name('api.employees.responsibilities');
 });

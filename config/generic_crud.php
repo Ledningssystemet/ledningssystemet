@@ -34,6 +34,8 @@ return [
         'diaries' => App\Models\Diary::class,
         'findings' => App\Models\Finding::class,
         'incidents' => App\Models\Incident::class,
+        'incident-logs' => App\Models\IncidentLog::class,
+        'control-action-mappings' => App\Models\ControlActionMapping::class,
         'information_types' => App\Models\InformationType::class,
         'integrity-classes' => App\Models\IntegrityClass::class,
         'legal-bases' => App\Models\LegalBasis::class,
