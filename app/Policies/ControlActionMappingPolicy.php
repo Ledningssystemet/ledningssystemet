@@ -13,7 +13,7 @@ class ControlActionMappingPolicy
      */
     public function viewAny(User $user): bool
     {
-        return false;
+        return new ControlActionPolicy()->viewAny($user);
     }
 
     /**
@@ -21,7 +21,7 @@ class ControlActionMappingPolicy
      */
     public function view(User $user, ControlActionMapping $controlActionMapping = new ControlActionMapping): bool
     {
-        return false;
+        return $controlActionMapping->int_control_action()->exists() && (new ControlActionPolicy())->view($user, $controlActionMapping->int_control_action);
     }
 
     /**
@@ -29,7 +29,7 @@ class ControlActionMappingPolicy
      */
     public function create(User $user): bool
     {
-        return false;
+        return new ControlActionPolicy()->create($user);
     }
 
     /**
@@ -37,7 +37,7 @@ class ControlActionMappingPolicy
      */
     public function update(User $user, ControlActionMapping $controlActionMapping = new ControlActionMapping): bool
     {
-        return false;
+        return $controlActionMapping->int_control_action()->exists() && (new ControlActionPolicy())->update($user, $controlActionMapping->int_control_action);
     }
 
     /**
@@ -45,7 +45,7 @@ class ControlActionMappingPolicy
      */
     public function delete(User $user, ControlActionMapping $controlActionMapping = new ControlActionMapping): bool
     {
-        return false;
+        return $controlActionMapping->int_control_action()->exists() && (new ControlActionPolicy())->delete($user, $controlActionMapping->int_control_action);
     }
 
     /**
@@ -53,7 +53,7 @@ class ControlActionMappingPolicy
      */
     public function restore(User $user, ControlActionMapping $controlActionMapping = new ControlActionMapping): bool
     {
-        return false;
+        return $controlActionMapping->int_control_action()->exists() && (new ControlActionPolicy())->restore($user, $controlActionMapping->int_control_action);
     }
 
     /**
@@ -61,6 +61,6 @@ class ControlActionMappingPolicy
      */
     public function forceDelete(User $user, ControlActionMapping $controlActionMapping = new ControlActionMapping): bool
     {
-        return false;
+        return $controlActionMapping->int_control_action()->exists() && (new ControlActionPolicy())->forceDelete($user, $controlActionMapping->int_control_action);
     }
 }

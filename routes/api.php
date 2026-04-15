@@ -14,6 +14,7 @@ use App\Http\Controllers\Api\DocumentVersionActionController;
 use App\Http\Controllers\Api\GenericCrudController;
 use App\Http\Controllers\Api\LibraryDocumentController;
 use App\Http\Controllers\Api\MenuBadgeController;
+use App\Http\Controllers\Api\ObjectiveArchiveController;
 use App\Http\Controllers\Api\ProcessPublishController;
 use App\Http\Controllers\Api\SessionStatusController;
 use App\Http\Controllers\Api\TokenController;
@@ -74,6 +75,7 @@ Route::middleware('auth:sanctum')->group(function (): void {
     Route::post('/assessment-settings/risk-mappings', [AssessmentSettingsRiskMappingController::class, 'store'])
         ->name('api.assessment-settings.risk-mappings.store');
     Route::post('/agreements/{agreement}/archive', AgreementArchiveController::class)->name('api.agreements.archive');
+    Route::post('/objectives/{objective}/archive', ObjectiveArchiveController::class)->name('api.objectives.archive');
 
     // Process publishing with BPMN validation
     Route::post('/processes/{process}/publish', [ProcessPublishController::class, 'store'])->name('api.processes.publish');

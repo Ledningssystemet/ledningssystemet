@@ -20,6 +20,7 @@ export type FieldType =
   | "email"
   | "url"
   | "file"
+  | "datetime"
   | "pictogram-multiselect";
 
 export interface FieldConfig {

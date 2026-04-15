@@ -2,21 +2,35 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasTags;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use Spatie\QueryBuilder\QueryBuilder;
 
 class Objective extends Model
 {
     use HasFactory;
+    use HasTags;
 
     protected $table = 'objectives';
 
-    protected $fillable = ['name', 'description', 'responsible_user_id', 'due', 'archived_at', 'action_plan', 'department_id'];
+    protected $fillable = ['name', 'description', 'responsible_user_id', 'due', 'archived_at', 'action_plan', 'department_id', 'tags'];
+
+    protected $appends = ['tags'];
+
+    /**
+     * @var array<int, string>
+     */
+    private array $pendingTags = [];
+
+    private bool $hasPendingTagsUpdate = false;
 
     protected function casts(): array
     {
@@ -38,6 +52,8 @@ class Objective extends Model
             'archived_at' => ['nullable', 'date'],
             'action_plan' => ['nullable', 'string'],
             'department_id' => ['nullable', 'integer', 'min:0', 'exists:departments,id'],
+            'tags' => ['sometimes', 'array'],
+            'tags.*' => ['nullable', 'string', 'max:25'],
         ];
     }
 
@@ -60,6 +76,98 @@ class Objective extends Model
         static::saving(function (self $model): void {
             Validator::make($model->attributesToArray(), static::validationRules())->validate();
         });
+
+        static::saved(function (self $model): void {
+            $model->syncPendingTags();
+        });
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    public function getTagsAttribute(): array
+    {
+        return $this->int_object_tags_as_object_tags()
+            ->with('int_tag:id,name')
+            ->get()
+            ->map(static fn (ObjectTag $objectTag): string => (string) ($objectTag->int_tag?->name ?? ''))
+            ->filter(static fn (string $name): bool => $name !== '')
+            ->unique()
+            ->values()
+            ->all();
+    }
+
+    /**
+     * @param array<int, string>|string|null $value
+     */
+    public function setTagsAttribute(array|string|null $value): void
+    {
+        $rawTags = is_array($value)
+            ? $value
+            : ($value === null || trim((string) $value) === '' ? [] : [(string) $value]);
+
+        $this->pendingTags = collect($rawTags)
+            ->map(static fn (mixed $tag): string => trim((string) $tag))
+            ->filter(static fn (string $tag): bool => $tag !== '')
+            ->unique()
+            ->values()
+            ->all();
+
+        $this->hasPendingTagsUpdate = true;
+    }
+
+    public static function applyCrudIndexFilters(Builder|QueryBuilder $query, Request $request): void
+    {
+        if (! $request->boolean('show_archived')) {
+            $query->whereNull('archived_at');
+        }
+
+        if ($request->boolean('show_my_only') && $request->user()) {
+            $query->where('responsible_user_id', $request->user()->id);
+        }
+
+        $tagId = $request->integer('tag_id');
+        if ($tagId > 0) {
+            $query->whereHas('int_object_tags_as_object_tags', function (Builder $tagQuery) use ($tagId): void {
+                $tagQuery->where('tag_id', $tagId);
+            });
+        }
+
+        $responsibleUserId = $request->integer('responsible_user_id');
+        if ($responsibleUserId > 0) {
+            $query->where('responsible_user_id', $responsibleUserId);
+        }
+    }
+
+    private function syncPendingTags(): void
+    {
+        if (! $this->hasPendingTagsUpdate) {
+            return;
+        }
+
+        if ($this->pendingTags === []) {
+            $this->int_object_tags_as_object_tags()->delete();
+
+            $this->pendingTags = [];
+            $this->hasPendingTagsUpdate = false;
+
+            return;
+        }
+
+        $tagIds = collect($this->pendingTags)
+            ->map(static fn (string $tagName): int => (int) Tag::query()->firstOrCreate(['name' => $tagName])->id)
+            ->all();
+
+        $this->int_object_tags_as_object_tags()->delete();
+
+        foreach ($tagIds as $tagId) {
+            $this->int_object_tags_as_object_tags()->create([
+                'tag_id' => $tagId,
+            ]);
+        }
+
+        $this->pendingTags = [];
+        $this->hasPendingTagsUpdate = false;
     }
 
     public static function getPrettyName($plural = false): string

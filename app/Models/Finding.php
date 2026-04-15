@@ -2,13 +2,16 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use Spatie\QueryBuilder\QueryBuilder;
 
 class Finding extends Model
 {
@@ -78,6 +81,19 @@ class Finding extends Model
     public static function getPrettyName($plural = false): string
     {
         return $plural ? 'Findings' : 'Finding';
+    }
+
+    public static function applyCrudIndexFilters(Builder|QueryBuilder $query, Request $request): void
+    {
+        $showUnhandled = $request->boolean('show_unhandled', false);
+        $showHandled = $request->boolean('show_handled', false);
+
+        if ($showUnhandled && ! $showHandled) {
+            $query->whereNull('finished_at');
+        } elseif ($showHandled && ! $showUnhandled) {
+            $query->whereNotNull('finished_at');
+        }
+        // If both are set or neither, no filter is applied (show all)
     }
 
     public function int_compliance_evaluation_requirement_finding(): BelongsTo
