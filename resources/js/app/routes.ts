@@ -5,6 +5,8 @@ export const APP_HOME_PATH = "/";
 export const APP_MY_PROFILE_PATH = "/my-profile";
 export const APP_PROCESSES_PATH = "/processes";
 export const APP_PROCESS_EDITOR_PATH = "/processes/:processId/editor";
+export const APP_DOCUMENTS_PATH = "/documents";
+export const APP_DOCUMENT_EDITOR_PATH = "/documents/:libraryDocumentId/editor";
 
 export interface AppSectionRoute {
     key: string;

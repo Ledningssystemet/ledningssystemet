@@ -83,7 +83,7 @@ class MenuCategoryBuilder
             'categoryIcon' => 'Layers',
             'columns' => [
                 [
-                    'heading' => __('Compliance'),
+                    'heading' => __('Way of working'),
                     'items' => [
                         [
                             'key' => 'requirement-sources',
@@ -91,23 +91,6 @@ class MenuCategoryBuilder
                             'icon' => 'Scale',
                             'description' => __('Laws, regulations, and other sources of requirements we must comply with'),
                         ],
-                        [
-                            'key' => 'gdpr-register',
-                            'label' => __('Record of processing activities'),
-                            'icon' => 'Shield',
-                            'description' => __('Our record of processing activities for compliance with personal data legislation'),
-                        ],
-                        [
-                            'key' => 'information-handling-plan',
-                            'label' => __('Information handling plan'),
-                            'icon' => 'FileText',
-                            'description' => __('An overview of our information handling, including diary and archiving'),
-                        ],
-                    ],
-                ],
-                [
-                    'heading' => __('Processes'),
-                    'items' => [
                         [
                             'key' => 'controls',
                             'label' => __('Control register'),
@@ -160,6 +143,23 @@ class MenuCategoryBuilder
                             'label' => __('Agreements'),
                             'icon' => 'FileSignature',
                             'description' => __('An overview of our agreements with suppliers and customers'),
+                        ],
+                    ],
+                ],
+                [
+                    'heading' => __('Compliance'),
+                    'items' => [
+                        [
+                            'key' => 'gdpr-register',
+                            'label' => __('Record of processing activities'),
+                            'icon' => 'Shield',
+                            'description' => __('Our record of processing activities for compliance with personal data legislation'),
+                        ],
+                        [
+                            'key' => 'information-handling-plan',
+                            'label' => __('Information handling plan'),
+                            'icon' => 'FileText',
+                            'description' => __('An overview of our information handling, including diary and archiving'),
                         ],
                     ],
                 ],

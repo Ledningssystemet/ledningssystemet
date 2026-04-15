@@ -13,7 +13,9 @@ class DocumentVersionPolicy
      */
     public function viewAny(User $user): bool
     {
-        return false;
+        // If user may view the corresponding document, he may view the versions
+        return $user->haveAnyAccessRights(['managementtools.view']);
+
     }
 
     /**

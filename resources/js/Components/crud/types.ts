@@ -137,10 +137,11 @@ export interface OrdinalReorderResult {
 }
 
 export interface EditDialogProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  item: Record<string, any> | null;
-  fields: FieldConfig[];
-  title?: string;
-  onSave: (data: Record<string, any>) => Promise<void>;
+   open: boolean;
+   onOpenChange: (open: boolean) => void;
+   item: Record<string, any> | null;
+   fields: FieldConfig[];
+   title?: string;
+   onSave: (data: Record<string, any>) => Promise<void>;
+   onFormDataChange?: (data: Record<string, any>) => void;
 }

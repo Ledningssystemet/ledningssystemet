@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
 class Department extends Model
@@ -16,7 +17,20 @@ class Department extends Model
 
     protected $table = 'departments';
 
-    protected $fillable = ['name', 'external_provider_group_id', 'parent_department_id', 'site_id'];
+    protected $fillable = ['name', 'external_provider_group_id', 'parent_department_id', 'site_id', 'user_ids'];
+
+    protected $appends = [
+        'user_ids',
+        'processcount',
+        'departmentriskcount',
+        'departmentfindingcount',
+        'can_delete',
+    ];
+
+    /**
+     * @var array<int, int>|null
+     */
+    private ?array $pendingUserIds = null;
 
     protected function casts(): array
     {
@@ -33,6 +47,8 @@ class Department extends Model
             'external_provider_group_id' => ['nullable', 'integer', 'min:0', 'exists:external_provider_groups,id'],
             'parent_department_id' => ['nullable', 'integer', 'min:0', 'exists:departments,id'],
             'site_id' => ['nullable', 'integer', 'min:0', 'exists:sites,id'],
+            'user_ids' => ['nullable', 'array'],
+            'user_ids.*' => ['integer', 'min:1', 'exists:users,id'],
         ];
     }
 
@@ -48,10 +64,23 @@ class Department extends Model
         ];
     }
 
+    public static function applyCrudIndexFilters(mixed $query, Request $request): void
+    {
+        $query->withCount([
+            'int_processes as processcount',
+            'int_risks as departmentriskcount',
+            'int_findings as departmentfindingcount',
+        ]);
+    }
+
     protected static function booted(): void
     {
         static::saving(function (self $model): void {
             Validator::make($model->attributesToArray(), static::validationRules())->validate();
+        });
+
+        static::saved(function (self $model): void {
+            $model->syncUsersIfNeeded();
         });
     }
 
@@ -169,5 +198,97 @@ class Department extends Model
     public function int_vector_embeddings_as_embeddable(): MorphMany
     {
         return $this->morphMany(VectorEmbedding::class, 'embeddable', 'embeddable_type', 'embeddable_id');
+    }
+
+    /**
+     * @return array<int, int>
+     */
+    public function getUserIdsAttribute(): array
+    {
+        $users = $this->relationLoaded('int_users')
+            ? $this->int_users
+            : $this->int_users()->select('users.id')->get();
+
+        return $users
+            ->pluck('id')
+            ->map(static fn (mixed $id): int => (int) $id)
+            ->values()
+            ->all();
+    }
+
+    public function setUserIdsAttribute(mixed $value): void
+    {
+        if ($value === null || $value === '') {
+            $this->pendingUserIds = [];
+
+            return;
+        }
+
+        if (! is_array($value)) {
+            return;
+        }
+
+        $normalized = collect($value)
+            ->filter(static fn (mixed $id): bool => $id !== null && $id !== '')
+            ->map(static fn (mixed $id): int => (int) $id)
+            ->filter(static fn (int $id): bool => $id > 0)
+            ->unique()
+            ->values()
+            ->all();
+
+        $this->pendingUserIds = $normalized;
+    }
+
+    public function getProcesscountAttribute(): int
+    {
+        if (array_key_exists('processcount', $this->attributes)) {
+            return (int) $this->attributes['processcount'];
+        }
+
+        return $this->int_processes()->count();
+    }
+
+    public function getDepartmentriskcountAttribute(): int
+    {
+        if (array_key_exists('departmentriskcount', $this->attributes)) {
+            return (int) $this->attributes['departmentriskcount'];
+        }
+
+        return $this->int_risks()->count();
+    }
+
+    public function getDepartmentfindingcountAttribute(): int
+    {
+        if (array_key_exists('departmentfindingcount', $this->attributes)) {
+            return (int) $this->attributes['departmentfindingcount'];
+        }
+
+        return $this->int_findings()->count();
+    }
+
+    public function getCanDeleteAttribute(): bool
+    {
+        return $this->processcount === 0
+            && $this->departmentriskcount === 0
+            && $this->departmentfindingcount === 0;
+    }
+
+    private function syncUsersIfNeeded(): void
+    {
+        if ($this->pendingUserIds === null) {
+            return;
+        }
+
+        $currentUserIds = $this->int_users()->pluck('users.id')->map(static fn (mixed $id): int => (int) $id)->all();
+        $nextUserIds = $this->pendingUserIds;
+
+        $this->int_users()->sync($nextUserIds);
+
+        $touchedUserIds = array_values(array_unique(array_merge($currentUserIds, $nextUserIds)));
+        if ($touchedUserIds !== []) {
+            User::query()->whereIn('id', $touchedUserIds)->update(['updated_at' => now()]);
+        }
+
+        $this->pendingUserIds = null;
     }
 }

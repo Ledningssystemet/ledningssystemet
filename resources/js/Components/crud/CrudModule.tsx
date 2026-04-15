@@ -21,10 +21,11 @@ import {
 } from "@/components/ui/alert-dialog";
 
 interface CrudModuleProps {
-  config: CrudModuleConfig;
+   config: CrudModuleConfig;
+   onEditFormDataChange?: (data: Record<string, any>) => void;
 }
 
-export function CrudModule({ config }: CrudModuleProps) {
+export function CrudModule({ config, onEditFormDataChange }: CrudModuleProps) {
   const {
     state,
     setSearch,
@@ -246,14 +247,15 @@ export function CrudModule({ config }: CrudModuleProps) {
       />
 
       {/* Edit single item */}
-      <EditDialog
-        open={editOpen}
-        onOpenChange={setEditOpen}
-        item={editItem}
-        fields={config.fields}
-        title={editItem ? config.editTitle : config.createTitle}
-        onSave={saveItem}
-      />
+       <EditDialog
+         open={editOpen}
+         onOpenChange={setEditOpen}
+         item={editItem}
+         fields={config.fields}
+         title={editItem ? config.editTitle : config.createTitle}
+         onSave={saveItem}
+         onFormDataChange={onEditFormDataChange}
+       />
 
       {/* Mass edit dialog */}
       {canEdit && (

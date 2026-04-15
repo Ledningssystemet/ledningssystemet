@@ -33,6 +33,8 @@ export default function CustomersPage({ route }: CustomersPageProps) {
         apiUrl: '/api/crud/customers',
         perPage: 25,
         defaultSort: 'name',
+        createTitle: t('pages.customers.create_title'),
+        editTitle: t('pages.customers.edit_title'),
         fields: [
             {
                 key: 'name',
@@ -42,6 +44,7 @@ export default function CustomersPage({ route }: CustomersPageProps) {
                 editable: true,
                 required: true,
                 masterLabel: true,
+                category: t('pages.customers.category_general'),
             },
             {
                 key: 'legal_reg',
@@ -49,6 +52,7 @@ export default function CustomersPage({ route }: CustomersPageProps) {
                 type: 'text',
                 sortable: true,
                 editable: true,
+                category: t('pages.customers.category_general'),
             },
             {
                 key: 'dpo_name',
@@ -57,6 +61,7 @@ export default function CustomersPage({ route }: CustomersPageProps) {
                 sortable: true,
                 editable: true,
                 hiddenInTable: true,
+                category: t('pages.customers.category_contact'),
             },
             {
                 key: 'dpo_email',
@@ -65,6 +70,7 @@ export default function CustomersPage({ route }: CustomersPageProps) {
                 sortable: true,
                 editable: true,
                 hiddenInTable: true,
+                category: t('pages.customers.category_contact'),
             },
             {
                 key: 'description',
@@ -72,6 +78,7 @@ export default function CustomersPage({ route }: CustomersPageProps) {
                 type: 'textarea',
                 editable: true,
                 masterDescription: true,
+                category: t('pages.customers.category_general'),
             },
             {
                 key: 'tags',
@@ -85,6 +92,7 @@ export default function CustomersPage({ route }: CustomersPageProps) {
                 optionValueKey: 'name',
                 optionLabelKey: 'name',
                 createOptionPayloadKey: 'name',
+                category: t('pages.customers.category_general'),
             },
             {
                 key: 'created_at',
@@ -94,6 +102,7 @@ export default function CustomersPage({ route }: CustomersPageProps) {
                 editable: false,
                 renderCell: (value) => formatCreatedAt(value),
                 renderDetail: (value) => formatCreatedAt(value),
+                category: t('pages.customers.category_metadata'),
             },
         ],
     };

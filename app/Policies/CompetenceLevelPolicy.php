@@ -13,7 +13,7 @@ class CompetenceLevelPolicy
      */
     public function viewAny(User $user): bool
     {
-        return true;
+        return $user->haveAnyAccessRights(['managementtools.edit']);
     }
 
     /**
@@ -21,7 +21,7 @@ class CompetenceLevelPolicy
      */
     public function view(User $user, CompetenceLevel $competenceLevel = new CompetenceLevel): bool
     {
-        return true;
+        return $user->haveAnyAccessRights(['managementtools.edit']);
     }
 
     /**
@@ -29,7 +29,7 @@ class CompetenceLevelPolicy
      */
     public function create(User $user): bool
     {
-        return false;
+        return $user->haveAnyAccessRights(['managementtools.edit', 'superadmin.edit']);
     }
 
     /**
@@ -37,7 +37,7 @@ class CompetenceLevelPolicy
      */
     public function update(User $user, CompetenceLevel $competenceLevel = new CompetenceLevel): bool
     {
-        return false;
+        return $user->haveAnyAccessRights(['managementtools.edit']);
     }
 
     /**
@@ -45,7 +45,11 @@ class CompetenceLevelPolicy
      */
     public function delete(User $user, CompetenceLevel $competenceLevel = new CompetenceLevel): bool
     {
-        return false;
+        if ($user->haveAnyAccessRights(['superadmin.edit'])) {
+            return true;
+        }
+
+        return $user->can('update', $competenceLevel);
     }
 
     /**

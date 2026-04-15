@@ -49,6 +49,7 @@ const pageComponents: Record<string, React.LazyExoticComponent<({ route }: { rou
     process: lazy(() => import('../pages/app/ProcessesPage')),
     processes: lazy(() => import('../pages/app/ProcessesPage')),
     'process-editor': lazy(() => import('../pages/app/ProcessEditorPage')),
+    'document-editor': lazy(() => import('../pages/app/DocumentEditorPage')),
     'company-dashboard': lazy(() => import('@/pages/app/CompanyDashboardPage')),
 };
 

@@ -23,6 +23,7 @@ return [
         'confidentiality-classes' => App\Models\ConfidentialityClass::class,
         'confidentiality-grounds' => App\Models\ConfidentialityGround::class,
         'competences' => App\Models\Competence::class,
+        'competence-levels' => App\Models\CompetenceLevel::class,
         'compliance_evaluations' => App\Models\ComplianceEvaluation::class,
         'consequence-levels' => App\Models\ConsequenceLevel::class,
         'controls' => App\Models\Control::class,

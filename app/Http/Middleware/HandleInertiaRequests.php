@@ -69,6 +69,11 @@ class HandleInertiaRequests extends Middleware
                     'external_sync_enabled' => (bool) config('authentication.oauth.external_group_sync_enabled', false),
                     'external_provider_name' => (string) config('authentication.oauth.external_provider_name', 'External provider'),
                 ],
+                'departments' => [
+                    'external_sync_enabled' => (bool) config('authentication.oauth.external_group_sync_enabled', false),
+                    'external_provider_name' => (string) config('authentication.oauth.external_provider_name', 'External provider'),
+                    'findings_enabled' => array_key_exists('findings', (array) config('generic_crud.resources', [])),
+                ],
             ],
         ];
     }

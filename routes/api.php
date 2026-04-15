@@ -5,10 +5,13 @@ use App\Http\Controllers\Api\AssessmentSettingsRiskMappingController;
 use App\Http\Controllers\Api\UserProfileController;
 use App\Http\Controllers\Api\AgreementArchiveController;
 use App\Http\Controllers\Api\AdminApiTokenController;
+use App\Http\Controllers\Api\DepartmentReassignController;
 use App\Http\Controllers\Api\CrudResourceCatalogController;
 use App\Http\Controllers\Api\CustomPropertyContextController;
 use App\Http\Controllers\Api\CustomPropertyCrudController;
+use App\Http\Controllers\Api\DocumentVersionActionController;
 use App\Http\Controllers\Api\GenericCrudController;
+use App\Http\Controllers\Api\LibraryDocumentController;
 use App\Http\Controllers\Api\MenuBadgeController;
 use App\Http\Controllers\Api\ProcessPublishController;
 use App\Http\Controllers\Api\SessionStatusController;
@@ -53,11 +56,18 @@ Route::middleware('auth:sanctum')->group(function (): void {
         ->name('api.custom-properties.update');
     Route::delete('/custom-properties/contexts/{context}/{id}', [CustomPropertyCrudController::class, 'destroy'])
         ->name('api.custom-properties.destroy');
+
+    // Library Documents - Custom controller for dual-mode support
+    Route::post('/crud/library_documents', [LibraryDocumentController::class, 'store'])->name('api.crud.library_documents.store');
+
+    // Generic CRUD routes
     Route::get('/crud/{resource}', [GenericCrudController::class, 'index'])->name('api.crud.index');
     Route::post('/crud/{resource}', [GenericCrudController::class, 'store'])->name('api.crud.store');
     Route::get('/crud/{resource}/{id}', [GenericCrudController::class, 'show'])->name('api.crud.show');
     Route::match(['put', 'patch'], '/crud/{resource}/{id}', [GenericCrudController::class, 'update'])->name('api.crud.update');
     Route::delete('/crud/{resource}/{id}', [GenericCrudController::class, 'destroy'])->name('api.crud.destroy');
+    Route::post('/departments/{department}/reassign', [DepartmentReassignController::class, 'store'])
+        ->name('api.departments.reassign');
     Route::get('/assessment-settings/risk-mappings', [AssessmentSettingsRiskMappingController::class, 'index'])
         ->name('api.assessment-settings.risk-mappings.index');
     Route::post('/assessment-settings/risk-mappings', [AssessmentSettingsRiskMappingController::class, 'store'])
@@ -67,7 +77,12 @@ Route::middleware('auth:sanctum')->group(function (): void {
     // Process publishing with BPMN validation
     Route::post('/processes/{process}/publish', [ProcessPublishController::class, 'store'])->name('api.processes.publish');
 
-    // Access Group options
+    // Document version actions
+    Route::post('/document-versions/{versionId}/finish', [DocumentVersionActionController::class, 'finish'])->name('api.document-versions.finish');
+    Route::post('/document-versions/{versionId}/approve', [DocumentVersionActionController::class, 'approve'])->name('api.document-versions.approve');
+    Route::post('/document-versions/{versionId}/reject', [DocumentVersionActionController::class, 'reject'])->name('api.document-versions.reject');
+
+    // ...existing code...
     Route::get('/access-groups/claims', [AccessGroupOptionsController::class, 'claims'])
         ->name('api.access-groups.claims');
 

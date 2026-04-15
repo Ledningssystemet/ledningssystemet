@@ -17,36 +17,37 @@ import { EditDialogProps, FieldConfig } from "./types";
 import { Loader2, AlertCircle } from "lucide-react";
 
 export function EditDialog({
-  open,
-  onOpenChange,
-  item,
-  fields,
-  title,
-  onSave,
-}: EditDialogProps) {
-  const [formData, setFormData] = useState<Record<string, any>>({});
-  const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+   open,
+   onOpenChange,
+   item,
+   fields,
+   title,
+   onSave,
+   onFormDataChange,
+ }: EditDialogProps) {
+   const [formData, setFormData] = useState<Record<string, any>>({});
+   const [saving, setSaving] = useState(false);
+   const [error, setError] = useState<string | null>(null);
 
-  const isNew = !item?.id;
+   const isNew = !item?.id;
 
-  useEffect(() => {
-    if (open) {
-      const initialData = item ? { ...item } : {};
+   useEffect(() => {
+     if (open) {
+       const initialData = item ? { ...item } : {};
 
-      // Ensure required boolean values are always present in create forms.
-      if (!item) {
-        for (const field of fields) {
-          if (field.type === "boolean" && initialData[field.key] === undefined) {
-            initialData[field.key] = false;
-          }
-        }
-      }
+       // Ensure required boolean values are always present in create forms.
+       if (!item) {
+         for (const field of fields) {
+           if (field.type === "boolean" && initialData[field.key] === undefined) {
+             initialData[field.key] = false;
+           }
+         }
+       }
 
-      setFormData(initialData);
-      setError(null);
-    }
-  }, [open, item, fields]);
+       setFormData(initialData);
+       setError(null);
+     }
+   }, [open, item]);
 
   const editableFields = fields.filter(
     (f) => {
@@ -107,9 +108,11 @@ export function EditDialog({
     }
   };
 
-  const setValue = (key: string, value: any) => {
-    setFormData((prev) => ({ ...prev, [key]: value }));
-  };
+   const setValue = (key: string, value: any) => {
+     const newData = { ...formData, [key]: value };
+     setFormData(newData);
+     onFormDataChange?.(newData);
+   };
 
   const renderField = (field: FieldConfig) => {
     const val = formData[field.key];

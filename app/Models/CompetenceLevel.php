@@ -31,7 +31,7 @@ class CompetenceLevel extends Model
             'competence_id' => ['required', 'integer', 'min:0', 'exists:competences,id'],
             'name' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
-            'ordinal' => ['required', 'integer', 'min:0'],
+            'ordinal' => ['nullable', 'integer', 'min:0'],
         ];
     }
 
@@ -50,6 +50,18 @@ class CompetenceLevel extends Model
 
     protected static function booted(): void
     {
+        static::creating(function (self $model): void {
+            if ($model->ordinal !== null) {
+                return;
+            }
+
+            $lastOrdinal = static::query()
+                ->where('competence_id', $model->competence_id)
+                ->max('ordinal');
+
+            $model->ordinal = $lastOrdinal !== null ? ((int) $lastOrdinal + 1) : 0;
+        });
+
         static::saving(function (self $model): void {
             Validator::make($model->attributesToArray(), static::validationRules())->validate();
         });
