@@ -13,7 +13,7 @@ class ProcessPerformanceMetricReportPolicy
      */
     public function viewAny(User $user): bool
     {
-        return false;
+        return $user->haveAnyAccessRights(['processmetrics.read', 'processmetrics.edit']);
     }
 
     /**
@@ -21,7 +21,7 @@ class ProcessPerformanceMetricReportPolicy
      */
     public function view(User $user, ProcessPerformanceMetricReport $processPerformanceMetricReport = new ProcessPerformanceMetricReport): bool
     {
-        return false;
+        return $user->haveAnyAccessRights(['processmetrics.read', 'processmetrics.edit']);
     }
 
     /**
@@ -29,7 +29,7 @@ class ProcessPerformanceMetricReportPolicy
      */
     public function create(User $user): bool
     {
-        return false;
+        return $user->haveAnyAccessRights(['processmetrics.edit', 'superadmin.edit']);
     }
 
     /**
@@ -37,7 +37,7 @@ class ProcessPerformanceMetricReportPolicy
      */
     public function update(User $user, ProcessPerformanceMetricReport $processPerformanceMetricReport = new ProcessPerformanceMetricReport): bool
     {
-        return false;
+        return $user->haveAnyAccessRights(['processmetrics.edit', 'superadmin.edit']);
     }
 
     /**
@@ -45,7 +45,7 @@ class ProcessPerformanceMetricReportPolicy
      */
     public function delete(User $user, ProcessPerformanceMetricReport $processPerformanceMetricReport = new ProcessPerformanceMetricReport): bool
     {
-        return false;
+        return $user->haveAnyAccessRights(['processmetrics.edit', 'superadmin.edit']);
     }
 
     /**

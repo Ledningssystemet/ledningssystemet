@@ -44,6 +44,7 @@ return [
         'processes' => App\Models\Process::class,
         'process_activities' => App\Models\ProcessActivity::class,
         'process_performance_metrics' => App\Models\ProcessPerformanceMetric::class,
+        'process_performance_metric_reports' => App\Models\ProcessPerformanceMetricReport::class,
         'probability-levels' => App\Models\ProbabilityLevel::class,
         'qualifications' => App\Models\Qualification::class,
         'recipient-categories' => App\Models\RecipientCategory::class,

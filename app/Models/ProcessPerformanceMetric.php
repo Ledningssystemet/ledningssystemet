@@ -2,13 +2,16 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use Spatie\QueryBuilder\QueryBuilder;
 
 class ProcessPerformanceMetric extends Model
 {
@@ -16,7 +19,21 @@ class ProcessPerformanceMetric extends Model
 
     protected $table = 'process_performance_metrics';
 
-    protected $fillable = ['name', 'description', 'responsible_user_id', 'quantitative', 'biggerisbetter', 'unit', 'increment', 'minvalue', 'maxvalue', 'precision', 'postprocessing', 'alarm_threshold'];
+    protected $fillable = ['name', 'description', 'responsible_user_id', 'quantitative', 'biggerisbetter', 'unit', 'increment', 'minvalue', 'maxvalue', 'precision', 'postprocessing', 'alarm_threshold', 'metric_type', 'process_ids', 'tags'];
+
+    protected $appends = ['metric_type', 'process_ids', 'tags', 'reportcount'];
+
+    /**
+     * @var array<int, int>|null
+     */
+    private ?array $pendingProcessIds = null;
+
+    /**
+     * @var array<int, string>
+     */
+    private array $pendingTags = [];
+
+    private bool $hasPendingTagsUpdate = false;
 
     protected function casts(): array
     {
@@ -34,8 +51,9 @@ class ProcessPerformanceMetric extends Model
             'name' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
             'responsible_user_id' => ['nullable', 'integer', 'min:0', 'exists:users,id'],
-            'quantitative' => ['required', 'boolean'],
-            'biggerisbetter' => ['required', 'boolean'],
+            'quantitative' => ['sometimes', 'boolean'],
+            'biggerisbetter' => ['sometimes', 'boolean'],
+            'metric_type' => ['sometimes', 'integer', 'in:1,2,3'],
             'unit' => ['nullable', 'string', 'max:30'],
             'increment' => ['nullable', 'string', 'max:255'],
             'minvalue' => ['nullable', 'integer'],
@@ -43,6 +61,10 @@ class ProcessPerformanceMetric extends Model
             'precision' => ['nullable', 'integer', 'min:0'],
             'postprocessing' => ['nullable', 'string'],
             'alarm_threshold' => ['nullable', 'integer'],
+            'process_ids' => ['sometimes', 'array'],
+            'process_ids.*' => ['integer', 'min:1', 'exists:processes,id'],
+            'tags' => ['sometimes', 'array'],
+            'tags.*' => ['nullable', 'string', 'max:25'],
         ];
     }
 
@@ -67,11 +89,150 @@ class ProcessPerformanceMetric extends Model
         static::saving(function (self $model): void {
             Validator::make($model->attributesToArray(), static::validationRules())->validate();
         });
+
+        static::saved(function (self $model): void {
+            $model->syncProcessesIfNeeded();
+            $model->syncPendingTags();
+        });
+    }
+
+    public static function applyCrudIndexFilters(Builder|QueryBuilder $query, Request $request): void
+    {
+        $query->withCount([
+            'int_process_performance_metric_reports as reportcount',
+        ]);
+
+        if ($request->boolean('show_my_only') && $request->user()) {
+            $query->where('responsible_user_id', $request->user()->id);
+        }
+
+        $responsibleUserId = $request->integer('responsible_user_id');
+        if ($responsibleUserId > 0) {
+            $query->where('responsible_user_id', $responsibleUserId);
+        }
+
+        $processId = $request->integer('process_id');
+        if ($processId > 0) {
+            $query->whereHas('int_processes', function (Builder $processQuery) use ($processId): void {
+                $processQuery->where('processes.id', $processId);
+            });
+        }
+
+        $tagId = $request->integer('tag_id');
+        if ($tagId > 0) {
+            $query->whereHas('int_object_tags_as_object_tags', function (Builder $tagQuery) use ($tagId): void {
+                $tagQuery->where('tag_id', $tagId);
+            });
+        }
     }
 
     public static function getPrettyName($plural = false): string
     {
         return $plural ? 'Process Performance Metrics' : 'Process Performance Metric';
+    }
+
+    public function getMetricTypeAttribute(): int
+    {
+        if (! $this->quantitative) {
+            return 3;
+        }
+
+        return $this->biggerisbetter ? 1 : 2;
+    }
+
+    public function setMetricTypeAttribute(mixed $value): void
+    {
+        $metricType = (int) $value;
+
+        if ($metricType === 3) {
+            $this->attributes['quantitative'] = false;
+            $this->attributes['biggerisbetter'] = false;
+
+            return;
+        }
+
+        $this->attributes['quantitative'] = true;
+        $this->attributes['biggerisbetter'] = $metricType !== 2;
+    }
+
+    /**
+     * @return array<int, int>
+     */
+    public function getProcessIdsAttribute(): array
+    {
+        $processes = $this->relationLoaded('int_processes')
+            ? $this->int_processes
+            : $this->int_processes()->select('processes.id')->get();
+
+        return $processes
+            ->pluck('id')
+            ->map(static fn (mixed $id): int => (int) $id)
+            ->values()
+            ->all();
+    }
+
+    public function setProcessIdsAttribute(mixed $value): void
+    {
+        if ($value === null || $value === '') {
+            $this->pendingProcessIds = [];
+
+            return;
+        }
+
+        if (! is_array($value)) {
+            return;
+        }
+
+        $this->pendingProcessIds = collect($value)
+            ->filter(static fn (mixed $id): bool => $id !== null && $id !== '')
+            ->map(static fn (mixed $id): int => (int) $id)
+            ->filter(static fn (int $id): bool => $id > 0)
+            ->unique()
+            ->values()
+            ->all();
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    public function getTagsAttribute(): array
+    {
+        return $this->int_object_tags_as_object_tags()
+            ->with('int_tag:id,name')
+            ->get()
+            ->map(static fn (ObjectTag $objectTag): string => (string) ($objectTag->int_tag?->name ?? ''))
+            ->filter(static fn (string $name): bool => $name !== '')
+            ->unique()
+            ->values()
+            ->all();
+    }
+
+    /**
+     * @param array<int, string>|string|null $value
+     */
+    public function setTagsAttribute(array|string|null $value): void
+    {
+        $rawTags = is_array($value)
+            ? $value
+            : ($value === null || trim((string) $value) === '' ? [] : [(string) $value]);
+
+        $this->pendingTags = collect($rawTags)
+            ->map(static fn (mixed $tag): string => trim((string) $tag))
+            ->filter(static fn (string $tag): bool => $tag !== '')
+            ->unique()
+            ->values()
+            ->all();
+
+        $this->hasPendingTagsUpdate = true;
+    }
+
+    public function getReportcountAttribute(): int
+    {
+        if (array_key_exists('reportcount', $this->attributes)) {
+            return (int) $this->attributes['reportcount'];
+        }
+
+        return $this->int_process_performance_metric_reports()->count();
     }
 
     public function int_responsible_user(): BelongsTo
@@ -159,5 +320,45 @@ class ProcessPerformanceMetric extends Model
     public function int_vector_embeddings_as_embeddable(): MorphMany
     {
         return $this->morphMany(VectorEmbedding::class, 'embeddable', 'embeddable_type', 'embeddable_id');
+    }
+
+    private function syncProcessesIfNeeded(): void
+    {
+        if ($this->pendingProcessIds === null) {
+            return;
+        }
+
+        $this->int_processes()->sync($this->pendingProcessIds);
+        $this->pendingProcessIds = null;
+    }
+
+    private function syncPendingTags(): void
+    {
+        if (! $this->hasPendingTagsUpdate) {
+            return;
+        }
+
+        if ($this->pendingTags === []) {
+            $this->int_object_tags_as_object_tags()->delete();
+            $this->pendingTags = [];
+            $this->hasPendingTagsUpdate = false;
+
+            return;
+        }
+
+        $tagIds = collect($this->pendingTags)
+            ->map(static fn (string $tagName): int => (int) Tag::query()->firstOrCreate(['name' => $tagName])->id)
+            ->all();
+
+        $this->int_object_tags_as_object_tags()->delete();
+
+        foreach ($tagIds as $tagId) {
+            $this->int_object_tags_as_object_tags()->create([
+                'tag_id' => $tagId,
+            ]);
+        }
+
+        $this->pendingTags = [];
+        $this->hasPendingTagsUpdate = false;
     }
 }
