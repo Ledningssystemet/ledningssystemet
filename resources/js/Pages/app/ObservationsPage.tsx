@@ -1,18 +1,9 @@
-﻿import { useEffect, useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
+﻿import { useMemo } from 'react';
 import { AlertCircle, ListChecks } from 'lucide-react';
 import AppLayout from '@/layouts/AppLayout';
 import { CrudModule } from '@/components/crud';
 import type { CrudModuleConfig } from '@/components/crud';
-import { Button } from '@/components/ui/button';
-import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogHeader,
-    DialogTitle,
-} from '@/components/ui/dialog';
-import { APP_HOME_PATH } from '@/app/routes';
+import { PageHeader } from '@/components/layout/PageHeader';
 import { useTranslations } from '@/hooks/useTranslations';
 import type { AppSectionRoute } from '@/app/routes';
 
@@ -22,18 +13,8 @@ interface ObservationsPageProps {
 
 export default function ObservationsPage({ route }: ObservationsPageProps) {
     const { t } = useTranslations();
-    const [activeObservationForActions, setActiveObservationForActions] = useState<Record<string, any> | null>(null);
 
-    useEffect(() => {
-        const previousTitle = document.title;
-        document.title = t('ui.app.page_title_suffix', { page: t('pages.observations.title') });
-
-        return () => {
-            document.title = previousTitle;
-        };
-    }, [t]);
-
-    const config: CrudModuleConfig = {
+    const config: CrudModuleConfig = useMemo(() => ({
         apiUrl: '/api/crud/findings',
         perPage: 25,
         defaultSort: '-created_at',
@@ -66,15 +47,40 @@ export default function ObservationsPage({ route }: ObservationsPageProps) {
             }
             return null;
         },
-        rowActions: [
+        subTableActions: [
             {
                 key: 'actions',
                 label: t('pages.observations.actions_button'),
-                variant: 'outline' as const,
-                refreshOnComplete: false,
-                onClick: (item: Record<string, any>) => {
-                    setActiveObservationForActions(item);
-                },
+                icon: <ListChecks className="h-4 w-4" />,
+                dialogMaxWidth: 'max-w-3xl',
+                dialogTitle: (item) => t('pages.observations.actions.panel_title', { observation: String(item.name || '') }),
+                dialogDescription: t('pages.observations.actions.panel_description'),
+                getConfig: (item): CrudModuleConfig => ({
+                    apiUrl: '/api/crud/control-action-mappings',
+                    perPage: 25,
+                    defaultSort: 'id',
+                    fixedFilters: { finding_id: Number(item.id) },
+                    createDefaults: { finding_id: Number(item.id) },
+                    selectFields: ['id', 'control_action_id', 'finding_id'],
+                    createTitle: t('pages.observations.actions.create_title'),
+                    editTitle: t('pages.observations.actions.edit_title'),
+                    fields: [
+                        {
+                            key: 'control_action_id',
+                            label: t('pages.observations.actions.column_control_action'),
+                            type: 'select',
+                            sortable: false,
+                            editable: true,
+                            required: true,
+                            masterLabel: true,
+                            optionsUrl: '/api/crud/control-actions?paginate=0&%24select=id,name&sort=name',
+                            optionValueKey: 'id',
+                            optionLabelKey: 'name',
+                            placeholder: t('pages.observations.actions.select_action'),
+                            category: t('pages.observations.actions.category_general'),
+                        },
+                    ],
+                }),
             },
         ],
         fields: [
@@ -202,134 +208,36 @@ export default function ObservationsPage({ route }: ObservationsPageProps) {
                 hiddenInTable: true,
                 category: t('pages.observations.category_status'),
             },
-            // Filter-only hidden fields
+        ],
+        filterFields: [
             {
                 key: 'show_unhandled',
                 label: t('pages.observations.filter_show_unhandled'),
                 type: 'boolean',
-                hidden: true,
-                editable: false,
-                filterable: true,
-                options: [
-                    { value: '1', label: t('pages.observations.option_yes') },
-                ],
+                options: [{ value: '1', label: t('pages.observations.option_yes') }],
             },
             {
                 key: 'show_handled',
                 label: t('pages.observations.filter_show_handled'),
                 type: 'boolean',
-                hidden: true,
-                editable: false,
-                filterable: true,
-                options: [
-                    { value: '1', label: t('pages.observations.option_yes') },
-                ],
+                options: [{ value: '1', label: t('pages.observations.option_yes') }],
             },
         ],
-    };
-
-    const actionsConfig: CrudModuleConfig | null = useMemo(() => {
-        if (!activeObservationForActions?.id) {
-            return null;
-        }
-
-        return {
-            apiUrl: '/api/crud/control-action-mappings',
-            perPage: 25,
-            defaultSort: 'id',
-            fixedFilters: { finding_id: Number(activeObservationForActions.id) },
-            createDefaults: { finding_id: Number(activeObservationForActions.id) },
-            selectFields: ['id', 'control_action_id', 'finding_id'],
-            createTitle: t('pages.observations.actions.create_title'),
-            editTitle: t('pages.observations.actions.edit_title'),
-            fields: [
-                {
-                    key: 'control_action_id',
-                    label: t('pages.observations.actions.column_control_action'),
-                    type: 'select',
-                    sortable: false,
-                    editable: true,
-                    required: true,
-                    masterLabel: true,
-                    optionsUrl: '/api/crud/control-actions?paginate=0&%24select=id,name&sort=name',
-                    optionValueKey: 'id',
-                    optionLabelKey: 'name',
-                    placeholder: t('pages.observations.actions.select_action'),
-                    category: t('pages.observations.actions.category_general'),
-                },
-            ],
-        };
-    }, [activeObservationForActions?.id, t]);
+    }), [t]);
 
     return (
         <AppLayout>
             <div className="space-y-6">
-                <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-xs text-muted-foreground">
-                    <Link to={APP_HOME_PATH} className="transition-colors hover:text-foreground">
-                        {t('ui.app.breadcrumb_home')}
-                    </Link>
-                    <span>/</span>
-                    <span>{t('pages.observations.title')}</span>
-                </nav>
-
-                <section className="rounded-2xl border border-border bg-card p-6 shadow-sm">
-                    <div className="flex items-center gap-4">
-                        <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
-                            <AlertCircle className="h-6 w-6 text-primary" />
-                        </div>
-                        <div>
-                            <h1 className="text-2xl font-semibold tracking-tight text-foreground">
-                                {t('pages.observations.title')}
-                            </h1>
-                            <p className="mt-1 text-sm text-muted-foreground">
-                                {route.description ?? t('pages.observations.description')}
-                            </p>
-                        </div>
-                    </div>
-                </section>
-
+                <PageHeader
+                    title={t('pages.observations.title')}
+                    description={t('pages.observations.description')}
+                    icon={<AlertCircle className="h-6 w-6 text-primary" />}
+                    route={route}
+                />
                 <section className="rounded-2xl border border-border bg-card p-6 shadow-sm">
                     <CrudModule config={config} />
                 </section>
             </div>
-
-            {actionsConfig && (
-                <Dialog
-                    open={Boolean(activeObservationForActions)}
-                    onOpenChange={(open) => !open && setActiveObservationForActions(null)}
-                >
-                    <DialogContent className="max-w-3xl">
-                        <DialogHeader>
-                            <DialogTitle className="flex items-center gap-2">
-                                <ListChecks className="h-5 w-5" />
-                                {t('pages.observations.actions.panel_title', {
-                                    observation: String(activeObservationForActions?.name || ''),
-                                })}
-                            </DialogTitle>
-                            <DialogDescription>
-                                {t('pages.observations.actions.panel_description')}
-                            </DialogDescription>
-                        </DialogHeader>
-
-                        <div className="space-y-4">
-                            <div className="flex justify-end">
-                                <Button
-                                    type="button"
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() => setActiveObservationForActions(null)}
-                                >
-                                    {t('pages.observations.actions.close_panel_button')}
-                                </Button>
-                            </div>
-                            <CrudModule
-                                key={`observation-actions-${activeObservationForActions?.id}`}
-                                config={actionsConfig}
-                            />
-                        </div>
-                    </DialogContent>
-                </Dialog>
-            )}
         </AppLayout>
     );
 }

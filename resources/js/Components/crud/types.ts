@@ -71,6 +71,44 @@ export interface RowActionConfig {
   refreshOnComplete?: boolean;
 }
 
+/**
+ * A row action that opens a Dialog containing a nested CrudModule.
+ * The CrudModule state is managed automatically – no manual useState needed in the page.
+ */
+export interface SubTableActionConfig {
+  key: string;
+  label: string;
+  icon?: ReactNode;
+  variant?: "default" | "secondary" | "destructive" | "outline" | "ghost";
+  isVisible?: (item: Record<string, any>) => boolean;
+  /** Dialog max-width Tailwind class, e.g. "max-w-3xl". Defaults to "max-w-4xl". */
+  dialogMaxWidth?: string;
+  dialogTitle: string | ((item: Record<string, any>) => string);
+  dialogDescription?: string | ((item: Record<string, any>) => string);
+  /**
+   * Returns the CrudModuleConfig for the child table, given the parent row item.
+   * Called only when the dialog is open.
+   */
+  getConfig: (item: Record<string, any>) => CrudModuleConfig;
+  /** Forwarded to the inner CrudModule's onEditFormDataChange prop. */
+  onEditFormDataChange?: (data: Record<string, any>) => void;
+}
+
+/**
+ * A field that is only visible in the filter bar – never in the table or edit dialog.
+ * Equivalent to defining a FieldConfig with hidden:true, editable:false, filterable:true.
+ */
+export interface FilterFieldConfig {
+  key: string;
+  label: string;
+  type: "boolean" | "select";
+  options?: SelectOption[];
+  optionsUrl?: string;
+  optionValueKey?: string;
+  optionLabelKey?: string;
+  placeholder?: string;
+}
+
 export interface CrudModuleConfig {
   apiUrl: string;
   title?: string;
@@ -114,6 +152,16 @@ export interface CrudModuleConfig {
   onSaveSuccess?: (item: Record<string, any>, context: { isNew: boolean; payload: Record<string, any> }) => void | Promise<void>;
   /** Optional row-level custom actions shown next to edit/delete actions. */
   rowActions?: RowActionConfig[];
+  /**
+   * Row actions that open a Dialog containing a nested CrudModule.
+   * The dialog state is managed by CrudModule – no manual useState needed in the page.
+   */
+  subTableActions?: SubTableActionConfig[];
+  /**
+   * Shorthand for filter-only fields. These are merged into `fields` as
+   * hidden:true, editable:false, filterable:true entries.
+   */
+  filterFields?: FilterFieldConfig[];
 }
 
 export type ViewMode = "master-detail" | "table" | "accordion";

@@ -1,12 +1,10 @@
-﻿import { useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { usePage } from '@inertiajs/react';
+﻿import { usePage } from '@inertiajs/react';
 import type { PageProps } from '@inertiajs/core';
 import { KeyRound, TriangleAlert } from 'lucide-react';
 import AppLayout from '@/layouts/AppLayout';
 import { CrudModule } from '@/components/crud';
 import type { CrudModuleConfig, FieldConfig } from '@/components/crud';
-import { APP_HOME_PATH } from '@/app/routes';
+import { PageHeader } from '@/components/layout/PageHeader';
 import { useTranslations } from '@/hooks/useTranslations';
 import type { AppSectionRoute } from '@/app/routes';
 
@@ -30,14 +28,6 @@ export default function AccessGroupsPage({ route }: AccessGroupsPageProps) {
     const externalSyncEnabled = Boolean(page.props.settings?.access_groups?.external_sync_enabled);
     const externalProviderName =
         page.props.settings?.access_groups?.external_provider_name?.trim() || t('pages.access_groups.external_provider_default');
-
-    useEffect(() => {
-        const previousTitle = document.title;
-        document.title = t('ui.app.page_title_suffix', { page: t('pages.access_groups.title') });
-        return () => {
-            document.title = previousTitle;
-        };
-    }, [t]);
 
     const fields: FieldConfig[] = [
         {
@@ -122,29 +112,12 @@ export default function AccessGroupsPage({ route }: AccessGroupsPageProps) {
     return (
         <AppLayout>
             <div className="space-y-6">
-                <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-xs text-muted-foreground">
-                    <Link to={APP_HOME_PATH} className="transition-colors hover:text-foreground">
-                        {t('ui.app.breadcrumb_home')}
-                    </Link>
-                    <span>/</span>
-                    <span>{t('pages.access_groups.title')}</span>
-                </nav>
-
-                <section className="rounded-2xl border border-border bg-card p-6 shadow-sm">
-                    <div className="flex items-center gap-4">
-                        <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
-                            <KeyRound className="h-6 w-6 text-primary" />
-                        </div>
-                        <div>
-                            <h1 className="text-2xl font-semibold tracking-tight text-foreground">
-                                {t('pages.access_groups.title')}
-                            </h1>
-                            <p className="mt-1 text-sm text-muted-foreground">
-                                {route.description ?? t('pages.access_groups.description')}
-                            </p>
-                        </div>
-                    </div>
-                </section>
+                <PageHeader
+                    title={t('pages.access_groups.title')}
+                    description={t('pages.access_groups.description')}
+                    icon={<KeyRound className="h-6 w-6 text-primary" />}
+                    route={route}
+                />
 
                 {externalSyncEnabled && (
                     <section className="rounded-2xl border border-warning/30 bg-warning/5 p-4 shadow-sm">

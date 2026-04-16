@@ -1,5 +1,4 @@
-﻿import { useEffect, useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
+﻿import { useMemo, useState } from 'react';
 import { usePage } from '@inertiajs/react';
 import type { PageProps } from '@inertiajs/core';
 import { ListChecks, Scale } from 'lucide-react';
@@ -14,7 +13,7 @@ import {
     DialogHeader,
     DialogTitle,
 } from '@/components/ui/dialog';
-import { APP_HOME_PATH } from '@/app/routes';
+import { PageHeader } from '@/components/layout/PageHeader';
 import { useTranslations } from '@/hooks/useTranslations';
 import type { AppSectionRoute } from '@/app/routes';
 import { buildRequirementSourceRequirementsCrudConfig } from './requirementSourceRequirementsCrudConfig';
@@ -36,15 +35,6 @@ export default function RequirementSourcesPage({ route }: RequirementSourcesPage
     const page = usePage<SharedProps>();
     const currentUserId = page.props.auth?.user?.id ?? null;
     const [activeSourceForRequirements, setActiveSourceForRequirements] = useState<Record<string, any> | null>(null);
-
-    useEffect(() => {
-        const previousTitle = document.title;
-        document.title = t('ui.app.page_title_suffix', { page: t('pages.requirement_sources.title') });
-
-        return () => {
-            document.title = previousTitle;
-        };
-    }, [t]);
 
     const patchRequirementSource = async (id: number, updates: Record<string, any>): Promise<void> => {
         const response = await fetch(`/api/crud/requirement_sources/${id}`, {
@@ -297,29 +287,12 @@ export default function RequirementSourcesPage({ route }: RequirementSourcesPage
     return (
         <AppLayout>
             <div className="space-y-6">
-                <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-xs text-muted-foreground">
-                    <Link to={APP_HOME_PATH} className="transition-colors hover:text-foreground">
-                        {t('ui.app.breadcrumb_home')}
-                    </Link>
-                    <span>/</span>
-                    <span>{t('pages.requirement_sources.title')}</span>
-                </nav>
-
-                <section className="rounded-2xl border border-border bg-card p-6 shadow-sm">
-                    <div className="flex items-center gap-4">
-                        <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
-                            <Scale className="h-6 w-6 text-primary" />
-                        </div>
-                        <div>
-                            <h1 className="text-2xl font-semibold tracking-tight text-foreground">
-                                {t('pages.requirement_sources.title')}
-                            </h1>
-                            <p className="mt-1 text-sm text-muted-foreground">
-                                {route.description ?? t('pages.requirement_sources.description')}
-                            </p>
-                        </div>
-                    </div>
-                </section>
+                <PageHeader
+                    title={t('pages.requirement_sources.title')}
+                    description={t('pages.requirement_sources.description')}
+                    icon={<Scale className="h-6 w-6 text-primary" />}
+                    route={route}
+                />
 
                 <section className="rounded-2xl border border-border bg-card p-6 shadow-sm">
                     <CrudModule config={config} />

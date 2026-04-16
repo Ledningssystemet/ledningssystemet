@@ -6,6 +6,8 @@ export { useCrudModule } from "./useCrudModule";
 export type {
   CrudModuleConfig,
   FieldConfig,
+  FilterFieldConfig,
+  SubTableActionConfig,
   SelectOption,
   ViewMode,
   EditDialogProps,

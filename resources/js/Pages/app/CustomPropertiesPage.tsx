@@ -1,12 +1,12 @@
 ﻿import { useEffect, useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
 import { SlidersHorizontal } from 'lucide-react';
 import axios from 'axios';
 import AppLayout from '@/layouts/AppLayout';
-import { APP_HOME_PATH, type AppSectionRoute } from '@/app/routes';
+import { type AppSectionRoute } from '@/app/routes';
 import { CrudModule } from '@/components/crud';
 import type { CrudModuleConfig } from '@/components/crud';
 import { Button } from '@/components/ui/button';
+import { PageHeader } from '@/components/layout/PageHeader';
 import { useTranslations } from '@/hooks/useTranslations';
 
 interface CustomPropertyContext {
@@ -184,29 +184,12 @@ export default function CustomPropertiesPage({ route }: CustomPropertiesPageProp
     return (
         <AppLayout>
             <div className="space-y-6">
-                <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-xs text-muted-foreground">
-                    <Link to={APP_HOME_PATH} className="transition-colors hover:text-foreground">
-                        {t('ui.app.breadcrumb_home')}
-                    </Link>
-                    <span>/</span>
-                    <span>{t('pages.custom_properties.title')}</span>
-                </nav>
-
-                <section className="rounded-2xl border border-border bg-card p-6 shadow-sm">
-                    <div className="flex items-center gap-4">
-                        <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
-                            <SlidersHorizontal className="h-6 w-6 text-primary" />
-                        </div>
-                        <div>
-                            <h1 className="text-2xl font-semibold tracking-tight text-foreground">
-                                {t('pages.custom_properties.title')}
-                            </h1>
-                            <p className="mt-1 text-sm text-muted-foreground">
-                                {route.description ?? t('pages.custom_properties.description')}
-                            </p>
-                        </div>
-                    </div>
-                </section>
+                <PageHeader
+                    title={t('pages.custom_properties.title')}
+                    description={t('pages.custom_properties.description')}
+                    icon={<SlidersHorizontal className="h-6 w-6 text-primary" />}
+                    route={route}
+                />
 
                 <section className="rounded-2xl border border-border bg-card p-6 shadow-sm">
                     <div className="space-y-4">

@@ -1,12 +1,12 @@
 import { useEffect, useState, useCallback } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { ArrowLeft, ChevronDown, ChevronRight, Save, CheckSquare, XSquare, AlertTriangle } from 'lucide-react';
+import { ArrowLeft, ChevronDown, ChevronRight, Save, CheckSquare, XSquare, AlertTriangle, ClipboardList } from 'lucide-react';
 import AppLayout from '@/layouts/AppLayout';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { CrudModule } from '@/components/crud';
 import type { CrudModuleConfig } from '@/components/crud';
-import { APP_HOME_PATH } from '@/app/routes';
+import { PageHeader } from '@/components/layout/PageHeader';
 import { useTranslations } from '@/hooks/useTranslations';
 import type { AppSectionRoute } from '@/app/routes';
 
@@ -330,7 +330,7 @@ function RequirementSourceSection({
     );
 }
 
-export default function ComplianceEvaluationEvaluatePage(_props: ComplianceEvaluationEvaluatePageProps) {
+export default function ComplianceEvaluationEvaluatePage({ route }: ComplianceEvaluationEvaluatePageProps) {
     const { t } = useTranslations();
     const { evaluationId } = useParams<{ evaluationId: string }>();
     const [evaluation, setEvaluation] = useState<EvaluationData | null>(null);
@@ -358,13 +358,6 @@ export default function ComplianceEvaluationEvaluatePage(_props: ComplianceEvalu
             });
     }, [evaluationId]);
 
-    useEffect(() => {
-        if (!evaluation) return;
-        const previousTitle = document.title;
-        document.title = t('ui.app.page_title_suffix', { page: evaluation.name });
-        return () => { document.title = previousTitle; };
-    }, [t, evaluation]);
-
     const saveSummary = async () => {
         if (!evaluationId) return;
         await fetch(`/api/crud/compliance_evaluations/${evaluationId}`, {
@@ -377,31 +370,20 @@ export default function ComplianceEvaluationEvaluatePage(_props: ComplianceEvalu
     return (
         <AppLayout>
             <div className="space-y-6">
-                <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-xs text-muted-foreground">
-                    <Link to={APP_HOME_PATH} className="transition-colors hover:text-foreground">
-                        {t('ui.app.breadcrumb_home')}
-                    </Link>
-                    <span>/</span>
-                    <Link to="/compliance-evaluation" className="transition-colors hover:text-foreground">
-                        {t('pages.compliance_evaluations.title')}
-                    </Link>
-                    <span>/</span>
-                    <span>{evaluation?.name ?? '...'}</span>
-                </nav>
-
-                <div className="flex items-center gap-3">
-                    <Link to="/compliance-evaluation">
-                        <Button variant="outline" size="sm">
-                            <ArrowLeft className="h-4 w-4 mr-1" />
-                            {t('pages.compliance_evaluation_evaluate.back_to_list')}
-                        </Button>
-                    </Link>
-                    {evaluation && (
-                        <h1 className="text-2xl font-semibold tracking-tight text-foreground">
-                            {evaluation.name}
-                        </h1>
-                    )}
-                </div>
+                <PageHeader
+                    title={evaluation?.name ?? t('pages.compliance_evaluations.title')}
+                    description={t('pages.compliance_evaluation_evaluate.back_to_list')}
+                    icon={<ClipboardList className="h-6 w-6 text-primary" />}
+                    route={route}
+                    actions={
+                        <Link to="/compliance-evaluation">
+                            <Button variant="outline" size="sm">
+                                <ArrowLeft className="h-4 w-4 mr-1" />
+                                {t('pages.compliance_evaluation_evaluate.back_to_list')}
+                            </Button>
+                        </Link>
+                    }
+                />
 
                 {loading && (
                     <p className="text-sm text-muted-foreground">{t('pages.compliance_evaluation_evaluate.loading')}</p>

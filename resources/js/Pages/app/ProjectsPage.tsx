@@ -1,5 +1,4 @@
-﻿import { useEffect, useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
+﻿import { useMemo, useState } from 'react';
 import { Download, ListChecks, ShieldAlert } from 'lucide-react';
 import AppLayout from '@/layouts/AppLayout';
 import { CrudModule } from '@/components/crud';
@@ -12,7 +11,7 @@ import {
     DialogHeader,
     DialogTitle,
 } from '@/components/ui/dialog';
-import { APP_HOME_PATH } from '@/app/routes';
+import { PageHeader } from '@/components/layout/PageHeader';
 import { useTranslations } from '@/hooks/useTranslations';
 import type { AppSectionRoute } from '@/app/routes';
 
@@ -23,15 +22,6 @@ interface ProjectRisksPageProps {
 export default function ProjectsPage({ route }: ProjectRisksPageProps) {
     const { t } = useTranslations();
     const [activeProjectForRisks, setActiveProjectForRisks] = useState<Record<string, any> | null>(null);
-
-    useEffect(() => {
-        const previousTitle = document.title;
-        document.title = t('ui.app.page_title_suffix', { page: t('pages.projects.title') });
-
-        return () => {
-            document.title = previousTitle;
-        };
-    }, [t]);
 
     const config: CrudModuleConfig = {
         apiUrl: '/api/crud/projects',
@@ -380,29 +370,12 @@ export default function ProjectsPage({ route }: ProjectRisksPageProps) {
     return (
         <AppLayout>
             <div className="space-y-6">
-                <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-xs text-muted-foreground">
-                    <Link to={APP_HOME_PATH} className="transition-colors hover:text-foreground">
-                        {t('ui.app.breadcrumb_home')}
-                    </Link>
-                    <span>/</span>
-                    <span>{t('pages.projects.title')}</span>
-                </nav>
-
-                <section className="rounded-2xl border border-border bg-card p-6 shadow-sm">
-                    <div className="flex items-center justify-between gap-4">
-                        <div className="flex items-center gap-4">
-                            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
-                                <ShieldAlert className="h-6 w-6 text-primary" />
-                            </div>
-                            <div>
-                                <h1 className="text-2xl font-semibold tracking-tight text-foreground">
-                                    {t('pages.projects.title')}
-                                </h1>
-                                <p className="mt-1 text-sm text-muted-foreground">
-                                    {route.description ?? t('pages.projects.description')}
-                                </p>
-                            </div>
-                        </div>
+                <PageHeader
+                    title={t('pages.projects.title')}
+                    description={t('pages.projects.description')}
+                    icon={<ShieldAlert className="h-6 w-6 text-primary" />}
+                    route={route}
+                    actions={
                         <a
                             href="/api/v1/ReportCentral/Project/0"
                             className="flex items-center gap-2 rounded-lg border border-border bg-background px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted"
@@ -410,8 +383,8 @@ export default function ProjectsPage({ route }: ProjectRisksPageProps) {
                             <Download className="h-4 w-4" />
                             {t('pages.projects.export_excel')}
                         </a>
-                    </div>
-                </section>
+                    }
+                />
 
                 <section className="rounded-2xl border border-border bg-card p-6 shadow-sm">
                     <CrudModule config={config} />

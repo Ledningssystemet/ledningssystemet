@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { CrudModuleConfig, RowActionConfig } from "./types";
+import { useEffect, useMemo, useState } from "react";
+import { CrudModuleConfig, FieldConfig, RowActionConfig, SubTableActionConfig } from "./types";
 import { useCrudModule } from "./useCrudModule";
 import { FilterBar } from "./FilterBar";
 import { TableView } from "./TableView";
@@ -19,6 +19,13 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 interface CrudModuleProps {
    config: CrudModuleConfig;
@@ -26,6 +33,60 @@ interface CrudModuleProps {
 }
 
 export function CrudModule({ config, onEditFormDataChange }: CrudModuleProps) {
+  // ── Merge filterFields into fields (hidden, non-editable, filterable) ──────
+  const effectiveConfig = useMemo((): CrudModuleConfig => {
+    if (!config.filterFields?.length) return config;
+    const extraFields: FieldConfig[] = config.filterFields.map((ff) => ({
+      key: ff.key,
+      label: ff.label,
+      type: ff.type,
+      options: ff.options,
+      optionsUrl: ff.optionsUrl,
+      optionValueKey: ff.optionValueKey,
+      optionLabelKey: ff.optionLabelKey,
+      placeholder: ff.placeholder,
+      hidden: true,
+      editable: false,
+      filterable: true,
+    }));
+    return { ...config, fields: [...config.fields, ...extraFields] };
+  }, [config]);
+
+  // ── Sub-table dialog state ────────────────────────────────────────────────
+  // Maps actionKey → active item (null = dialog closed)
+  const [subTableItems, setSubTableItems] = useState<Record<string, Record<string, any> | null>>({});
+
+  const openSubTable = (key: string, item: Record<string, any>) =>
+    setSubTableItems((prev) => ({ ...prev, [key]: item }));
+  const closeSubTable = (key: string) =>
+    setSubTableItems((prev) => ({ ...prev, [key]: null }));
+
+  // Build extra rowActions from subTableActions
+  const subTableRowActions: RowActionConfig[] = useMemo(
+    () =>
+      (effectiveConfig.subTableActions ?? []).map((sta) => ({
+        key: sta.key,
+        label: sta.label,
+        icon: sta.icon,
+        variant: sta.variant ?? "outline",
+        isVisible: sta.isVisible,
+        refreshOnComplete: false,
+        onClick: (item) => openSubTable(sta.key, item),
+      })),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [effectiveConfig.subTableActions]
+  );
+
+  const combinedRowActions: RowActionConfig[] = useMemo(
+    () => [...(effectiveConfig.rowActions ?? []), ...subTableRowActions],
+    [effectiveConfig.rowActions, subTableRowActions]
+  );
+
+  const configWithCombinedActions = useMemo(
+    () => ({ ...effectiveConfig, rowActions: combinedRowActions }),
+    [effectiveConfig, combinedRowActions]
+  );
+
   const {
     state,
     setSearch,
@@ -45,20 +106,20 @@ export function CrudModule({ config, onEditFormDataChange }: CrudModuleProps) {
     massDelete,
     reorderByOrdinal,
     refetch,
-  } = useCrudModule(config);
+  } = useCrudModule(configWithCombinedActions);
 
   const [editOpen, setEditOpen] = useState(false);
   const [editItem, setEditItem] = useState<Record<string, any> | null>(null);
   const [massEditOpen, setMassEditOpen] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState<{ type: "single" | "mass"; id?: string | number } | null>(null);
 
-  const primaryKey = config.primaryKey || "id";
-  const hasOrdinalField = config.fields.some((field) => field.key === "ordinal");
-  const isSearchEnabled = !hasOrdinalField && config.searchable !== false;
-  const canCreate = config.canCreate !== false;
-  const canEdit = config.canEdit !== false;
-  const canDelete = config.canDelete !== false;
-  const canSelect = config.selectable ?? (canEdit || canDelete);
+  const primaryKey = configWithCombinedActions.primaryKey || "id";
+  const hasOrdinalField = configWithCombinedActions.fields.some((field) => field.key === "ordinal");
+  const isSearchEnabled = !hasOrdinalField && configWithCombinedActions.searchable !== false;
+  const canCreate = configWithCombinedActions.canCreate !== false;
+  const canEdit = configWithCombinedActions.canEdit !== false;
+  const canDelete = configWithCombinedActions.canDelete !== false;
+  const canSelect = configWithCombinedActions.selectable ?? (canEdit || canDelete);
 
   const noopToggleSelect = () => {};
   const noopSelectAll = () => {};
@@ -122,16 +183,16 @@ export function CrudModule({ config, onEditFormDataChange }: CrudModuleProps) {
 
   return (
     <div className="min-w-0 space-y-4">
-      {config.title && (
+      {configWithCombinedActions.title && (
         <div className="flex items-center gap-3">
-          <h1 className="text-2xl font-semibold">{config.title}</h1>
+          <h1 className="text-2xl font-semibold">{configWithCombinedActions.title}</h1>
           {state.loading && (
             <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
           )}
         </div>
       )}
 
-      {!config.title && state.loading && (
+      {!configWithCombinedActions.title && state.loading && (
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
           <Loader2 className="h-4 w-4 animate-spin" />
           Laddar...
@@ -139,7 +200,7 @@ export function CrudModule({ config, onEditFormDataChange }: CrudModuleProps) {
       )}
 
       <FilterBar
-        fields={config.fields}
+        fields={configWithCombinedActions.fields}
         search={state.search}
         onSearchChange={setSearch}
         filters={state.filters}
@@ -173,7 +234,7 @@ export function CrudModule({ config, onEditFormDataChange }: CrudModuleProps) {
       {state.viewMode === "table" && (
         <TableView
           items={state.items}
-          fields={config.fields}
+          fields={configWithCombinedActions.fields}
           primaryKey={primaryKey}
           selectable={canSelect}
           selectedItems={state.selectedItems}
@@ -184,12 +245,12 @@ export function CrudModule({ config, onEditFormDataChange }: CrudModuleProps) {
           canDelete={canDelete}
           onDelete={canDelete ? confirmDelete : noopDelete}
           onInlineFieldUpdate={handleInlineFieldUpdate}
-          getItemStatus={config.getItemStatus}
-          getItemBadge={config.getItemBadge}
-          editableKey={config.editableKey}
-          deletableKey={config.deletableKey}
-          rowActions={config.rowActions || []}
-          onRowAction={config.rowActions ? handleRowAction : noopRowAction}
+          getItemStatus={configWithCombinedActions.getItemStatus}
+          getItemBadge={configWithCombinedActions.getItemBadge}
+          editableKey={configWithCombinedActions.editableKey}
+          deletableKey={configWithCombinedActions.deletableKey}
+          rowActions={combinedRowActions}
+          onRowAction={combinedRowActions.length > 0 ? handleRowAction : noopRowAction}
           reorderEnabled={hasOrdinalField}
           onReorder={reorderByOrdinal}
         />
@@ -198,7 +259,7 @@ export function CrudModule({ config, onEditFormDataChange }: CrudModuleProps) {
       {state.viewMode === "master-detail" && (
         <MasterDetailView
           items={state.items}
-          fields={config.fields}
+          fields={configWithCombinedActions.fields}
           primaryKey={primaryKey}
           activeItem={state.activeItem}
           onSelectItem={setActiveItem}
@@ -207,11 +268,11 @@ export function CrudModule({ config, onEditFormDataChange }: CrudModuleProps) {
           canDelete={canDelete}
           onDelete={canDelete ? confirmDelete : noopDelete}
           onInlineFieldUpdate={handleInlineFieldUpdate}
-          getItemStatus={config.getItemStatus}
-          getItemBadge={config.getItemBadge}
-          deletableKey={config.deletableKey}
-          rowActions={config.rowActions || []}
-          onRowAction={config.rowActions ? handleRowAction : noopRowAction}
+          getItemStatus={configWithCombinedActions.getItemStatus}
+          getItemBadge={configWithCombinedActions.getItemBadge}
+          deletableKey={configWithCombinedActions.deletableKey}
+          rowActions={combinedRowActions}
+          onRowAction={combinedRowActions.length > 0 ? handleRowAction : noopRowAction}
           reorderEnabled={hasOrdinalField}
           onReorder={reorderByOrdinal}
         />
@@ -220,18 +281,18 @@ export function CrudModule({ config, onEditFormDataChange }: CrudModuleProps) {
       {state.viewMode === "accordion" && (
         <AccordionView
           items={state.items}
-          fields={config.fields}
+          fields={configWithCombinedActions.fields}
           primaryKey={primaryKey}
           canEdit={canEdit}
           onEdit={canEdit ? openEdit : noopEdit}
           canDelete={canDelete}
           onDelete={canDelete ? confirmDelete : noopDelete}
           onInlineFieldUpdate={handleInlineFieldUpdate}
-          getItemStatus={config.getItemStatus}
-          getItemBadge={config.getItemBadge}
-          deletableKey={config.deletableKey}
-          rowActions={config.rowActions || []}
-          onRowAction={config.rowActions ? handleRowAction : noopRowAction}
+          getItemStatus={configWithCombinedActions.getItemStatus}
+          getItemBadge={configWithCombinedActions.getItemBadge}
+          deletableKey={configWithCombinedActions.deletableKey}
+          rowActions={combinedRowActions}
+          onRowAction={combinedRowActions.length > 0 ? handleRowAction : noopRowAction}
           reorderEnabled={hasOrdinalField}
           onReorder={reorderByOrdinal}
         />
@@ -251,8 +312,8 @@ export function CrudModule({ config, onEditFormDataChange }: CrudModuleProps) {
          open={editOpen}
          onOpenChange={setEditOpen}
          item={editItem}
-         fields={config.fields}
-         title={editItem ? config.editTitle : config.createTitle}
+         fields={configWithCombinedActions.fields}
+         title={editItem ? configWithCombinedActions.editTitle : configWithCombinedActions.createTitle}
          onSave={saveItem}
          onFormDataChange={onEditFormDataChange}
        />
@@ -262,14 +323,14 @@ export function CrudModule({ config, onEditFormDataChange }: CrudModuleProps) {
         <MassEditDialog
           open={massEditOpen}
           onOpenChange={setMassEditOpen}
-          fields={config.fields.filter((f) => f.editable !== false && !f.hidden)}
+          fields={configWithCombinedActions.fields.filter((f) => f.editable !== false && !f.hidden)}
           count={state.selectedItems.size}
           onSave={async (data) => {
             if (Object.keys(data).length === 0) return;
             const ids = Array.from(state.selectedItems);
             await Promise.all(
               ids.map((id) =>
-                fetch(`${config.apiUrl}/${id}`, {
+                fetch(`${configWithCombinedActions.apiUrl}/${id}`, {
                   method: "PATCH",
                   headers: { "Content-Type": "application/json", Accept: "application/json" },
                   body: JSON.stringify(data),
@@ -304,6 +365,50 @@ export function CrudModule({ config, onEditFormDataChange }: CrudModuleProps) {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Sub-table dialogs (generated from subTableActions) */}
+      {(configWithCombinedActions.subTableActions ?? []).map((sta: SubTableActionConfig) => {
+        const activeItem = subTableItems[sta.key] ?? null;
+        const isOpen = Boolean(activeItem);
+        const childConfig = isOpen ? sta.getConfig(activeItem!) : null;
+        const titleStr = activeItem
+          ? typeof sta.dialogTitle === "function"
+            ? sta.dialogTitle(activeItem)
+            : sta.dialogTitle
+          : "";
+        const descStr = activeItem && sta.dialogDescription
+          ? typeof sta.dialogDescription === "function"
+            ? sta.dialogDescription(activeItem)
+            : sta.dialogDescription
+          : undefined;
+
+        return (
+          <Dialog
+            key={sta.key}
+            open={isOpen}
+            onOpenChange={(open) => !open && closeSubTable(sta.key)}
+          >
+            <DialogContent className={sta.dialogMaxWidth ?? "max-w-4xl"}>
+              <DialogHeader>
+                <DialogTitle className="flex items-center gap-2">
+                  {sta.icon && <span className="flex h-5 w-5 items-center">{sta.icon}</span>}
+                  {titleStr}
+                </DialogTitle>
+                {descStr && <DialogDescription>{descStr}</DialogDescription>}
+              </DialogHeader>
+              <div className="mt-2">
+                {childConfig && (
+                  <CrudModule
+                    key={`${sta.key}-${activeItem?.[configWithCombinedActions.primaryKey ?? "id"]}`}
+                    config={childConfig}
+                    onEditFormDataChange={sta.onEditFormDataChange}
+                  />
+                )}
+              </div>
+            </DialogContent>
+          </Dialog>
+        );
+      })}
     </div>
   );
 }

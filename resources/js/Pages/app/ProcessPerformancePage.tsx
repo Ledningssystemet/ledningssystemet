@@ -1,5 +1,4 @@
-﻿import { useEffect, useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
+﻿import { useMemo, useState } from 'react';
 import { usePage } from '@inertiajs/react';
 import type { PageProps } from '@inertiajs/core';
 import { Activity, ChartNoAxesCombined } from 'lucide-react';
@@ -15,7 +14,7 @@ import {
     DialogTitle,
 } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
-import { APP_HOME_PATH } from '@/app/routes';
+import { PageHeader } from '@/components/layout/PageHeader';
 import { useTranslations } from '@/hooks/useTranslations';
 import { ProcessPerformanceMetricChart } from '@/components/process-performance/ProcessPerformanceMetricChart';
 import { buildProcessPerformanceReportsCrudConfig } from '@/pages/app/processPerformanceReportsCrudConfig';
@@ -51,15 +50,6 @@ export default function ProcessPerformancePage({ route }: ProcessPerformancePage
     const [activeTagId, setActiveTagId] = useState('');
     const [activeProcessId, setActiveProcessId] = useState('');
     const [showMyOnly, setShowMyOnly] = useState(false);
-
-    useEffect(() => {
-        const previousTitle = document.title;
-        document.title = t('ui.app.page_title_suffix', { page: t('pages.process_performance.title') });
-
-        return () => {
-            document.title = previousTitle;
-        };
-    }, [t]);
 
     useEffect(() => {
         const controller = new AbortController();
@@ -290,29 +280,12 @@ export default function ProcessPerformancePage({ route }: ProcessPerformancePage
     return (
         <AppLayout>
             <div className="space-y-6">
-                <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-xs text-muted-foreground">
-                    <Link to={APP_HOME_PATH} className="transition-colors hover:text-foreground">
-                        {t('ui.app.breadcrumb_home')}
-                    </Link>
-                    <span>/</span>
-                    <span>{t('pages.process_performance.title')}</span>
-                </nav>
-
-                <section className="rounded-2xl border border-border bg-card p-6 shadow-sm">
-                    <div className="flex items-center gap-4">
-                        <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
-                            <Activity className="h-6 w-6 text-primary" />
-                        </div>
-                        <div>
-                            <h1 className="text-2xl font-semibold tracking-tight text-foreground">
-                                {t('pages.process_performance.title')}
-                            </h1>
-                            <p className="mt-1 text-sm text-muted-foreground">
-                                {route.description ?? t('pages.process_performance.description')}
-                            </p>
-                        </div>
-                    </div>
-                </section>
+                <PageHeader
+                    title={t('pages.process_performance.title')}
+                    description={t('pages.process_performance.description')}
+                    icon={<Activity className="h-6 w-6 text-primary" />}
+                    route={route}
+                />
 
                 <section className="rounded-2xl border border-border bg-card p-6 shadow-sm">
                     <div className="grid gap-4 md:grid-cols-4">

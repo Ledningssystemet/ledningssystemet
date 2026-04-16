@@ -1,12 +1,10 @@
-﻿import { useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { usePage } from '@inertiajs/react';
+﻿import { usePage } from '@inertiajs/react';
 import type { PageProps } from '@inertiajs/core';
 import { FileSignature } from 'lucide-react';
 import AppLayout from '@/layouts/AppLayout';
 import { CrudModule } from '@/components/crud';
 import type { CrudModuleConfig } from '@/components/crud';
-import { APP_HOME_PATH } from '@/app/routes';
+import { PageHeader } from '@/components/layout/PageHeader';
 import { useTranslations } from '@/hooks/useTranslations';
 import type { AppSectionRoute } from '@/app/routes';
 
@@ -26,15 +24,6 @@ export default function AgreementsPage({ route }: AgreementsPageProps) {
     const { t } = useTranslations();
     const page = usePage<SharedProps>();
     const currentUserId = page.props.auth?.user?.id ?? null;
-
-    useEffect(() => {
-        const previousTitle = document.title;
-        document.title = t('ui.app.page_title_suffix', { page: t('pages.agreements.title') });
-
-        return () => {
-            document.title = previousTitle;
-        };
-    }, [t]);
 
     const config: CrudModuleConfig = {
         apiUrl: '/api/crud/agreements',
@@ -249,29 +238,12 @@ export default function AgreementsPage({ route }: AgreementsPageProps) {
     return (
         <AppLayout>
             <div className="space-y-6">
-                <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-xs text-muted-foreground">
-                    <Link to={APP_HOME_PATH} className="transition-colors hover:text-foreground">
-                        {t('ui.app.breadcrumb_home')}
-                    </Link>
-                    <span>/</span>
-                    <span>{t('pages.agreements.title')}</span>
-                </nav>
-
-                <section className="rounded-2xl border border-border bg-card p-6 shadow-sm">
-                    <div className="flex items-center gap-4">
-                        <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
-                            <FileSignature className="h-6 w-6 text-primary" />
-                        </div>
-                        <div>
-                            <h1 className="text-2xl font-semibold tracking-tight text-foreground">
-                                {t('pages.agreements.title')}
-                            </h1>
-                            <p className="mt-1 text-sm text-muted-foreground">
-                                {route.description ?? t('pages.agreements.description')}
-                            </p>
-                        </div>
-                    </div>
-                </section>
+                <PageHeader
+                    title={t('pages.agreements.title')}
+                    description={t('pages.agreements.description')}
+                    icon={<FileSignature className="h-6 w-6 text-primary" />}
+                    route={route}
+                />
 
                 <section className="rounded-2xl border border-border bg-card p-6 shadow-sm">
                     <CrudModule config={config} />

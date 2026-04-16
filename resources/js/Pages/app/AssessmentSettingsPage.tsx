@@ -1,7 +1,7 @@
 ﻿import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Settings2 } from 'lucide-react';
 import AppLayout from '@/layouts/AppLayout';
-import { APP_HOME_PATH } from '@/app/routes';
+import { PageHeader } from '@/components/layout/PageHeader';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useTranslations } from '@/hooks/useTranslations';
 import { CrudModule } from '@/components/crud';
@@ -71,14 +71,6 @@ export default function AssessmentSettingsPage({ route }: AssessmentSettingsPage
     const [consequences, setConsequences] = useState<RiskLevelMatrixItem[]>([]);
     const [riskLevels, setRiskLevels] = useState<RiskLevelMatrixItem[]>([]);
     const [matrixValues, setMatrixValues] = useState<Record<string, string>>({});
-
-    useEffect(() => {
-        const previousTitle = document.title;
-        document.title = t('ui.app.page_title_suffix', { page: route.label });
-        return () => {
-            document.title = previousTitle;
-        };
-    }, [route.label, t]);
 
     useEffect(() => {
         const onHashChange = () => {
@@ -481,20 +473,12 @@ export default function AssessmentSettingsPage({ route }: AssessmentSettingsPage
     return (
         <AppLayout>
             <div className="space-y-6">
-                <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-xs text-muted-foreground">
-                    <Link to={APP_HOME_PATH} className="transition-colors hover:text-foreground">
-                        {t('ui.app.breadcrumb_home')}
-                    </Link>
-                    <span>/</span>
-                    <span>{route.label}</span>
-                </nav>
-
-                <section className="rounded-2xl border border-border bg-card p-6 shadow-sm">
-                    <h1 className="text-2xl font-semibold tracking-tight text-foreground">{route.label}</h1>
-                    <p className="mt-1 text-sm text-muted-foreground">
-                        {route.description ?? t('pages.assessment_settings.description')}
-                    </p>
-                </section>
+                <PageHeader
+                    title={route.label}
+                    description={t('pages.assessment_settings.description')}
+                    icon={<Settings2 className="h-6 w-6 text-primary" />}
+                    route={route}
+                />
 
                 <section className="rounded-2xl border border-border bg-card p-6 shadow-sm">
                     <Tabs value={activeTab} onValueChange={handleTabChange}>

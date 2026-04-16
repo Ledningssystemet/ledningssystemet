@@ -1,5 +1,5 @@
 ﻿import { useEffect, useMemo, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { ClipboardList } from 'lucide-react';
 import AppLayout from '@/layouts/AppLayout';
 import { CrudModule } from '@/components/crud';
@@ -12,7 +12,8 @@ import {
     DialogTitle,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { APP_HOME_PATH, buildComplianceEvaluationEvaluatePath } from '@/app/routes';
+import { buildComplianceEvaluationEvaluatePath } from '@/app/routes';
+import { PageHeader } from '@/components/layout/PageHeader';
 import { useTranslations } from '@/hooks/useTranslations';
 import type { AppSectionRoute } from '@/app/routes';
 
@@ -147,12 +148,6 @@ export default function ComplianceEvaluationPage({ route }: ComplianceEvaluation
     const navigate = useNavigate();
     const [generateTarget, setGenerateTarget] = useState<Record<string, any> | null>(null);
     const [reloadKey, setReloadKey] = useState(0);
-
-    useEffect(() => {
-        const previousTitle = document.title;
-        document.title = t('ui.app.page_title_suffix', { page: t('pages.compliance_evaluations.title') });
-        return () => { document.title = previousTitle; };
-    }, [t]);
 
     const apiAction = async (url: string) => {
         await fetch(url, { method: 'POST', headers: { Accept: 'application/json' } });
@@ -339,29 +334,12 @@ export default function ComplianceEvaluationPage({ route }: ComplianceEvaluation
     return (
         <AppLayout>
             <div className="space-y-6">
-                <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-xs text-muted-foreground">
-                    <Link to={APP_HOME_PATH} className="transition-colors hover:text-foreground">
-                        {t('ui.app.breadcrumb_home')}
-                    </Link>
-                    <span>/</span>
-                    <span>{t('pages.compliance_evaluations.title')}</span>
-                </nav>
-
-                <section className="rounded-2xl border border-border bg-card p-6 shadow-sm">
-                    <div className="flex items-center gap-4">
-                        <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
-                            <ClipboardList className="h-6 w-6 text-primary" />
-                        </div>
-                        <div>
-                            <h1 className="text-2xl font-semibold tracking-tight text-foreground">
-                                {t('pages.compliance_evaluations.title')}
-                            </h1>
-                            <p className="mt-1 text-sm text-muted-foreground">
-                                {route.description ?? t('pages.compliance_evaluations.description')}
-                            </p>
-                        </div>
-                    </div>
-                </section>
+                <PageHeader
+                    title={t('pages.compliance_evaluations.title')}
+                    description={t('pages.compliance_evaluations.description')}
+                    icon={<ClipboardList className="h-6 w-6 text-primary" />}
+                    route={route}
+                />
 
                 <section className="rounded-2xl border border-border bg-card p-6 shadow-sm">
                     <CrudModule key={reloadKey} config={config} />
