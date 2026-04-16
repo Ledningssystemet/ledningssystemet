@@ -392,14 +392,14 @@ class User extends Authenticatable
         return $this->hasMany(RequirementSource::class, 'responsible_user_id', 'id');
     }
 
-    public function int_risk_project_user(): HasMany
+    public function int_project_user(): HasMany
     {
-        return $this->hasMany(RiskProjectUser::class, 'user_id', 'id');
+        return $this->hasMany(ProjectUser::class, 'user_id', 'id');
     }
 
-    public function int_risk_projects(): HasMany
+    public function int_projects(): HasMany
     {
-        return $this->hasMany(RiskProject::class, 'responsible_user_id', 'id');
+        return $this->hasMany(Project::class, 'responsible_user_id', 'id');
     }
 
     public function int_risks_by_created_by(): HasMany
@@ -470,9 +470,9 @@ class User extends Authenticatable
             ->withTimestamps();
     }
 
-    public function int_risk_projects_2(): BelongsToMany
+    public function int_projects_2(): BelongsToMany
     {
-        return $this->belongsToMany(RiskProject::class, 'risk_project_user', 'user_id', 'risk_project_id')
+        return $this->belongsToMany(Project::class, 'project_user', 'user_id', 'project_id')
             ->withTimestamps();
     }
 

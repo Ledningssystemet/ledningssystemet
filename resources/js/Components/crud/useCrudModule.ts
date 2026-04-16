@@ -1,6 +1,46 @@
 import { useState, useCallback, useEffect, useRef } from "react";
 import { CrudModuleConfig, CrudState, ViewMode } from "./types";
 
+const normalizeCrudItems = (payload: any): Record<string, any>[] => {
+  if (Array.isArray(payload)) {
+    return payload;
+  }
+
+  if (Array.isArray(payload?.data)) {
+    return payload.data;
+  }
+
+  if (payload !== null && payload !== undefined) {
+    console.warn("Unexpected CRUD index payload shape", payload);
+  }
+
+  return [];
+};
+
+const resolveCrudTotal = (payload: any, items: Record<string, any>[]): number => {
+  if (typeof payload?.meta?.total === "number") {
+    return payload.meta.total;
+  }
+
+  if (typeof payload?.total === "number") {
+    return payload.total;
+  }
+
+  return items.length;
+};
+
+const resolveCrudTotalPages = (payload: any): number => {
+  if (typeof payload?.meta?.last_page === "number") {
+    return payload.meta.last_page;
+  }
+
+  if (typeof payload?.last_page === "number") {
+    return payload.last_page;
+  }
+
+  return 1;
+};
+
 const containsFile = (value: any): boolean => {
   if (typeof File !== "undefined" && value instanceof File) {
     return true;
@@ -203,8 +243,26 @@ export function useCrudModule(config: CrudModuleConfig) {
         signal: controller.signal,
         headers: { Accept: "application/json" },
       });
-      const json = await res.json();
-      const nextItems = json.data || json;
+      const json = await res.json().catch(() => null);
+
+      if (!res.ok) {
+        console.error("Failed to load CRUD items", {
+          apiUrl: config.apiUrl,
+          status: res.status,
+          payload: json,
+        });
+        setState((s) => ({
+          ...s,
+          items: [],
+          activeItem: null,
+          total: 0,
+          totalPages: 1,
+          loading: false,
+        }));
+        return;
+      }
+
+      const nextItems = normalizeCrudItems(json);
 
       setState((s) => {
         const activeId = s.activeItem?.[primaryKey];
@@ -217,8 +275,8 @@ export function useCrudModule(config: CrudModuleConfig) {
           ...s,
           items: nextItems,
           activeItem: nextActiveItem,
-          total: json.meta?.total || json.total || nextItems.length,
-          totalPages: json.meta?.last_page || json.last_page || 1,
+          total: resolveCrudTotal(json, nextItems),
+          totalPages: resolveCrudTotalPages(json),
           loading: false,
         };
       });

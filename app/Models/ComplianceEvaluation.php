@@ -2,11 +2,15 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
+use Spatie\QueryBuilder\QueryBuilder;
 
 class ComplianceEvaluation extends Model
 {
@@ -15,6 +19,8 @@ class ComplianceEvaluation extends Model
     protected $table = 'compliance_evaluations';
 
     protected $fillable = ['name', 'startdate', 'description', 'participants', 'summary', 'finished', 'archived'];
+
+    protected $appends = ['statistics', 'requirement_sources'];
 
     protected function casts(): array
     {
@@ -65,6 +71,40 @@ class ComplianceEvaluation extends Model
     public static function getPrettyName($plural = false): string
     {
         return $plural ? 'Compliance Evaluations' : 'Compliance Evaluation';
+    }
+
+    public static function applyCrudIndexFilters(Builder|QueryBuilder $query, Request $request): void
+    {
+        if ($request->boolean('hidearchived', true)) {
+            $query->whereNull('archived');
+        }
+    }
+
+    public function getStatisticsAttribute(): array
+    {
+        $rows = DB::table('compliance_evaluation_requirement')
+            ->where('compliance_evaluation_id', $this->id)
+            ->select(DB::raw('COUNT(*) as total'), DB::raw('SUM(CASE WHEN evaluated=1 AND applicable=1 THEN 1 ELSE 0 END) as pass'), DB::raw('SUM(CASE WHEN evaluated=1 AND applicable=0 THEN 1 ELSE 0 END) as na'), DB::raw('SUM(CASE WHEN evaluated=0 THEN 1 ELSE 0 END) as open'))
+            ->first();
+
+        return [
+            'requirements' => (int) ($rows->total ?? 0),
+            'pass' => (int) ($rows->pass ?? 0),
+            'fail' => 0,
+            'na' => (int) ($rows->na ?? 0),
+            'open' => (int) ($rows->open ?? 0),
+        ];
+    }
+
+    public function getRequirementSourcesAttribute(): array
+    {
+        return DB::table('compliance_evaluation_requirement_source')
+            ->leftJoin('requirement_sources', 'requirement_sources.id', '=', 'compliance_evaluation_requirement_source.requirement_source_id')
+            ->where('compliance_evaluation_id', $this->id)
+            ->orderBy('requirement_sources.reference')
+            ->select(['compliance_evaluation_requirement_source.id', 'requirement_sources.name', 'requirement_sources.reference', 'compliance_evaluation_requirement_source.requirement_source_id'])
+            ->get()
+            ->toArray();
     }
 
     public function int_compliance_evaluation_requirement(): HasMany

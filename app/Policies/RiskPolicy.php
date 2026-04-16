@@ -16,10 +16,10 @@ class RiskPolicy
         if ($user->haveAnyAccessRights(['riskdepartment.edit', 'riskall.edit', 'riskadministrator.edit']))
             return true;
 
-        if(\App\Models\RiskProject::where('responsible_user_id', $user->id)->exists())
+        if(\App\Models\Project::where('responsible_user_id', $user->id)->exists())
             return true;
 
-        if(\App\Models\RiskProject::whereHas('int_users', function($q) use ($user) {
+        if(\App\Models\Project::whereHas('int_users', function($q) use ($user) {
             $q->where('users.id', $user->id);
         })->exists())
             return true;
@@ -32,7 +32,7 @@ class RiskPolicy
      */
     public function view(User $user, Risk $risk = new Risk): bool
     {
-        if (null == $risk->risk_project_id) {
+        if (null == $risk->project_id) {
             if ($user->haveAnyAccessRights(['riskadministrator.edit', 'riskall.edit']))
                 return true;
 
@@ -46,10 +46,10 @@ class RiskPolicy
             if ($user->haveAnyAccessRights(['riskadministrator.edit']))
                 return true;
 
-            if ($risk->int_risk_project->responsible_user_id == $user->id)
+            if ($risk->int_project->responsible_user_id == $user->id)
                 return true;
 
-            if (false !== array_search($user->id, $risk->int_risk_project->int_users()->pluck('users.id')->all()))
+            if (false !== array_search($user->id, $risk->int_project->int_users()->pluck('users.id')->all()))
                 return true;
         }
 
@@ -72,7 +72,7 @@ class RiskPolicy
         if ($user->haveAnyAccessRights(['superadmin.edit']))
             return true;
 
-        if (null == $risk->risk_project_id) {
+        if (null == $risk->project_id) {
             if ($user->haveAnyAccessRights(['riskadministrator.edit', 'riskall.edit']))
                 return true;
 
@@ -86,10 +86,10 @@ class RiskPolicy
             if ($user->haveAnyAccessRights(['riskadministrator.edit']))
                 return true;
 
-            if ($risk->int_risk_project->responsible_user_id == $user->id)
+            if ($risk->int_project->responsible_user_id == $user->id)
                 return true;
 
-            if (false !== array_search($user->id, $risk->int_risk_project->int_users()->pluck('users.id')->all()))
+            if (false !== array_search($user->id, $risk->int_project->int_users()->pluck('users.id')->all()))
                 return true;
         }
 

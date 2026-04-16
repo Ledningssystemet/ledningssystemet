@@ -7,6 +7,11 @@ export const APP_PROCESSES_PATH = "/processes";
 export const APP_PROCESS_EDITOR_PATH = "/processes/:processId/editor";
 export const APP_DOCUMENTS_PATH = "/documents";
 export const APP_DOCUMENT_EDITOR_PATH = "/documents/:libraryDocumentId/editor";
+export const APP_COMPLIANCE_EVALUATION_EVALUATE_PATH = "/compliance-evaluation/:evaluationId/evaluate";
+
+export function buildComplianceEvaluationEvaluatePath(evaluationId: number | string): string {
+    return `/compliance-evaluation/${evaluationId}/evaluate`;
+}
 
 export interface AppSectionRoute {
     key: string;

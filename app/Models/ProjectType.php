@@ -8,11 +8,11 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Support\Facades\Validator;
 
-class RiskProjectType extends Model
+class ProjectType extends Model
 {
     use HasFactory;
 
-    protected $table = 'risk_project_types';
+    protected $table = 'project_types';
 
     protected $fillable = ['name', 'description'];
 
@@ -57,14 +57,14 @@ class RiskProjectType extends Model
         return $plural ? 'Risk Project Types' : 'Risk Project Type';
     }
 
-    public function int_risk_project_type_risk_templates(): HasMany
+    public function int_project_type_risk_templates(): HasMany
     {
-        return $this->hasMany(RiskProjectTypeRiskTemplate::class, 'risk_project_type_id', 'id');
+        return $this->hasMany(ProjectTypeRiskTemplate::class, 'project_type_id', 'id');
     }
 
-    public function int_risk_projects(): HasMany
+    public function int_projects(): HasMany
     {
-        return $this->hasMany(RiskProject::class, 'risk_project_type_id', 'id');
+        return $this->hasMany(Project::class, 'project_type_id', 'id');
     }
 
     public function int_custom_property_object_as_object(): MorphMany

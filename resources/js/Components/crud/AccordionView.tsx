@@ -51,6 +51,12 @@ export function AccordionView({
   reorderEnabled = false,
   onReorder,
 }: AccordionViewProps) {
+  // Gör komponenten robust mot att items är null, undefined eller objekt med data-array
+  const normalizedItems = Array.isArray(items)
+    ? items
+    : Array.isArray(items?.data)
+      ? items.data
+      : [];
   const labelField = fields.find((f) => f.masterLabel) || fields[0];
   const descField = fields.find((f) => f.masterDescription);
   const detailFields = fields.filter((f) => !f.hidden);
@@ -67,10 +73,10 @@ export function AccordionView({
   }, []);
 
   const rowIds = useMemo(
-    () => items
+    () => normalizedItems
       .map((item) => item[primaryKey])
       .filter((id): id is string | number => id !== undefined && id !== null),
-    [items, primaryKey]
+    [normalizedItems, primaryKey]
   );
 
   const canReorder = reorderEnabled && Boolean(onReorder) && rowIds.length > 1;
@@ -123,13 +129,13 @@ export function AccordionView({
 
   return (
     <div className="border rounded-lg overflow-hidden">
-      {items.length === 0 ? (
+      {normalizedItems.length === 0 ? (
         <div className="p-8 text-center text-muted-foreground">
           Inga resultat hittades
         </div>
       ) : (
         <Accordion type="single" collapsible className="divide-y">
-          {items.map((item) => {
+          {normalizedItems.map((item) => {
             const status = getItemStatus?.(item) ?? null;
             const itemId = item[primaryKey] as string | number;
             const canDeleteItem = canDelete && (deletableKey ? item[deletableKey] !== false : true);

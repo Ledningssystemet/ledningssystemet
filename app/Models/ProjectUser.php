@@ -8,13 +8,13 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Support\Facades\Validator;
 
-class ControlRiskProjectTypeRiskTemplate extends Model
+class ProjectUser extends Model
 {
     use HasFactory;
 
-    protected $table = 'control_risk_project_type_risk_template';
+    protected $table = 'project_user';
 
-    protected $fillable = ['control_id', 'risk_project_type_risk_template_id'];
+    protected $fillable = ['project_id', 'user_id'];
 
     protected function casts(): array
     {
@@ -27,8 +27,8 @@ class ControlRiskProjectTypeRiskTemplate extends Model
     public static function validationRules(): array
     {
         return [
-            'control_id' => ['required', 'integer', 'min:0', 'exists:controls,id'],
-            'risk_project_type_risk_template_id' => ['required', 'integer', 'min:0', 'exists:risk_project_type_risk_templates,id'],
+            'project_id' => ['required', 'integer', 'min:0', 'exists:projects,id'],
+            'user_id' => ['required', 'integer', 'min:0', 'exists:users,id'],
         ];
     }
 
@@ -52,17 +52,17 @@ class ControlRiskProjectTypeRiskTemplate extends Model
 
     public static function getPrettyName($plural = false): string
     {
-        return $plural ? 'Control Risk Project Type Risk Templates' : 'Control Risk Project Type Risk Template';
+        return $plural ? 'Risk Project Users' : 'Risk Project User';
     }
 
-    public function int_control(): BelongsTo
+    public function int_project(): BelongsTo
     {
-        return $this->belongsTo(Control::class, 'control_id');
+        return $this->belongsTo(Project::class, 'project_id');
     }
 
-    public function int_risk_project_type_risk_template(): BelongsTo
+    public function int_user(): BelongsTo
     {
-        return $this->belongsTo(RiskProjectTypeRiskTemplate::class, 'risk_project_type_risk_template_id');
+        return $this->belongsTo(User::class, 'user_id');
     }
 
     public function int_custom_property_object_as_object(): MorphMany

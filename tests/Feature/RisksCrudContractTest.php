@@ -142,7 +142,7 @@ class RisksCrudContractTest extends TestCase
                 $table->unsignedBigInteger('probability_id')->nullable();
                 $table->unsignedBigInteger('consequence_id')->nullable();
                 $table->text('assessmentcomment')->nullable();
-                $table->unsignedBigInteger('risk_project_id')->nullable();
+                $table->unsignedBigInteger('project_id')->nullable();
                 $table->unsignedBigInteger('post_probability_id')->nullable();
                 $table->unsignedBigInteger('post_consequence_id')->nullable();
                 $table->timestamps();

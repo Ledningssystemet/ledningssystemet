@@ -8,13 +8,13 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Support\Facades\Validator;
 
-class RiskProjectUser extends Model
+class ControlProjectTypeRiskTemplate extends Model
 {
     use HasFactory;
 
-    protected $table = 'risk_project_user';
+    protected $table = 'control_project_type_risk_template';
 
-    protected $fillable = ['risk_project_id', 'user_id'];
+    protected $fillable = ['control_id', 'project_type_risk_template_id'];
 
     protected function casts(): array
     {
@@ -27,8 +27,8 @@ class RiskProjectUser extends Model
     public static function validationRules(): array
     {
         return [
-            'risk_project_id' => ['required', 'integer', 'min:0', 'exists:risk_projects,id'],
-            'user_id' => ['required', 'integer', 'min:0', 'exists:users,id'],
+            'control_id' => ['required', 'integer', 'min:0', 'exists:controls,id'],
+            'project_type_risk_template_id' => ['required', 'integer', 'min:0', 'exists:project_type_risk_templates,id'],
         ];
     }
 
@@ -52,17 +52,17 @@ class RiskProjectUser extends Model
 
     public static function getPrettyName($plural = false): string
     {
-        return $plural ? 'Risk Project Users' : 'Risk Project User';
+        return $plural ? 'Control Risk Project Type Risk Templates' : 'Control Risk Project Type Risk Template';
     }
 
-    public function int_risk_project(): BelongsTo
+    public function int_control(): BelongsTo
     {
-        return $this->belongsTo(RiskProject::class, 'risk_project_id');
+        return $this->belongsTo(Control::class, 'control_id');
     }
 
-    public function int_user(): BelongsTo
+    public function int_project_type_risk_template(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'user_id');
+        return $this->belongsTo(ProjectTypeRiskTemplate::class, 'project_type_risk_template_id');
     }
 
     public function int_custom_property_object_as_object(): MorphMany

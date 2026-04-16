@@ -203,10 +203,10 @@ class MenuCategoryBuilder
                             'description' => __('The risks we need to manage and the ways we can reduce them'),
                         ],
                         [
-                            'key' => 'project-risks',
-                            'label' => __('Project risk register'),
+                            'key' => 'projects',
+                            'label' => __('Projects'),
                             'icon' => 'Briefcase',
-                            'description' => __('The risks we need to manage when we make changes to our processes and controls, or within our projects'),
+                            'description' => __('The projects we are running'),
                         ],
                         [
                             'key' => 'observations',

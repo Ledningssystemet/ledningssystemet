@@ -5,6 +5,7 @@ import {
     APP_MY_PROFILE_PATH,
     APP_PROCESS_EDITOR_PATH,
     APP_DOCUMENT_EDITOR_PATH,
+    APP_COMPLIANCE_EVALUATION_EVALUATE_PATH,
     buildMenuRoutes,
 } from '@/app/routes';
 import { resolveAppRouteElement } from '@/app/pageRegistry';
@@ -31,6 +32,7 @@ export default function AppShell() {
         { key: 'my-profile', path: APP_MY_PROFILE_PATH },
         { key: 'process-editor', path: APP_PROCESS_EDITOR_PATH },
         { key: 'document-editor', path: APP_DOCUMENT_EDITOR_PATH },
+        { key: 'compliance-evaluation-evaluate', path: APP_COMPLIANCE_EVALUATION_EVALUATE_PATH },
     ];
 
 

@@ -32,7 +32,7 @@ export function CrudPagination({ page, totalPages, total, perPage, onPageChange,
           value={String(perPage)}
           onValueChange={(v) => onPerPageChange(Number(v))}
         >
-          <SelectTrigger className="w-[90px] h-8 text-xs">
+          <SelectTrigger className="w-[180px] h-8 text-xs">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>

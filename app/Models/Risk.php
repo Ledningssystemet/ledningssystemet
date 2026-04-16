@@ -22,7 +22,7 @@ class Risk extends Model
 
     protected $table = 'risks';
 
-    protected $fillable = ['name', 'context_type', 'department_id', 'context_id', 'scenariodescription', 'consequencedescription', 'riskowner_id', 'replacing_id', 'replacedby_id', 'assessed_at', 'replaced_at', 'created_by', 'probability_id', 'consequence_id', 'assessmentcomment', 'risk_project_id', 'post_probability_id', 'post_consequence_id', 'tags', 'risk_controls'];
+    protected $fillable = ['name', 'context_type', 'department_id', 'context_id', 'scenariodescription', 'consequencedescription', 'riskowner_id', 'replacing_id', 'replacedby_id', 'assessed_at', 'replaced_at', 'created_by', 'probability_id', 'consequence_id', 'assessmentcomment', 'project_id', 'post_probability_id', 'post_consequence_id', 'tags', 'risk_controls'];
 
     protected $appends = ['tags', 'risk_controls', 'risk_level_id'];
 
@@ -105,7 +105,7 @@ class Risk extends Model
             'probability_id' => ['nullable', 'integer', 'min:0', 'exists:probability_levels,id'],
             'consequence_id' => ['nullable', 'integer', 'min:0', 'exists:consequence_levels,id'],
             'assessmentcomment' => ['nullable', 'string'],
-            'risk_project_id' => ['nullable', 'integer', 'min:0', 'exists:risk_projects,id'],
+            'project_id' => ['nullable', 'integer', 'min:0', 'exists:projects,id'],
             'post_probability_id' => ['nullable', 'integer', 'min:0', 'exists:probability_levels,id'],
             'post_consequence_id' => ['nullable', 'integer', 'min:0', 'exists:consequence_levels,id'],
             'tags' => ['sometimes', 'array'],
@@ -389,9 +389,9 @@ class Risk extends Model
         return $this->belongsTo(Risk::class, 'replacing_id');
     }
 
-    public function int_risk_project(): BelongsTo
+    public function int_project(): BelongsTo
     {
-        return $this->belongsTo(RiskProject::class, 'risk_project_id');
+        return $this->belongsTo(Project::class, 'project_id');
     }
 
     public function int_riskowner(): BelongsTo

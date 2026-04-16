@@ -13,7 +13,7 @@ class SitePolicy
      */
     public function viewAny(User $user): bool
     {
-        return false;
+        return $user->haveAnyAccessRights(['systemadministrator.edit']);
     }
 
     /**
@@ -21,7 +21,7 @@ class SitePolicy
      */
     public function view(User $user, Site $site = new Site): bool
     {
-        return false;
+        return $user->haveAnyAccessRights(['systemadministrator.edit']);
     }
 
     /**
@@ -29,7 +29,7 @@ class SitePolicy
      */
     public function create(User $user): bool
     {
-        return false;
+        return $user->haveAnyAccessRights(['systemadministrator.edit', 'superadmin.edit']);
     }
 
     /**
@@ -37,7 +37,7 @@ class SitePolicy
      */
     public function update(User $user, Site $site = new Site): bool
     {
-        return false;
+        return $user->haveAnyAccessRights(['systemadministrator.edit']);
     }
 
     /**
@@ -45,7 +45,7 @@ class SitePolicy
      */
     public function delete(User $user, Site $site = new Site): bool
     {
-        return false;
+        return $user->haveAnyAccessRights(['systemadministrator.edit']);
     }
 
     /**

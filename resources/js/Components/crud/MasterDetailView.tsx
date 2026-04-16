@@ -51,6 +51,7 @@ export function MasterDetailView({
   reorderEnabled = false,
   onReorder,
 }: MasterDetailViewProps) {
+  const normalizedItems = Array.isArray(items) ? items : [];
   const labelField = fields.find((f) => f.masterLabel) || fields[0];
   const descField = fields.find((f) => f.masterDescription);
   const detailFields = fields.filter((f) => !f.hidden);
@@ -67,10 +68,10 @@ export function MasterDetailView({
   }, []);
 
   const rowIds = useMemo(
-    () => items
+    () => normalizedItems
       .map((item) => item[primaryKey])
       .filter((id): id is string | number => id !== undefined && id !== null),
-    [items, primaryKey]
+    [normalizedItems, primaryKey]
   );
 
   const canReorder = reorderEnabled && Boolean(onReorder) && rowIds.length > 1;
@@ -135,7 +136,7 @@ export function MasterDetailView({
       <ResizablePanel defaultSize="30%" minSize="20%" maxSize="60%">
         <ScrollArea className="h-full bg-crud-master">
           <div className="divide-y">
-            {items.map((item) => {
+            {normalizedItems.map((item) => {
               const id = item[primaryKey];
               const isActive = activeItem?.[primaryKey] === id;
               const status = getItemStatus?.(item) ?? null;

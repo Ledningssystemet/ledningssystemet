@@ -17,5 +17,3 @@ composer.lock
 .idea
 /package-lock.json
 /doc
-/importdata
-/old_to_import

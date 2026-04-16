@@ -4,7 +4,6 @@ namespace App\Policies;
 
 use App\Models\SupplierRequirement;
 use App\Models\User;
-use Illuminate\Auth\Access\Response;
 
 class SupplierRequirementPolicy
 {
@@ -13,7 +12,11 @@ class SupplierRequirementPolicy
      */
     public function viewAny(User $user): bool
     {
-        return false;
+        if (config('ledningssystemet.disable_supplier', false)) {
+            return false;
+        }
+
+        return $user->haveAnyAccessRights(['managementtools.edit', 'superadmin.edit']);
     }
 
     /**
@@ -21,7 +24,11 @@ class SupplierRequirementPolicy
      */
     public function view(User $user, SupplierRequirement $supplierRequirement = new SupplierRequirement): bool
     {
-        return false;
+        if (config('ledningssystemet.disable_supplier', false)) {
+            return false;
+        }
+
+        return $user->haveAnyAccessRights(['managementtools.edit', 'superadmin.edit']);
     }
 
     /**
@@ -29,7 +36,11 @@ class SupplierRequirementPolicy
      */
     public function create(User $user): bool
     {
-        return false;
+        if (config('ledningssystemet.disable_supplier', false)) {
+            return false;
+        }
+
+        return $user->haveAnyAccessRights(['managementtools.edit', 'superadmin.edit']);
     }
 
     /**
@@ -37,7 +48,11 @@ class SupplierRequirementPolicy
      */
     public function update(User $user, SupplierRequirement $supplierRequirement = new SupplierRequirement): bool
     {
-        return false;
+        if (config('ledningssystemet.disable_supplier', false)) {
+            return false;
+        }
+
+        return $user->haveAnyAccessRights(['managementtools.edit', 'superadmin.edit']);
     }
 
     /**
@@ -45,7 +60,11 @@ class SupplierRequirementPolicy
      */
     public function delete(User $user, SupplierRequirement $supplierRequirement = new SupplierRequirement): bool
     {
-        return false;
+        if (config('ledningssystemet.disable_supplier', false)) {
+            return false;
+        }
+
+        return $user->haveAnyAccessRights(['managementtools.edit', 'superadmin.edit']);
     }
 
     /**

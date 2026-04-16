@@ -3,7 +3,7 @@
 namespace App\Mcp;
 
 use App\Models\Risk;
-use App\Models\RiskProject;
+use App\Models\Project;
 use PhpMcp\Server\Attributes\McpTool;
 
 class RiskTools
@@ -12,7 +12,7 @@ class RiskTools
      * List risks with optional search and filters.
      *
      * @param  string  $search  Optional search term to filter by name or scenario description.
-     * @param  int|null  $risk_project_id  Optional risk project ID to filter by.
+     * @param  int|null  $project_id  Optional risk project ID to filter by.
      * @param  int|null  $department_id  Optional department ID to filter by.
      * @param  int  $limit  Maximum number of results to return (default 50).
      * @return array List of risks with probability, consequence and linked risk project.
@@ -20,7 +20,7 @@ class RiskTools
     #[McpTool(name: 'list_risks')]
     public function listRisks(
         string $search = '',
-        ?int $risk_project_id = null,
+        ?int $project_id = null,
         ?int $department_id = null,
         int $limit = 50
     ): array {
@@ -28,7 +28,7 @@ class RiskTools
             'int_department:id,name',
             'int_probability:id,name,value',
             'int_consequence:id,name,value',
-            'int_risk_project:id,name',
+            'int_project:id,name',
             'int_riskowner:id,name',
         ])->whereNull('replacedby_id'); // Only show current (non-replaced) risks
 
@@ -40,8 +40,8 @@ class RiskTools
             });
         }
 
-        if ($risk_project_id !== null) {
-            $query->where('risk_project_id', $risk_project_id);
+        if ($project_id !== null) {
+            $query->where('project_id', $project_id);
         }
 
         if ($department_id !== null) {
@@ -54,7 +54,7 @@ class RiskTools
             'scenario_description'    => $r->scenariodescription,
             'consequence_description' => $r->consequencedescription,
             'department'              => $r->int_department?->name,
-            'risk_project'            => $r->int_risk_project?->name,
+            'project'            => $r->int_project?->name,
             'risk_owner'              => $r->int_riskowner?->name,
             'probability'             => $r->int_probability?->name,
             'consequence'             => $r->int_consequence?->name,
@@ -77,7 +77,7 @@ class RiskTools
             'int_consequence:id,name,value',
             'int_post_probability:id,name,value',
             'int_post_consequence:id,name,value',
-            'int_risk_project:id,name',
+            'int_project:id,name',
             'int_riskowner:id,name',
             'int_controls:id,name,description',
         ])->findOrFail($id);
@@ -89,7 +89,7 @@ class RiskTools
             'consequence_description' => $risk->consequencedescription,
             'assessment_comment'      => $risk->assessmentcomment,
             'department'              => $risk->int_department?->name,
-            'risk_project'            => $risk->int_risk_project?->name,
+            'project'                 => $risk->int_project?->name,
             'risk_owner'              => $risk->int_riskowner?->name,
             'probability'             => $risk->int_probability?->name,
             'probability_value'       => $risk->int_probability?->value,
@@ -107,15 +107,15 @@ class RiskTools
     }
 
     /**
-     * List all risk projects.
+     * List all projects.
      *
      * @param  string  $search  Optional search term to filter by name.
-     * @return array List of risk projects with id and name.
+     * @return array List of projects with id and name.
      */
-    #[McpTool(name: 'list_risk_projects')]
-    public function listRiskProjects(string $search = ''): array
+    #[McpTool(name: 'list_projects')]
+    public function listProjects(string $search = ''): array
     {
-        $query = RiskProject::select(['id', 'name', 'description']);
+        $query = Project::select(['id', 'name', 'description']);
 
         if ($search !== '') {
             $query->where('name', 'like', "%{$search}%");

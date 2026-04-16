@@ -2,11 +2,11 @@
 
 namespace App\Policies;
 
-use App\Models\RiskProjectUser;
+use App\Models\ProjectUser;
 use App\Models\User;
 use Illuminate\Auth\Access\Response;
 
-class RiskProjectUserPolicy
+class ProjectUserPolicy
 {
     /**
      * Determine whether the user can view any models.
@@ -19,7 +19,7 @@ class RiskProjectUserPolicy
     /**
      * Determine whether the user can view the model.
      */
-    public function view(User $user, RiskProjectUser $riskProjectUser = new RiskProjectUser): bool
+    public function view(User $user, ProjectUser $riskProjectUser = new ProjectUser): bool
     {
         return false;
     }
@@ -35,7 +35,7 @@ class RiskProjectUserPolicy
     /**
      * Determine whether the user can update the model.
      */
-    public function update(User $user, RiskProjectUser $riskProjectUser = new RiskProjectUser): bool
+    public function update(User $user, ProjectUser $riskProjectUser = new ProjectUser): bool
     {
         return false;
     }
@@ -43,7 +43,7 @@ class RiskProjectUserPolicy
     /**
      * Determine whether the user can delete the model.
      */
-    public function delete(User $user, RiskProjectUser $riskProjectUser = new RiskProjectUser): bool
+    public function delete(User $user, ProjectUser $riskProjectUser = new ProjectUser): bool
     {
         return false;
     }
@@ -51,7 +51,7 @@ class RiskProjectUserPolicy
     /**
      * Determine whether the user can restore the model.
      */
-    public function restore(User $user, RiskProjectUser $riskProjectUser = new RiskProjectUser): bool
+    public function restore(User $user, ProjectUser $riskProjectUser = new ProjectUser): bool
     {
         return false;
     }
@@ -59,7 +59,7 @@ class RiskProjectUserPolicy
     /**
      * Determine whether the user can permanently delete the model.
      */
-    public function forceDelete(User $user, RiskProjectUser $riskProjectUser = new RiskProjectUser): bool
+    public function forceDelete(User $user, ProjectUser $riskProjectUser = new ProjectUser): bool
     {
         return false;
     }

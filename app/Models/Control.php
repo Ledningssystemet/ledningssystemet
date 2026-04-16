@@ -195,9 +195,9 @@ class Control extends Model
         return $this->hasMany(ControlRequirement::class, 'control_id', 'id');
     }
 
-    public function int_control_risk_project_type_risk_template(): HasMany
+    public function int_control_project_type_risk_template(): HasMany
     {
-        return $this->hasMany(ControlRiskProjectTypeRiskTemplate::class, 'control_id', 'id');
+        return $this->hasMany(ControlProjectTypeRiskTemplate::class, 'control_id', 'id');
     }
 
     public function int_control_risks(): HasMany
@@ -210,9 +210,9 @@ class Control extends Model
         return $this->belongsToMany(Requirement::class, 'control_requirements', 'control_id', 'requirement_id');
     }
 
-    public function int_risk_project_type_risk_templates(): BelongsToMany
+    public function int_project_type_risk_templates(): BelongsToMany
     {
-        return $this->belongsToMany(RiskProjectTypeRiskTemplate::class, 'control_risk_project_type_risk_template', 'control_id', 'risk_project_type_risk_template_id')
+        return $this->belongsToMany(ProjectTypeRiskTemplate::class, 'control_project_type_risk_template', 'control_id', 'project_type_risk_template_id')
             ->withTimestamps();
     }
 

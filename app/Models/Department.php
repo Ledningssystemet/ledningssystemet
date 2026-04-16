@@ -134,9 +134,9 @@ class Department extends Model
         return $this->hasMany(Process::class, 'department_id', 'id');
     }
 
-    public function int_risk_projects(): HasMany
+    public function int_projects(): HasMany
     {
-        return $this->hasMany(RiskProject::class, 'department_id', 'id');
+        return $this->hasMany(Project::class, 'department_id', 'id');
     }
 
     public function int_risks(): HasMany

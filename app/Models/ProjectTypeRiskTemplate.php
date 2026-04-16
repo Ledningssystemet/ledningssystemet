@@ -10,13 +10,22 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Support\Facades\Validator;
 
-class RiskProjectTypeRiskTemplate extends Model
+class ProjectTypeRiskTemplate extends Model
 {
     use HasFactory;
 
-    protected $table = 'risk_project_type_risk_templates';
+    protected $table = 'project_type_risk_templates';
 
-    protected $fillable = ['name', 'risk_project_type_id', 'scenariodescription', 'consequencedescription', 'probability_id', 'consequence_id'];
+    protected $fillable = ['name', 'project_type_id', 'scenariodescription', 'consequencedescription', 'probability_id', 'consequence_id', 'controls'];
+
+    protected $appends = ['controls'];
+
+    /**
+     * @var array<int, int>
+     */
+    private array $pendingControlIds = [];
+
+    private bool $hasPendingControlUpdate = false;
 
     protected function casts(): array
     {
@@ -30,12 +39,19 @@ class RiskProjectTypeRiskTemplate extends Model
     {
         return [
             'name' => ['required', 'string', 'max:255'],
-            'risk_project_type_id' => ['nullable', 'integer', 'min:0', 'exists:risk_project_types,id'],
+            'project_type_id' => ['nullable', 'integer', 'min:0', 'exists:project_types,id'],
             'scenariodescription' => ['nullable', 'string'],
             'consequencedescription' => ['nullable', 'string'],
             'probability_id' => ['nullable', 'integer', 'min:0', 'exists:probability_levels,id'],
             'consequence_id' => ['nullable', 'integer', 'min:0', 'exists:consequence_levels,id'],
+            'controls' => ['sometimes', 'array'],
+            'controls.*' => ['integer', 'min:1', 'exists:controls,id'],
         ];
+    }
+
+    public static function crudAppends(): array
+    {
+        return ['controls'];
     }
 
     public static function crudSearch(): array
@@ -57,11 +73,54 @@ class RiskProjectTypeRiskTemplate extends Model
         static::saving(function (self $model): void {
             Validator::make($model->attributesToArray(), static::validationRules())->validate();
         });
+
+        static::saved(function (self $model): void {
+            $model->syncPendingControls();
+        });
     }
 
     public static function getPrettyName($plural = false): string
     {
         return $plural ? 'Risk Project Type Risk Templates' : 'Risk Project Type Risk Template';
+    }
+
+    /**
+     * @return array<int, int>
+     */
+    public function getControlsAttribute(): array
+    {
+        return $this->int_controls()->pluck('controls.id')->map(static fn (mixed $id): int => (int) $id)->all();
+    }
+
+    /**
+     * @param array<int, int|string>|int|string|null $value
+     */
+    public function setControlsAttribute(array|int|string|null $value): void
+    {
+        $rawControlIds = is_array($value)
+            ? $value
+            : ($value === null || $value === '' ? [] : [$value]);
+
+        $this->pendingControlIds = collect($rawControlIds)
+            ->map(static fn (mixed $id): int => (int) $id)
+            ->filter(static fn (int $id): bool => $id > 0)
+            ->unique()
+            ->values()
+            ->all();
+
+        $this->hasPendingControlUpdate = true;
+    }
+
+    private function syncPendingControls(): void
+    {
+        if (! $this->hasPendingControlUpdate) {
+            return;
+        }
+
+        $this->int_controls()->sync($this->pendingControlIds);
+
+        $this->pendingControlIds = [];
+        $this->hasPendingControlUpdate = false;
     }
 
     public function int_consequence(): BelongsTo
@@ -74,19 +133,19 @@ class RiskProjectTypeRiskTemplate extends Model
         return $this->belongsTo(ProbabilityLevel::class, 'probability_id');
     }
 
-    public function int_risk_project_type(): BelongsTo
+    public function int_project_type(): BelongsTo
     {
-        return $this->belongsTo(RiskProjectType::class, 'risk_project_type_id');
+        return $this->belongsTo(ProjectType::class, 'project_type_id');
     }
 
-    public function int_control_risk_project_type_risk_template(): HasMany
+    public function int_control_project_type_risk_template(): HasMany
     {
-        return $this->hasMany(ControlRiskProjectTypeRiskTemplate::class, 'risk_project_type_risk_template_id', 'id');
+        return $this->hasMany(ControlProjectTypeRiskTemplate::class, 'project_type_risk_template_id', 'id');
     }
 
     public function int_controls(): BelongsToMany
     {
-        return $this->belongsToMany(Control::class, 'control_risk_project_type_risk_template', 'risk_project_type_risk_template_id', 'control_id')
+        return $this->belongsToMany(Control::class, 'control_project_type_risk_template', 'project_type_risk_template_id', 'control_id')
             ->withTimestamps();
     }
 

@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\AccessGroupOptionsController;
 use App\Http\Controllers\Api\AssessmentSettingsRiskMappingController;
+use App\Http\Controllers\Api\ComplianceEvaluationController;
 use App\Http\Controllers\Api\EmployeeProfileController;
 use App\Http\Controllers\Api\UserPasswordResetController;
 use App\Http\Controllers\Api\UserReassignController;
@@ -19,6 +20,7 @@ use App\Http\Controllers\Api\MenuBadgeController;
 use App\Http\Controllers\Api\ObjectiveArchiveController;
 use App\Http\Controllers\Api\ProcessPublishController;
 use App\Http\Controllers\Api\SessionStatusController;
+use App\Http\Controllers\Api\SupplierCrudSupportController;
 use App\Http\Controllers\Api\TokenController;
 use Illuminate\Support\Facades\Route;
 
@@ -83,8 +85,27 @@ Route::middleware('auth:sanctum')->group(function (): void {
     Route::post('/agreements/{agreement}/archive', AgreementArchiveController::class)->name('api.agreements.archive');
     Route::post('/objectives/{objective}/archive', ObjectiveArchiveController::class)->name('api.objectives.archive');
 
+    Route::get('/suppliers/category-options', [SupplierCrudSupportController::class, 'categoryOptions'])
+        ->name('api.suppliers.category-options');
+    Route::get('/suppliers/{supplier}/categories', [SupplierCrudSupportController::class, 'categories'])
+        ->name('api.suppliers.categories.index');
+    Route::match(['put', 'patch'], '/suppliers/{supplier}/categories/{category}', [SupplierCrudSupportController::class, 'updateCategory'])
+        ->name('api.suppliers.categories.update');
+    Route::get('/suppliers/{supplier}/evaluation', [SupplierCrudSupportController::class, 'evaluation'])
+        ->name('api.suppliers.evaluation.index');
+    Route::match(['put', 'patch'], '/suppliers/{supplier}/evaluation/{requirement}', [SupplierCrudSupportController::class, 'updateEvaluation'])
+        ->name('api.suppliers.evaluation.update');
+
     // Process publishing with BPMN validation
     Route::post('/processes/{process}/publish', [ProcessPublishController::class, 'store'])->name('api.processes.publish');
+
+    // Compliance evaluations
+    Route::get('/compliance-evaluations/{evaluation}', [ComplianceEvaluationController::class, 'show'])->name('api.compliance-evaluations.show');
+    Route::get('/compliance-evaluations/{evaluation}/requirement-sources', [ComplianceEvaluationController::class, 'requirementSources'])->name('api.compliance-evaluations.requirement-sources');
+    Route::post('/compliance-evaluations/{evaluation}/generate', [ComplianceEvaluationController::class, 'generateChecklist'])->name('api.compliance-evaluations.generate');
+    Route::post('/compliance-evaluations/{evaluation}/finish', [ComplianceEvaluationController::class, 'finish'])->name('api.compliance-evaluations.finish');
+    Route::post('/compliance-evaluations/{evaluation}/reopen', [ComplianceEvaluationController::class, 'reopen'])->name('api.compliance-evaluations.reopen');
+    Route::post('/compliance-evaluations/{evaluation}/archive', [ComplianceEvaluationController::class, 'archive'])->name('api.compliance-evaluations.archive');
 
     // Document version actions
     Route::post('/document-versions/{versionId}/finish', [DocumentVersionActionController::class, 'finish'])->name('api.document-versions.finish');

@@ -63,9 +63,9 @@ class ProbabilityLevel extends Model
         return $this->hasMany(RiskLevelMapping::class, 'probability_level_id', 'id');
     }
 
-    public function int_risk_project_type_risk_templates(): HasMany
+    public function int_project_type_risk_templates(): HasMany
     {
-        return $this->hasMany(RiskProjectTypeRiskTemplate::class, 'probability_id', 'id');
+        return $this->hasMany(ProjectTypeRiskTemplate::class, 'probability_id', 'id');
     }
 
     public function int_risks_by_post_probability(): HasMany

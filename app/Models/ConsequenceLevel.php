@@ -63,9 +63,9 @@ class ConsequenceLevel extends Model
         return $this->hasMany(RiskLevelMapping::class, 'consequence_level_id', 'id');
     }
 
-    public function int_risk_project_type_risk_templates(): HasMany
+    public function int_project_type_risk_templates(): HasMany
     {
-        return $this->hasMany(RiskProjectTypeRiskTemplate::class, 'consequence_id', 'id');
+        return $this->hasMany(ProjectTypeRiskTemplate::class, 'consequence_id', 'id');
     }
 
     public function int_risks_by_consequence(): HasMany

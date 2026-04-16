@@ -56,8 +56,9 @@ export function TableView({
   reorderEnabled = false,
   onReorder,
 }: TableViewProps) {
+  const normalizedItems = Array.isArray(items) ? items : [];
   const visibleFields = fields.filter((f) => !f.hidden && !f.hiddenInTable);
-  const allSelected = selectable && items.length > 0 && items.every((i) => selectedItems.has(i[primaryKey]));
+  const allSelected = selectable && normalizedItems.length > 0 && normalizedItems.every((i) => selectedItems.has(i[primaryKey]));
   const optionsMap = useAllSelectOptions(fields);
   const showActions = canEdit || canDelete || rowActions.length > 0;
   const [draggedId, setDraggedId] = useState<string | number | null>(null);
@@ -72,10 +73,10 @@ export function TableView({
   }, []);
 
   const rowIds = useMemo(
-    () => items
+    () => normalizedItems
       .map((item) => item[primaryKey])
       .filter((id): id is string | number => id !== undefined && id !== null),
-    [items, primaryKey]
+    [normalizedItems, primaryKey]
   );
 
   const canReorder = reorderEnabled && Boolean(onReorder) && rowIds.length > 1;
@@ -153,7 +154,7 @@ export function TableView({
             </tr>
           </thead>
           <tbody>
-            {items.map((item) => {
+            {normalizedItems.map((item) => {
               const id = item[primaryKey];
               const isSelected = selectedItems.has(id);
               const status = getItemStatus?.(item) ?? null;
