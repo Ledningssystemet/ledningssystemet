@@ -72,20 +72,22 @@ const buildQueryString = (
     params.set("search", state.search);
   }
 
-  const allFilters = {
-    ...(config.fixedFilters || {}),
-    ...state.filters,
-  };
+  if (config.serializeFilters !== false) {
+    const allFilters = {
+      ...(config.fixedFilters || {}),
+      ...state.filters,
+    };
 
-  Object.entries(allFilters).forEach(([key, value]) => {
-    if (value !== undefined && value !== "" && value !== null) {
-      if (Array.isArray(value) && value.length > 0) {
-        params.set(`filter[${key}]`, value.join(","));
-      } else if (!Array.isArray(value)) {
-        params.set(`filter[${key}]`, String(value));
+    Object.entries(allFilters).forEach(([key, value]) => {
+      if (value !== undefined && value !== "" && value !== null) {
+        if (Array.isArray(value) && value.length > 0) {
+          params.set(`filter[${key}]`, value.join(","));
+        } else if (!Array.isArray(value)) {
+          params.set(`filter[${key}]`, String(value));
+        }
       }
-    }
-  });
+    });
+  }
 
   if (config.customQueryParams) {
     const customParams = config.customQueryParams(state.filters) || {};

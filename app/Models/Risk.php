@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -9,8 +10,11 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Database\Eloquent\Casts\Attribute;
+use Spatie\QueryBuilder\QueryBuilder;
+use Throwable;
 
 class Risk extends Model
 {
@@ -18,26 +22,59 @@ class Risk extends Model
 
     protected $table = 'risks';
 
-    protected $fillable = ['name', 'context_type', 'department_id', 'context_id', 'scenariodescription', 'consequencedescription', 'riskowner_id', 'replacing_id', 'replacedby_id', 'assessed_at', 'replaced_at', 'created_by', 'probability_id', 'consequence_id', 'assessmentcomment', 'risk_project_id', 'post_probability_id', 'post_consequence_id'];
+    protected $fillable = ['name', 'context_type', 'department_id', 'context_id', 'scenariodescription', 'consequencedescription', 'riskowner_id', 'replacing_id', 'replacedby_id', 'assessed_at', 'replaced_at', 'created_by', 'probability_id', 'consequence_id', 'assessmentcomment', 'risk_project_id', 'post_probability_id', 'post_consequence_id', 'tags', 'risk_controls'];
+
+    protected $appends = ['tags', 'risk_controls', 'risk_level_id'];
+
+    /**
+     * @var array<int, string>
+     */
+    private array $pendingTags = [];
+
+    private bool $hasPendingTagsUpdate = false;
+
+    /**
+     * @var array<int, int>
+     */
+    private array $pendingControlIds = [];
+
+    private bool $hasPendingControlUpdate = false;
 
 
     protected function name(): Attribute
     {
-        // Get context object if it exists
-        $contextName = $this->int_context ? $this->int_context->name : null;
+        return Attribute::make(
+            get: function ($value) {
+                $contextName = $this->resolveContextNameSafely();
+                if ($contextName === null) {
+                    return $value;
+                }
 
-        // Return $this->name but replace {name} with name of the context object.
-        // If context object does not exist, return $this->name as is.
+                return str_replace('{name}', $contextName, (string) $value);
+            },
+        );
+    }
 
-        if(null == $contextName) {
-            return Attribute::make(
-                get: fn ($value) => $value,
-            );
+    private function resolveContextNameSafely(): ?string
+    {
+        if ($this->context_type === null || $this->context_id === null) {
+            return null;
         }
 
-        return Attribute::make(
-            get: fn ($value) => str_replace('{name}', $contextName, $value),
-        );
+        try {
+            $context = $this->int_context;
+        } catch (Throwable) {
+            // Legacy datasets may contain removed/renamed morph classes.
+            return null;
+        }
+
+        if (! is_object($context) || ! isset($context->name)) {
+            return null;
+        }
+
+        $name = trim((string) $context->name);
+
+        return $name === '' ? null : $name;
     }
 
     protected function casts(): array
@@ -71,6 +108,10 @@ class Risk extends Model
             'risk_project_id' => ['nullable', 'integer', 'min:0', 'exists:risk_projects,id'],
             'post_probability_id' => ['nullable', 'integer', 'min:0', 'exists:probability_levels,id'],
             'post_consequence_id' => ['nullable', 'integer', 'min:0', 'exists:consequence_levels,id'],
+            'tags' => ['sometimes', 'array'],
+            'tags.*' => ['nullable', 'string', 'max:25'],
+            'risk_controls' => ['sometimes', 'array'],
+            'risk_controls.*' => ['integer', 'min:1', 'exists:controls,id'],
         ];
     }
 
@@ -90,16 +131,222 @@ class Risk extends Model
         ];
     }
 
+    public static function crudAppends(): array
+    {
+        return ['tags', 'risk_controls', 'risk_level_id'];
+    }
+
     protected static function booted(): void
     {
         static::saving(function (self $model): void {
             Validator::make($model->attributesToArray(), static::validationRules())->validate();
         });
+
+        static::saved(function (self $model): void {
+            $model->syncPendingTags();
+            $model->syncPendingControls();
+        });
+    }
+
+    public static function applyCrudIndexFilters(Builder|QueryBuilder $query, Request $request): void
+    {
+        // Default behavior from legacy page: show draft risks, hide approved unless explicitly requested.
+        $showDraft = $request->boolean('showdraft', true);
+        $showApproved = $request->boolean('showapproved', false);
+
+        if ($showDraft && ! $showApproved) {
+            $query->whereNull('assessed_at');
+        } elseif ($showApproved && ! $showDraft) {
+            $query->whereNotNull('assessed_at');
+        }
+
+        if ($request->boolean('showmyonly') && $request->user()) {
+            $query->where('riskowner_id', $request->user()->id);
+        }
+
+        $tagId = $request->integer('tag_id');
+        if ($tagId > 0) {
+            $query->whereHas('int_object_tags_as_object_tags', function (Builder $tagQuery) use ($tagId): void {
+                $tagQuery->where('tag_id', $tagId);
+            });
+        }
+
+        if ($request->has('department_id')) {
+            $departmentId = $request->integer('department_id');
+            if ($departmentId > 0) {
+                $query->where('department_id', $departmentId);
+            } elseif ($departmentId === 0 && $request->user()) {
+                $departmentIds = $request->user()->int_departments()->pluck('departments.id')->all();
+                if ($departmentIds !== []) {
+                    $query->whereIn('department_id', $departmentIds);
+                }
+            }
+        }
+
+        $contextType = trim((string) $request->query('context_type', ''));
+        if ($contextType !== '' && $contextType !== '0') {
+            $query->where('context_type', $contextType);
+        }
+
+        $probabilityId = $request->integer('probability_id');
+        if ($probabilityId > 0) {
+            $query->where('probability_id', $probabilityId);
+        }
+
+        $consequenceId = $request->integer('consequence_id');
+        if ($consequenceId > 0) {
+            $query->where('consequence_id', $consequenceId);
+        }
+
+        $riskOwnerId = $request->integer('riskowner_id');
+        if ($riskOwnerId > 0) {
+            $query->where('riskowner_id', $riskOwnerId);
+        }
+
+        $riskLevelId = $request->integer('risk_level_id');
+        if ($riskLevelId > 0) {
+            $query->whereExists(function ($mappingQuery) use ($riskLevelId): void {
+                $mappingQuery
+                    ->selectRaw('1')
+                    ->from('risk_level_mappings as rlm')
+                    ->whereColumn('rlm.probability_level_id', 'risks.probability_id')
+                    ->whereColumn('rlm.consequence_level_id', 'risks.consequence_id')
+                    ->where('rlm.risk_level_id', $riskLevelId);
+            });
+        }
     }
 
     public static function getPrettyName($plural = false): string
     {
         return $plural ? 'Risks' : 'Risk';
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    public function getTagsAttribute(): array
+    {
+        return $this->int_object_tags_as_object_tags()
+            ->with('int_tag:id,name')
+            ->get()
+            ->map(static fn (ObjectTag $objectTag): string => (string) ($objectTag->int_tag?->name ?? ''))
+            ->filter(static fn (string $name): bool => $name !== '')
+            ->unique()
+            ->values()
+            ->all();
+    }
+
+    /**
+     * @param array<int, string>|string|null $value
+     */
+    public function setTagsAttribute(array|string|null $value): void
+    {
+        $rawTags = is_array($value)
+            ? $value
+            : ($value === null || trim((string) $value) === '' ? [] : [(string) $value]);
+
+        $this->pendingTags = collect($rawTags)
+            ->map(static fn (mixed $tag): string => trim((string) $tag))
+            ->filter(static fn (string $tag): bool => $tag !== '')
+            ->unique()
+            ->values()
+            ->all();
+
+        $this->hasPendingTagsUpdate = true;
+    }
+
+    /**
+     * @return array<int, int>
+     */
+    public function getRiskControlsAttribute(): array
+    {
+        return $this->int_controls()->pluck('controls.id')->map(static fn (mixed $id): int => (int) $id)->all();
+    }
+
+    /**
+     * @param array<int, int|string>|int|string|null $value
+     */
+    public function setRiskControlsAttribute(array|int|string|null $value): void
+    {
+        $rawControlIds = is_array($value)
+            ? $value
+            : ($value === null || $value === '' ? [] : [$value]);
+
+        $this->pendingControlIds = collect($rawControlIds)
+            ->map(static fn (mixed $id): int => (int) $id)
+            ->filter(static fn (int $id): bool => $id > 0)
+            ->unique()
+            ->values()
+            ->all();
+
+        $this->hasPendingControlUpdate = true;
+    }
+
+    public function getRiskLevelIdAttribute(): ?int
+    {
+        $probabilityId = $this->probability_id;
+        $consequenceId = $this->consequence_id;
+
+        // Generic CRUD may request only appended attributes via $select.
+        if (($probabilityId === null || $consequenceId === null) && $this->exists) {
+            $selected = static::query()->select(['probability_id', 'consequence_id'])->find($this->getKey());
+            $probabilityId = $selected?->probability_id;
+            $consequenceId = $selected?->consequence_id;
+        }
+
+        if ($probabilityId === null || $consequenceId === null) {
+            return null;
+        }
+
+        $riskLevelId = RiskLevelMapping::query()
+            ->where('probability_level_id', $probabilityId)
+            ->where('consequence_level_id', $consequenceId)
+            ->value('risk_level_id');
+
+        return $riskLevelId === null ? null : (int) $riskLevelId;
+    }
+
+    private function syncPendingTags(): void
+    {
+        if (! $this->hasPendingTagsUpdate) {
+            return;
+        }
+
+        if ($this->pendingTags === []) {
+            $this->int_object_tags_as_object_tags()->delete();
+
+            $this->pendingTags = [];
+            $this->hasPendingTagsUpdate = false;
+
+            return;
+        }
+
+        $tagIds = collect($this->pendingTags)
+            ->map(static fn (string $tagName): int => (int) Tag::query()->firstOrCreate(['name' => $tagName])->id)
+            ->all();
+
+        $this->int_object_tags_as_object_tags()->delete();
+
+        foreach ($tagIds as $tagId) {
+            $this->int_object_tags_as_object_tags()->create([
+                'tag_id' => $tagId,
+            ]);
+        }
+
+        $this->pendingTags = [];
+        $this->hasPendingTagsUpdate = false;
+    }
+
+    private function syncPendingControls(): void
+    {
+        if (! $this->hasPendingControlUpdate) {
+            return;
+        }
+
+        $this->int_controls()->sync($this->pendingControlIds);
+
+        $this->pendingControlIds = [];
+        $this->hasPendingControlUpdate = false;
     }
 
     public function int_consequence(): BelongsTo

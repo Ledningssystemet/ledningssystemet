@@ -7,11 +7,14 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Illuminate\Http\Request;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
 use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable
@@ -20,9 +23,35 @@ class User extends Authenticatable
 
     protected $table = 'users';
 
-    protected $fillable = ['name', 'email', 'password', 'enabled', 'title', 'manager_user_id', 'site_id'];
+    protected $fillable = [
+        'name',
+        'email',
+        'password',
+        'enabled',
+        'title',
+        'manager_user_id',
+        'site_id',
+        'departments',
+        'roles',
+        'accessgroups',
+    ];
 
     protected $hidden = ['password', 'remember_token'];
+
+    /**
+     * @var array<int, int>|null
+     */
+    private ?array $pendingDepartmentIds = null;
+
+    /**
+     * @var array<int, int>|null
+     */
+    private ?array $pendingRoleIds = null;
+
+    /**
+     * @var array<int, int>|null
+     */
+    private ?array $pendingAccessGroupIds = null;
 
 
     protected function casts(): array
@@ -41,12 +70,18 @@ class User extends Authenticatable
     {
         return [
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'string', 'email:rfc', 'max:255'],
             'password' => ['nullable', 'string', 'min:8', 'max:255'],
             'enabled' => ['required', 'boolean'],
             'title' => ['nullable', 'string', 'max:255'],
             'manager_user_id' => ['nullable', 'integer', 'min:0', 'exists:users,id'],
             'site_id' => ['nullable', 'integer', 'min:0', 'exists:sites,id'],
+            'departments' => ['nullable', 'array'],
+            'departments.*' => ['integer', 'min:1', 'exists:departments,id'],
+            'roles' => ['nullable', 'array'],
+            'roles.*' => ['integer', 'min:1', 'exists:roles,id'],
+            'accessgroups' => ['nullable', 'array'],
+            'accessgroups.*' => ['integer', 'min:1', 'exists:access_groups,id'],
         ];
     }
 
@@ -56,21 +91,71 @@ class User extends Authenticatable
             'direct' => [
                 'name',
                 'email',
-                'password',
-                'remember_token',
                 'external_id',
                 'title',
             ],
             'relations' => [
-                // 'relation.path' => ['name'],
+                'int_departments' => ['name'],
+                'int_manager_user' => ['name'],
             ],
         ];
     }
 
+    public static function crudAppends(): array
+    {
+        return [
+            'departments',
+            'roles',
+            'accessgroups',
+            'direct_reports',
+            'activitiescount',
+            'assetscount',
+            'controlscount',
+            'control_actionscount',
+            'findingscount',
+            'incidentscount',
+            'information_typescount',
+            'objectivescount',
+            'processescount',
+            'process_performance_metricscount',
+            'riskscount',
+            'supplierscount',
+            'can_delete',
+        ];
+    }
+
+    public static function applyCrudIndexFilters(mixed $query, Request $request): void
+    {
+        $query->withCount([
+            'int_activities as activitiescount',
+            'int_assets as assetscount',
+            'int_controls as controlscount',
+            'int_control_actions as control_actionscount',
+            'int_findings as findingscount',
+            'int_incidents as incidentscount',
+            'int_information_types as information_typescount',
+            'int_objectives as objectivescount',
+            'int_processes as processescount',
+            'int_process_performance_metrics as process_performance_metricscount',
+            'int_risks_by_riskowner as riskscount',
+            'int_suppliers as supplierscount',
+        ]);
+    }
+
     protected static function booted(): void
     {
+        static::creating(function (self $model): void {
+            if (! filled($model->password)) {
+                $model->password = Hash::make(Str::random(64));
+            }
+        });
+
         static::saving(function (self $model): void {
             Validator::make($model->attributesToArray(), static::validationRules())->validate();
+        });
+
+        static::saved(function (self $model): void {
+            $model->syncRelationsIfNeeded();
         });
     }
 
@@ -397,6 +482,167 @@ class User extends Authenticatable
             ->withTimestamps();
     }
 
+    /**
+     * @return array<int, int>
+     */
+    public function getDepartmentsAttribute(): array
+    {
+        $departments = $this->relationLoaded('int_departments')
+            ? $this->int_departments
+            : $this->int_departments()->select('departments.id')->get();
+
+        return $departments
+            ->pluck('id')
+            ->map(static fn (mixed $id): int => (int) $id)
+            ->values()
+            ->all();
+    }
+
+    public function setDepartmentsAttribute(mixed $value): void
+    {
+        $this->pendingDepartmentIds = $this->normalizeRelatedIds($value);
+    }
+
+    /**
+     * @return array<int, int>
+     */
+    public function getRolesAttribute(): array
+    {
+        $roles = $this->relationLoaded('int_roles')
+            ? $this->int_roles
+            : $this->int_roles()->select('roles.id')->get();
+
+        return $roles
+            ->pluck('id')
+            ->map(static fn (mixed $id): int => (int) $id)
+            ->values()
+            ->all();
+    }
+
+    public function setRolesAttribute(mixed $value): void
+    {
+        $this->pendingRoleIds = $this->normalizeRelatedIds($value);
+    }
+
+    /**
+     * @return array<int, int>
+     */
+    public function getAccessgroupsAttribute(): array
+    {
+        $accessGroups = $this->relationLoaded('int_access_groups')
+            ? $this->int_access_groups
+            : $this->int_access_groups()->select('access_groups.id')->get();
+
+        return $accessGroups
+            ->pluck('id')
+            ->map(static fn (mixed $id): int => (int) $id)
+            ->values()
+            ->all();
+    }
+
+    public function setAccessgroupsAttribute(mixed $value): void
+    {
+        $this->pendingAccessGroupIds = $this->normalizeRelatedIds($value);
+    }
+
+    /**
+     * @return array<int, array{id: int, name: string}>
+     */
+    public function getDirectReportsAttribute(): array
+    {
+        $directReports = $this->relationLoaded('int_users')
+            ? $this->int_users
+            : $this->int_users()->select('users.id', 'users.name')->orderBy('name')->get();
+
+        return $directReports
+            ->map(static fn (self $user): array => [
+                'id' => (int) $user->id,
+                'name' => (string) $user->name,
+            ])
+            ->values()
+            ->all();
+    }
+
+    public function getActivitiescountAttribute(): int
+    {
+        return $this->resolveCountAttribute('activitiescount', 'int_activities');
+    }
+
+    public function getAssetscountAttribute(): int
+    {
+        return $this->resolveCountAttribute('assetscount', 'int_assets');
+    }
+
+    public function getControlscountAttribute(): int
+    {
+        return $this->resolveCountAttribute('controlscount', 'int_controls');
+    }
+
+    public function getControlActionscountAttribute(): int
+    {
+        return $this->resolveCountAttribute('control_actionscount', 'int_control_actions');
+    }
+
+    public function getFindingscountAttribute(): int
+    {
+        return $this->resolveCountAttribute('findingscount', 'int_findings');
+    }
+
+    public function getIncidentscountAttribute(): int
+    {
+        return $this->resolveCountAttribute('incidentscount', 'int_incidents');
+    }
+
+    public function getInformationTypescountAttribute(): int
+    {
+        return $this->resolveCountAttribute('information_typescount', 'int_information_types');
+    }
+
+    public function getObjectivescountAttribute(): int
+    {
+        return $this->resolveCountAttribute('objectivescount', 'int_objectives');
+    }
+
+    public function getProcessescountAttribute(): int
+    {
+        return $this->resolveCountAttribute('processescount', 'int_processes');
+    }
+
+    public function getProcessPerformanceMetricscountAttribute(): int
+    {
+        return $this->resolveCountAttribute('process_performance_metricscount', 'int_process_performance_metrics');
+    }
+
+    public function getRiskscountAttribute(): int
+    {
+        return $this->resolveCountAttribute('riskscount', 'int_risks_by_riskowner');
+    }
+
+    public function getSupplierscountAttribute(): int
+    {
+        return $this->resolveCountAttribute('supplierscount', 'int_suppliers');
+    }
+
+    public function getCanDeleteAttribute(): bool
+    {
+        if (filled($this->external_id)) {
+            return false;
+        }
+
+        return $this->activitiescount === 0
+            && $this->assetscount === 0
+            && $this->controlscount === 0
+            && $this->control_actionscount === 0
+            && $this->findingscount === 0
+            && $this->incidentscount === 0
+            && $this->information_typescount === 0
+            && $this->objectivescount === 0
+            && $this->processescount === 0
+            && $this->process_performance_metricscount === 0
+            && $this->riskscount === 0
+            && $this->supplierscount === 0;
+    }
+
     public function int_custom_property_object_as_object(): MorphMany
     {
         return $this->morphMany(CustomPropertyObject::class, 'object', 'object_type', 'object_id');
@@ -445,5 +691,54 @@ class User extends Authenticatable
     public function int_vector_embeddings_as_embeddable(): MorphMany
     {
         return $this->morphMany(VectorEmbedding::class, 'embeddable', 'embeddable_type', 'embeddable_id');
+    }
+
+    /**
+     * @return array<int, int>|null
+     */
+    private function normalizeRelatedIds(mixed $value): ?array
+    {
+        if ($value === null || $value === '') {
+            return [];
+        }
+
+        if (! is_array($value)) {
+            return null;
+        }
+
+        return collect($value)
+            ->filter(static fn (mixed $id): bool => $id !== null && $id !== '')
+            ->map(static fn (mixed $id): int => (int) $id)
+            ->filter(static fn (int $id): bool => $id > 0)
+            ->unique()
+            ->values()
+            ->all();
+    }
+
+    private function resolveCountAttribute(string $attribute, string $relationMethod): int
+    {
+        if (array_key_exists($attribute, $this->attributes)) {
+            return (int) $this->attributes[$attribute];
+        }
+
+        return $this->{$relationMethod}()->count();
+    }
+
+    private function syncRelationsIfNeeded(): void
+    {
+        if ($this->pendingDepartmentIds !== null) {
+            $this->int_departments()->sync($this->pendingDepartmentIds);
+            $this->pendingDepartmentIds = null;
+        }
+
+        if ($this->pendingRoleIds !== null) {
+            $this->int_roles()->sync($this->pendingRoleIds);
+            $this->pendingRoleIds = null;
+        }
+
+        if ($this->pendingAccessGroupIds !== null) {
+            $this->int_access_groups()->sync($this->pendingAccessGroupIds);
+            $this->pendingAccessGroupIds = null;
+        }
     }
 }

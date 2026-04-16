@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\GenericCrudIndexRequest;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
+use Illuminate\Pagination\AbstractPaginator;
+use Illuminate\Support\Collection;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -58,6 +60,7 @@ class GenericCrudController extends Controller
         }
 
         $selectedColumns = $this->parseSelectedColumns($request, $metadata['selectable']);
+        $selectedAppends = $this->parseSelectedAppends($request, $metadata['appendable']);
         if ($selectedColumns !== []) {
             $selectedColumns = $this->ensurePrimaryKeySelected($modelClass, $selectedColumns);
             $query->select($selectedColumns);
@@ -81,12 +84,16 @@ class GenericCrudController extends Controller
             $perPage = $request->integer('per_page', $defaultPerPage);
             $perPage = max(1, min($maxPerPage, $perPage));
 
-            return response()->json(
-                $query->paginate($perPage)->appends($request->query())
-            );
+            $result = $query->paginate($perPage)->appends($request->query());
+            $this->appendSelectedAttributes($result, $selectedAppends);
+
+            return response()->json($result);
         }
 
-        return response()->json($query->get());
+        $result = $query->get();
+        $this->appendSelectedAttributes($result, $selectedAppends);
+
+        return response()->json($result);
     }
 
     public function store(Request $request, string $resource): JsonResponse
@@ -123,6 +130,7 @@ class GenericCrudController extends Controller
 
         $metadata = $this->metadataFor($modelClass);
         $selectedColumns = $this->parseSelectedColumns($request, $metadata['selectable']);
+        $selectedAppends = $this->parseSelectedAppends($request, $metadata['appendable']);
         ['with' => $with, 'withCount' => $withCount] = $this->parseExtends($request, $modelClass);
 
         if ($selectedColumns !== []) {
@@ -146,6 +154,8 @@ class GenericCrudController extends Controller
 
             $model = $modelQuery->findOrFail($id);
         }
+
+        $this->appendSelectedAttributes($model, $selectedAppends);
 
         return response()->json($model);
     }
@@ -236,10 +246,32 @@ class GenericCrudController extends Controller
         return $this->metadataCache[$modelClass] = [
             'types' => $columnTypes,
             'selectable' => $selectable,
+            'appendable' => $this->resolveCrudAppends($model),
             'filterable' => $filterable,
             'searchable' => $crudSearch['direct'],
             'searchable_relations' => $crudSearch['relations'],
         ];
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    private function resolveCrudAppends(Model $model): array
+    {
+        $modelClass = $model::class;
+        if (! method_exists($modelClass, 'crudAppends')) {
+            return [];
+        }
+
+        $configuredAppends = $modelClass::crudAppends();
+        if (! is_array($configuredAppends)) {
+            return [];
+        }
+
+        return array_values(array_unique(array_filter(
+            $configuredAppends,
+            static fn (mixed $append): bool => is_string($append) && trim($append) !== ''
+        )));
     }
 
     /**
@@ -478,6 +510,60 @@ class GenericCrudController extends Controller
         $columns = array_values(array_filter(array_map('trim', explode(',', $raw))));
 
         return array_values(array_unique(array_intersect($columns, $selectableColumns)));
+    }
+
+    /**
+     * @param array<int, string> $appendableAttributes
+     * @return array<int, string>
+     */
+    private function parseSelectedAppends(Request $request, array $appendableAttributes): array
+    {
+        $raw = $request->query('$select', $request->query('select', ''));
+        if (! is_string($raw) || trim($raw) === '') {
+            return [];
+        }
+
+        $columns = array_values(array_filter(array_map('trim', explode(',', $raw))));
+
+        return array_values(array_unique(array_intersect($columns, $appendableAttributes)));
+    }
+
+    /**
+     * @param array<int, string> $selectedAppends
+     */
+    private function appendSelectedAttributes(mixed $result, array $selectedAppends): void
+    {
+        if ($selectedAppends === []) {
+            return;
+        }
+
+        if ($result instanceof Model) {
+            $result->append($selectedAppends);
+
+            return;
+        }
+
+        if ($result instanceof AbstractPaginator) {
+            $result->setCollection(
+                $result->getCollection()->map(function (mixed $item) use ($selectedAppends): mixed {
+                    if ($item instanceof Model) {
+                        $item->append($selectedAppends);
+                    }
+
+                    return $item;
+                })
+            );
+
+            return;
+        }
+
+        if ($result instanceof Collection) {
+            $result->each(function (mixed $item) use ($selectedAppends): void {
+                if ($item instanceof Model) {
+                    $item->append($selectedAppends);
+                }
+            });
+        }
     }
 
     /**

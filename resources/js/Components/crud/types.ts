@@ -81,6 +81,8 @@ export interface CrudModuleConfig {
   fixedFilters?: Record<string, any>;
   /** Additional top-level query params derived from current filter state. */
   customQueryParams?: (filters: Record<string, any>) => Record<string, any>;
+  /** Disable automatic filter[field]=value serialization and rely on customQueryParams/fixedFilters instead. */
+  serializeFilters?: boolean;
   /** Values merged into payload when creating a new record. */
   createDefaults?: Record<string, any>;
   /** Explicit list of API fields to request via $select for index fetches. */

@@ -3,6 +3,8 @@
 use App\Http\Controllers\Api\AccessGroupOptionsController;
 use App\Http\Controllers\Api\AssessmentSettingsRiskMappingController;
 use App\Http\Controllers\Api\EmployeeProfileController;
+use App\Http\Controllers\Api\UserPasswordResetController;
+use App\Http\Controllers\Api\UserReassignController;
 use App\Http\Controllers\Api\UserProfileController;
 use App\Http\Controllers\Api\AgreementArchiveController;
 use App\Http\Controllers\Api\AdminApiTokenController;
@@ -70,6 +72,10 @@ Route::middleware('auth:sanctum')->group(function (): void {
     Route::delete('/crud/{resource}/{id}', [GenericCrudController::class, 'destroy'])->name('api.crud.destroy');
     Route::post('/departments/{department}/reassign', [DepartmentReassignController::class, 'store'])
         ->name('api.departments.reassign');
+    Route::post('/users/{user}/reassign', [UserReassignController::class, 'store'])
+        ->name('api.users.reassign');
+    Route::post('/users/{user}/password-reset', [UserPasswordResetController::class, 'store'])
+        ->name('api.users.password-reset');
     Route::get('/assessment-settings/risk-mappings', [AssessmentSettingsRiskMappingController::class, 'index'])
         ->name('api.assessment-settings.risk-mappings.index');
     Route::post('/assessment-settings/risk-mappings', [AssessmentSettingsRiskMappingController::class, 'store'])

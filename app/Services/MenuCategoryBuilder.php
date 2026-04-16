@@ -39,12 +39,6 @@ class MenuCategoryBuilder
                             'description' => __('Risks that you are responsible for managing'),
                         ],
                         [
-                            'key' => 'my-projects',
-                            'label' => __('My projects'),
-                            'icon' => 'Briefcase',
-                            'description' => __('Projects that you are responsible for'),
-                        ],
-                        [
                             'key' => 'my-tasks',
                             'label' => __('My tasks'),
                             'icon' => 'ClipboardList',

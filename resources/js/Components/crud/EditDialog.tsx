@@ -45,9 +45,10 @@ export function EditDialog({
        }
 
        setFormData(initialData);
+       onFormDataChange?.(initialData);
        setError(null);
      }
-   }, [open, item]);
+   }, [open, item, fields, onFormDataChange]);
 
   const editableFields = fields.filter(
     (f) => {
