@@ -1,4 +1,5 @@
-﻿import { usePage } from '@inertiajs/react';
+﻿import { useMemo } from 'react';
+import { usePage } from '@inertiajs/react';
 import type { PageProps } from '@inertiajs/core';
 import { Target } from 'lucide-react';
 import AppLayout from '@/layouts/AppLayout';
@@ -25,7 +26,7 @@ export default function ObjectivesPage({ route }: ObjectivesPageProps) {
     const page = usePage<SharedProps>();
     const currentUserId = page.props.auth?.user?.id ?? null;
 
-    const config: CrudModuleConfig = {
+    const config: CrudModuleConfig = useMemo(() => ({
         apiUrl: '/api/crud/objectives',
         perPage: 25,
         defaultSort: 'due',
@@ -199,7 +200,7 @@ export default function ObjectivesPage({ route }: ObjectivesPageProps) {
                 options: [{ value: '1', label: t('pages.objectives.option_yes') }],
             },
         ],
-    };
+    }), [t, currentUserId]);
 
     return (
         <AppLayout>

@@ -23,7 +23,7 @@ export default function ProjectsPage({ route }: ProjectRisksPageProps) {
     const { t } = useTranslations();
     const [activeProjectForRisks, setActiveProjectForRisks] = useState<Record<string, any> | null>(null);
 
-    const config: CrudModuleConfig = {
+    const config: CrudModuleConfig = useMemo(() => ({
         apiUrl: '/api/crud/projects',
         perPage: 25,
         defaultSort: '-updated_at',
@@ -240,7 +240,7 @@ export default function ProjectsPage({ route }: ProjectRisksPageProps) {
                 category: t('pages.projects.category_status'),
             },
         ],
-    };
+    }), [t]);
 
     const projectRisksConfig: CrudModuleConfig | null = useMemo(() => {
         if (!activeProjectForRisks?.id) {

@@ -1,4 +1,5 @@
-﻿import { usePage } from '@inertiajs/react';
+﻿import { useMemo } from 'react';
+import { usePage } from '@inertiajs/react';
 import type { PageProps } from '@inertiajs/core';
 import { FileSignature } from 'lucide-react';
 import AppLayout from '@/layouts/AppLayout';
@@ -25,7 +26,7 @@ export default function AgreementsPage({ route }: AgreementsPageProps) {
     const page = usePage<SharedProps>();
     const currentUserId = page.props.auth?.user?.id ?? null;
 
-    const config: CrudModuleConfig = {
+    const config: CrudModuleConfig = useMemo(() => ({
         apiUrl: '/api/crud/agreements',
         perPage: 25,
         defaultSort: 'name',
@@ -233,7 +234,7 @@ export default function AgreementsPage({ route }: AgreementsPageProps) {
                 ],
             },
         ],
-    };
+    }), [t, currentUserId]);
 
     return (
         <AppLayout>

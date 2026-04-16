@@ -22,7 +22,7 @@ export default function CompentencesPage({ route }: CompentencesPageProps) {
     const { t } = useTranslations();
     const [activeCompetence, setActiveCompetence] = useState<Record<string, any> | null>(null);
 
-    const config: CrudModuleConfig = {
+    const config: CrudModuleConfig = useMemo(() => ({
         apiUrl: '/api/crud/competences',
         perPage: 25,
         defaultSort: 'name',
@@ -69,7 +69,7 @@ export default function CompentencesPage({ route }: CompentencesPageProps) {
                 ),
             },
         ],
-    };
+    }), [t]);
 
     const levelsConfig: CrudModuleConfig | null = useMemo(() => {
         if (!activeCompetence?.id) {

@@ -1,4 +1,5 @@
-﻿import { usePage } from '@inertiajs/react';
+﻿import { useMemo } from 'react';
+import { usePage } from '@inertiajs/react';
 import type { PageProps } from '@inertiajs/core';
 import { KeyRound, TriangleAlert } from 'lucide-react';
 import AppLayout from '@/layouts/AppLayout';
@@ -29,85 +30,87 @@ export default function AccessGroupsPage({ route }: AccessGroupsPageProps) {
     const externalProviderName =
         page.props.settings?.access_groups?.external_provider_name?.trim() || t('pages.access_groups.external_provider_default');
 
-    const fields: FieldConfig[] = [
-        {
-            key: 'name',
-            label: t('pages.access_groups.column_name'),
-            type: 'text',
-            sortable: true,
-            editable: true,
-            required: true,
-            masterLabel: true,
-            category: t('pages.access_groups.category_general'),
-        },
-        {
-            key: 'user_ids',
-            label: t('pages.access_groups.column_users'),
-            type: 'multiselect',
-            sortable: false,
-            editable: true,
-            optionsUrl: '/api/crud/users?paginate=0&%24select=id,name&sort=name',
-            optionValueKey: 'id',
-            optionLabelKey: 'name',
-            placeholder: t('pages.access_groups.select_users_placeholder'),
-            helpText: externalSyncEnabled ? t('pages.access_groups.users_sync_warning') : undefined,
-            category: t('pages.access_groups.category_members'),
-        },
-        {
-            key: 'risk_level_id',
-            label: t('pages.access_groups.column_risk_level'),
-            type: 'select',
-            sortable: true,
-            editable: true,
-            optionsUrl: '/api/crud/risk-levels?paginate=0&%24select=id,name&sort=ordinal,name',
-            optionValueKey: 'id',
-            optionLabelKey: 'name',
-            placeholder: t('pages.access_groups.none_option'),
-            category: t('pages.access_groups.category_limits'),
-        },
-        {
-            key: 'claims',
-            label: t('pages.access_groups.column_claims'),
-            type: 'multiselect',
-            sortable: false,
-            editable: true,
-            optionsUrl: '/api/access-groups/claims',
-            optionValueKey: 'id',
-            optionLabelKey: 'name',
-            placeholder: t('pages.access_groups.select_claims_placeholder'),
-            category: t('pages.access_groups.category_permissions'),
-        },
-    ];
+    const config: CrudModuleConfig = useMemo(() => {
+        const fields: FieldConfig[] = [
+            {
+                key: 'name',
+                label: t('pages.access_groups.column_name'),
+                type: 'text',
+                sortable: true,
+                editable: true,
+                required: true,
+                masterLabel: true,
+                category: t('pages.access_groups.category_general'),
+            },
+            {
+                key: 'user_ids',
+                label: t('pages.access_groups.column_users'),
+                type: 'multiselect',
+                sortable: false,
+                editable: true,
+                optionsUrl: '/api/crud/users?paginate=0&%24select=id,name&sort=name',
+                optionValueKey: 'id',
+                optionLabelKey: 'name',
+                placeholder: t('pages.access_groups.select_users_placeholder'),
+                helpText: externalSyncEnabled ? t('pages.access_groups.users_sync_warning') : undefined,
+                category: t('pages.access_groups.category_members'),
+            },
+            {
+                key: 'risk_level_id',
+                label: t('pages.access_groups.column_risk_level'),
+                type: 'select',
+                sortable: true,
+                editable: true,
+                optionsUrl: '/api/crud/risk-levels?paginate=0&%24select=id,name&sort=ordinal,name',
+                optionValueKey: 'id',
+                optionLabelKey: 'name',
+                placeholder: t('pages.access_groups.none_option'),
+                category: t('pages.access_groups.category_limits'),
+            },
+            {
+                key: 'claims',
+                label: t('pages.access_groups.column_claims'),
+                type: 'multiselect',
+                sortable: false,
+                editable: true,
+                optionsUrl: '/api/access-groups/claims',
+                optionValueKey: 'id',
+                optionLabelKey: 'name',
+                placeholder: t('pages.access_groups.select_claims_placeholder'),
+                category: t('pages.access_groups.category_permissions'),
+            },
+        ];
 
-    if (externalSyncEnabled) {
-        fields.splice(1, 0, {
-            key: 'external_provider_group_id',
-            label: `${externalProviderName} ${t('pages.access_groups.group_suffix')}`,
-            type: 'select',
-            sortable: true,
-            editable: true,
-            optionsUrl: '/api/crud/external-provider-groups?paginate=0&%24select=id,name&sort=name',
-            optionValueKey: 'id',
-            optionLabelKey: 'name',
-            placeholder: t('pages.access_groups.none_option'),
-            category: t('pages.access_groups.category_general'),
-        });
-    }
+        if (externalSyncEnabled) {
+            fields.splice(1, 0, {
+                key: 'external_provider_group_id',
+                label: `${externalProviderName} ${t('pages.access_groups.group_suffix')}`,
+                type: 'select',
+                sortable: true,
+                editable: true,
+                optionsUrl: '/api/crud/external-provider-groups?paginate=0&%24select=id,name&sort=name',
+                optionValueKey: 'id',
+                optionLabelKey: 'name',
+                placeholder: t('pages.access_groups.none_option'),
+                category: t('pages.access_groups.category_general'),
+            });
+        }
 
-    const selectFields = ['id', 'name', 'risk_level_id', 'claims', 'user_ids'];
-    if (externalSyncEnabled) {
-        selectFields.push('external_provider_group_id');
-    }
+        const selectFields = ['id', 'name', 'risk_level_id', 'claims', 'user_ids'];
+        if (externalSyncEnabled) {
+            selectFields.push('external_provider_group_id');
+        }
 
-    const config: CrudModuleConfig = {
-        apiUrl: '/api/crud/access-groups',
-        perPage: 25,
-        defaultSort: 'name',
-        selectFields,
-        createTitle: t('pages.access_groups.create_title'),
-        editTitle: t('pages.access_groups.edit_title'),
-        fields,
-    };
+        return {
+            apiUrl: '/api/crud/access-groups',
+            perPage: 25,
+            defaultSort: 'name',
+            selectFields,
+            createTitle: t('pages.access_groups.create_title'),
+            editTitle: t('pages.access_groups.edit_title'),
+            fields,
+        };
+    }, [t, externalSyncEnabled, externalProviderName]);
 
     return (
         <AppLayout>

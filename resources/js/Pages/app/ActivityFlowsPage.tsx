@@ -17,7 +17,7 @@ export default function ActivityFlowsPage({ route }: ActivityFlowsPageProps) {
     const { t } = useTranslations();
     const [activeFlow, setActiveFlow] = useState<Record<string, any> | null>(null);
 
-    const config: CrudModuleConfig = {
+    const config: CrudModuleConfig = useMemo(() => ({
         apiUrl: '/api/crud/activity-flows',
         perPage: 25,
         defaultSort: '-created_at',
@@ -117,7 +117,7 @@ export default function ActivityFlowsPage({ route }: ActivityFlowsPageProps) {
                 },
             },
         ],
-    };
+    }), [t]);
 
     const flowItemsConfig: CrudModuleConfig | null = useMemo(() => {
         if (!activeFlow?.id) {

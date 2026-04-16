@@ -1,4 +1,5 @@
-﻿import { Tags } from 'lucide-react';
+﻿import { useMemo } from 'react';
+import { Tags } from 'lucide-react';
 import AppLayout from '@/layouts/AppLayout';
 import { CrudModule } from '@/components/crud';
 import type { CrudModuleConfig } from '@/components/crud';
@@ -13,7 +14,7 @@ interface TagsPageProps {
 export default function TagsPage({ route }: TagsPageProps) {
     const { t } = useTranslations();
 
-    const config: CrudModuleConfig = {
+    const config: CrudModuleConfig = useMemo(() => ({
         apiUrl: '/api/crud/tags',
         perPage: 25,
         defaultSort: 'name',
@@ -57,7 +58,7 @@ export default function TagsPage({ route }: TagsPageProps) {
                 },
             },
         ],
-    };
+    }), [t]);
 
     return (
         <AppLayout>

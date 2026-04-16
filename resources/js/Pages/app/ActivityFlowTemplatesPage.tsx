@@ -17,7 +17,7 @@ export default function ActivityFlowTemplatesPage({ route }: ActivityFlowTemplat
     const { t } = useTranslations();
     const [activeTemplate, setActiveTemplate] = useState<Record<string, any> | null>(null);
 
-    const config: CrudModuleConfig = {
+    const config: CrudModuleConfig = useMemo(() => ({
         apiUrl: '/api/crud/activity-flow-templates',
         perPage: 25,
         defaultSort: 'name',
@@ -99,7 +99,7 @@ export default function ActivityFlowTemplatesPage({ route }: ActivityFlowTemplat
                 },
             },
         ],
-    };
+    }), [t]);
 
     const templateItemsConfig: CrudModuleConfig | null = useMemo(() => {
         if (!activeTemplate?.id) {

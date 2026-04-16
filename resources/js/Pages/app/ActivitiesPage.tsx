@@ -1,4 +1,5 @@
-﻿import { Workflow } from 'lucide-react';
+﻿import { useMemo } from 'react';
+import { Workflow } from 'lucide-react';
 import AppLayout from '@/layouts/AppLayout';
 import { CrudModule } from '@/components/crud';
 import type { CrudModuleConfig } from '@/components/crud';
@@ -13,7 +14,7 @@ interface ActivitiesPageProps {
 export default function ActivitiesPage({ route }: ActivitiesPageProps) {
     const { t } = useTranslations();
 
-    const config: CrudModuleConfig = {
+    const config: CrudModuleConfig = useMemo(() => ({
         apiUrl: '/api/crud/activities',
         perPage: 25,
         defaultSort: 'due',
@@ -124,7 +125,7 @@ export default function ActivitiesPage({ route }: ActivitiesPageProps) {
                 category: t('pages.activities.category_relations'),
             },
         ],
-    };
+    }), [t]);
 
     return (
         <AppLayout>

@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { Workflow, SquareArrowOutUpRight } from 'lucide-react';
 import AppLayout from '@/layouts/AppLayout';
@@ -16,7 +17,7 @@ interface ProcessesPageProps {
 export default function ProcessesPage({ route }: ProcessesPageProps) {
     const { t } = useTranslations();
 
-    const config: CrudModuleConfig = {
+    const config: CrudModuleConfig = useMemo(() => ({
         apiUrl: '/api/crud/processes',
         perPage: 15,
         defaultSort: 'name',
@@ -132,7 +133,7 @@ export default function ProcessesPage({ route }: ProcessesPageProps) {
                 ),
             },
         ],
-    };
+    }), [t]);
 
     return (
         <AppLayout>

@@ -24,7 +24,7 @@ export default function ControlsPage({ route }: ControlsPageProps) {
     const { t } = useTranslations();
     const [activeControl, setActiveControl] = useState<Record<string, any> | null>(null);
 
-    const config: CrudModuleConfig = {
+    const config: CrudModuleConfig = useMemo(() => ({
         apiUrl: '/api/crud/controls',
         perPage: 25,
         defaultSort: 'name',
@@ -230,7 +230,7 @@ export default function ControlsPage({ route }: ControlsPageProps) {
                 options: [{ value: '1', label: t('pages.controls.option_yes') }],
             },
         ],
-    };
+    }), [t]);
 
     const actionConfig: CrudModuleConfig | null = useMemo(() => {
         if (!activeControl?.id) {

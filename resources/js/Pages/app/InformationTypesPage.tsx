@@ -1,4 +1,5 @@
-﻿import { FileType, Download } from 'lucide-react';
+﻿import { useMemo } from 'react';
+import { FileType, Download } from 'lucide-react';
 import AppLayout from '@/layouts/AppLayout';
 import { CrudModule } from '@/components/crud';
 import type { CrudModuleConfig } from '@/components/crud';
@@ -13,7 +14,7 @@ interface InformationTypesPageProps {
 export default function InformationTypesPage({ route }: InformationTypesPageProps) {
     const { t } = useTranslations();
 
-    const config: CrudModuleConfig = {
+    const config: CrudModuleConfig = useMemo(() => ({
         apiUrl: '/api/crud/information_types',
         perPage: 25,
         defaultSort: 'name',
@@ -262,7 +263,7 @@ export default function InformationTypesPage({ route }: InformationTypesPageProp
                 ],
             },
         ],
-    };
+    }), [t]);
 
     return (
         <AppLayout>
