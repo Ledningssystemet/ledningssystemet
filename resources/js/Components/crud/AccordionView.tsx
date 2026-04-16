@@ -15,20 +15,21 @@ import { DragEvent, Fragment, useEffect, useMemo, useRef, useState } from "react
 import { setupDragPreview } from "./dragPreview";
 
 type DropPosition = "before" | "after";
+type CrudItem = Record<string, any>;
 
 interface AccordionViewProps {
-  items: Record<string, any>[];
+  items: CrudItem[];
   fields: FieldConfig[];
   primaryKey: string;
   canEdit?: boolean;
-  onEdit?: (item: Record<string, any>) => void;
+  onEdit?: (item: CrudItem) => void;
   canDelete?: boolean;
   onDelete?: (id: string | number) => void;
   rowActions?: RowActionConfig[];
-  onRowAction?: (action: RowActionConfig, item: Record<string, any>) => Promise<void>;
-  onInlineFieldUpdate?: (item: Record<string, any>, fieldKey: string, value: any) => Promise<void>;
-  getItemStatus?: (item: Record<string, any>) => ItemStatus | null;
-  getItemBadge?: (item: Record<string, any>) => ItemBadgeConfig | null;
+  onRowAction?: (action: RowActionConfig, item: CrudItem) => Promise<void>;
+  onInlineFieldUpdate?: (item: CrudItem, fieldKey: string, value: any) => Promise<void>;
+  getItemStatus?: (item: CrudItem) => ItemStatus | null;
+  getItemBadge?: (item: CrudItem) => ItemBadgeConfig | null;
   deletableKey?: string;
   reorderEnabled?: boolean;
   onReorder?: (orderedIds: Array<string | number>) => Promise<void>;
@@ -52,10 +53,10 @@ export function AccordionView({
   onReorder,
 }: AccordionViewProps) {
   // Gör komponenten robust mot att items är null, undefined eller objekt med data-array
-  const normalizedItems = Array.isArray(items)
+  const normalizedItems: CrudItem[] = Array.isArray(items)
     ? items
-    : Array.isArray(items?.data)
-      ? items.data
+    : Array.isArray((items as { data?: CrudItem[] } | null | undefined)?.data)
+      ? (items as { data?: CrudItem[] }).data ?? []
       : [];
   const labelField = fields.find((f) => f.masterLabel) || fields[0];
   const descField = fields.find((f) => f.masterDescription);
@@ -74,7 +75,7 @@ export function AccordionView({
 
   const rowIds = useMemo(
     () => normalizedItems
-      .map((item) => item[primaryKey])
+      .map((item: CrudItem) => item[primaryKey])
       .filter((id): id is string | number => id !== undefined && id !== null),
     [normalizedItems, primaryKey]
   );
@@ -135,7 +136,7 @@ export function AccordionView({
         </div>
       ) : (
         <Accordion type="single" collapsible className="divide-y">
-          {normalizedItems.map((item) => {
+          {normalizedItems.map((item: CrudItem) => {
             const status = getItemStatus?.(item) ?? null;
             const itemId = item[primaryKey] as string | number;
             const canDeleteItem = canDelete && (deletableKey ? item[deletableKey] !== false : true);
