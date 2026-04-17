@@ -43,7 +43,7 @@ class AssessmentSettingsRiskMappingController extends Controller
 
         if ($probabilityIds->isEmpty() || $consequenceIds->isEmpty() || $riskLevelCount === 0) {
             throw ValidationException::withMessages([
-                'mappings' => ['Probability levels, consequence levels, and risk levels must exist before mappings can be saved.'],
+                'mappings' => [__('api.assessment_settings.require_levels_before_save')],
             ]);
         }
 
@@ -66,7 +66,7 @@ class AssessmentSettingsRiskMappingController extends Controller
 
             if (isset($seenPairs[$pairKey])) {
                 throw ValidationException::withMessages([
-                    'mappings' => ["Duplicate mapping for pair {$pairKey}."],
+                    'mappings' => [__('api.assessment_settings.duplicate_mapping_for_pair', ['pair' => $pairKey])],
                 ]);
             }
 
@@ -79,14 +79,14 @@ class AssessmentSettingsRiskMappingController extends Controller
 
         if ($unknownPairs !== []) {
             throw ValidationException::withMessages([
-                'mappings' => ['Mappings include unknown probability/consequence pairs.'],
+                'mappings' => [__('api.assessment_settings.unknown_pairs')],
             ]);
         }
 
         $missingPairs = array_values(array_diff(array_keys($expectedPairs), array_keys($seenPairs)));
         if ($missingPairs !== []) {
             throw ValidationException::withMessages([
-                'mappings' => ['All probability and consequence combinations must be mapped before saving.'],
+                'mappings' => [__('api.assessment_settings.all_combinations_required')],
                 'missing_pairs' => $missingPairs,
             ]);
         }
@@ -109,7 +109,7 @@ class AssessmentSettingsRiskMappingController extends Controller
         });
 
         return response()->json([
-            'message' => 'Risk mappings saved.',
+            'message' => __('api.assessment_settings.risk_mappings_saved'),
             'mappings' => array_values($seenPairs),
         ]);
     }

@@ -15,6 +15,7 @@ import { Select2Field } from "./Select2Field";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { EditDialogProps, FieldConfig } from "./types";
 import { Loader2, AlertCircle } from "lucide-react";
+import { useTranslations } from "@/hooks/useTranslations";
 
 export function EditDialog({
    open,
@@ -25,6 +26,7 @@ export function EditDialog({
    onSave,
    onFormDataChange,
  }: EditDialogProps) {
+   const { t } = useTranslations();
    const [formData, setFormData] = useState<Record<string, any>>({});
    const [saving, setSaving] = useState(false);
    const [error, setError] = useState<string | null>(null);
@@ -103,7 +105,7 @@ export function EditDialog({
       await onSave(formData);
       onOpenChange(false);
     } catch (e: any) {
-      setError(e.message || "Ett fel uppstod");
+      setError(e.message || t("ui.crud.error_generic"));
     } finally {
       setSaving(false);
     }
@@ -129,7 +131,7 @@ export function EditDialog({
         {field.helpText && (
           <p className="text-xs text-muted-foreground">{field.helpText}</p>
         )}
-        {renderFieldInput(field, val, setValue)}
+        {renderFieldInput(field, val, setValue, t)}
       </div>
     );
   };
@@ -149,7 +151,7 @@ export function EditDialog({
       >
         <DialogHeader>
           <DialogTitle>
-            {title || (isNew ? "Skapa ny" : "Redigera")}
+            {title || (isNew ? t("ui.crud.edit_dialog.title_create_new") : t("ui.crud.action_edit"))}
           </DialogTitle>
         </DialogHeader>
 
@@ -163,7 +165,7 @@ export function EditDialog({
                     value={category}
                     className="relative flex items-center gap-1.5"
                   >
-                    {category === "__uncategorized__" ? "Övrigt" : category}
+                    {category === "__uncategorized__" ? t("ui.crud.edit_dialog.uncategorized_label") : category}
                     {invalidCategories.has(category) && (
                       <span className="h-2 w-2 rounded-full bg-destructive" />
                     )}
@@ -189,11 +191,11 @@ export function EditDialog({
 
         <DialogFooter className="flex items-center gap-2">
           <Button variant="outline" onClick={() => onOpenChange(false)} disabled={saving}>
-            Avbryt
+            {t("ui.crud.action_cancel")}
           </Button>
           <Button onClick={handleSave} disabled={saving}>
             {saving && <Loader2 className="h-4 w-4 mr-1 animate-spin" />}
-            {isNew ? "Skapa" : "Spara"}
+            {isNew ? t("ui.crud.action_create") : t("ui.crud.action_save")}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -204,7 +206,8 @@ export function EditDialog({
 function renderFieldInput(
   field: FieldConfig,
   val: any,
-  setValue: (key: string, value: any) => void
+  setValue: (key: string, value: any) => void,
+  t: (key: string, replacements?: Record<string, string | number>) => string,
 ) {
   const normalizeColorForInput = (value: any): string => {
     if (typeof value !== "string") return "#000000";
@@ -285,7 +288,7 @@ function renderFieldInput(
           value={val}
           onChange={(v) => setValue(field.key, v)}
           withinDialog
-          placeholder={field.placeholder || "Välj..."}
+          placeholder={field.placeholder || t("ui.crud.select_placeholder")}
         />
       );
     case "multiselect":
@@ -359,7 +362,7 @@ function renderFieldInput(
           value={Array.isArray(val) ? val : val ? [val] : []}
           onChange={(values) => setValue(field.key, values)}
           withinDialog
-          placeholder={field.placeholder || "Välj eller skapa..."}
+          placeholder={field.placeholder || t("ui.crud.select_or_create_placeholder")}
           isMulti
           isCreatable
         />

@@ -4,7 +4,6 @@ namespace App\Policies;
 
 use App\Models\User;
 use App\Models\UserNotificationQueueEntry;
-use Illuminate\Auth\Access\Response;
 
 class UserNotificationQueueEntryPolicy
 {
@@ -44,22 +43,6 @@ class UserNotificationQueueEntryPolicy
      * Determine whether the user can delete the model.
      */
     public function delete(User $user, UserNotificationQueueEntry $userNotificationQueueEntry = new UserNotificationQueueEntry): bool
-    {
-        return false;
-    }
-
-    /**
-     * Determine whether the user can restore the model.
-     */
-    public function restore(User $user, UserNotificationQueueEntry $userNotificationQueueEntry = new UserNotificationQueueEntry): bool
-    {
-        return false;
-    }
-
-    /**
-     * Determine whether the user can permanently delete the model.
-     */
-    public function forceDelete(User $user, UserNotificationQueueEntry $userNotificationQueueEntry = new UserNotificationQueueEntry): bool
     {
         return false;
     }

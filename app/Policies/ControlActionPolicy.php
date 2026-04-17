@@ -4,7 +4,6 @@ namespace App\Policies;
 
 use App\Models\ControlAction;
 use App\Models\User;
-use Illuminate\Auth\Access\Response;
 
 class ControlActionPolicy
 {
@@ -13,7 +12,7 @@ class ControlActionPolicy
      */
     public function viewAny(User $user): bool
     {
-        return true;
+        return new ControlPolicy()->viewAny($user);
     }
 
     /**
@@ -21,7 +20,7 @@ class ControlActionPolicy
      */
     public function view(User $user, ControlAction $controlAction = new ControlAction): bool
     {
-        return (($controlAction->responsible_id == $user->id) || $user->haveAnyAccessRights(['allcontrolactions.read']));
+        return  ($user->can('view', $controlAction->int_control));
     }
 
     /**
@@ -29,7 +28,7 @@ class ControlActionPolicy
      */
     public function create(User $user): bool
     {
-        return true;
+        return new ControlPolicy()->create($user);
     }
 
     /**
@@ -37,7 +36,7 @@ class ControlActionPolicy
      */
     public function update(User $user, ControlAction $controlAction = new ControlAction): bool
     {
-        return ($controlAction->responsible_id == $user->id);
+        return  ($user->can('update', $controlAction->int_control));
     }
 
     /**
@@ -45,22 +44,6 @@ class ControlActionPolicy
      */
     public function delete(User $user, ControlAction $controlAction = new ControlAction): bool
     {
-                return $user->can('update', $controlAction);
-    }
-
-    /**
-     * Determine whether the user can restore the model.
-     */
-    public function restore(User $user, ControlAction $controlAction = new ControlAction): bool
-    {
-        return false;
-    }
-
-    /**
-     * Determine whether the user can permanently delete the model.
-     */
-    public function forceDelete(User $user, ControlAction $controlAction = new ControlAction): bool
-    {
-        return false;
+        return  ($user->can('delete', $controlAction->int_control));
     }
 }

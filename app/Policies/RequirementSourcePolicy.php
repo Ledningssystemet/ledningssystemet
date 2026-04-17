@@ -4,7 +4,6 @@ namespace App\Policies;
 
 use App\Models\RequirementSource;
 use App\Models\User;
-use Illuminate\Auth\Access\Response;
 
 class RequirementSourcePolicy
 {
@@ -46,21 +45,5 @@ class RequirementSourcePolicy
     public function delete(User $user, RequirementSource $requirementSource = new RequirementSource): bool
     {
                 return $user->can('update', $requirementSource);
-    }
-
-    /**
-     * Determine whether the user can restore the model.
-     */
-    public function restore(User $user, RequirementSource $requirementSource = new RequirementSource): bool
-    {
-        return false;
-    }
-
-    /**
-     * Determine whether the user can permanently delete the model.
-     */
-    public function forceDelete(User $user, RequirementSource $requirementSource = new RequirementSource): bool
-    {
-        return false;
     }
 }

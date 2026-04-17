@@ -4,7 +4,6 @@ namespace App\Policies;
 
 use App\Models\IntegrityClass;
 use App\Models\User;
-use Illuminate\Auth\Access\Response;
 
 class IntegrityClassPolicy
 {
@@ -46,21 +45,5 @@ class IntegrityClassPolicy
     public function delete(User $user, IntegrityClass $integrityClass = new IntegrityClass): bool
     {
         return $user->can('update', $integrityClass);
-    }
-
-    /**
-     * Determine whether the user can restore the model.
-     */
-    public function restore(User $user, IntegrityClass $integrityClass = new IntegrityClass): bool
-    {
-        return false;
-    }
-
-    /**
-     * Determine whether the user can permanently delete the model.
-     */
-    public function forceDelete(User $user, IntegrityClass $integrityClass = new IntegrityClass): bool
-    {
-        return false;
     }
 }

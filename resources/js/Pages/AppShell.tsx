@@ -10,15 +10,18 @@ import {
 } from '@/app/routes';
 import { resolveAppRouteElement } from '@/app/pageRegistry';
 import { useMenuData } from '@/hooks/useMenuData';
+import { useTranslations } from '@/hooks/useTranslations';
 import AppNotFoundPage from './AppNotFoundPage';
 import UserDashboard from './UserDashboard';
 
 function PageLoader() {
+    const { t } = useTranslations();
+
     return (
         <div className="flex items-center justify-center min-h-screen">
             <div className="text-center">
                 <div className="h-8 w-8 animate-spin rounded-full border-4 border-muted border-t-primary mx-auto mb-4"></div>
-                <p className="text-sm text-muted-foreground">Laddar...</p>
+                <p className="text-sm text-muted-foreground">{t('ui.common.loading')}</p>
             </div>
         </div>
     );

@@ -4,7 +4,6 @@ namespace App\Policies;
 
 use App\Models\Chemical;
 use App\Models\User;
-use Illuminate\Auth\Access\Response;
 
 class ChemicalPolicy
 {
@@ -13,7 +12,7 @@ class ChemicalPolicy
      */
     public function viewAny(User $user): bool
     {
-                return $user->haveAnyAccessRights(['chemicalregister.read', 'chemicalregister.edit']);
+        return $user->haveAnyAccessRights(['chemicalregister.read', 'chemicalregister.edit']);
     }
 
     /**
@@ -21,7 +20,7 @@ class ChemicalPolicy
      */
     public function view(User $user, Chemical $chemical = new Chemical): bool
     {
-                return $user->haveAnyAccessRights(['chemicalregister.read', 'chemicalregister.edit']);
+        return $user->haveAnyAccessRights(['chemicalregister.read', 'chemicalregister.edit']);
     }
 
     /**
@@ -37,7 +36,7 @@ class ChemicalPolicy
      */
     public function update(User $user, Chemical $chemical = new Chemical): bool
     {
-                return $user->haveAnyAccessRights(['chemicalregister.edit']);
+        return $user->haveAnyAccessRights(['chemicalregister.edit']);
     }
 
     /**
@@ -45,22 +44,6 @@ class ChemicalPolicy
      */
     public function delete(User $user, Chemical $chemical = new Chemical): bool
     {
-                return $user->can('update', $chemical);
-    }
-
-    /**
-     * Determine whether the user can restore the model.
-     */
-    public function restore(User $user, Chemical $chemical = new Chemical): bool
-    {
-        return false;
-    }
-
-    /**
-     * Determine whether the user can permanently delete the model.
-     */
-    public function forceDelete(User $user, Chemical $chemical = new Chemical): bool
-    {
-        return false;
+        return $user->can('update', $chemical);
     }
 }

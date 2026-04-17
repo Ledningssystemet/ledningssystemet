@@ -4,7 +4,6 @@ namespace App\Policies;
 
 use App\Models\ProcessPerformanceMetricReport;
 use App\Models\User;
-use Illuminate\Auth\Access\Response;
 
 class ProcessPerformanceMetricReportPolicy
 {
@@ -46,21 +45,5 @@ class ProcessPerformanceMetricReportPolicy
     public function delete(User $user, ProcessPerformanceMetricReport $processPerformanceMetricReport = new ProcessPerformanceMetricReport): bool
     {
         return $user->haveAnyAccessRights(['processmetrics.edit']);
-    }
-
-    /**
-     * Determine whether the user can restore the model.
-     */
-    public function restore(User $user, ProcessPerformanceMetricReport $processPerformanceMetricReport = new ProcessPerformanceMetricReport): bool
-    {
-        return false;
-    }
-
-    /**
-     * Determine whether the user can permanently delete the model.
-     */
-    public function forceDelete(User $user, ProcessPerformanceMetricReport $processPerformanceMetricReport = new ProcessPerformanceMetricReport): bool
-    {
-        return false;
     }
 }

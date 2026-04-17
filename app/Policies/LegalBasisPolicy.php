@@ -4,7 +4,6 @@ namespace App\Policies;
 
 use App\Models\LegalBasis;
 use App\Models\User;
-use Illuminate\Auth\Access\Response;
 
 class LegalBasisPolicy
 {
@@ -46,21 +45,5 @@ class LegalBasisPolicy
     public function delete(User $user, LegalBasis $legalBasis = new LegalBasis): bool
     {
         return $user->can('update', $legalBasis);
-    }
-
-    /**
-     * Determine whether the user can restore the model.
-     */
-    public function restore(User $user, LegalBasis $legalBasis = new LegalBasis): bool
-    {
-        return false;
-    }
-
-    /**
-     * Determine whether the user can permanently delete the model.
-     */
-    public function forceDelete(User $user, LegalBasis $legalBasis = new LegalBasis): bool
-    {
-        return false;
     }
 }

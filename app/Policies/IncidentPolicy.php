@@ -4,7 +4,6 @@ namespace App\Policies;
 
 use App\Models\Incident;
 use App\Models\User;
-use Illuminate\Auth\Access\Response;
 
 class IncidentPolicy
 {
@@ -13,7 +12,7 @@ class IncidentPolicy
      */
     public function viewAny(User $user): bool
     {
-                return $user->haveAnyAccessRights(['incidents.read', 'incidents.edit']);
+        return $user->haveAnyAccessRights(['incidents.read', 'incidents.edit']);
     }
 
     /**
@@ -21,7 +20,7 @@ class IncidentPolicy
      */
     public function view(User $user, Incident $incident = new Incident): bool
     {
-                return $user->haveAnyAccessRights(['incidents.read', 'incidents.edit']);
+        return $user->haveAnyAccessRights(['incidents.read', 'incidents.edit']);
     }
 
     /**
@@ -37,7 +36,7 @@ class IncidentPolicy
      */
     public function update(User $user, Incident $incident = new Incident): bool
     {
-                return $user->haveAnyAccessRights(['incidents.edit']);
+        return $user->haveAnyAccessRights(['incidents.edit']);
     }
 
     /**
@@ -45,22 +44,6 @@ class IncidentPolicy
      */
     public function delete(User $user, Incident $incident = new Incident): bool
     {
-                return $user->can('update', $incident);
-    }
-
-    /**
-     * Determine whether the user can restore the model.
-     */
-    public function restore(User $user, Incident $incident = new Incident): bool
-    {
-        return false;
-    }
-
-    /**
-     * Determine whether the user can permanently delete the model.
-     */
-    public function forceDelete(User $user, Incident $incident = new Incident): bool
-    {
-        return false;
+        return $user->can('update', $incident);
     }
 }

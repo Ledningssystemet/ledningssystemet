@@ -4,7 +4,6 @@ namespace App\Policies;
 
 use App\Models\AvailabilityClass;
 use App\Models\User;
-use Illuminate\Auth\Access\Response;
 
 class AvailabilityClassPolicy
 {
@@ -45,22 +44,6 @@ class AvailabilityClassPolicy
      */
     public function delete(User $user, AvailabilityClass $availabilityClass = new AvailabilityClass): bool
     {
-                return $user->can('update', $availabilityClass);
-    }
-
-    /**
-     * Determine whether the user can restore the model.
-     */
-    public function restore(User $user, AvailabilityClass $availabilityClass = new AvailabilityClass): bool
-    {
-        return false;
-    }
-
-    /**
-     * Determine whether the user can permanently delete the model.
-     */
-    public function forceDelete(User $user, AvailabilityClass $availabilityClass = new AvailabilityClass): bool
-    {
-        return false;
+        return $user->can('update', $availabilityClass);
     }
 }

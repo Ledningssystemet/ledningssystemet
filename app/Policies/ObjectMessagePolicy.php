@@ -4,7 +4,6 @@ namespace App\Policies;
 
 use App\Models\ObjectMessage;
 use App\Models\User;
-use Illuminate\Auth\Access\Response;
 
 class ObjectMessagePolicy
 {
@@ -44,22 +43,6 @@ class ObjectMessagePolicy
      * Determine whether the user can delete the model.
      */
     public function delete(User $user, ObjectMessage $objectMessage = new ObjectMessage): bool
-    {
-        return false;
-    }
-
-    /**
-     * Determine whether the user can restore the model.
-     */
-    public function restore(User $user, ObjectMessage $objectMessage = new ObjectMessage): bool
-    {
-        return false;
-    }
-
-    /**
-     * Determine whether the user can permanently delete the model.
-     */
-    public function forceDelete(User $user, ObjectMessage $objectMessage = new ObjectMessage): bool
     {
         return false;
     }

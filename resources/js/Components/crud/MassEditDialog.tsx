@@ -15,6 +15,7 @@ import { Switch } from "@/components/ui/switch";
 import { Select2Field } from "./Select2Field";
 import { FieldConfig } from "./types";
 import { Loader2 } from "lucide-react";
+import { useTranslations } from "@/hooks/useTranslations";
 
 interface MassEditDialogProps {
   open: boolean;
@@ -25,6 +26,7 @@ interface MassEditDialogProps {
 }
 
 export function MassEditDialog({ open, onOpenChange, fields, count, onSave }: MassEditDialogProps) {
+  const { t } = useTranslations();
   const [enabled, setEnabled] = useState<Set<string>>(new Set());
   const [formData, setFormData] = useState<Record<string, any>>({});
   const [saving, setSaving] = useState(false);
@@ -70,12 +72,12 @@ export function MassEditDialog({ open, onOpenChange, fields, count, onSave }: Ma
         onEscapeKeyDown={(event) => event.preventDefault()}
       >
         <DialogHeader>
-          <DialogTitle>Massredigera {count} poster</DialogTitle>
+          <DialogTitle>{t("ui.crud.mass_edit.title", { count })}</DialogTitle>
         </DialogHeader>
 
         <div className="flex-1 overflow-y-auto min-h-0">
           <p className="text-sm text-muted-foreground mb-3">
-            Markera de fält du vill ändra och ange nya värden.
+            {t("ui.crud.mass_edit.description")}
           </p>
 
           <div className="grid gap-4 py-2">
@@ -101,7 +103,7 @@ export function MassEditDialog({ open, onOpenChange, fields, count, onSave }: Ma
 
                   {isEnabled && (
                     <div className="pl-6">
-                      {renderMassField(field, val, setValue)}
+                      {renderMassField(field, val, setValue, t)}
                     </div>
                   )}
                 </div>
@@ -112,11 +114,11 @@ export function MassEditDialog({ open, onOpenChange, fields, count, onSave }: Ma
 
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)} disabled={saving}>
-            Avbryt
+            {t("ui.crud.action_cancel")}
           </Button>
           <Button onClick={handleSave} disabled={saving || enabled.size === 0}>
             {saving && <Loader2 className="h-4 w-4 mr-1 animate-spin" />}
-            Uppdatera {count} poster
+            {t("ui.crud.mass_edit.update_selected", { count })}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -127,7 +129,8 @@ export function MassEditDialog({ open, onOpenChange, fields, count, onSave }: Ma
 function renderMassField(
   field: FieldConfig,
   val: any,
-  setValue: (key: string, value: any) => void
+  setValue: (key: string, value: any) => void,
+  t: (key: string, replacements?: Record<string, string | number>) => string,
 ) {
   switch (field.type) {
     case "textarea":
@@ -168,7 +171,7 @@ function renderMassField(
           value={val}
           onChange={(v) => setValue(field.key, v)}
           withinDialog
-          placeholder={field.placeholder || "Välj..."}
+          placeholder={field.placeholder || t("ui.crud.select_placeholder")}
         />
       );
     case "multiselect":
@@ -202,7 +205,7 @@ function renderMassField(
           value={Array.isArray(val) ? val : val ? [val] : []}
           onChange={(values) => setValue(field.key, values)}
           withinDialog
-          placeholder={field.placeholder || "Välj eller skapa..."}
+          placeholder={field.placeholder || t("ui.crud.select_or_create_placeholder")}
           isMulti
           isCreatable
         />

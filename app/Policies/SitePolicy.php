@@ -4,7 +4,6 @@ namespace App\Policies;
 
 use App\Models\Site;
 use App\Models\User;
-use Illuminate\Auth\Access\Response;
 
 class SitePolicy
 {
@@ -46,21 +45,5 @@ class SitePolicy
     public function delete(User $user, Site $site = new Site): bool
     {
         return $user->haveAnyAccessRights(['systemadministrator.edit']);
-    }
-
-    /**
-     * Determine whether the user can restore the model.
-     */
-    public function restore(User $user, Site $site = new Site): bool
-    {
-        return false;
-    }
-
-    /**
-     * Determine whether the user can permanently delete the model.
-     */
-    public function forceDelete(User $user, Site $site = new Site): bool
-    {
-        return false;
     }
 }

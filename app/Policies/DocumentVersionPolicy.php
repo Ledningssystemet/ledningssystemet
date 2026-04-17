@@ -4,7 +4,6 @@ namespace App\Policies;
 
 use App\Models\DocumentVersion;
 use App\Models\User;
-use Illuminate\Auth\Access\Response;
 
 class DocumentVersionPolicy
 {
@@ -51,21 +50,5 @@ class DocumentVersionPolicy
     public function delete(User $user, DocumentVersion $documentVersion = new DocumentVersion): bool
     {
         return !$documentVersion->approved_at && $user->can('update', $documentVersion);
-    }
-
-    /**
-     * Determine whether the user can restore the model.
-     */
-    public function restore(User $user, DocumentVersion $documentVersion = new DocumentVersion): bool
-    {
-        return false;
-    }
-
-    /**
-     * Determine whether the user can permanently delete the model.
-     */
-    public function forceDelete(User $user, DocumentVersion $documentVersion = new DocumentVersion): bool
-    {
-        return false;
     }
 }

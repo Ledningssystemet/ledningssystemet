@@ -8,6 +8,7 @@ import { InlineTagsEditor } from "./InlineTagsEditor";
 import { useAllSelectOptions, resolveOptions } from "./optionsCache";
 import { DragEvent, Fragment, useEffect, useMemo, useRef, useState } from "react";
 import { setupDragPreview } from "./dragPreview";
+import { useTranslations } from "@/hooks/useTranslations";
 
 type DropPosition = "before" | "after";
 
@@ -56,6 +57,7 @@ export function TableView({
   reorderEnabled = false,
   onReorder,
 }: TableViewProps) {
+  const { t } = useTranslations();
   const normalizedItems = Array.isArray(items) ? items : [];
   const visibleFields = fields.filter((f) => !f.hidden && !f.hiddenInTable);
   const allSelected = selectable && normalizedItems.length > 0 && normalizedItems.every((i) => selectedItems.has(i[primaryKey]));
@@ -207,7 +209,7 @@ export function TableView({
                           setDraggedId(null);
                           setDropTarget(null);
                         }}
-                        title="Dra for att sortera"
+                        title={t("ui.crud.drag_to_reorder")}
                       >
                         <GripVertical className="h-4 w-4" />
                       </span>
@@ -229,7 +231,7 @@ export function TableView({
                         />
                       ) : field.masterLabel ? (
                         <div className="flex items-center gap-2">
-                          <span>{field.renderCell ? field.renderCell(item[field.key], item) : renderValue(item[field.key], field, optionsMap)}</span>
+                          <span>{field.renderCell ? field.renderCell(item[field.key], item) : renderValue(item[field.key], field, optionsMap, t)}</span>
                           {getItemBadge?.(item) && (
                             <Badge variant={getItemBadge(item)?.variant || "secondary"}>
                               {getItemBadge(item)?.label}
@@ -238,7 +240,7 @@ export function TableView({
                         </div>
                       ) : field.renderCell ? (
                         field.renderCell(item[field.key], item)
-                      ) : renderValue(item[field.key], field, optionsMap)}
+                      ) : renderValue(item[field.key], field, optionsMap, t)}
                     </td>
                   ))}
                   {showActions && (
@@ -296,7 +298,7 @@ export function TableView({
                   colSpan={columnCount}
                   className="p-8 text-center text-muted-foreground"
                 >
-                  Inga resultat hittades
+                  {t("ui.crud.no_results")}
                 </td>
               </tr>
             )}
@@ -307,7 +309,12 @@ export function TableView({
   );
 }
 
-function renderValue(value: any, field: FieldConfig, optionsMap: Map<string, SelectOption[]>) {
+function renderValue(
+  value: any,
+  field: FieldConfig,
+  optionsMap: Map<string, SelectOption[]>,
+  t: (key: string, replacements?: Record<string, string | number>) => string,
+) {
   if (value == null) return <span className="text-muted-foreground">—</span>;
 
   if (field.type === "boolean") {
@@ -319,7 +326,7 @@ function renderValue(value: any, field: FieldConfig, optionsMap: Map<string, Sel
             : "bg-muted text-muted-foreground"
         }`}
       >
-        {value ? "Ja" : "Nej"}
+        {value ? t("ui.crud.yes") : t("ui.crud.no")}
       </span>
     );
   }

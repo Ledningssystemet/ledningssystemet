@@ -4,7 +4,6 @@ namespace App\Policies;
 
 use App\Models\Qualification;
 use App\Models\User;
-use Illuminate\Auth\Access\Response;
 
 class QualificationPolicy
 {
@@ -44,22 +43,6 @@ class QualificationPolicy
      * Determine whether the user can delete the model.
      */
     public function delete(User $user, Qualification $qualification = new Qualification): bool
-    {
-        return false;
-    }
-
-    /**
-     * Determine whether the user can restore the model.
-     */
-    public function restore(User $user, Qualification $qualification = new Qualification): bool
-    {
-        return false;
-    }
-
-    /**
-     * Determine whether the user can permanently delete the model.
-     */
-    public function forceDelete(User $user, Qualification $qualification = new Qualification): bool
     {
         return false;
     }

@@ -2,6 +2,7 @@ import * as React from "react";
 import Select from "react-select";
 import CreatableSelect from "react-select/creatable";
 import { SelectOption } from "./types";
+import { useTranslations } from "@/hooks/useTranslations";
 
 interface Select2FieldProps {
   options: SelectOption[];
@@ -137,6 +138,7 @@ export const Select2Field = React.forwardRef<any, Select2FieldProps>(function Se
   },
   ref,
 ) {
+  const { t } = useTranslations();
   const [remoteOptions, setRemoteOptions] = React.useState<SelectOption[]>([]);
 
   React.useEffect(() => {
@@ -278,11 +280,11 @@ export const Select2Field = React.forwardRef<any, Select2FieldProps>(function Se
       value={selectedValue}
       onChange={handleChange}
       onCreateOption={canCreate ? handleCreate : undefined}
-      placeholder={placeholder || "Välj..."}
+      placeholder={placeholder || t("ui.crud.select_placeholder")}
       styles={customStyles}
       isDisabled={isDisabled}
-      noOptionsMessage={() => "Inga alternativ"}
-      formatCreateLabel={(input: string) => `Skapa \"${input}\"`}
+      noOptionsMessage={() => t("ui.crud.select.no_options")}
+      formatCreateLabel={(input: string) => t("ui.crud.select.create_label", { input })}
       isClearable
       closeMenuOnSelect={!isMulti}
       menuPortalTarget={typeof document !== "undefined" ? document.body : undefined}

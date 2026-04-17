@@ -13,6 +13,7 @@ import { InlineTagsEditor } from "./InlineTagsEditor";
 import { useAllSelectOptions, resolveOptions } from "./optionsCache";
 import { DragEvent, Fragment, useEffect, useMemo, useRef, useState } from "react";
 import { setupDragPreview } from "./dragPreview";
+import { useTranslations } from "@/hooks/useTranslations";
 
 type DropPosition = "before" | "after";
 type CrudItem = Record<string, any>;
@@ -52,6 +53,7 @@ export function AccordionView({
   reorderEnabled = false,
   onReorder,
 }: AccordionViewProps) {
+  const { t } = useTranslations();
   // Gör komponenten robust mot att items är null, undefined eller objekt med data-array
   const normalizedItems: CrudItem[] = Array.isArray(items)
     ? items
@@ -132,7 +134,7 @@ export function AccordionView({
     <div className="border rounded-lg overflow-hidden">
       {normalizedItems.length === 0 ? (
         <div className="p-8 text-center text-muted-foreground">
-          Inga resultat hittades
+          {t("ui.crud.no_results")}
         </div>
       ) : (
         <Accordion type="single" collapsible className="divide-y">
@@ -181,7 +183,7 @@ export function AccordionView({
                           setDropTarget(null);
                         }}
                         onClick={(event) => event.preventDefault()}
-                        title="Dra for att sortera"
+                        title={t("ui.crud.drag_to_reorder")}
                       >
                         <GripVertical className="h-4 w-4" />
                       </span>
@@ -233,7 +235,7 @@ export function AccordionView({
                                   ? field.renderDetail(item[field.key], item)
                                   : field.renderCell
                                     ? field.renderCell(item[field.key], item)
-                                    : renderAccVal(item[field.key], field, optionsMap)}
+                                    : renderAccVal(item[field.key], field, optionsMap, t)}
                               </span>
                             </div>
                           ))}
@@ -245,7 +247,7 @@ export function AccordionView({
                         {canEdit && onEdit && (
                           <Button variant="outline" size="sm" onClick={() => onEdit(item)}>
                             <Pencil className="h-4 w-4 mr-1" />
-                            Redigera
+                            {t("ui.crud.action_edit")}
                           </Button>
                         )}
                         {canDeleteItem && onDelete && (
@@ -256,7 +258,7 @@ export function AccordionView({
                             onClick={() => onDelete(itemId)}
                           >
                             <Trash2 className="h-4 w-4 mr-1" />
-                            Radera
+                            {t("ui.crud.action_delete")}
                           </Button>
                         )}
                         {visibleRowActions.map((action) => (
@@ -297,9 +299,14 @@ function groupByCategory(fields: FieldConfig[]) {
   return Array.from(map.entries()).map(([category, fields]) => ({ category, fields }));
 }
 
-function renderAccVal(value: any, field: FieldConfig, optionsMap: Map<string, SelectOption[]>) {
-  if (value == null) return "—";
-  if (field.type === "boolean") return value ? "Ja" : "Nej";
+function renderAccVal(
+  value: any,
+  field: FieldConfig,
+  optionsMap: Map<string, SelectOption[]>,
+  t: (key: string, replacements?: Record<string, string | number>) => string,
+) {
+  if (value == null) return "-";
+  if (field.type === "boolean") return value ? t("ui.crud.yes") : t("ui.crud.no");
   if (Array.isArray(value)) {
     const opts = resolveOptions(field, optionsMap);
     return (

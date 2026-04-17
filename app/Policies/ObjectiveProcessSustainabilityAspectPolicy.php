@@ -4,7 +4,6 @@ namespace App\Policies;
 
 use App\Models\ObjectiveProcessSustainabilityAspect;
 use App\Models\User;
-use Illuminate\Auth\Access\Response;
 
 class ObjectiveProcessSustainabilityAspectPolicy
 {
@@ -44,22 +43,6 @@ class ObjectiveProcessSustainabilityAspectPolicy
      * Determine whether the user can delete the model.
      */
     public function delete(User $user, ObjectiveProcessSustainabilityAspect $objectiveProcessSustainabilityAspect = new ObjectiveProcessSustainabilityAspect): bool
-    {
-        return false;
-    }
-
-    /**
-     * Determine whether the user can restore the model.
-     */
-    public function restore(User $user, ObjectiveProcessSustainabilityAspect $objectiveProcessSustainabilityAspect = new ObjectiveProcessSustainabilityAspect): bool
-    {
-        return false;
-    }
-
-    /**
-     * Determine whether the user can permanently delete the model.
-     */
-    public function forceDelete(User $user, ObjectiveProcessSustainabilityAspect $objectiveProcessSustainabilityAspect = new ObjectiveProcessSustainabilityAspect): bool
     {
         return false;
     }

@@ -4,7 +4,6 @@ namespace App\Policies;
 
 use App\Models\LibraryDocument;
 use App\Models\User;
-use Illuminate\Auth\Access\Response;
 
 class LibraryDocumentPolicy
 {
@@ -21,7 +20,8 @@ class LibraryDocumentPolicy
      */
     public function view(User $user, LibraryDocument $libraryDocument = new LibraryDocument): bool
     {
-        return true;
+        return ($user->haveAnyAccessRights(['managementtools.edit']) ||
+            ($user->id == $libraryDocument->responsible_user_id));
     }
 
     /**
@@ -37,8 +37,8 @@ class LibraryDocumentPolicy
      */
     public function update(User $user, LibraryDocument $libraryDocument = new LibraryDocument): bool
     {
-                return ($user->haveAnyAccessRights(['managementtools.edit']) ||
-                ($user->id == $libraryDocument->responsible_user_id));
+        return ($user->haveAnyAccessRights(['managementtools.edit']) ||
+        ($user->id == $libraryDocument->responsible_user_id));
     }
 
     /**
@@ -47,21 +47,5 @@ class LibraryDocumentPolicy
     public function delete(User $user, LibraryDocument $libraryDocument = new LibraryDocument): bool
     {
         return $user->haveAnyAccessRights(['managementtools.edit']);
-    }
-
-    /**
-     * Determine whether the user can restore the model.
-     */
-    public function restore(User $user, LibraryDocument $libraryDocument = new LibraryDocument): bool
-    {
-        return false;
-    }
-
-    /**
-     * Determine whether the user can permanently delete the model.
-     */
-    public function forceDelete(User $user, LibraryDocument $libraryDocument = new LibraryDocument): bool
-    {
-        return false;
     }
 }

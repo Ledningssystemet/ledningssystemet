@@ -4,7 +4,6 @@ namespace App\Policies;
 
 use App\Models\ProcessActivity;
 use App\Models\User;
-use Illuminate\Auth\Access\Response;
 
 class ProcessActivityPolicy
 {
@@ -46,21 +45,5 @@ class ProcessActivityPolicy
     public function delete(User $user, ProcessActivity $processActivity = new ProcessActivity): bool
     {
                 return $user->can('update', $processActivity);
-    }
-
-    /**
-     * Determine whether the user can restore the model.
-     */
-    public function restore(User $user, ProcessActivity $processActivity = new ProcessActivity): bool
-    {
-        return false;
-    }
-
-    /**
-     * Determine whether the user can permanently delete the model.
-     */
-    public function forceDelete(User $user, ProcessActivity $processActivity = new ProcessActivity): bool
-    {
-        return false;
     }
 }

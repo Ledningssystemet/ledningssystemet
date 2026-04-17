@@ -54,7 +54,7 @@ class DepartmentReassignController extends Controller
         });
 
         return response()->json([
-            'message' => 'ok',
+            'message' => __('api.reassign.ok'),
             'moved' => $result,
         ]);
     }

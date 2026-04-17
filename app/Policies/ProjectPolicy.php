@@ -4,7 +4,6 @@ namespace App\Policies;
 
 use App\Models\Project;
 use App\Models\User;
-use Illuminate\Auth\Access\Response;
 
 class ProjectPolicy
 {
@@ -72,21 +71,5 @@ class ProjectPolicy
     public function delete(User $user, Project $riskProject = new Project): bool
     {
                 return $user->can('update', $riskProject);
-    }
-
-    /**
-     * Determine whether the user can restore the model.
-     */
-    public function restore(User $user, Project $riskProject = new Project): bool
-    {
-        return false;
-    }
-
-    /**
-     * Determine whether the user can permanently delete the model.
-     */
-    public function forceDelete(User $user, Project $riskProject = new Project): bool
-    {
-        return false;
     }
 }

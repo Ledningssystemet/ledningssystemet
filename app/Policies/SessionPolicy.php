@@ -4,7 +4,6 @@ namespace App\Policies;
 
 use App\Models\Session;
 use App\Models\User;
-use Illuminate\Auth\Access\Response;
 
 class SessionPolicy
 {
@@ -44,22 +43,6 @@ class SessionPolicy
      * Determine whether the user can delete the model.
      */
     public function delete(User $user, Session $session = new Session): bool
-    {
-        return false;
-    }
-
-    /**
-     * Determine whether the user can restore the model.
-     */
-    public function restore(User $user, Session $session = new Session): bool
-    {
-        return false;
-    }
-
-    /**
-     * Determine whether the user can permanently delete the model.
-     */
-    public function forceDelete(User $user, Session $session = new Session): bool
     {
         return false;
     }

@@ -4,7 +4,6 @@ namespace App\Policies;
 
 use App\Models\ConfidentialityClass;
 use App\Models\User;
-use Illuminate\Auth\Access\Response;
 
 class ConfidentialityClassPolicy
 {
@@ -45,22 +44,6 @@ class ConfidentialityClassPolicy
      */
     public function delete(User $user, ConfidentialityClass $confidentialityClass = new ConfidentialityClass): bool
     {
-                return $user->can('update', $confidentialityClass);
-    }
-
-    /**
-     * Determine whether the user can restore the model.
-     */
-    public function restore(User $user, ConfidentialityClass $confidentialityClass = new ConfidentialityClass): bool
-    {
-        return false;
-    }
-
-    /**
-     * Determine whether the user can permanently delete the model.
-     */
-    public function forceDelete(User $user, ConfidentialityClass $confidentialityClass = new ConfidentialityClass): bool
-    {
-        return false;
+        return $user->can('update', $confidentialityClass);
     }
 }

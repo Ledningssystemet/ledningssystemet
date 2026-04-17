@@ -66,20 +66,4 @@ class SupplierCategoryPolicy
 
         return $user->haveAnyAccessRights(['managementtools.edit']);
     }
-
-    /**
-     * Determine whether the user can restore the model.
-     */
-    public function restore(User $user, SupplierCategory $supplierCategory = new SupplierCategory): bool
-    {
-        return false;
-    }
-
-    /**
-     * Determine whether the user can permanently delete the model.
-     */
-    public function forceDelete(User $user, SupplierCategory $supplierCategory = new SupplierCategory): bool
-    {
-        return false;
-    }
 }

@@ -4,7 +4,6 @@ namespace App\Policies;
 
 use App\Models\InformationType;
 use App\Models\User;
-use Illuminate\Auth\Access\Response;
 
 class InformationTypePolicy
 {
@@ -13,7 +12,7 @@ class InformationTypePolicy
      */
     public function viewAny(User $user): bool
     {
-                return $user->haveAnyAccessRights(['processes.read', 'processes.edit']);
+        return $user->haveAnyAccessRights(['processes.read', 'processes.edit']);
     }
 
     /**
@@ -21,7 +20,7 @@ class InformationTypePolicy
      */
     public function view(User $user, InformationType $informationType = new InformationType): bool
     {
-                return $user->haveAnyAccessRights(['processes.read', 'processes.edit']);
+        return $user->haveAnyAccessRights(['processes.read', 'processes.edit']);
     }
 
     /**
@@ -37,7 +36,7 @@ class InformationTypePolicy
      */
     public function update(User $user, InformationType $informationType = new InformationType): bool
     {
-                return $user->haveAnyAccessRights(['processes.edit']);
+        return $user->haveAnyAccessRights(['processes.edit']);
     }
 
     /**
@@ -45,22 +44,6 @@ class InformationTypePolicy
      */
     public function delete(User $user, InformationType $informationType = new InformationType): bool
     {
-                return ($user->can('update', $informationType) && !count($informationType->int_processes()));
-    }
-
-    /**
-     * Determine whether the user can restore the model.
-     */
-    public function restore(User $user, InformationType $informationType = new InformationType): bool
-    {
-        return false;
-    }
-
-    /**
-     * Determine whether the user can permanently delete the model.
-     */
-    public function forceDelete(User $user, InformationType $informationType = new InformationType): bool
-    {
-        return false;
+        return ($user->can('update', $informationType) && !$informationType->int_processes()->count());
     }
 }

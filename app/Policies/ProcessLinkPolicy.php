@@ -4,7 +4,6 @@ namespace App\Policies;
 
 use App\Models\ProcessLink;
 use App\Models\User;
-use Illuminate\Auth\Access\Response;
 
 class ProcessLinkPolicy
 {
@@ -44,22 +43,6 @@ class ProcessLinkPolicy
      * Determine whether the user can delete the model.
      */
     public function delete(User $user, ProcessLink $processLink = new ProcessLink): bool
-    {
-        return false;
-    }
-
-    /**
-     * Determine whether the user can restore the model.
-     */
-    public function restore(User $user, ProcessLink $processLink = new ProcessLink): bool
-    {
-        return false;
-    }
-
-    /**
-     * Determine whether the user can permanently delete the model.
-     */
-    public function forceDelete(User $user, ProcessLink $processLink = new ProcessLink): bool
     {
         return false;
     }

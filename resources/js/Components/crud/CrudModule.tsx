@@ -26,6 +26,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { useTranslations } from "@/hooks/useTranslations";
 
 interface CrudModuleProps {
    config: CrudModuleConfig;
@@ -33,6 +34,8 @@ interface CrudModuleProps {
 }
 
 export function CrudModule({ config, onEditFormDataChange }: CrudModuleProps) {
+  const { t } = useTranslations();
+
   // ── Merge filterFields into fields (hidden, non-editable, filterable) ──────
   const effectiveConfig = useMemo((): CrudModuleConfig => {
     if (!config.filterFields?.length) return config;
@@ -195,7 +198,7 @@ export function CrudModule({ config, onEditFormDataChange }: CrudModuleProps) {
       {!configWithCombinedActions.title && state.loading && (
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
           <Loader2 className="h-4 w-4 animate-spin" />
-          Laddar...
+          {t("ui.common.loading")}
         </div>
       )}
 
@@ -347,20 +350,20 @@ export function CrudModule({ config, onEditFormDataChange }: CrudModuleProps) {
       <AlertDialog open={!!deleteConfirm} onOpenChange={(open) => !open && setDeleteConfirm(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Bekräfta radering</AlertDialogTitle>
+            <AlertDialogTitle>{t("ui.crud.delete_confirm.title")}</AlertDialogTitle>
             <AlertDialogDescription>
               {deleteConfirm?.type === "mass"
-                ? `Är du säker på att du vill radera ${state.selectedItems.size} valda poster? Detta kan inte ångras.`
-                : "Är du säker på att du vill radera denna post? Detta kan inte ångras."}
+                ? t("ui.crud.delete_confirm.description_mass", { count: state.selectedItems.size })
+                : t("ui.crud.delete_confirm.description_single")}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Avbryt</AlertDialogCancel>
+            <AlertDialogCancel>{t("ui.crud.action_cancel")}</AlertDialogCancel>
             <AlertDialogAction
               onClick={executeDelete}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              Radera
+              {t("ui.crud.action_delete")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

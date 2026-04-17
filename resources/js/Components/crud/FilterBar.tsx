@@ -24,6 +24,7 @@ import {
   ArrowUp,
   ArrowDown,
 } from "lucide-react";
+import { useTranslations } from "@/hooks/useTranslations";
 
 interface FilterBarProps {
   fields: FieldConfig[];
@@ -70,6 +71,7 @@ export function FilterBar({
   reorderEnabled = false,
   hideSortFilterControls = false,
 }: FilterBarProps) {
+  const { t } = useTranslations();
   const [localSearch, setLocalSearch] = useState(search);
   const [filterDialogOpen, setFilterDialogOpen] = useState(false);
   const optionsMap = useAllSelectOptions(fields);
@@ -128,7 +130,10 @@ export function FilterBar({
     const sortField = sortableFields.find((f) => f.key === sort);
     activeBadges.push({
       key: "__sort__",
-      label: `Sorterat: ${sortField?.label || sort} (${sortDirection === "asc" ? "stigande" : "fallande"})`,
+      label: t("ui.crud.filter.sorted_badge", {
+        field: sortField?.label || sort,
+        direction: sortDirection === "asc" ? t("ui.crud.filter.direction_asc") : t("ui.crud.filter.direction_desc"),
+      }),
       onRemove: () => (sortLocked ? undefined : onSortChange("")),
       removable: !sortLocked,
     });
@@ -137,7 +142,7 @@ export function FilterBar({
   if (sortLocked) {
     activeBadges.push({
       key: "__ordinal_lock__",
-      label: "Sortering: Låst till ordinal (stigande)",
+      label: t("ui.crud.filter.locked_sort_badge"),
       onRemove: () => undefined,
       removable: false,
     });
@@ -168,7 +173,7 @@ export function FilterBar({
                 setLocalSearch(e.target.value);
                 handleSearchDebounce(e.target.value);
               }}
-              placeholder="Sök..."
+              placeholder={t("ui.crud.filter.search_placeholder")}
               className="pl-9"
             />
           </div>
@@ -181,7 +186,7 @@ export function FilterBar({
             onClick={() => setFilterDialogOpen(true)}
           >
             <SlidersHorizontal className="h-4 w-4 mr-1" />
-            Filter & sortering
+            {t("ui.crud.filter.open_dialog")}
             {activeBadges.length > 0 && (
               <span className="ml-1.5 inline-flex items-center justify-center h-5 w-5 rounded-full bg-primary text-primary-foreground text-xs font-medium">
                 {activeBadges.length}
@@ -193,30 +198,30 @@ export function FilterBar({
         {showSortFilterControls && hasActiveFilters && (
           <Button variant="ghost" size="sm" onClick={clearAll}>
             <X className="h-4 w-4 mr-1" />
-            Rensa
+            {t("ui.crud.filter.clear")}
           </Button>
         )}
 
         {showSortFilterControls && reorderEnabled && (
-          <span className="text-xs text-muted-foreground">Dra handtaget for att sortera ordningen</span>
+          <span className="text-xs text-muted-foreground">{t("ui.crud.filter.reorder_hint")}</span>
         )}
 
         <div className="flex items-center gap-1 ml-auto">
           {selectedCount > 0 && onMassEdit && (
             <Button variant="outline" size="sm" onClick={onMassEdit}>
-              Redigera {selectedCount} st
+              {t("ui.crud.filter.mass_edit_selected", { count: selectedCount })}
             </Button>
           )}
           {selectedCount > 0 && onMassDelete && (
             <Button variant="destructive" size="sm" onClick={onMassDelete}>
               <Trash2 className="h-4 w-4 mr-1" />
-              Radera {selectedCount} st
+              {t("ui.crud.filter.mass_delete_selected", { count: selectedCount })}
             </Button>
           )}
           {selectedCount > 0 && onClearSelection && (
             <Button variant="ghost" size="sm" onClick={onClearSelection}>
               <X className="h-4 w-4 mr-1" />
-              Avmarkera
+              {t("ui.crud.filter.clear_selection")}
             </Button>
           )}
 
@@ -228,7 +233,7 @@ export function FilterBar({
                   ? "bg-primary text-primary-foreground"
                   : "hover:bg-muted"
               }`}
-              title="Master/Detail"
+              title={t("ui.crud.filter.view_master_detail")}
             >
               <PanelLeftClose className="h-4 w-4" />
             </button>
@@ -239,7 +244,7 @@ export function FilterBar({
                   ? "bg-primary text-primary-foreground"
                   : "hover:bg-muted"
               }`}
-              title="Tabell"
+              title={t("ui.crud.filter.view_table")}
             >
               <Table2 className="h-4 w-4" />
             </button>
@@ -250,7 +255,7 @@ export function FilterBar({
                   ? "bg-primary text-primary-foreground"
                   : "hover:bg-muted"
               }`}
-              title="Listvy"
+              title={t("ui.crud.filter.view_list")}
             >
               <LayoutList className="h-4 w-4" />
             </button>
@@ -259,7 +264,7 @@ export function FilterBar({
           {onAdd && (
             <Button onClick={onAdd} size="sm">
               <Plus className="h-4 w-4 mr-1" />
-              Ny
+              {t("ui.crud.filter.add_new")}
             </Button>
           )}
         </div>
@@ -297,7 +302,7 @@ export function FilterBar({
             onEscapeKeyDown={(event) => event.preventDefault()}
           >
             <DialogHeader>
-              <DialogTitle>Filter & sortering</DialogTitle>
+              <DialogTitle>{t("ui.crud.filter.dialog_title")}</DialogTitle>
             </DialogHeader>
 
           <div className="grid gap-4 py-2">
@@ -339,7 +344,7 @@ export function FilterBar({
                     }
                     className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
                   >
-                    <option value="">Alla</option>
+                    <option value="">{t("ui.crud.filter.option_all")}</option>
                     {options.map((opt) => (
                       <option key={String(opt.value)} value={String(opt.value)}>
                         {opt.label}
@@ -354,7 +359,7 @@ export function FilterBar({
                     }
                     className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
                   >
-                    <option value="">Alla</option>
+                    <option value="">{t("ui.crud.filter.option_all")}</option>
                     {options.map((opt) => (
                       <option key={opt.value} value={String(opt.value)}>
                         {opt.label}
@@ -369,14 +374,14 @@ export function FilterBar({
             {/* Sort */}
             {sortableFields.length > 0 && !sortLocked && (
               <div className="grid gap-1.5">
-                <Label>Sortering</Label>
+                <Label>{t("ui.crud.filter.sort_label")}</Label>
                 <div className="flex items-center gap-2">
                   <select
                     value={sort}
                     onChange={(e) => onSortChange(e.target.value)}
                     className="flex h-10 flex-1 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
                   >
-                    <option value="">Standard</option>
+                    <option value="">{t("ui.crud.filter.sort_default")}</option>
                     {sortableFields.map((f) => (
                       <option key={f.key} value={f.key}>
                         {f.label}
@@ -392,16 +397,16 @@ export function FilterBar({
                       }
                       className="flex items-center gap-1 h-10 px-3 rounded-md border border-input hover:bg-muted transition-colors text-sm"
                       title={
-                        sortDirection === "asc" ? "Stigande" : "Fallande"
+                        sortDirection === "asc" ? t("ui.crud.filter.direction_asc") : t("ui.crud.filter.direction_desc")
                       }
                     >
                       {sortDirection === "asc" ? (
                         <>
-                          <ArrowUp className="h-4 w-4" /> Stigande
+                          <ArrowUp className="h-4 w-4" /> {t("ui.crud.filter.direction_asc")}
                         </>
                       ) : (
                         <>
-                          <ArrowDown className="h-4 w-4" /> Fallande
+                          <ArrowDown className="h-4 w-4" /> {t("ui.crud.filter.direction_desc")}
                         </>
                       )}
                     </button>
@@ -413,10 +418,10 @@ export function FilterBar({
 
             <DialogFooter>
               <Button variant="outline" size="sm" onClick={clearAll}>
-                Rensa alla
+                {t("ui.crud.filter.clear_all")}
               </Button>
               <Button size="sm" onClick={() => setFilterDialogOpen(false)}>
-                Klar
+                {t("ui.crud.filter.done")}
               </Button>
             </DialogFooter>
           </DialogContent>

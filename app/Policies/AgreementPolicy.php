@@ -4,7 +4,6 @@ namespace App\Policies;
 
 use App\Models\Agreement;
 use App\Models\User;
-use Illuminate\Auth\Access\Response;
 
 class AgreementPolicy
 {
@@ -13,7 +12,7 @@ class AgreementPolicy
      */
     public function viewAny(User $user): bool
     {
-                return $user->haveAnyAccessRights(['agreements.read', 'agreements.edit']);
+        return $user->haveAnyAccessRights(['agreements.read', 'agreements.edit']);
     }
 
     /**
@@ -21,7 +20,7 @@ class AgreementPolicy
      */
     public function view(User $user, Agreement $agreement = new Agreement): bool
     {
-                return $user->haveAnyAccessRights(['agreements.read', 'agreements.edit']);
+        return $user->haveAnyAccessRights(['agreements.read', 'agreements.edit']);
     }
 
     /**
@@ -45,22 +44,6 @@ class AgreementPolicy
      */
     public function delete(User $user, Agreement $agreement = new Agreement): bool
     {
-                return $user->can('update', $agreement);
-    }
-
-    /**
-     * Determine whether the user can restore the model.
-     */
-    public function restore(User $user, Agreement $agreement = new Agreement): bool
-    {
-        return false;
-    }
-
-    /**
-     * Determine whether the user can permanently delete the model.
-     */
-    public function forceDelete(User $user, Agreement $agreement = new Agreement): bool
-    {
-        return false;
+        return $user->can('update', $agreement);
     }
 }

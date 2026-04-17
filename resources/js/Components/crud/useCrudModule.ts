@@ -1,5 +1,6 @@
 import { useState, useCallback, useEffect, useRef } from "react";
 import { CrudModuleConfig, CrudState, ViewMode } from "./types";
+import { useTranslations } from "@/hooks/useTranslations";
 
 const normalizeCrudItems = (payload: any): Record<string, any>[] => {
   if (Array.isArray(payload)) {
@@ -206,6 +207,7 @@ function getPerPageFromCookie(fallback: number): number {
 }
 
 export function useCrudModule(config: CrudModuleConfig) {
+  const { t } = useTranslations();
   const fixedFiltersSignature = JSON.stringify(config.fixedFilters || {});
   const hasOrdinalField = config.fields.some((field) => field.key === "ordinal");
   const ordinalSortDirection = config.ordinalSortDirection ?? "asc";
@@ -405,7 +407,7 @@ export function useCrudModule(config: CrudModuleConfig) {
 
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
-        throw new Error(err.message || "Save failed");
+        throw new Error(err.message || t("ui.crud.save_failed"));
       }
 
       const savedItem = await res.json().catch(() => null);
@@ -436,7 +438,7 @@ export function useCrudModule(config: CrudModuleConfig) {
 
       await fetchItems();
     },
-    [config.apiUrl, config.createDefaults, primaryKey, fetchItems, config.onSaveSuccess]
+    [config.apiUrl, config.createDefaults, primaryKey, fetchItems, config.onSaveSuccess, t]
   );
 
   const patchItem = useCallback(
@@ -452,7 +454,7 @@ export function useCrudModule(config: CrudModuleConfig) {
 
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
-        throw new Error(err.message || "Save failed");
+        throw new Error(err.message || t("ui.crud.save_failed"));
       }
 
       const savedItem = await res.json().catch(() => null);
@@ -482,7 +484,7 @@ export function useCrudModule(config: CrudModuleConfig) {
 
       await fetchItems();
     },
-    [config.apiUrl, primaryKey, fetchItems, config.onSaveSuccess]
+    [config.apiUrl, primaryKey, fetchItems, config.onSaveSuccess, t]
   );
 
   const deleteItem = useCallback(
@@ -492,10 +494,10 @@ export function useCrudModule(config: CrudModuleConfig) {
         headers: { Accept: "application/json" },
       });
 
-      if (!res.ok) throw new Error("Delete failed");
+      if (!res.ok) throw new Error(t("ui.crud.delete_failed"));
       await fetchItems();
     },
-    [config.apiUrl, fetchItems]
+    [config.apiUrl, fetchItems, t]
   );
 
   const massUpdate = useCallback(

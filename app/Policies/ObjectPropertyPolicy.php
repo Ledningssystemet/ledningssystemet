@@ -4,7 +4,6 @@ namespace App\Policies;
 
 use App\Models\ObjectProperty;
 use App\Models\User;
-use Illuminate\Auth\Access\Response;
 
 class ObjectPropertyPolicy
 {
@@ -44,22 +43,6 @@ class ObjectPropertyPolicy
      * Determine whether the user can delete the model.
      */
     public function delete(User $user, ObjectProperty $objectProperty = new ObjectProperty): bool
-    {
-        return false;
-    }
-
-    /**
-     * Determine whether the user can restore the model.
-     */
-    public function restore(User $user, ObjectProperty $objectProperty = new ObjectProperty): bool
-    {
-        return false;
-    }
-
-    /**
-     * Determine whether the user can permanently delete the model.
-     */
-    public function forceDelete(User $user, ObjectProperty $objectProperty = new ObjectProperty): bool
     {
         return false;
     }

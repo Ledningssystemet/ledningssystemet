@@ -4,7 +4,6 @@ namespace App\Policies;
 
 use App\Models\RiskLevel;
 use App\Models\User;
-use Illuminate\Auth\Access\Response;
 
 class RiskLevelPolicy
 {
@@ -46,21 +45,5 @@ class RiskLevelPolicy
     public function delete(User $user, RiskLevel $riskLevel = new RiskLevel): bool
     {
         return $user->can('update', $riskLevel);
-    }
-
-    /**
-     * Determine whether the user can restore the model.
-     */
-    public function restore(User $user, RiskLevel $riskLevel = new RiskLevel): bool
-    {
-        return false;
-    }
-
-    /**
-     * Determine whether the user can permanently delete the model.
-     */
-    public function forceDelete(User $user, RiskLevel $riskLevel = new RiskLevel): bool
-    {
-        return false;
     }
 }

@@ -5,7 +5,6 @@ namespace App\Policies;
 use App\Models\Asset;
 use App\Models\AssetAssetDependancy;
 use App\Models\User;
-use Illuminate\Auth\Access\Response;
 
 class AssetAssetDependancyPolicy
 {
@@ -47,21 +46,5 @@ class AssetAssetDependancyPolicy
     public function delete(User $user, AssetAssetDependancy $assetAssetDependancy = new AssetAssetDependancy): bool
     {
         return  ($user->can('delete', $assetAssetDependancy->int_depending_asset));
-    }
-
-    /**
-     * Determine whether the user can restore the model.
-     */
-    public function restore(User $user, AssetAssetDependancy $assetAssetDependancy = new AssetAssetDependancy): bool
-    {
-        return  ($user->can('restore', $assetAssetDependancy->int_depending_asset));
-    }
-
-    /**
-     * Determine whether the user can permanently delete the model.
-     */
-    public function forceDelete(User $user, AssetAssetDependancy $assetAssetDependancy = new AssetAssetDependancy): bool
-    {
-        return  ($user->can('forceDelete', $assetAssetDependancy->int_depending_asset));
     }
 }

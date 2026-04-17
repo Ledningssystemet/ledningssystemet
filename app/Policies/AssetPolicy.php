@@ -4,7 +4,6 @@ namespace App\Policies;
 
 use App\Models\Asset;
 use App\Models\User;
-use Illuminate\Auth\Access\Response;
 
 class AssetPolicy
 {
@@ -13,7 +12,7 @@ class AssetPolicy
      */
     public function viewAny(User $user): bool
     {
-                return $user->haveAnyAccessRights(['processes.read', 'processes.edit']);
+        return $user->haveAnyAccessRights(['processes.read', 'processes.edit']);
     }
 
     /**
@@ -21,7 +20,7 @@ class AssetPolicy
      */
     public function view(User $user, Asset $asset = new Asset): bool
     {
-                return $user->haveAnyAccessRights(['processes.read', 'processes.edit']);
+        return $user->haveAnyAccessRights(['processes.read', 'processes.edit']);
     }
 
     /**
@@ -37,7 +36,7 @@ class AssetPolicy
      */
     public function update(User $user, Asset $asset = new Asset): bool
     {
-                return $user->haveAnyAccessRights(['processes.edit']);
+        return $user->haveAnyAccessRights(['processes.edit']);
     }
 
     /**
@@ -45,22 +44,6 @@ class AssetPolicy
      */
     public function delete(User $user, Asset $asset = new Asset): bool
     {
-                return ($user->can('update', $asset) && !$asset->int_processes()->count());
-    }
-
-    /**
-     * Determine whether the user can restore the model.
-     */
-    public function restore(User $user, Asset $asset = new Asset): bool
-    {
-        return false;
-    }
-
-    /**
-     * Determine whether the user can permanently delete the model.
-     */
-    public function forceDelete(User $user, Asset $asset = new Asset): bool
-    {
-        return false;
+        return ($user->can('update', $asset) && !$asset->int_processes()->count());
     }
 }

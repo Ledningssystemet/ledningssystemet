@@ -4,7 +4,6 @@ namespace App\Policies;
 
 use App\Models\ComplianceEvaluationRequirementSource;
 use App\Models\User;
-use Illuminate\Auth\Access\Response;
 
 class ComplianceEvaluationRequirementSourcePolicy
 {
@@ -13,7 +12,7 @@ class ComplianceEvaluationRequirementSourcePolicy
      */
     public function viewAny(User $user): bool
     {
-                return $user->haveAnyAccessRights(['complianceevaluations.read', 'complianceevaluations.edit']);
+        return new ComplianceEvaluationPolicy()->viewAny($user);
     }
 
     /**
@@ -21,7 +20,7 @@ class ComplianceEvaluationRequirementSourcePolicy
      */
     public function view(User $user, ComplianceEvaluationRequirementSource $complianceEvaluationRequirementSource = new ComplianceEvaluationRequirementSource): bool
     {
-                return $user->haveAnyAccessRights(['complianceevaluations.read', 'complianceevaluations.edit']);
+        return  ($user->can('view', $complianceEvaluationRequirementSource->int_compliance_evaluation));
     }
 
     /**
@@ -29,7 +28,7 @@ class ComplianceEvaluationRequirementSourcePolicy
      */
     public function create(User $user): bool
     {
-        return $user->haveAnyAccessRights(['complianceevaluations.edit']);
+        return new ComplianceEvaluationPolicy()->create($user);
     }
 
     /**
@@ -37,7 +36,7 @@ class ComplianceEvaluationRequirementSourcePolicy
      */
     public function update(User $user, ComplianceEvaluationRequirementSource $complianceEvaluationRequirementSource = new ComplianceEvaluationRequirementSource): bool
     {
-                return $user->haveAnyAccessRights(['complianceevaluations.edit']);
+        return  ($user->can('update', $complianceEvaluationRequirementSource->int_compliance_evaluation));
     }
 
     /**
@@ -45,22 +44,6 @@ class ComplianceEvaluationRequirementSourcePolicy
      */
     public function delete(User $user, ComplianceEvaluationRequirementSource $complianceEvaluationRequirementSource = new ComplianceEvaluationRequirementSource): bool
     {
-                return $user->can('update', $complianceEvaluationRequirementSource);
-    }
-
-    /**
-     * Determine whether the user can restore the model.
-     */
-    public function restore(User $user, ComplianceEvaluationRequirementSource $complianceEvaluationRequirementSource = new ComplianceEvaluationRequirementSource): bool
-    {
-        return false;
-    }
-
-    /**
-     * Determine whether the user can permanently delete the model.
-     */
-    public function forceDelete(User $user, ComplianceEvaluationRequirementSource $complianceEvaluationRequirementSource = new ComplianceEvaluationRequirementSource): bool
-    {
-        return false;
+        return  ($user->can('delete', $complianceEvaluationRequirementSource->int_compliance_evaluation));
     }
 }

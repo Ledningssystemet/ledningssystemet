@@ -4,7 +4,6 @@ namespace App\Policies;
 
 use App\Models\RiskLevelMapping;
 use App\Models\User;
-use Illuminate\Auth\Access\Response;
 
 class RiskLevelMappingPolicy
 {
@@ -46,21 +45,5 @@ class RiskLevelMappingPolicy
     public function delete(User $user, RiskLevelMapping $riskLevelMapping = new RiskLevelMapping): bool
     {
         return $user->can('update', $riskLevelMapping);
-    }
-
-    /**
-     * Determine whether the user can restore the model.
-     */
-    public function restore(User $user, RiskLevelMapping $riskLevelMapping = new RiskLevelMapping): bool
-    {
-        return false;
-    }
-
-    /**
-     * Determine whether the user can permanently delete the model.
-     */
-    public function forceDelete(User $user, RiskLevelMapping $riskLevelMapping = new RiskLevelMapping): bool
-    {
-        return false;
     }
 }

@@ -4,7 +4,6 @@ namespace App\Policies;
 
 use App\Models\ActivityFlowTemplateItem;
 use App\Models\User;
-use Illuminate\Auth\Access\Response;
 
 class ActivityFlowTemplateItemPolicy
 {
@@ -13,7 +12,7 @@ class ActivityFlowTemplateItemPolicy
      */
     public function viewAny(User $user): bool
     {
-        return $user->haveAnyAccessRights(['managementtools.edit']);
+        return new ActivityFlowTemplatePolicy()->update($user);
     }
 
     /**
@@ -21,7 +20,7 @@ class ActivityFlowTemplateItemPolicy
      */
     public function view(User $user, ActivityFlowTemplateItem $activityFlowTemplateItem = new ActivityFlowTemplateItem): bool
     {
-        return $user->haveAnyAccessRights(['managementtools.edit']);
+        return  ($user->can('view', $activityFlowTemplateItem->int_activity_flow_template));
     }
 
     /**
@@ -29,7 +28,7 @@ class ActivityFlowTemplateItemPolicy
      */
     public function create(User $user): bool
     {
-        return $user->haveAnyAccessRights(['managementtools.edit']);
+        return new ActivityFlowTemplatePolicy()->create($user);
     }
 
     /**
@@ -37,7 +36,7 @@ class ActivityFlowTemplateItemPolicy
      */
     public function update(User $user, ActivityFlowTemplateItem $activityFlowTemplateItem = new ActivityFlowTemplateItem): bool
     {
-        return $user->haveAnyAccessRights(['managementtools.edit']);
+        return  ($user->can('update', $activityFlowTemplateItem->int_activity_flow_template));
     }
 
     /**
@@ -45,22 +44,6 @@ class ActivityFlowTemplateItemPolicy
      */
     public function delete(User $user, ActivityFlowTemplateItem $activityFlowTemplateItem = new ActivityFlowTemplateItem): bool
     {
-                return $user->can('update', $activityFlowTemplateItem);
-    }
-
-    /**
-     * Determine whether the user can restore the model.
-     */
-    public function restore(User $user, ActivityFlowTemplateItem $activityFlowTemplateItem = new ActivityFlowTemplateItem): bool
-    {
-        return false;
-    }
-
-    /**
-     * Determine whether the user can permanently delete the model.
-     */
-    public function forceDelete(User $user, ActivityFlowTemplateItem $activityFlowTemplateItem = new ActivityFlowTemplateItem): bool
-    {
-        return false;
+        return $user->can('update', $activityFlowTemplateItem);
     }
 }

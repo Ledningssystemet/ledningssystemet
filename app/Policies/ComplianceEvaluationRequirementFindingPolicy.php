@@ -4,7 +4,6 @@ namespace App\Policies;
 
 use App\Models\ComplianceEvaluationRequirementFinding;
 use App\Models\User;
-use Illuminate\Auth\Access\Response;
 
 class ComplianceEvaluationRequirementFindingPolicy
 {
@@ -13,7 +12,7 @@ class ComplianceEvaluationRequirementFindingPolicy
      */
     public function viewAny(User $user): bool
     {
-                return $user->haveAnyAccessRights(['complianceevaluations.read', 'complianceevaluations.edit']);
+        return new ComplianceEvaluationPolicy()->viewAny($user);
     }
 
     /**
@@ -21,7 +20,7 @@ class ComplianceEvaluationRequirementFindingPolicy
      */
     public function view(User $user, ComplianceEvaluationRequirementFinding $complianceEvaluationRequirementFinding = new ComplianceEvaluationRequirementFinding): bool
     {
-                return $user->haveAnyAccessRights(['complianceevaluations.read', 'complianceevaluations.edit']);
+        return  ($user->can('view', $complianceEvaluationRequirementFinding->int_compliance_evaluation_requirement));
     }
 
     /**
@@ -29,7 +28,7 @@ class ComplianceEvaluationRequirementFindingPolicy
      */
     public function create(User $user): bool
     {
-        return $user->haveAnyAccessRights(['complianceevaluations.edit']);
+        return new ComplianceEvaluationPolicy()->create($user);
     }
 
     /**
@@ -37,7 +36,7 @@ class ComplianceEvaluationRequirementFindingPolicy
      */
     public function update(User $user, ComplianceEvaluationRequirementFinding $complianceEvaluationRequirementFinding = new ComplianceEvaluationRequirementFinding): bool
     {
-                return $user->haveAnyAccessRights(['complianceevaluations.edit']);
+        return  ($user->can('update', $complianceEvaluationRequirementFinding->int_compliance_evaluation_requirement));
     }
 
     /**
@@ -45,22 +44,6 @@ class ComplianceEvaluationRequirementFindingPolicy
      */
     public function delete(User $user, ComplianceEvaluationRequirementFinding $complianceEvaluationRequirementFinding = new ComplianceEvaluationRequirementFinding): bool
     {
-                return $user->can('update', $complianceEvaluationRequirementFinding);
-    }
-
-    /**
-     * Determine whether the user can restore the model.
-     */
-    public function restore(User $user, ComplianceEvaluationRequirementFinding $complianceEvaluationRequirementFinding = new ComplianceEvaluationRequirementFinding): bool
-    {
-        return false;
-    }
-
-    /**
-     * Determine whether the user can permanently delete the model.
-     */
-    public function forceDelete(User $user, ComplianceEvaluationRequirementFinding $complianceEvaluationRequirementFinding = new ComplianceEvaluationRequirementFinding): bool
-    {
-        return false;
+        return  ($user->can('delete', $complianceEvaluationRequirementFinding->int_compliance_evaluation_requirement));
     }
 }

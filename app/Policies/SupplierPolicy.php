@@ -4,7 +4,6 @@ namespace App\Policies;
 
 use App\Models\Supplier;
 use App\Models\User;
-use Illuminate\Auth\Access\Response;
 
 class SupplierPolicy
 {
@@ -52,21 +51,5 @@ class SupplierPolicy
     public function delete(User $user, Supplier $supplier = new Supplier): bool
     {
                 return $user->can('update', $supplier);
-    }
-
-    /**
-     * Determine whether the user can restore the model.
-     */
-    public function restore(User $user, Supplier $supplier = new Supplier): bool
-    {
-        return false;
-    }
-
-    /**
-     * Determine whether the user can permanently delete the model.
-     */
-    public function forceDelete(User $user, Supplier $supplier = new Supplier): bool
-    {
-        return false;
     }
 }

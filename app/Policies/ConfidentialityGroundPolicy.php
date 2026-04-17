@@ -4,7 +4,6 @@ namespace App\Policies;
 
 use App\Models\ConfidentialityGround;
 use App\Models\User;
-use Illuminate\Auth\Access\Response;
 
 class ConfidentialityGroundPolicy
 {
@@ -46,21 +45,5 @@ class ConfidentialityGroundPolicy
     public function delete(User $user, ConfidentialityGround $confidentialityGround = new ConfidentialityGround): bool
     {
         return $user->can('update', $confidentialityGround);
-    }
-
-    /**
-     * Determine whether the user can restore the model.
-     */
-    public function restore(User $user, ConfidentialityGround $confidentialityGround = new ConfidentialityGround): bool
-    {
-        return false;
-    }
-
-    /**
-     * Determine whether the user can permanently delete the model.
-     */
-    public function forceDelete(User $user, ConfidentialityGround $confidentialityGround = new ConfidentialityGround): bool
-    {
-        return false;
     }
 }

@@ -4,7 +4,6 @@ namespace App\Policies;
 
 use App\Models\AccessGroupUser;
 use App\Models\User;
-use Illuminate\Auth\Access\Response;
 
 class AccessGroupUserPolicy
 {
@@ -13,7 +12,7 @@ class AccessGroupUserPolicy
      */
     public function viewAny(User $user): bool
     {
-        return false;
+        return new AccessGroupPolicy()->viewAny($user);
     }
 
     /**
@@ -21,7 +20,7 @@ class AccessGroupUserPolicy
      */
     public function view(User $user, AccessGroupUser $accessGroupUser = new AccessGroupUser): bool
     {
-        return false;
+        return  ($user->can('view', $accessGroupUser->int_access_group));
     }
 
     /**
@@ -29,7 +28,7 @@ class AccessGroupUserPolicy
      */
     public function create(User $user): bool
     {
-        return false;
+        return new AccessGroupPolicy()->create($user);
     }
 
     /**
@@ -37,7 +36,7 @@ class AccessGroupUserPolicy
      */
     public function update(User $user, AccessGroupUser $accessGroupUser = new AccessGroupUser): bool
     {
-        return false;
+        return  ($user->can('update', $accessGroupUser->int_access_group));
     }
 
     /**
@@ -45,22 +44,6 @@ class AccessGroupUserPolicy
      */
     public function delete(User $user, AccessGroupUser $accessGroupUser = new AccessGroupUser): bool
     {
-        return false;
-    }
-
-    /**
-     * Determine whether the user can restore the model.
-     */
-    public function restore(User $user, AccessGroupUser $accessGroupUser = new AccessGroupUser): bool
-    {
-        return false;
-    }
-
-    /**
-     * Determine whether the user can permanently delete the model.
-     */
-    public function forceDelete(User $user, AccessGroupUser $accessGroupUser = new AccessGroupUser): bool
-    {
-        return false;
+        return  ($user->can('delete', $accessGroupUser->int_access_group));
     }
 }

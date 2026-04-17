@@ -4,7 +4,6 @@ namespace App\Policies;
 
 use App\Models\Requirement;
 use App\Models\User;
-use Illuminate\Auth\Access\Response;
 
 class RequirementPolicy
 {
@@ -46,21 +45,5 @@ class RequirementPolicy
     public function delete(User $user, Requirement $requirement = new Requirement): bool
     {
                 return $user->can('update', $requirement);
-    }
-
-    /**
-     * Determine whether the user can restore the model.
-     */
-    public function restore(User $user, Requirement $requirement = new Requirement): bool
-    {
-        return false;
-    }
-
-    /**
-     * Determine whether the user can permanently delete the model.
-     */
-    public function forceDelete(User $user, Requirement $requirement = new Requirement): bool
-    {
-        return false;
     }
 }

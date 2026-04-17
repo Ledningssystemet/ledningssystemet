@@ -4,7 +4,6 @@ namespace App\Policies;
 
 use App\Models\DataCategory;
 use App\Models\User;
-use Illuminate\Auth\Access\Response;
 
 class DataCategoryPolicy
 {
@@ -46,21 +45,5 @@ class DataCategoryPolicy
     public function delete(User $user, DataCategory $dataCategory = new DataCategory): bool
     {
         return $user->can('update', $dataCategory);
-    }
-
-    /**
-     * Determine whether the user can restore the model.
-     */
-    public function restore(User $user, DataCategory $dataCategory = new DataCategory): bool
-    {
-        return false;
-    }
-
-    /**
-     * Determine whether the user can permanently delete the model.
-     */
-    public function forceDelete(User $user, DataCategory $dataCategory = new DataCategory): bool
-    {
-        return false;
     }
 }

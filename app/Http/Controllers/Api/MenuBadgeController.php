@@ -14,7 +14,6 @@ class MenuBadgeController extends Controller
     {
         $user  = Auth::user();
         $items      = [];
-        $categories = [];
 
         // ── Mina uppgifter (pending activities assigned to user) ─────────
         try {
@@ -48,13 +47,6 @@ class MenuBadgeController extends Controller
                         'count'    => (string) $count,
                         'severity' => 'warning',
                     ];
-
-                    // Merge into "Risk & Förbättring" category badge
-                    $existing = (int) ($categories['Risk & Förbättring']['count'] ?? 0);
-                    $categories['Risk & Förbättring'] = [
-                        'count'    => (string) ($existing + $count),
-                        'severity' => 'warning',
-                    ];
                 }
             }
         } catch (Throwable) {
@@ -73,12 +65,6 @@ class MenuBadgeController extends Controller
                         'count'    => (string) $count,
                         'severity' => 'warning',
                     ];
-
-                    $existing = (int) ($categories['Risk & Förbättring']['count'] ?? 0);
-                    $categories['Risk & Förbättring'] = [
-                        'count'    => (string) ($existing + $count),
-                        'severity' => 'warning',
-                    ];
                 }
             }
         } catch (Throwable) {
@@ -87,7 +73,6 @@ class MenuBadgeController extends Controller
 
         return response()->json([
             'items'      => $items,
-            'categories' => $categories,
         ]);
     }
 }

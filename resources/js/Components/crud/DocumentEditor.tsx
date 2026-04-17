@@ -4,6 +4,7 @@ import Header from '@editorjs/header';
 import List from '@editorjs/list';
 import Paragraph from '@editorjs/paragraph';
 import { AlertCircle, Loader2 } from 'lucide-react';
+import { useTranslations } from '@/hooks/useTranslations';
 
 interface DocumentEditorProps {
     initialContent?: string;
@@ -75,6 +76,7 @@ export const DocumentEditor = forwardRef<any, DocumentEditorProps>(function Docu
     { initialContent, readOnly = false, onChange },
     ref
 ) {
+    const { t } = useTranslations();
     const editorRef = useRef<HTMLDivElement>(null);
     const editorInstanceRef = useRef<EditorJS | null>(null);
     const [loading, setLoading] = useState(true);
@@ -90,7 +92,7 @@ export const DocumentEditor = forwardRef<any, DocumentEditorProps>(function Docu
             return content as EditorContent;
         } catch (err) {
             console.error('Error saving content:', err);
-            setError(err instanceof Error ? err.message : 'Failed to save content');
+            setError(err instanceof Error ? err.message : t('ui.crud.document_editor.save_failed'));
             return null;
         }
     };
@@ -137,7 +139,7 @@ export const DocumentEditor = forwardRef<any, DocumentEditorProps>(function Docu
                         header: {
                             class: Header as unknown as ToolConstructable,
                             config: {
-                                placeholder: 'Enter a header',
+                                placeholder: t('ui.crud.document_editor.header_placeholder'),
                                 levels: [1, 2, 3],
                                 defaultLevel: 1,
                             },
@@ -169,7 +171,7 @@ export const DocumentEditor = forwardRef<any, DocumentEditorProps>(function Docu
                 setLoading(false);
             } catch (err) {
                 console.error('Error initializing editor:', err);
-                setError(err instanceof Error ? err.message : 'Failed to initialize editor');
+                setError(err instanceof Error ? err.message : t('ui.crud.document_editor.initialize_failed'));
                 setLoading(false);
             }
         };
@@ -182,7 +184,7 @@ export const DocumentEditor = forwardRef<any, DocumentEditorProps>(function Docu
                 editorInstanceRef.current = null;
             }
         };
-    }, [readOnly, onChange]);
+    }, [readOnly, onChange, t]);
 
     // Update initial content when it changes
     useEffect(() => {

@@ -4,7 +4,6 @@ namespace App\Policies;
 
 use App\Models\ComplianceEvaluation;
 use App\Models\User;
-use Illuminate\Auth\Access\Response;
 
 class ComplianceEvaluationPolicy
 {
@@ -13,7 +12,7 @@ class ComplianceEvaluationPolicy
      */
     public function viewAny(User $user): bool
     {
-                return $user->haveAnyAccessRights(['complianceevaluations.read', 'complianceevaluations.edit']);
+        return $user->haveAnyAccessRights(['complianceevaluations.read', 'complianceevaluations.edit']);
     }
 
     /**
@@ -21,7 +20,7 @@ class ComplianceEvaluationPolicy
      */
     public function view(User $user, ComplianceEvaluation $complianceEvaluation = new ComplianceEvaluation): bool
     {
-                return $user->haveAnyAccessRights(['complianceevaluations.read', 'complianceevaluations.edit']);
+        return $user->haveAnyAccessRights(['complianceevaluations.read', 'complianceevaluations.edit']);
     }
 
     /**
@@ -37,7 +36,7 @@ class ComplianceEvaluationPolicy
      */
     public function update(User $user, ComplianceEvaluation $complianceEvaluation = new ComplianceEvaluation): bool
     {
-                return $user->haveAnyAccessRights(['complianceevaluations.edit']);
+        return $user->haveAnyAccessRights(['complianceevaluations.edit']);
     }
 
     /**
@@ -45,22 +44,6 @@ class ComplianceEvaluationPolicy
      */
     public function delete(User $user, ComplianceEvaluation $complianceEvaluation = new ComplianceEvaluation): bool
     {
-                return $user->can('update', $complianceEvaluation);
-    }
-
-    /**
-     * Determine whether the user can restore the model.
-     */
-    public function restore(User $user, ComplianceEvaluation $complianceEvaluation = new ComplianceEvaluation): bool
-    {
-        return false;
-    }
-
-    /**
-     * Determine whether the user can permanently delete the model.
-     */
-    public function forceDelete(User $user, ComplianceEvaluation $complianceEvaluation = new ComplianceEvaluation): bool
-    {
-        return false;
+        return $user->can('update', $complianceEvaluation);
     }
 }

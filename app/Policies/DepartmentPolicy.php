@@ -4,7 +4,6 @@ namespace App\Policies;
 
 use App\Models\Department;
 use App\Models\User;
-use Illuminate\Auth\Access\Response;
 
 class DepartmentPolicy
 {
@@ -29,7 +28,7 @@ class DepartmentPolicy
      */
     public function create(User $user): bool
     {
-        return $user->haveAnyAccessRights(['managementtools.edit']);
+        return $user->haveAnyAccessRights(['systemadministrator.edit']);
     }
 
     /**
@@ -37,7 +36,7 @@ class DepartmentPolicy
      */
     public function update(User $user, Department $department = new Department): bool
     {
-        return $user->haveAnyAccessRights(['managementtools.edit']);
+        return $user->haveAnyAccessRights(['systemadministrator.edit']);
     }
 
     /**
@@ -45,22 +44,6 @@ class DepartmentPolicy
      */
     public function delete(User $user, Department $department = new Department): bool
     {
-                return $user->can('update', $department);
-    }
-
-    /**
-     * Determine whether the user can restore the model.
-     */
-    public function restore(User $user, Department $department = new Department): bool
-    {
-        return false;
-    }
-
-    /**
-     * Determine whether the user can permanently delete the model.
-     */
-    public function forceDelete(User $user, Department $department = new Department): bool
-    {
-        return false;
+        return $user->can('update', $department);
     }
 }

@@ -4,7 +4,6 @@ namespace App\Policies;
 
 use App\Models\ProcessHref;
 use App\Models\User;
-use Illuminate\Auth\Access\Response;
 
 class ProcessHrefPolicy
 {
@@ -46,21 +45,5 @@ class ProcessHrefPolicy
     public function delete(User $user, ProcessHref $processHref = new ProcessHref): bool
     {
                 return $user->can('update', $processHref);
-    }
-
-    /**
-     * Determine whether the user can restore the model.
-     */
-    public function restore(User $user, ProcessHref $processHref = new ProcessHref): bool
-    {
-        return false;
-    }
-
-    /**
-     * Determine whether the user can permanently delete the model.
-     */
-    public function forceDelete(User $user, ProcessHref $processHref = new ProcessHref): bool
-    {
-        return false;
     }
 }

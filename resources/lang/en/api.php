@@ -6,6 +6,45 @@ return [
         'session_auth_required' => 'This endpoint requires session authentication.',
     ],
 
+    'tokens' => [
+        'expires_at_future' => 'expires_at must be in the future.',
+        'no_current_access_token' => 'No current access token is associated with this request.',
+    ],
+
+    'item_status' => [
+        'invalid_type' => 'Invalid type',
+        'id_and_department_conflict' => 'Cannot specify both id and department_id',
+    ],
+
+    'document_versions' => [
+        'already_finished' => 'Document version is already finished.',
+        'not_authorized_approve' => 'You are not authorized to approve this version.',
+        'already_approved' => 'Document version is already approved.',
+        'must_finish_before_approval' => 'Document version must be finished before approval.',
+        'not_authorized_reject' => 'You are not authorized to reject this version.',
+        'cannot_reject_approved' => 'Cannot reject an already approved version.',
+    ],
+
+    'assessment_settings' => [
+        'risk_mappings_saved' => 'Risk mappings saved.',
+        'require_levels_before_save' => 'Probability levels, consequence levels, and risk levels must exist before mappings can be saved.',
+        'duplicate_mapping_for_pair' => 'Duplicate mapping for pair :pair.',
+        'unknown_pairs' => 'Mappings include unknown probability/consequence pairs.',
+        'all_combinations_required' => 'All probability and consequence combinations must be mapped before saving.',
+    ],
+
+    'generic_crud' => [
+        'unknown_resource' => 'Unknown resource.',
+        'filter_field_not_allowed' => 'Filter field [:field] is not allowed.',
+        'extend_not_allowed' => 'Extend [:extend] is not allowed.',
+        'filter_value_boolean' => 'Filter value for [:field] must be boolean.',
+        'filter_value_numeric' => 'Filter value for [:field] must be numeric.',
+    ],
+
+    'reassign' => [
+        'ok' => 'ok',
+    ],
+
     'documentation' => [
         'resource_section_title' => 'Discoverable Generic CRUD resources',
         'resource_section_hint' => 'Full resource catalog endpoint: GET /api/crud/resources',

@@ -4,7 +4,6 @@ namespace App\Policies;
 
 use App\Models\RoleCompetence;
 use App\Models\User;
-use Illuminate\Auth\Access\Response;
 
 class RoleCompetencePolicy
 {
@@ -44,22 +43,6 @@ class RoleCompetencePolicy
      * Determine whether the user can delete the model.
      */
     public function delete(User $user, RoleCompetence $roleCompetence = new RoleCompetence): bool
-    {
-        return false;
-    }
-
-    /**
-     * Determine whether the user can restore the model.
-     */
-    public function restore(User $user, RoleCompetence $roleCompetence = new RoleCompetence): bool
-    {
-        return false;
-    }
-
-    /**
-     * Determine whether the user can permanently delete the model.
-     */
-    public function forceDelete(User $user, RoleCompetence $roleCompetence = new RoleCompetence): bool
     {
         return false;
     }

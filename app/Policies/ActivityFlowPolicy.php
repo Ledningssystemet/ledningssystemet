@@ -4,7 +4,6 @@ namespace App\Policies;
 
 use App\Models\ActivityFlow;
 use App\Models\User;
-use Illuminate\Auth\Access\Response;
 
 class ActivityFlowPolicy
 {
@@ -13,7 +12,7 @@ class ActivityFlowPolicy
      */
     public function viewAny(User $user): bool
     {
-        return true;
+        return $user->haveAnyAccessRights(['managementtools.edit']);
     }
 
     /**
@@ -45,22 +44,6 @@ class ActivityFlowPolicy
      */
     public function delete(User $user, ActivityFlow $activityFlow = new ActivityFlow): bool
     {
-                return $user->can('update', $activityFlow);
-    }
-
-    /**
-     * Determine whether the user can restore the model.
-     */
-    public function restore(User $user, ActivityFlow $activityFlow = new ActivityFlow): bool
-    {
-        return false;
-    }
-
-    /**
-     * Determine whether the user can permanently delete the model.
-     */
-    public function forceDelete(User $user, ActivityFlow $activityFlow = new ActivityFlow): bool
-    {
-        return false;
+        return $user->can('update', $activityFlow);
     }
 }

@@ -7,6 +7,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { useTranslations } from "@/hooks/useTranslations";
 
 const PER_PAGE_OPTIONS = [10, 25, 50, 100, 250];
 
@@ -20,13 +21,14 @@ interface PaginationProps {
 }
 
 export function CrudPagination({ page, totalPages, total, perPage, onPageChange, onPerPageChange }: PaginationProps) {
-  if (total === 0) return null;
+    const { t } = useTranslations();
+    if (total === 0) return null;
 
-  return (
+    return (
     <div className="flex items-center justify-between px-1 pt-3">
       <div className="flex items-center gap-3">
         <span className="text-sm text-muted-foreground">
-          Totalt {total} poster
+          {t("ui.crud.pagination.total_items", { count: total })}
         </span>
         <Select
           value={String(perPage)}
@@ -38,7 +40,7 @@ export function CrudPagination({ page, totalPages, total, perPage, onPageChange,
           <SelectContent>
             {PER_PAGE_OPTIONS.map((n) => (
               <SelectItem key={n} value={String(n)}>
-                {n} / sida
+                  {t("ui.crud.pagination.pagesize", { count: n })}
               </SelectItem>
             ))}
           </SelectContent>

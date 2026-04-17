@@ -4,7 +4,6 @@ namespace App\Policies;
 
 use App\Models\SupplierSupplierRequirement;
 use App\Models\User;
-use Illuminate\Auth\Access\Response;
 
 class SupplierSupplierRequirementPolicy
 {
@@ -44,22 +43,6 @@ class SupplierSupplierRequirementPolicy
      * Determine whether the user can delete the model.
      */
     public function delete(User $user, SupplierSupplierRequirement $supplierSupplierRequirement = new SupplierSupplierRequirement): bool
-    {
-        return false;
-    }
-
-    /**
-     * Determine whether the user can restore the model.
-     */
-    public function restore(User $user, SupplierSupplierRequirement $supplierSupplierRequirement = new SupplierSupplierRequirement): bool
-    {
-        return false;
-    }
-
-    /**
-     * Determine whether the user can permanently delete the model.
-     */
-    public function forceDelete(User $user, SupplierSupplierRequirement $supplierSupplierRequirement = new SupplierSupplierRequirement): bool
     {
         return false;
     }

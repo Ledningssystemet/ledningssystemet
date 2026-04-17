@@ -4,7 +4,6 @@ namespace App\Policies;
 
 use App\Models\ObjectHistory;
 use App\Models\User;
-use Illuminate\Auth\Access\Response;
 
 class ObjectHistoryPolicy
 {
@@ -13,7 +12,7 @@ class ObjectHistoryPolicy
      */
     public function viewAny(User $user): bool
     {
-        return false;
+        return $user->haveAnyAccessRights(['systemadministrator.edit']);
     }
 
     /**
@@ -21,7 +20,7 @@ class ObjectHistoryPolicy
      */
     public function view(User $user, ObjectHistory $objectHistory = new ObjectHistory): bool
     {
-        return false;
+        return $user->haveAnyAccessRights(['systemadministrator.edit']);
     }
 
     /**
@@ -44,22 +43,6 @@ class ObjectHistoryPolicy
      * Determine whether the user can delete the model.
      */
     public function delete(User $user, ObjectHistory $objectHistory = new ObjectHistory): bool
-    {
-        return false;
-    }
-
-    /**
-     * Determine whether the user can restore the model.
-     */
-    public function restore(User $user, ObjectHistory $objectHistory = new ObjectHistory): bool
-    {
-        return false;
-    }
-
-    /**
-     * Determine whether the user can permanently delete the model.
-     */
-    public function forceDelete(User $user, ObjectHistory $objectHistory = new ObjectHistory): bool
     {
         return false;
     }

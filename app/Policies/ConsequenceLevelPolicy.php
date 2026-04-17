@@ -4,7 +4,6 @@ namespace App\Policies;
 
 use App\Models\ConsequenceLevel;
 use App\Models\User;
-use Illuminate\Auth\Access\Response;
 
 class ConsequenceLevelPolicy
 {
@@ -46,21 +45,5 @@ class ConsequenceLevelPolicy
     public function delete(User $user, ConsequenceLevel $consequenceLevel = new ConsequenceLevel): bool
     {
         return $user->can('update', $consequenceLevel);
-    }
-
-    /**
-     * Determine whether the user can restore the model.
-     */
-    public function restore(User $user, ConsequenceLevel $consequenceLevel = new ConsequenceLevel): bool
-    {
-        return false;
-    }
-
-    /**
-     * Determine whether the user can permanently delete the model.
-     */
-    public function forceDelete(User $user, ConsequenceLevel $consequenceLevel = new ConsequenceLevel): bool
-    {
-        return false;
     }
 }

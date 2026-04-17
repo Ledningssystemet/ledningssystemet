@@ -4,7 +4,6 @@ namespace App\Policies;
 
 use App\Models\User;
 use App\Models\VectorEmbedding;
-use Illuminate\Auth\Access\Response;
 
 class VectorEmbeddingPolicy
 {
@@ -44,22 +43,6 @@ class VectorEmbeddingPolicy
      * Determine whether the user can delete the model.
      */
     public function delete(User $user, VectorEmbedding $vectorEmbedding = new VectorEmbedding): bool
-    {
-        return false;
-    }
-
-    /**
-     * Determine whether the user can restore the model.
-     */
-    public function restore(User $user, VectorEmbedding $vectorEmbedding = new VectorEmbedding): bool
-    {
-        return false;
-    }
-
-    /**
-     * Determine whether the user can permanently delete the model.
-     */
-    public function forceDelete(User $user, VectorEmbedding $vectorEmbedding = new VectorEmbedding): bool
     {
         return false;
     }

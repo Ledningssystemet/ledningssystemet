@@ -4,7 +4,6 @@ namespace App\Policies;
 
 use App\Models\RecipientCategory;
 use App\Models\User;
-use Illuminate\Auth\Access\Response;
 
 class RecipientCategoryPolicy
 {
@@ -46,21 +45,5 @@ class RecipientCategoryPolicy
     public function delete(User $user, RecipientCategory $recipientCategory = new RecipientCategory): bool
     {
         return $user->can('update', $recipientCategory);
-    }
-
-    /**
-     * Determine whether the user can restore the model.
-     */
-    public function restore(User $user, RecipientCategory $recipientCategory = new RecipientCategory): bool
-    {
-        return false;
-    }
-
-    /**
-     * Determine whether the user can permanently delete the model.
-     */
-    public function forceDelete(User $user, RecipientCategory $recipientCategory = new RecipientCategory): bool
-    {
-        return false;
     }
 }

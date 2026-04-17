@@ -4,7 +4,6 @@ namespace App\Policies;
 
 use App\Models\ObjectiveProcessPerformanceMetric;
 use App\Models\User;
-use Illuminate\Auth\Access\Response;
 
 class ObjectiveProcessPerformanceMetricPolicy
 {
@@ -44,22 +43,6 @@ class ObjectiveProcessPerformanceMetricPolicy
      * Determine whether the user can delete the model.
      */
     public function delete(User $user, ObjectiveProcessPerformanceMetric $objectiveProcessPerformanceMetric = new ObjectiveProcessPerformanceMetric): bool
-    {
-        return false;
-    }
-
-    /**
-     * Determine whether the user can restore the model.
-     */
-    public function restore(User $user, ObjectiveProcessPerformanceMetric $objectiveProcessPerformanceMetric = new ObjectiveProcessPerformanceMetric): bool
-    {
-        return false;
-    }
-
-    /**
-     * Determine whether the user can permanently delete the model.
-     */
-    public function forceDelete(User $user, ObjectiveProcessPerformanceMetric $objectiveProcessPerformanceMetric = new ObjectiveProcessPerformanceMetric): bool
     {
         return false;
     }

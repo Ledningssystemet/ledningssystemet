@@ -4,7 +4,6 @@ namespace App\Policies;
 
 use App\Models\IncidentLog;
 use App\Models\User;
-use Illuminate\Auth\Access\Response;
 
 class IncidentLogPolicy
 {
@@ -13,7 +12,7 @@ class IncidentLogPolicy
      */
     public function viewAny(User $user): bool
     {
-                return $user->haveAnyAccessRights(['incidents.read', 'incidents.edit']);
+        return new IncidentPolicy()->viewAny($user);
     }
 
     /**
@@ -21,7 +20,7 @@ class IncidentLogPolicy
      */
     public function view(User $user, IncidentLog $incidentLog = new IncidentLog): bool
     {
-                return $user->haveAnyAccessRights(['incidents.read', 'incidents.edit']);
+        return  ($user->can('view', $incidentLog->int_incident));
     }
 
     /**
@@ -29,7 +28,7 @@ class IncidentLogPolicy
      */
     public function create(User $user): bool
     {
-        return $user->haveAnyAccessRights(['incidents.edit']);
+        return new IncidentPolicy()->create($user);
     }
 
     /**
@@ -37,7 +36,7 @@ class IncidentLogPolicy
      */
     public function update(User $user, IncidentLog $incidentLog = new IncidentLog): bool
     {
-                return $user->haveAnyAccessRights(['incidents.edit']);
+        return  ($user->can('update', $incidentLog->int_incident));
     }
 
     /**
@@ -45,22 +44,6 @@ class IncidentLogPolicy
      */
     public function delete(User $user, IncidentLog $incidentLog = new IncidentLog): bool
     {
-                return $user->can('update', $incidentLog);
-    }
-
-    /**
-     * Determine whether the user can restore the model.
-     */
-    public function restore(User $user, IncidentLog $incidentLog = new IncidentLog): bool
-    {
-        return false;
-    }
-
-    /**
-     * Determine whether the user can permanently delete the model.
-     */
-    public function forceDelete(User $user, IncidentLog $incidentLog = new IncidentLog): bool
-    {
-        return false;
+        return $user->can('update', $incidentLog);
     }
 }

@@ -46,7 +46,7 @@ class OAuthController extends Controller
         }
 
         if ($request->filled('error')) {
-            return to_route('login')->with('oauth_error', 'OAuth login was cancelled or denied.');
+            return to_route('login')->with('oauth_error', __('auth.oauth.cancelled_or_denied'));
         }
 
         $provider = AuthFlow::oauthProvider();
@@ -67,17 +67,17 @@ class OAuthController extends Controller
         Auth::login($user, true);
         $request->session()->regenerate();
 
-        return to_route('home')->with('oauth_success', 'You are now logged in.');
+        return to_route('home')->with('oauth_success', __('auth.oauth.login_success'));
     }
 
     private function findOrCreateUser(string $provider, ?string $externalId, ?string $email, ?string $name): User
     {
         if (! $externalId) {
-            throw new AccessDeniedHttpException('The OAuth provider did not return a valid user id.');
+            throw new AccessDeniedHttpException(__('auth.oauth.invalid_user_id'));
         }
 
         if (! $email) {
-            throw new AccessDeniedHttpException('The OAuth provider did not return an email address.');
+            throw new AccessDeniedHttpException(__('auth.oauth.missing_email'));
         }
 
         $email = Str::lower($email);
@@ -110,11 +110,11 @@ class OAuthController extends Controller
         }
 
         if ($user->externalproviderid && $user->externalproviderid !== $provider) {
-            throw new AccessDeniedHttpException('This account is linked to another OAuth provider.');
+            throw new AccessDeniedHttpException(__('auth.oauth.linked_to_other_provider'));
         }
 
         if ($user->external_id && $user->external_id !== $externalId) {
-            throw new AccessDeniedHttpException('This account is already linked to another external identity.');
+            throw new AccessDeniedHttpException(__('auth.oauth.linked_to_other_identity'));
         }
 
         $user->forceFill([

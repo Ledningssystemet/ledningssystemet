@@ -4,7 +4,6 @@ namespace App\Policies;
 
 use App\Models\Objective;
 use App\Models\User;
-use Illuminate\Auth\Access\Response;
 
 class ObjectivePolicy
 {
@@ -13,7 +12,7 @@ class ObjectivePolicy
      */
     public function viewAny(User $user): bool
     {
-                return $user->haveAnyAccessRights(['objectives.read', 'objectives.edit']);
+        return $user->haveAnyAccessRights(['objectives.read', 'objectives.edit']);
     }
 
     /**
@@ -21,7 +20,7 @@ class ObjectivePolicy
      */
     public function view(User $user, Objective $objective = new Objective): bool
     {
-                return $user->haveAnyAccessRights(['objectives.read', 'objectives.edit']);
+        return $user->haveAnyAccessRights(['objectives.read', 'objectives.edit']);
     }
 
     /**
@@ -37,7 +36,7 @@ class ObjectivePolicy
      */
     public function update(User $user, Objective $objective = new Objective): bool
     {
-                if (null == $objective->archived_at)
+        if (null == $objective->archived_at)
             return $user->haveAnyAccessRights(['objectives.edit']);
 
         return false;
@@ -48,22 +47,6 @@ class ObjectivePolicy
      */
     public function delete(User $user, Objective $objective = new Objective): bool
     {
-                return $user->can('update', $objective);
-    }
-
-    /**
-     * Determine whether the user can restore the model.
-     */
-    public function restore(User $user, Objective $objective = new Objective): bool
-    {
-        return false;
-    }
-
-    /**
-     * Determine whether the user can permanently delete the model.
-     */
-    public function forceDelete(User $user, Objective $objective = new Objective): bool
-    {
-        return false;
+        return $user->can('update', $objective);
     }
 }

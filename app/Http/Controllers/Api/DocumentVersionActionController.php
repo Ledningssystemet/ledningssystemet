@@ -22,7 +22,7 @@ class DocumentVersionActionController extends Controller
         // Check if already finished
         if ($version->finished_at !== null) {
             return response()->json(
-                ['message' => 'Document version is already finished.'],
+                ['message' => __('api.document_versions.already_finished')],
                 Response::HTTP_CONFLICT
             );
         }
@@ -43,7 +43,7 @@ class DocumentVersionActionController extends Controller
         // Check if user is the approver
         if ($version->approver_id !== auth()->id()) {
             return response()->json(
-                ['message' => 'You are not authorized to approve this version.'],
+                ['message' => __('api.document_versions.not_authorized_approve')],
                 Response::HTTP_FORBIDDEN
             );
         }
@@ -51,7 +51,7 @@ class DocumentVersionActionController extends Controller
         // Check if already approved
         if ($version->approved_at !== null) {
             return response()->json(
-                ['message' => 'Document version is already approved.'],
+                ['message' => __('api.document_versions.already_approved')],
                 Response::HTTP_CONFLICT
             );
         }
@@ -59,7 +59,7 @@ class DocumentVersionActionController extends Controller
         // Check if finished
         if ($version->finished_at === null) {
             return response()->json(
-                ['message' => 'Document version must be finished before approval.'],
+                ['message' => __('api.document_versions.must_finish_before_approval')],
                 Response::HTTP_CONFLICT
             );
         }
@@ -80,7 +80,7 @@ class DocumentVersionActionController extends Controller
         // Check if user is the approver
         if ($version->approver_id !== auth()->id()) {
             return response()->json(
-                ['message' => 'You are not authorized to reject this version.'],
+                ['message' => __('api.document_versions.not_authorized_reject')],
                 Response::HTTP_FORBIDDEN
             );
         }
@@ -88,7 +88,7 @@ class DocumentVersionActionController extends Controller
         // Check if already approved
         if ($version->approved_at !== null) {
             return response()->json(
-                ['message' => 'Cannot reject an already approved version.'],
+                ['message' => __('api.document_versions.cannot_reject_approved')],
                 Response::HTTP_CONFLICT
             );
         }

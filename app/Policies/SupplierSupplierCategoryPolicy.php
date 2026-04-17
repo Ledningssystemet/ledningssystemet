@@ -4,7 +4,6 @@ namespace App\Policies;
 
 use App\Models\SupplierSupplierCategory;
 use App\Models\User;
-use Illuminate\Auth\Access\Response;
 
 class SupplierSupplierCategoryPolicy
 {
@@ -44,22 +43,6 @@ class SupplierSupplierCategoryPolicy
      * Determine whether the user can delete the model.
      */
     public function delete(User $user, SupplierSupplierCategory $supplierSupplierCategory = new SupplierSupplierCategory): bool
-    {
-        return false;
-    }
-
-    /**
-     * Determine whether the user can restore the model.
-     */
-    public function restore(User $user, SupplierSupplierCategory $supplierSupplierCategory = new SupplierSupplierCategory): bool
-    {
-        return false;
-    }
-
-    /**
-     * Determine whether the user can permanently delete the model.
-     */
-    public function forceDelete(User $user, SupplierSupplierCategory $supplierSupplierCategory = new SupplierSupplierCategory): bool
     {
         return false;
     }

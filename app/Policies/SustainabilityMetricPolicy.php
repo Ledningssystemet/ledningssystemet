@@ -4,7 +4,6 @@ namespace App\Policies;
 
 use App\Models\SustainabilityMetric;
 use App\Models\User;
-use Illuminate\Auth\Access\Response;
 
 class SustainabilityMetricPolicy
 {
@@ -46,21 +45,5 @@ class SustainabilityMetricPolicy
     public function delete(User $user, SustainabilityMetric $sustainabilityMetric = new SustainabilityMetric): bool
     {
         return $user->can('update', $sustainabilityMetric);
-    }
-
-    /**
-     * Determine whether the user can restore the model.
-     */
-    public function restore(User $user, SustainabilityMetric $sustainabilityMetric = new SustainabilityMetric): bool
-    {
-        return false;
-    }
-
-    /**
-     * Determine whether the user can permanently delete the model.
-     */
-    public function forceDelete(User $user, SustainabilityMetric $sustainabilityMetric = new SustainabilityMetric): bool
-    {
-        return false;
     }
 }

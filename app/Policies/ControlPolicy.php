@@ -4,7 +4,6 @@ namespace App\Policies;
 
 use App\Models\Control;
 use App\Models\User;
-use Illuminate\Auth\Access\Response;
 
 class ControlPolicy
 {
@@ -13,7 +12,7 @@ class ControlPolicy
      */
     public function viewAny(User $user): bool
     {
-                return $user->haveAnyAccessRights(['controls.read', 'controls.edit']);
+        return $user->haveAnyAccessRights(['controls.read', 'controls.edit']);
     }
 
     /**
@@ -21,7 +20,7 @@ class ControlPolicy
      */
     public function view(User $user, Control $control = new Control): bool
     {
-                return $user->haveAnyAccessRights(['controls.read', 'controls.edit']);
+        return $user->haveAnyAccessRights(['controls.read', 'controls.edit']);
     }
 
     /**
@@ -37,7 +36,7 @@ class ControlPolicy
      */
     public function update(User $user, Control $control = new Control): bool
     {
-                return $user->haveAnyAccessRights(['controls.edit']);
+        return $user->haveAnyAccessRights(['controls.edit']);
     }
 
     /**
@@ -45,22 +44,6 @@ class ControlPolicy
      */
     public function delete(User $user, Control $control = new Control): bool
     {
-                return $user->can('update', $control);
-    }
-
-    /**
-     * Determine whether the user can restore the model.
-     */
-    public function restore(User $user, Control $control = new Control): bool
-    {
-        return false;
-    }
-
-    /**
-     * Determine whether the user can permanently delete the model.
-     */
-    public function forceDelete(User $user, Control $control = new Control): bool
-    {
-        return false;
+        return $user->can('update', $control);
     }
 }

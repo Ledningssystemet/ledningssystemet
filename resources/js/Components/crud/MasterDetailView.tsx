@@ -9,6 +9,7 @@ import { InlineTagsEditor } from "./InlineTagsEditor";
 import { useAllSelectOptions, resolveOptions } from "./optionsCache";
 import { DragEvent, Fragment, useEffect, useMemo, useRef, useState } from "react";
 import { setupDragPreview } from "./dragPreview";
+import { useTranslations } from "@/hooks/useTranslations";
 
 type DropPosition = "before" | "after";
 
@@ -51,6 +52,7 @@ export function MasterDetailView({
   reorderEnabled = false,
   onReorder,
 }: MasterDetailViewProps) {
+  const { t } = useTranslations();
   const normalizedItems = Array.isArray(items) ? items : [];
   const labelField = fields.find((f) => f.masterLabel) || fields[0];
   const descField = fields.find((f) => f.masterDescription);
@@ -181,7 +183,7 @@ export function MasterDetailView({
                           setDropTarget(null);
                         }}
                         onClick={(event) => event.preventDefault()}
-                        title="Dra for att sortera"
+                        title={t("ui.crud.drag_to_reorder")}
                       >
                         <GripVertical className="h-4 w-4" />
                       </span>
@@ -212,7 +214,7 @@ export function MasterDetailView({
             })}
             {items.length === 0 && (
               <div className="p-8 text-center text-muted-foreground text-sm">
-                Inga resultat
+                {t("ui.crud.no_results")}
               </div>
             )}
           </div>
@@ -250,7 +252,7 @@ export function MasterDetailView({
                       {canEdit && onEdit && (
                         <Button variant="outline" size="sm" onClick={() => onEdit(activeItem)}>
                           <Pencil className="h-4 w-4 mr-1" />
-                          Redigera
+                          {t("ui.crud.action_edit")}
                         </Button>
                       )}
                       {canDeleteActiveItem && onDelete && (
@@ -261,7 +263,7 @@ export function MasterDetailView({
                           onClick={() => onDelete(activeItemId as string | number)}
                         >
                           <Trash2 className="h-4 w-4 mr-1" />
-                          Radera
+                          {t("ui.crud.action_delete")}
                         </Button>
                       )}
                       {activeItem && visibleActiveRowActions.map((action) => (
@@ -306,7 +308,7 @@ export function MasterDetailView({
                                 )
                                 : field.renderDetail
                                 ? field.renderDetail(value, activeItem)
-                                : renderDetailValue(value, field, optionsMap)}
+                                : renderDetailValue(value, field, optionsMap, t)}
                             </span>
                           </div>
                         );
@@ -318,7 +320,7 @@ export function MasterDetailView({
             </ScrollArea>
           ) : (
             <div className="flex items-center justify-center h-full text-muted-foreground">
-              Välj ett element i listan
+              {t("ui.crud.select_item_in_list")}
             </div>
           )}
         </div>
@@ -337,9 +339,14 @@ function groupByCategory(fields: FieldConfig[]) {
   return Array.from(map.entries()).map(([category, fields]) => ({ category, fields }));
 }
 
-function renderDetailValue(value: any, field: FieldConfig, optionsMap: Map<string, SelectOption[]>) {
+function renderDetailValue(
+  value: any,
+  field: FieldConfig,
+  optionsMap: Map<string, SelectOption[]>,
+  t: (key: string, replacements?: Record<string, string | number>) => string,
+) {
   if (value == null) return "—";
-  if (field.type === "boolean") return value ? "Ja" : "Nej";
+  if (field.type === "boolean") return value ? t("ui.crud.yes") : t("ui.crud.no");
   if ((field.type === "multiselect" || field.type === "tags" || field.type === "inline-tags") && Array.isArray(value)) {
     const opts = resolveOptions(field, optionsMap);
     return (

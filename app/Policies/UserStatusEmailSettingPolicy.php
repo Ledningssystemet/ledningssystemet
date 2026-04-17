@@ -4,7 +4,6 @@ namespace App\Policies;
 
 use App\Models\User;
 use App\Models\UserStatusEmailSetting;
-use Illuminate\Auth\Access\Response;
 
 class UserStatusEmailSettingPolicy
 {
@@ -44,22 +43,6 @@ class UserStatusEmailSettingPolicy
      * Determine whether the user can delete the model.
      */
     public function delete(User $user, UserStatusEmailSetting $userStatusEmailSetting = new UserStatusEmailSetting): bool
-    {
-        return false;
-    }
-
-    /**
-     * Determine whether the user can restore the model.
-     */
-    public function restore(User $user, UserStatusEmailSetting $userStatusEmailSetting = new UserStatusEmailSetting): bool
-    {
-        return false;
-    }
-
-    /**
-     * Determine whether the user can permanently delete the model.
-     */
-    public function forceDelete(User $user, UserStatusEmailSetting $userStatusEmailSetting = new UserStatusEmailSetting): bool
     {
         return false;
     }

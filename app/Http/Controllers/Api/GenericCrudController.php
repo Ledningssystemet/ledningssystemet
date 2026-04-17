@@ -207,7 +207,7 @@ class GenericCrudController extends Controller
         }
 
         if (! is_string($modelClass) || ! class_exists($modelClass) || ! is_subclass_of($modelClass, Model::class)) {
-            abort(Response::HTTP_NOT_FOUND, 'Unknown resource.');
+            abort(Response::HTTP_NOT_FOUND, __('api.generic_crud.unknown_resource'));
         }
 
         return $modelClass;
@@ -459,7 +459,7 @@ class GenericCrudController extends Controller
         foreach ($filters as $field => $value) {
             if (! is_string($field) || ! array_key_exists($field, $allowedFilters)) {
                 throw ValidationException::withMessages([
-                    'filter' => ["Filter field [{$field}] is not allowed."],
+                    'filter' => [__('api.generic_crud.filter_field_not_allowed', ['field' => $field])],
                 ]);
             }
 
@@ -597,7 +597,7 @@ class GenericCrudController extends Controller
 
                 if ($relation === null) {
                     throw ValidationException::withMessages([
-                        'extends' => ["Extend [{$token}] is not allowed."],
+                        'extends' => [__('api.generic_crud.extend_not_allowed', ['extend' => $token])],
                     ]);
                 }
 
@@ -609,7 +609,7 @@ class GenericCrudController extends Controller
             $relation = $available[$token] ?? null;
             if ($relation === null) {
                 throw ValidationException::withMessages([
-                    'extends' => ["Extend [{$token}] is not allowed."],
+                    'extends' => [__('api.generic_crud.extend_not_allowed', ['extend' => $token])],
                 ]);
             }
 
@@ -723,7 +723,7 @@ class GenericCrudController extends Controller
             $normalized = filter_var($value, FILTER_VALIDATE_BOOL, FILTER_NULL_ON_FAILURE);
             if ($normalized === null) {
                 throw ValidationException::withMessages([
-                    'filter' => ["Filter value for [{$field}] must be boolean."],
+                    'filter' => [__('api.generic_crud.filter_value_boolean', ['field' => $field])],
                 ]);
             }
 
@@ -732,7 +732,7 @@ class GenericCrudController extends Controller
 
         if (! is_numeric($value)) {
             throw ValidationException::withMessages([
-                'filter' => ["Filter value for [{$field}] must be numeric."],
+                'filter' => [__('api.generic_crud.filter_value_numeric', ['field' => $field])],
             ]);
         }
 

@@ -4,7 +4,6 @@ namespace App\Policies;
 
 use App\Models\Customer;
 use App\Models\User;
-use Illuminate\Auth\Access\Response;
 
 class CustomerPolicy
 {
@@ -13,7 +12,7 @@ class CustomerPolicy
      */
     public function viewAny(User $user): bool
     {
-                return $user->haveAnyAccessRights(['customers.read', 'customers.edit']);
+        return $user->haveAnyAccessRights(['customers.read', 'customers.edit']);
     }
 
     /**
@@ -21,7 +20,7 @@ class CustomerPolicy
      */
     public function view(User $user, Customer $customer = new Customer): bool
     {
-                return $user->haveAnyAccessRights(['customers.read', 'customers.edit']);
+        return $user->haveAnyAccessRights(['customers.read', 'customers.edit']);
     }
 
     /**
@@ -37,7 +36,7 @@ class CustomerPolicy
      */
     public function update(User $user, Customer $customer = new Customer): bool
     {
-                return $user->haveAnyAccessRights(['customers.edit']);
+        return $user->haveAnyAccessRights(['customers.edit']);
     }
 
     /**
@@ -45,22 +44,6 @@ class CustomerPolicy
      */
     public function delete(User $user, Customer $customer = new Customer): bool
     {
-                return $user->can('update', $customer);
-    }
-
-    /**
-     * Determine whether the user can restore the model.
-     */
-    public function restore(User $user, Customer $customer = new Customer): bool
-    {
-        return false;
-    }
-
-    /**
-     * Determine whether the user can permanently delete the model.
-     */
-    public function forceDelete(User $user, Customer $customer = new Customer): bool
-    {
-        return false;
+        return $user->can('update', $customer);
     }
 }

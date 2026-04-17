@@ -4,7 +4,6 @@ namespace App\Policies;
 
 use App\Models\SustainabilityAspect;
 use App\Models\User;
-use Illuminate\Auth\Access\Response;
 
 class SustainabilityAspectPolicy
 {
@@ -46,21 +45,5 @@ class SustainabilityAspectPolicy
     public function delete(User $user, SustainabilityAspect $sustainabilityAspect = new SustainabilityAspect): bool
     {
         return $user->can('update', $sustainabilityAspect);
-    }
-
-    /**
-     * Determine whether the user can restore the model.
-     */
-    public function restore(User $user, SustainabilityAspect $sustainabilityAspect = new SustainabilityAspect): bool
-    {
-        return false;
-    }
-
-    /**
-     * Determine whether the user can permanently delete the model.
-     */
-    public function forceDelete(User $user, SustainabilityAspect $sustainabilityAspect = new SustainabilityAspect): bool
-    {
-        return false;
     }
 }

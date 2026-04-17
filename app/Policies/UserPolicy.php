@@ -3,7 +3,6 @@
 namespace App\Policies;
 
 use App\Models\User;
-use Illuminate\Auth\Access\Response;
 
 class UserPolicy
 {
@@ -45,21 +44,5 @@ class UserPolicy
     public function delete(User $user, User $model = new User): bool
     {
         return $user->haveAnyAccessRights(['systemadministrator.edit']);
-    }
-
-    /**
-     * Determine whether the user can restore the model.
-     */
-    public function restore(User $user, User $model = new User): bool
-    {
-        return false;
-    }
-
-    /**
-     * Determine whether the user can permanently delete the model.
-     */
-    public function forceDelete(User $user, User $model = new User): bool
-    {
-        return false;
     }
 }

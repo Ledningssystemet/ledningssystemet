@@ -4,7 +4,6 @@ namespace App\Policies;
 
 use App\Models\Competence;
 use App\Models\User;
-use Illuminate\Auth\Access\Response;
 
 class CompetencePolicy
 {
@@ -46,21 +45,5 @@ class CompetencePolicy
     public function delete(User $user, Competence $competence = new Competence): bool
     {
         return $user->can('update', $competence);
-    }
-
-    /**
-     * Determine whether the user can restore the model.
-     */
-    public function restore(User $user, Competence $competence = new Competence): bool
-    {
-        return false;
-    }
-
-    /**
-     * Determine whether the user can permanently delete the model.
-     */
-    public function forceDelete(User $user, Competence $competence = new Competence): bool
-    {
-        return false;
     }
 }

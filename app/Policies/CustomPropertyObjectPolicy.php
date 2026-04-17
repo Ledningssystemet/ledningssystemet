@@ -4,7 +4,6 @@ namespace App\Policies;
 
 use App\Models\CustomPropertyObject;
 use App\Models\User;
-use Illuminate\Auth\Access\Response;
 
 class CustomPropertyObjectPolicy
 {
@@ -44,22 +43,6 @@ class CustomPropertyObjectPolicy
      * Determine whether the user can delete the model.
      */
     public function delete(User $user, CustomPropertyObject $customPropertyObject = new CustomPropertyObject): bool
-    {
-        return false;
-    }
-
-    /**
-     * Determine whether the user can restore the model.
-     */
-    public function restore(User $user, CustomPropertyObject $customPropertyObject = new CustomPropertyObject): bool
-    {
-        return false;
-    }
-
-    /**
-     * Determine whether the user can permanently delete the model.
-     */
-    public function forceDelete(User $user, CustomPropertyObject $customPropertyObject = new CustomPropertyObject): bool
     {
         return false;
     }

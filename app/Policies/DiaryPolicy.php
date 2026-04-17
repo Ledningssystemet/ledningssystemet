@@ -4,7 +4,6 @@ namespace App\Policies;
 
 use App\Models\Diary;
 use App\Models\User;
-use Illuminate\Auth\Access\Response;
 
 class DiaryPolicy
 {
@@ -46,21 +45,5 @@ class DiaryPolicy
     public function delete(User $user, Diary $diary = new Diary): bool
     {
         return $user->can('update', $diary);
-    }
-
-    /**
-     * Determine whether the user can restore the model.
-     */
-    public function restore(User $user, Diary $diary = new Diary): bool
-    {
-        return false;
-    }
-
-    /**
-     * Determine whether the user can permanently delete the model.
-     */
-    public function forceDelete(User $user, Diary $diary = new Diary): bool
-    {
-        return false;
     }
 }

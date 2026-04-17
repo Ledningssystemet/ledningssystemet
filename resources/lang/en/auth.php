@@ -49,6 +49,15 @@ return [
 		'login_failed' => 'Could not complete sign in.',
 	],
 
+	'oauth' => [
+		'cancelled_or_denied' => 'OAuth login was cancelled or denied.',
+		'login_success' => 'You are now logged in.',
+		'invalid_user_id' => 'The OAuth provider did not return a valid user id.',
+		'missing_email' => 'The OAuth provider did not return an email address.',
+		'linked_to_other_provider' => 'This account is linked to another OAuth provider.',
+		'linked_to_other_identity' => 'This account is already linked to another external identity.',
+	],
+
 	'session' => [
 		'expired_title' => 'Your session has ended',
 		'expired_message' => 'You appear to be signed out. Open sign in in a new tab and sign in there to avoid losing changes made in this tab.',

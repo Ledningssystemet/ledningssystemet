@@ -4,7 +4,6 @@ namespace App\Policies;
 
 use App\Models\ProcessSustainabilityAspectSustainabilityMetric;
 use App\Models\User;
-use Illuminate\Auth\Access\Response;
 
 class ProcessSustainabilityAspectSustainabilityMetricPolicy
 {
@@ -44,22 +43,6 @@ class ProcessSustainabilityAspectSustainabilityMetricPolicy
      * Determine whether the user can delete the model.
      */
     public function delete(User $user, ProcessSustainabilityAspectSustainabilityMetric $processSustainabilityAspectSustainabilityMetric = new ProcessSustainabilityAspectSustainabilityMetric): bool
-    {
-        return false;
-    }
-
-    /**
-     * Determine whether the user can restore the model.
-     */
-    public function restore(User $user, ProcessSustainabilityAspectSustainabilityMetric $processSustainabilityAspectSustainabilityMetric = new ProcessSustainabilityAspectSustainabilityMetric): bool
-    {
-        return false;
-    }
-
-    /**
-     * Determine whether the user can permanently delete the model.
-     */
-    public function forceDelete(User $user, ProcessSustainabilityAspectSustainabilityMetric $processSustainabilityAspectSustainabilityMetric = new ProcessSustainabilityAspectSustainabilityMetric): bool
     {
         return false;
     }

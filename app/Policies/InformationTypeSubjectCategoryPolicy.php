@@ -4,7 +4,6 @@ namespace App\Policies;
 
 use App\Models\InformationTypeSubjectCategory;
 use App\Models\User;
-use Illuminate\Auth\Access\Response;
 
 class InformationTypeSubjectCategoryPolicy
 {
@@ -44,22 +43,6 @@ class InformationTypeSubjectCategoryPolicy
      * Determine whether the user can delete the model.
      */
     public function delete(User $user, InformationTypeSubjectCategory $informationTypeSubjectCategory = new InformationTypeSubjectCategory): bool
-    {
-        return false;
-    }
-
-    /**
-     * Determine whether the user can restore the model.
-     */
-    public function restore(User $user, InformationTypeSubjectCategory $informationTypeSubjectCategory = new InformationTypeSubjectCategory): bool
-    {
-        return false;
-    }
-
-    /**
-     * Determine whether the user can permanently delete the model.
-     */
-    public function forceDelete(User $user, InformationTypeSubjectCategory $informationTypeSubjectCategory = new InformationTypeSubjectCategory): bool
     {
         return false;
     }

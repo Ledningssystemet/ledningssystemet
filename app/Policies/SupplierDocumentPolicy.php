@@ -4,7 +4,6 @@ namespace App\Policies;
 
 use App\Models\SupplierDocument;
 use App\Models\User;
-use Illuminate\Auth\Access\Response;
 
 class SupplierDocumentPolicy
 {
@@ -44,22 +43,6 @@ class SupplierDocumentPolicy
      * Determine whether the user can delete the model.
      */
     public function delete(User $user, SupplierDocument $supplierDocument = new SupplierDocument): bool
-    {
-        return false;
-    }
-
-    /**
-     * Determine whether the user can restore the model.
-     */
-    public function restore(User $user, SupplierDocument $supplierDocument = new SupplierDocument): bool
-    {
-        return false;
-    }
-
-    /**
-     * Determine whether the user can permanently delete the model.
-     */
-    public function forceDelete(User $user, SupplierDocument $supplierDocument = new SupplierDocument): bool
     {
         return false;
     }

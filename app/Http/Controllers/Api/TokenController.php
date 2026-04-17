@@ -43,7 +43,7 @@ class TokenController extends Controller
 
         if ($expiresAt !== null && $expiresAt->isPast()) {
             throw ValidationException::withMessages([
-                'expires_at' => ['expires_at must be in the future.'],
+                'expires_at' => [__('api.tokens.expires_at_future')],
             ]);
         }
 
@@ -83,7 +83,7 @@ class TokenController extends Controller
 
         if ($currentToken === null) {
             return response()->json([
-                'message' => 'No current access token is associated with this request.',
+                'message' => __('api.tokens.no_current_access_token'),
             ], 400);
         }
 
