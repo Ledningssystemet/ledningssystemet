@@ -97,8 +97,10 @@ return [
 			'clear_all' => 'Clear all',
 			'clear_selection' => 'Clear selection',
 			'reorder_hint' => 'Drag the handle to reorder items',
-			'mass_edit_selected' => 'Edit :count selected',
-			'mass_delete_selected' => 'Delete :count selected',
+		'mass_edit_selected' => 'Edit :count selected',
+		'mass_delete_selected' => 'Delete :count selected',
+		'export_selected' => 'Export :count selected (CSV)',
+		'export_all' => 'Export all (CSV)',
 			'view_master_detail' => 'Master/detail',
 			'view_table' => 'Table',
 			'view_list' => 'List',
@@ -122,6 +124,7 @@ return [
 		'inline_tags_description' => 'Select existing tags or create new ones, then save the change.',
 		'inline_tags_placeholder' => 'Select or create tag...',
 		'inline_tags_save_error' => 'Could not save tags.',
+		'multi_value_more' => '+:count more...',
 	],
 
 	'widget' => [

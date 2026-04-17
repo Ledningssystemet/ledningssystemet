@@ -23,6 +23,8 @@ import {
   SlidersHorizontal,
   ArrowUp,
   ArrowDown,
+  Download,
+  Loader2,
 } from "lucide-react";
 import { useTranslations } from "@/hooks/useTranslations";
 
@@ -47,6 +49,9 @@ interface FilterBarProps {
   sortLocked?: boolean;
   reorderEnabled?: boolean;
   hideSortFilterControls?: boolean;
+  onExportSelected?: () => void;
+  onExportAll?: () => Promise<void>;
+  exportingAll?: boolean;
 }
 
 export function FilterBar({
@@ -70,6 +75,9 @@ export function FilterBar({
   sortLocked = false,
   reorderEnabled = false,
   hideSortFilterControls = false,
+  onExportSelected,
+  onExportAll,
+  exportingAll = false,
 }: FilterBarProps) {
   const { t } = useTranslations();
   const [localSearch, setLocalSearch] = useState(search);
@@ -223,6 +231,27 @@ export function FilterBar({
               <X className="h-4 w-4 mr-1" />
               {t("ui.crud.filter.clear_selection")}
             </Button>
+          )}
+
+          {(onExportSelected || onExportAll) && (
+            <>
+              {onExportSelected && selectedCount > 0 && (
+                <Button variant="outline" size="sm" onClick={onExportSelected} disabled={exportingAll}>
+                  <Download className="h-4 w-4 mr-1" />
+                  {t("ui.crud.filter.export_selected", { count: selectedCount })}
+                </Button>
+              )}
+              {onExportAll && (
+                <Button variant="outline" size="sm" onClick={() => void onExportAll()} disabled={exportingAll}>
+                  {exportingAll ? (
+                    <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                  ) : (
+                    <Download className="h-4 w-4 mr-1" />
+                  )}
+                  {t("ui.crud.filter.export_all")}
+                </Button>
+              )}
+            </>
           )}
 
           <div className="flex border rounded-md overflow-hidden">

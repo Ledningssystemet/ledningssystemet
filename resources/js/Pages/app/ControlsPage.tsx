@@ -251,15 +251,6 @@ export default function ControlsPage({ route }: ControlsPageProps) {
                     description={t('pages.controls.description')}
                     icon={<ClipboardCheck className="h-6 w-6 text-primary" />}
                     route={route}
-                    actions={
-                        <a
-                            href="/api/v1/ReportCentral/Controls/0"
-                            className="flex items-center gap-2 rounded-lg border border-border bg-background px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted"
-                        >
-                            <Download className="h-4 w-4" />
-                            {t('pages.controls.export_excel')}
-                        </a>
-                    }
                 />
 
                 <section className="rounded-2xl border border-border bg-card p-6 shadow-sm">

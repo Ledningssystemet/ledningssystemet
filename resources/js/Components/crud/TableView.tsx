@@ -9,6 +9,7 @@ import { useAllSelectOptions, resolveOptions } from "./optionsCache";
 import { DragEvent, Fragment, useEffect, useMemo, useRef, useState } from "react";
 import { setupDragPreview } from "./dragPreview";
 import { useTranslations } from "@/hooks/useTranslations";
+import { CollapsedMultiValueBadges } from "./CollapsedMultiValueBadges";
 
 type DropPosition = "before" | "after";
 
@@ -334,16 +335,11 @@ function renderValue(
   if ((field.type === "multiselect" || field.type === "tags" || field.type === "inline-tags") && Array.isArray(value)) {
     const opts = resolveOptions(field, optionsMap);
     return (
-      <div className="flex flex-wrap gap-1">
-        {value.map((v: any) => {
-          const opt = opts.find((o) => String(o.value) === String(v));
-          return (
-            <Badge key={v} variant="secondary" className="text-xs">
-              {opt?.label || v}
-            </Badge>
-          );
-        })}
-      </div>
+      <CollapsedMultiValueBadges
+        values={value}
+        options={opts}
+        moreLabel={(remaining) => t("ui.crud.multi_value_more", { count: remaining })}
+      />
     );
   }
 

@@ -14,6 +14,7 @@ import { useAllSelectOptions, resolveOptions } from "./optionsCache";
 import { DragEvent, Fragment, useEffect, useMemo, useRef, useState } from "react";
 import { setupDragPreview } from "./dragPreview";
 import { useTranslations } from "@/hooks/useTranslations";
+import { CollapsedMultiValueBadges } from "./CollapsedMultiValueBadges";
 
 type DropPosition = "before" | "after";
 type CrudItem = Record<string, any>;
@@ -307,6 +308,16 @@ function renderAccVal(
 ) {
   if (value == null) return "-";
   if (field.type === "boolean") return value ? t("ui.crud.yes") : t("ui.crud.no");
+  if ((field.type === "multiselect" || field.type === "tags" || field.type === "inline-tags") && Array.isArray(value)) {
+    const opts = resolveOptions(field, optionsMap);
+    return (
+      <CollapsedMultiValueBadges
+        values={value}
+        options={opts}
+        moreLabel={(remaining) => t("ui.crud.multi_value_more", { count: remaining })}
+      />
+    );
+  }
   if (Array.isArray(value)) {
     const opts = resolveOptions(field, optionsMap);
     return (

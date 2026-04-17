@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { CrudModuleConfig, FieldConfig, RowActionConfig, SubTableActionConfig } from "./types";
 import { useCrudModule } from "./useCrudModule";
+import { useCsvExport } from "./useCsvExport";
 import { FilterBar } from "./FilterBar";
 import { TableView } from "./TableView";
 import { MasterDetailView } from "./MasterDetailView";
@@ -109,7 +110,15 @@ export function CrudModule({ config, onEditFormDataChange }: CrudModuleProps) {
     massDelete,
     reorderByOrdinal,
     refetch,
+    buildExportQueryString,
   } = useCrudModule(configWithCombinedActions);
+
+  const { exportSelected, exportAll, exporting: exportingAll } = useCsvExport({
+    config: configWithCombinedActions,
+    state,
+    buildExportQueryString,
+    title: configWithCombinedActions.title,
+  });
 
   const [editOpen, setEditOpen] = useState(false);
   const [editItem, setEditItem] = useState<Record<string, any> | null>(null);
@@ -223,6 +232,9 @@ export function CrudModule({ config, onEditFormDataChange }: CrudModuleProps) {
         sortLocked={hasOrdinalField}
         reorderEnabled={hasOrdinalField}
         hideSortFilterControls={hasOrdinalField}
+        onExportSelected={state.selectedItems.size > 0 ? exportSelected : undefined}
+        onExportAll={exportAll}
+        exportingAll={exportingAll}
       />
 
       <CrudPagination

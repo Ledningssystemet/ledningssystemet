@@ -87,7 +87,7 @@ const appendFormDataValue = (formData: FormData, key: string, value: any): void 
   formData.append(key, String(value));
 };
 
-const buildQueryString = (
+export const buildQueryString = (
   config: CrudModuleConfig,
   state: Pick<CrudState, "search" | "filters" | "sort" | "sortDirection" | "page" | "perPage">
 ) => {
@@ -609,5 +609,10 @@ export function useCrudModule(config: CrudModuleConfig) {
     massDelete,
     reorderByOrdinal,
     refetch: fetchItems,
+    buildExportQueryString: useCallback(
+      () => buildQueryString(config, { ...state, page: 1, perPage: 5000 }),
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+      [config, state.search, state.filters, state.sort, state.sortDirection]
+    ),
   };
 }
