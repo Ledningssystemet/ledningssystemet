@@ -29,7 +29,7 @@ class ActivityFlowPolicy
      */
     public function create(User $user): bool
     {
-        return $user->haveAnyAccessRights(['managementtools.edit', 'superadmin.edit']);
+        return $user->haveAnyAccessRights(['managementtools.edit']);
     }
 
     /**
@@ -45,10 +45,7 @@ class ActivityFlowPolicy
      */
     public function delete(User $user, ActivityFlow $activityFlow = new ActivityFlow): bool
     {
-        if ($user->haveAnyAccessRights(['superadmin.edit']))
-            return true;
-
-        return $user->can('update', $activityFlow);
+                return $user->can('update', $activityFlow);
     }
 
     /**

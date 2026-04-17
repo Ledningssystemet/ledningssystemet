@@ -69,10 +69,7 @@ class RiskPolicy
      */
     public function update(User $user, Risk $risk = new Risk): bool
     {
-        if ($user->haveAnyAccessRights(['superadmin.edit']))
-            return true;
-
-        if (null == $risk->project_id) {
+                if (null == $risk->project_id) {
             if ($user->haveAnyAccessRights(['riskadministrator.edit', 'riskall.edit']))
                 return true;
 

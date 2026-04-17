@@ -3,7 +3,6 @@ import { Users } from 'lucide-react';
 import AppLayout from '@/layouts/AppLayout';
 import { CrudModule } from '@/components/crud';
 import type { CrudModuleConfig } from '@/components/crud';
-import type { CrudRecord } from '@/types/crud';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { useTranslations } from '@/hooks/useTranslations';
 import { EmployeeDialog } from '@/components/employees/EmployeeDialog';
@@ -37,7 +36,13 @@ export default function EmployeesPage({ route }: EmployeesPageProps) {
                 icon: <Users className="h-4 w-4" />,
                 variant: 'outline',
                 refreshOnComplete: false,
-                onClick: (item: CrudRecord) => setSelectedEmployeeId(item.id as number),
+                onClick: (item: Record<string, any>) => {
+                    const employeeId = typeof item.id === 'number' ? item.id : Number(item.id);
+
+                    if (!Number.isNaN(employeeId)) {
+                        setSelectedEmployeeId(employeeId);
+                    }
+                },
             },
         ],
     }), [t]);

@@ -45,10 +45,7 @@ class UserNotificationChannelPolicy
      */
     public function delete(User $user, UserNotificationChannel $userNotificationChannel = new UserNotificationChannel): bool
     {
-        if ($user->haveAnyAccessRights(['superadmin.edit']))
-            return true;
-
-        return $user->can('update', $userNotificationChannel);
+                return $user->can('update', $userNotificationChannel);
     }
 
     /**

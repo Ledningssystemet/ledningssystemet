@@ -29,7 +29,7 @@ class LibraryDocumentPolicy
      */
     public function create(User $user): bool
     {
-        return $user->haveAnyAccessRights(['managementtools.edit', 'superadmin.edit']);
+        return $user->haveAnyAccessRights(['managementtools.edit']);
     }
 
     /**
@@ -37,10 +37,7 @@ class LibraryDocumentPolicy
      */
     public function update(User $user, LibraryDocument $libraryDocument = new LibraryDocument): bool
     {
-        if ($user->haveAnyAccessRights(['superadmin.edit']))
-            return true;
-
-        return ($user->haveAnyAccessRights(['managementtools.edit']) ||
+                return ($user->haveAnyAccessRights(['managementtools.edit']) ||
                 ($user->id == $libraryDocument->responsible_user_id));
     }
 
@@ -49,7 +46,7 @@ class LibraryDocumentPolicy
      */
     public function delete(User $user, LibraryDocument $libraryDocument = new LibraryDocument): bool
     {
-        return $user->haveAnyAccessRights(['managementtools.edit', 'superadmin.edit']);
+        return $user->haveAnyAccessRights(['managementtools.edit']);
     }
 
     /**

@@ -13,10 +13,7 @@ class ControlPolicy
      */
     public function viewAny(User $user): bool
     {
-        if ($user->haveAnyAccessRights(['superadmin.edit']))
-            return true;
-
-        return $user->haveAnyAccessRights(['controls.read', 'controls.edit']);
+                return $user->haveAnyAccessRights(['controls.read', 'controls.edit']);
     }
 
     /**
@@ -24,10 +21,7 @@ class ControlPolicy
      */
     public function view(User $user, Control $control = new Control): bool
     {
-        if ($user->haveAnyAccessRights(['superadmin.edit']))
-            return true;
-
-        return $user->haveAnyAccessRights(['controls.read', 'controls.edit']);
+                return $user->haveAnyAccessRights(['controls.read', 'controls.edit']);
     }
 
     /**
@@ -35,7 +29,7 @@ class ControlPolicy
      */
     public function create(User $user): bool
     {
-        return $user->haveAnyAccessRights(['controls.edit', 'superadmin.edit']);
+        return $user->haveAnyAccessRights(['controls.edit']);
     }
 
     /**
@@ -43,10 +37,7 @@ class ControlPolicy
      */
     public function update(User $user, Control $control = new Control): bool
     {
-        if ($user->haveAnyAccessRights(['superadmin.edit']))
-            return true;
-
-        return $user->haveAnyAccessRights(['controls.edit']);
+                return $user->haveAnyAccessRights(['controls.edit']);
     }
 
     /**
@@ -54,10 +45,7 @@ class ControlPolicy
      */
     public function delete(User $user, Control $control = new Control): bool
     {
-        if ($user->haveAnyAccessRights(['superadmin.edit']))
-            return true;
-
-        return $user->can('update', $control);
+                return $user->can('update', $control);
     }
 
     /**

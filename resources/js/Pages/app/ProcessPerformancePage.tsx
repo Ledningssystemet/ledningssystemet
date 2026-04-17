@@ -1,4 +1,4 @@
-﻿import { useMemo, useState } from 'react';
+﻿import { useMemo, useState, useEffect } from 'react';
 import { usePage } from '@inertiajs/react';
 import type { PageProps } from '@inertiajs/core';
 import { Activity, ChartNoAxesCombined } from 'lucide-react';

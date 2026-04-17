@@ -13,10 +13,7 @@ class InformationTypePolicy
      */
     public function viewAny(User $user): bool
     {
-        if ($user->haveAnyAccessRights(['superadmin.edit']))
-            return true;
-
-        return $user->haveAnyAccessRights(['processes.read', 'processes.edit']);
+                return $user->haveAnyAccessRights(['processes.read', 'processes.edit']);
     }
 
     /**
@@ -24,10 +21,7 @@ class InformationTypePolicy
      */
     public function view(User $user, InformationType $informationType = new InformationType): bool
     {
-        if ($user->haveAnyAccessRights(['superadmin.edit']))
-            return true;
-
-        return $user->haveAnyAccessRights(['processes.read', 'processes.edit']);
+                return $user->haveAnyAccessRights(['processes.read', 'processes.edit']);
     }
 
     /**
@@ -35,7 +29,7 @@ class InformationTypePolicy
      */
     public function create(User $user): bool
     {
-        return $user->haveAnyAccessRights(['processes.edit', 'superadmin.edit']);
+        return $user->haveAnyAccessRights(['processes.edit']);
     }
 
     /**
@@ -43,10 +37,7 @@ class InformationTypePolicy
      */
     public function update(User $user, InformationType $informationType = new InformationType): bool
     {
-        if ($user->haveAnyAccessRights(['superadmin.edit']))
-            return true;
-
-        return $user->haveAnyAccessRights(['processes.edit']);
+                return $user->haveAnyAccessRights(['processes.edit']);
     }
 
     /**
@@ -54,10 +45,7 @@ class InformationTypePolicy
      */
     public function delete(User $user, InformationType $informationType = new InformationType): bool
     {
-        if ($user->haveAnyAccessRights(['superadmin.edit']))
-            return true;
-
-        return ($user->can('update', $informationType) && !count($informationType->int_processes()));
+                return ($user->can('update', $informationType) && !count($informationType->int_processes()));
     }
 
     /**

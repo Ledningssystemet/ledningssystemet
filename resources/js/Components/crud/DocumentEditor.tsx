@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, forwardRef, useImperativeHandle } from 'react';
-import EditorJS, { API, EditorConfig } from '@editorjs/editorjs';
+import EditorJS, { EditorConfig, ToolConstructable } from '@editorjs/editorjs';
 import Header from '@editorjs/header';
 import List from '@editorjs/list';
 import Paragraph from '@editorjs/paragraph';
@@ -100,7 +100,9 @@ export const DocumentEditor = forwardRef<any, DocumentEditorProps>(function Docu
     }), [readOnly]);
 
     useEffect(() => {
-        if (!editorRef.current) return;
+        const holder = editorRef.current;
+
+        if (!holder) return;
 
         const initializeEditor = async () => {
             try {
@@ -124,16 +126,16 @@ export const DocumentEditor = forwardRef<any, DocumentEditorProps>(function Docu
                 }
 
                 const editorConfig: EditorConfig = {
-                    holder: editorRef.current,
+                    holder,
                     readOnly: readOnly,
                     data: initialData,
                     tools: {
                         paragraph: {
-                            class: Paragraph,
+                            class: Paragraph as unknown as ToolConstructable,
                             inlineToolbar: true,
                         },
                         header: {
-                            class: Header,
+                            class: Header as unknown as ToolConstructable,
                             config: {
                                 placeholder: 'Enter a header',
                                 levels: [1, 2, 3],

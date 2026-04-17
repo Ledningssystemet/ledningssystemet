@@ -13,10 +13,7 @@ class CustomerPolicy
      */
     public function viewAny(User $user): bool
     {
-        if ($user->haveAnyAccessRights(['superadmin.edit']))
-            return true;
-
-        return $user->haveAnyAccessRights(['customers.read', 'customers.edit']);
+                return $user->haveAnyAccessRights(['customers.read', 'customers.edit']);
     }
 
     /**
@@ -24,10 +21,7 @@ class CustomerPolicy
      */
     public function view(User $user, Customer $customer = new Customer): bool
     {
-        if ($user->haveAnyAccessRights(['superadmin.edit']))
-            return true;
-
-        return $user->haveAnyAccessRights(['customers.read', 'customers.edit']);
+                return $user->haveAnyAccessRights(['customers.read', 'customers.edit']);
     }
 
     /**
@@ -35,7 +29,7 @@ class CustomerPolicy
      */
     public function create(User $user): bool
     {
-        return $user->haveAnyAccessRights(['customers.edit', 'superadmin.edit']);
+        return $user->haveAnyAccessRights(['customers.edit']);
     }
 
     /**
@@ -43,10 +37,7 @@ class CustomerPolicy
      */
     public function update(User $user, Customer $customer = new Customer): bool
     {
-        if ($user->haveAnyAccessRights(['superadmin.edit']))
-            return true;
-
-        return $user->haveAnyAccessRights(['customers.edit']);
+                return $user->haveAnyAccessRights(['customers.edit']);
     }
 
     /**
@@ -54,10 +45,7 @@ class CustomerPolicy
      */
     public function delete(User $user, Customer $customer = new Customer): bool
     {
-        if ($user->haveAnyAccessRights(['superadmin.edit']))
-            return true;
-
-        return $user->can('update', $customer);
+                return $user->can('update', $customer);
     }
 
     /**

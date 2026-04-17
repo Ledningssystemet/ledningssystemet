@@ -40,9 +40,8 @@ Den säkerställer konsistent kodstandard, struktur och dokumentation.
    - Kontrollera vad som redan existerar innan du skapar nytt
 
 4. ** Alla strängar skall översättas:**
-   - Systemet skall stödja både svenska och engelska men grundspråket är engelska
-   - Alla texter skall använda översättningsfunktionen och skall finnas på svenska och engelska i respektive språkfil under resources/lang/
-   - Strängar som inte behöver pluraliseringsinställningar behöver inte läggas in som referens utan kan översättas direkt i den svenska översättningsfilen
+   - Alla texter skall använda översättningsfunktionen och skall finnas på engelska under resources/lang/
+   - Strängar som inte behöver pluraliseringsinställningar behöver inte läggas in som referens utan kan läggas in direkt men ska ändå använda översättningsfunktionen
 
 ## ✅ Vad AI Ska Göra
 

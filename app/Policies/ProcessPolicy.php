@@ -13,10 +13,7 @@ class ProcessPolicy
      */
     public function viewAny(User $user): bool
     {
-        if ($user->haveAnyAccessRights(['superadmin.edit']))
-            return true;
-
-        return $user->haveAnyAccessRights(['processes.read', 'processes.edit']);
+                return $user->haveAnyAccessRights(['processes.read', 'processes.edit']);
     }
 
     /**
@@ -24,10 +21,7 @@ class ProcessPolicy
      */
     public function view(User $user, Process $process = new Process): bool
     {
-        if ($user->haveAnyAccessRights(['superadmin.edit']))
-            return true;
-
-        return $user->haveAnyAccessRights(['processes.read', 'processes.edit']);
+                return $user->haveAnyAccessRights(['processes.read', 'processes.edit']);
     }
 
     /**
@@ -35,7 +29,7 @@ class ProcessPolicy
      */
     public function create(User $user): bool
     {
-        return $user->haveAnyAccessRights(['processes.edit', 'superadmin.edit']);
+        return $user->haveAnyAccessRights(['processes.edit']);
     }
 
     /**
@@ -43,10 +37,7 @@ class ProcessPolicy
      */
     public function update(User $user, Process $process = new Process): bool
     {
-        if ($user->haveAnyAccessRights(['superadmin.edit']))
-            return true;
-
-        return $user->haveAnyAccessRights(['processes.edit']);
+                return $user->haveAnyAccessRights(['processes.edit']);
     }
 
     /**
@@ -54,10 +45,7 @@ class ProcessPolicy
      */
     public function delete(User $user, Process $process = new Process): bool
     {
-        if ($user->haveAnyAccessRights(['superadmin.edit']))
-            return true;
-
-        return $user->can('update', $process);
+                return $user->can('update', $process);
     }
 
     /**

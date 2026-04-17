@@ -29,7 +29,7 @@ class SitePolicy
      */
     public function create(User $user): bool
     {
-        return $user->haveAnyAccessRights(['systemadministrator.edit', 'superadmin.edit']);
+        return $user->haveAnyAccessRights(['systemadministrator.edit']);
     }
 
     /**

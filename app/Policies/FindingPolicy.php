@@ -45,10 +45,7 @@ class FindingPolicy
      */
     public function delete(User $user, Finding $finding = new Finding): bool
     {
-        if ($user->haveAnyAccessRights(['superadmin.edit']))
-            return true;
-
-        return $user->can('update', $finding);
+                return $user->can('update', $finding);
     }
 
     /**

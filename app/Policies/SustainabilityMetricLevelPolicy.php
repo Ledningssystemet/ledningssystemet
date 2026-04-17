@@ -29,7 +29,7 @@ class SustainabilityMetricLevelPolicy
      */
     public function create(User $user): bool
     {
-        return $user->haveAnyAccessRights(['managementtools.edit', 'superadmin.edit']);
+        return $user->haveAnyAccessRights(['managementtools.edit']);
     }
 
     /**
@@ -45,10 +45,6 @@ class SustainabilityMetricLevelPolicy
      */
     public function delete(User $user, SustainabilityMetricLevel $sustainabilityMetricLevel = new SustainabilityMetricLevel): bool
     {
-        if ($user->haveAnyAccessRights(['superadmin.edit'])) {
-            return true;
-        }
-
         return $user->can('update', $sustainabilityMetricLevel);
     }
 

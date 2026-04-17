@@ -29,7 +29,7 @@ class DataCategoryPolicy
      */
     public function create(User $user): bool
     {
-        return $user->haveAnyAccessRights(['managementtools.edit', 'superadmin.edit']);
+        return $user->haveAnyAccessRights(['managementtools.edit']);
     }
 
     /**
@@ -45,10 +45,6 @@ class DataCategoryPolicy
      */
     public function delete(User $user, DataCategory $dataCategory = new DataCategory): bool
     {
-        if ($user->haveAnyAccessRights(['superadmin.edit'])) {
-            return true;
-        }
-
         return $user->can('update', $dataCategory);
     }
 

@@ -16,7 +16,7 @@ class SupplierCategoryPolicy
             return false;
         }
 
-        return $user->haveAnyAccessRights(['managementtools.edit', 'superadmin.edit']);
+        return $user->haveAnyAccessRights(['managementtools.edit']);
     }
 
     /**
@@ -28,7 +28,7 @@ class SupplierCategoryPolicy
             return false;
         }
 
-        return $user->haveAnyAccessRights(['managementtools.edit', 'superadmin.edit']);
+        return $user->haveAnyAccessRights(['managementtools.edit']);
     }
 
     /**
@@ -40,7 +40,7 @@ class SupplierCategoryPolicy
             return false;
         }
 
-        return $user->haveAnyAccessRights(['managementtools.edit', 'superadmin.edit']);
+        return $user->haveAnyAccessRights(['managementtools.edit']);
     }
 
     /**
@@ -52,7 +52,7 @@ class SupplierCategoryPolicy
             return false;
         }
 
-        return $user->haveAnyAccessRights(['managementtools.edit', 'superadmin.edit']);
+        return $user->haveAnyAccessRights(['managementtools.edit']);
     }
 
     /**
@@ -64,7 +64,7 @@ class SupplierCategoryPolicy
             return false;
         }
 
-        return $user->haveAnyAccessRights(['managementtools.edit', 'superadmin.edit']);
+        return $user->haveAnyAccessRights(['managementtools.edit']);
     }
 
     /**

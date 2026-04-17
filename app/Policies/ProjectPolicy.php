@@ -49,7 +49,7 @@ class ProjectPolicy
      */
     public function create(User $user): bool
     {
-        return $user->haveAnyAccessRights(['riskdepartment.edit', 'riskall.edit', 'riskadministrator.edit', 'superadmin.edit']);
+        return $user->haveAnyAccessRights(['riskdepartment.edit', 'riskall.edit', 'riskadministrator.edit']);
     }
 
     /**
@@ -57,10 +57,7 @@ class ProjectPolicy
      */
     public function update(User $user, Project $riskProject = new Project): bool
     {
-        if ($user->haveAnyAccessRights(['superadmin.edit']))
-            return true;
-
-        if ($user->haveAnyAccessRights(['riskadministrator.edit']))
+                if ($user->haveAnyAccessRights(['riskadministrator.edit']))
             return true;
 
         if ($riskProject->responsible_user_id == $user->id)
@@ -74,10 +71,7 @@ class ProjectPolicy
      */
     public function delete(User $user, Project $riskProject = new Project): bool
     {
-        if ($user->haveAnyAccessRights(['superadmin.edit']))
-            return true;
-
-        return $user->can('update', $riskProject);
+                return $user->can('update', $riskProject);
     }
 
     /**

@@ -393,7 +393,7 @@ export default function ProjectsPage({ route }: ProjectRisksPageProps) {
 
             {projectRisksConfig && (
                 <Dialog open={Boolean(activeProjectForRisks)} onOpenChange={(open) => !open && setActiveProjectForRisks(null)}>
-                    <DialogContent className="max-w-5xl">
+                    <DialogContent className="max-w-8xl">
                         <DialogHeader>
                             <DialogTitle className="flex items-center gap-2">
                                 <ListChecks className="h-5 w-5" />

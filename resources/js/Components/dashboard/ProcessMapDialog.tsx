@@ -80,7 +80,7 @@ export default function ProcessMapDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="flex h-screen max-w-none translate-x-[-50%] translate-y-[-50%] flex-col gap-0 rounded-none border-0 p-0 sm:rounded-none">
+      <DialogContent className="flex h-screen max-h-none max-w-none translate-x-[-50%] translate-y-[-50%] flex-col gap-0 rounded-none border-0 p-0 sm:rounded-none">
         <DialogHeader className="border-b border-border px-6 py-4 pr-14 text-left">
           <div className="space-y-3">
             <div>

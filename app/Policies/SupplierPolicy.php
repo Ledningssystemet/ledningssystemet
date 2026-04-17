@@ -16,10 +16,7 @@ class SupplierPolicy
         if (config('ledningssystemet.disable_supplier', false))
             return false;
 
-        if ($user->haveAnyAccessRights(['superadmin.edit']))
-            return true;
-
-        return $user->haveAnyAccessRights(['suppliers.read', 'suppliers.edit']);
+                return $user->haveAnyAccessRights(['suppliers.read', 'suppliers.edit']);
     }
 
     /**
@@ -30,10 +27,7 @@ class SupplierPolicy
         if (config('ledningssystemet.disable_supplier', false))
             return false;
 
-        if ($user->haveAnyAccessRights(['superadmin.edit']))
-            return true;
-
-        return $user->haveAnyAccessRights(['suppliers.read', 'suppliers.edit']);
+                return $user->haveAnyAccessRights(['suppliers.read', 'suppliers.edit']);
     }
 
     /**
@@ -41,7 +35,7 @@ class SupplierPolicy
      */
     public function create(User $user): bool
     {
-        return (!config('ledningssystemet.disable_supplier', false)) && $user->haveAnyAccessRights(['suppliers.edit', 'superadmin.edit']);
+        return (!config('ledningssystemet.disable_supplier', false)) && $user->haveAnyAccessRights(['suppliers.edit']);
     }
 
     /**
@@ -49,10 +43,7 @@ class SupplierPolicy
      */
     public function update(User $user, Supplier $supplier = new Supplier): bool
     {
-        if ($user->haveAnyAccessRights(['superadmin.edit']))
-            return true;
-
-        return (!config('ledningssystemet.disable_supplier', false)) && $user->haveAnyAccessRights(['suppliers.edit']);
+                return (!config('ledningssystemet.disable_supplier', false)) && $user->haveAnyAccessRights(['suppliers.edit']);
     }
 
     /**
@@ -60,10 +51,7 @@ class SupplierPolicy
      */
     public function delete(User $user, Supplier $supplier = new Supplier): bool
     {
-        if ($user->haveAnyAccessRights(['superadmin.edit']))
-            return true;
-
-        return $user->can('update', $supplier);
+                return $user->can('update', $supplier);
     }
 
     /**

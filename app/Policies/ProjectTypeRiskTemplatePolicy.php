@@ -13,7 +13,7 @@ class ProjectTypeRiskTemplatePolicy
      */
     public function viewAny(User $user): bool
     {
-        return $user->haveAnyAccessRights(['managementtools.edit', 'superadmin.edit']);
+        return $user->haveAnyAccessRights(['managementtools.edit']);
     }
 
     /**
@@ -21,7 +21,7 @@ class ProjectTypeRiskTemplatePolicy
      */
     public function view(User $user, ProjectTypeRiskTemplate $riskProjectTypeRiskTemplate = new ProjectTypeRiskTemplate): bool
     {
-        return $user->haveAnyAccessRights(['managementtools.edit', 'superadmin.edit']);
+        return $user->haveAnyAccessRights(['managementtools.edit']);
     }
 
     /**
@@ -29,7 +29,7 @@ class ProjectTypeRiskTemplatePolicy
      */
     public function create(User $user): bool
     {
-        return $user->haveAnyAccessRights(['managementtools.edit', 'superadmin.edit']);
+        return $user->haveAnyAccessRights(['managementtools.edit']);
     }
 
     /**
@@ -37,7 +37,7 @@ class ProjectTypeRiskTemplatePolicy
      */
     public function update(User $user, ProjectTypeRiskTemplate $riskProjectTypeRiskTemplate = new ProjectTypeRiskTemplate): bool
     {
-        return $user->haveAnyAccessRights(['managementtools.edit', 'superadmin.edit']);
+        return $user->haveAnyAccessRights(['managementtools.edit']);
     }
 
     /**
@@ -49,7 +49,7 @@ class ProjectTypeRiskTemplatePolicy
             return false;
         }
 
-        return $user->haveAnyAccessRights(['managementtools.edit', 'superadmin.edit']);
+        return $user->haveAnyAccessRights(['managementtools.edit']);
     }
 
     /**

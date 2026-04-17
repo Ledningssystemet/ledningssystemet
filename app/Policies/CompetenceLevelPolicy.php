@@ -29,7 +29,7 @@ class CompetenceLevelPolicy
      */
     public function create(User $user): bool
     {
-        return $user->haveAnyAccessRights(['managementtools.edit', 'superadmin.edit']);
+        return $user->haveAnyAccessRights(['managementtools.edit']);
     }
 
     /**
@@ -45,10 +45,6 @@ class CompetenceLevelPolicy
      */
     public function delete(User $user, CompetenceLevel $competenceLevel = new CompetenceLevel): bool
     {
-        if ($user->haveAnyAccessRights(['superadmin.edit'])) {
-            return true;
-        }
-
         return $user->can('update', $competenceLevel);
     }
 

@@ -29,7 +29,7 @@ class ProcessPerformanceMetricReportPolicy
      */
     public function create(User $user): bool
     {
-        return $user->haveAnyAccessRights(['processmetrics.edit', 'superadmin.edit']);
+        return $user->haveAnyAccessRights(['processmetrics.edit']);
     }
 
     /**
@@ -37,7 +37,7 @@ class ProcessPerformanceMetricReportPolicy
      */
     public function update(User $user, ProcessPerformanceMetricReport $processPerformanceMetricReport = new ProcessPerformanceMetricReport): bool
     {
-        return $user->haveAnyAccessRights(['processmetrics.edit', 'superadmin.edit']);
+        return $user->haveAnyAccessRights(['processmetrics.edit']);
     }
 
     /**
@@ -45,7 +45,7 @@ class ProcessPerformanceMetricReportPolicy
      */
     public function delete(User $user, ProcessPerformanceMetricReport $processPerformanceMetricReport = new ProcessPerformanceMetricReport): bool
     {
-        return $user->haveAnyAccessRights(['processmetrics.edit', 'superadmin.edit']);
+        return $user->haveAnyAccessRights(['processmetrics.edit']);
     }
 
     /**

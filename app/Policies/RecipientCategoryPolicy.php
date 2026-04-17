@@ -29,7 +29,7 @@ class RecipientCategoryPolicy
      */
     public function create(User $user): bool
     {
-        return $user->haveAnyAccessRights(['managementtools.edit', 'superadmin.edit']);
+        return $user->haveAnyAccessRights(['managementtools.edit']);
     }
 
     /**
@@ -45,10 +45,6 @@ class RecipientCategoryPolicy
      */
     public function delete(User $user, RecipientCategory $recipientCategory = new RecipientCategory): bool
     {
-        if ($user->haveAnyAccessRights(['superadmin.edit'])) {
-            return true;
-        }
-
         return $user->can('update', $recipientCategory);
     }
 

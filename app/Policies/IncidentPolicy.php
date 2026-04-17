@@ -13,10 +13,7 @@ class IncidentPolicy
      */
     public function viewAny(User $user): bool
     {
-        if ($user->haveAnyAccessRights(['superadmin.edit']))
-            return true;
-
-        return $user->haveAnyAccessRights(['incidents.read', 'incidents.edit']);
+                return $user->haveAnyAccessRights(['incidents.read', 'incidents.edit']);
     }
 
     /**
@@ -24,10 +21,7 @@ class IncidentPolicy
      */
     public function view(User $user, Incident $incident = new Incident): bool
     {
-        if ($user->haveAnyAccessRights(['superadmin.edit']))
-            return true;
-
-        return $user->haveAnyAccessRights(['incidents.read', 'incidents.edit']);
+                return $user->haveAnyAccessRights(['incidents.read', 'incidents.edit']);
     }
 
     /**
@@ -35,7 +29,7 @@ class IncidentPolicy
      */
     public function create(User $user): bool
     {
-        return $user->haveAnyAccessRights(['incidents.edit', 'superadmin.edit']);
+        return $user->haveAnyAccessRights(['incidents.edit']);
     }
 
     /**
@@ -43,10 +37,7 @@ class IncidentPolicy
      */
     public function update(User $user, Incident $incident = new Incident): bool
     {
-        if ($user->haveAnyAccessRights(['superadmin.edit']))
-            return true;
-
-        return $user->haveAnyAccessRights(['incidents.edit']);
+                return $user->haveAnyAccessRights(['incidents.edit']);
     }
 
     /**
@@ -54,10 +45,7 @@ class IncidentPolicy
      */
     public function delete(User $user, Incident $incident = new Incident): bool
     {
-        if ($user->haveAnyAccessRights(['superadmin.edit']))
-            return true;
-
-        return $user->can('update', $incident);
+                return $user->can('update', $incident);
     }
 
     /**

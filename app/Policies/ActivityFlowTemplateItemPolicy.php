@@ -29,7 +29,7 @@ class ActivityFlowTemplateItemPolicy
      */
     public function create(User $user): bool
     {
-        return $user->haveAnyAccessRights(['managementtools.edit', 'superadmin.edit']);
+        return $user->haveAnyAccessRights(['managementtools.edit']);
     }
 
     /**
@@ -45,10 +45,7 @@ class ActivityFlowTemplateItemPolicy
      */
     public function delete(User $user, ActivityFlowTemplateItem $activityFlowTemplateItem = new ActivityFlowTemplateItem): bool
     {
-        if ($user->haveAnyAccessRights(['superadmin.edit']))
-            return true;
-
-        return $user->can('update', $activityFlowTemplateItem);
+                return $user->can('update', $activityFlowTemplateItem);
     }
 
     /**

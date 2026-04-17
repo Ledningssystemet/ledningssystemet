@@ -13,10 +13,7 @@ class ObjectivePolicy
      */
     public function viewAny(User $user): bool
     {
-        if ($user->haveAnyAccessRights(['superadmin.edit']))
-            return true;
-
-        return $user->haveAnyAccessRights(['objectives.read', 'objectives.edit']);
+                return $user->haveAnyAccessRights(['objectives.read', 'objectives.edit']);
     }
 
     /**
@@ -24,10 +21,7 @@ class ObjectivePolicy
      */
     public function view(User $user, Objective $objective = new Objective): bool
     {
-        if ($user->haveAnyAccessRights(['superadmin.edit']))
-            return true;
-
-        return $user->haveAnyAccessRights(['objectives.read', 'objectives.edit']);
+                return $user->haveAnyAccessRights(['objectives.read', 'objectives.edit']);
     }
 
     /**
@@ -35,7 +29,7 @@ class ObjectivePolicy
      */
     public function create(User $user): bool
     {
-        return $user->haveAnyAccessRights(['objectives.edit', 'superadmin.edit']);
+        return $user->haveAnyAccessRights(['objectives.edit']);
     }
 
     /**
@@ -43,10 +37,7 @@ class ObjectivePolicy
      */
     public function update(User $user, Objective $objective = new Objective): bool
     {
-        if ($user->haveAnyAccessRights(['superadmin.edit']))
-            return true;
-
-        if (null == $objective->archived_at)
+                if (null == $objective->archived_at)
             return $user->haveAnyAccessRights(['objectives.edit']);
 
         return false;
@@ -57,10 +48,7 @@ class ObjectivePolicy
      */
     public function delete(User $user, Objective $objective = new Objective): bool
     {
-        if ($user->haveAnyAccessRights(['superadmin.edit']))
-            return true;
-
-        return $user->can('update', $objective);
+                return $user->can('update', $objective);
     }
 
     /**

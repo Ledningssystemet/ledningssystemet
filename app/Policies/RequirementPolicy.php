@@ -13,10 +13,7 @@ class RequirementPolicy
      */
     public function viewAny(User $user): bool
     {
-        if ($user->haveAnyAccessRights(['superadmin.edit']))
-            return true;
-
-        return $user->haveAnyAccessRights(['requirements.read', 'requirements.edit']);
+                return $user->haveAnyAccessRights(['requirements.read', 'requirements.edit']);
     }
 
     /**
@@ -24,10 +21,7 @@ class RequirementPolicy
      */
     public function view(User $user, Requirement $requirement = new Requirement): bool
     {
-        if ($user->haveAnyAccessRights(['superadmin.edit']))
-            return true;
-
-        return $user->haveAnyAccessRights(['requirements.read', 'requirements.edit']);
+                return $user->haveAnyAccessRights(['requirements.read', 'requirements.edit']);
     }
 
     /**
@@ -35,7 +29,7 @@ class RequirementPolicy
      */
     public function create(User $user): bool
     {
-        return $user->haveAnyAccessRights(['requirements.edit', 'superadmin.edit']);
+        return $user->haveAnyAccessRights(['requirements.edit']);
     }
 
     /**
@@ -43,10 +37,7 @@ class RequirementPolicy
      */
     public function update(User $user, Requirement $requirement = new Requirement): bool
     {
-        if ($user->haveAnyAccessRights(['superadmin.edit']))
-            return true;
-
-        return $user->haveAnyAccessRights(['requirements.edit']);
+                return $user->haveAnyAccessRights(['requirements.edit']);
     }
 
     /**
@@ -54,10 +45,7 @@ class RequirementPolicy
      */
     public function delete(User $user, Requirement $requirement = new Requirement): bool
     {
-        if ($user->haveAnyAccessRights(['superadmin.edit']))
-            return true;
-
-        return $user->can('update', $requirement);
+                return $user->can('update', $requirement);
     }
 
     /**

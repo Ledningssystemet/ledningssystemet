@@ -45,10 +45,7 @@ class ControlActionPolicy
      */
     public function delete(User $user, ControlAction $controlAction = new ControlAction): bool
     {
-        if ($user->haveAnyAccessRights(['superadmin.edit']))
-            return true;
-
-        return $user->can('update', $controlAction);
+                return $user->can('update', $controlAction);
     }
 
     /**

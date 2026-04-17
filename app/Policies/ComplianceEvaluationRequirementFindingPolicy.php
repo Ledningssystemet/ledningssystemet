@@ -13,10 +13,7 @@ class ComplianceEvaluationRequirementFindingPolicy
      */
     public function viewAny(User $user): bool
     {
-        if ($user->haveAnyAccessRights(['superadmin.edit']))
-            return true;
-
-        return $user->haveAnyAccessRights(['complianceevaluations.read', 'complianceevaluations.edit']);
+                return $user->haveAnyAccessRights(['complianceevaluations.read', 'complianceevaluations.edit']);
     }
 
     /**
@@ -24,10 +21,7 @@ class ComplianceEvaluationRequirementFindingPolicy
      */
     public function view(User $user, ComplianceEvaluationRequirementFinding $complianceEvaluationRequirementFinding = new ComplianceEvaluationRequirementFinding): bool
     {
-        if ($user->haveAnyAccessRights(['superadmin.edit']))
-            return true;
-
-        return $user->haveAnyAccessRights(['complianceevaluations.read', 'complianceevaluations.edit']);
+                return $user->haveAnyAccessRights(['complianceevaluations.read', 'complianceevaluations.edit']);
     }
 
     /**
@@ -35,7 +29,7 @@ class ComplianceEvaluationRequirementFindingPolicy
      */
     public function create(User $user): bool
     {
-        return $user->haveAnyAccessRights(['complianceevaluations.edit', 'superadmin.edit']);
+        return $user->haveAnyAccessRights(['complianceevaluations.edit']);
     }
 
     /**
@@ -43,10 +37,7 @@ class ComplianceEvaluationRequirementFindingPolicy
      */
     public function update(User $user, ComplianceEvaluationRequirementFinding $complianceEvaluationRequirementFinding = new ComplianceEvaluationRequirementFinding): bool
     {
-        if ($user->haveAnyAccessRights(['superadmin.edit']))
-            return true;
-
-        return $user->haveAnyAccessRights(['complianceevaluations.edit']);
+                return $user->haveAnyAccessRights(['complianceevaluations.edit']);
     }
 
     /**
@@ -54,10 +45,7 @@ class ComplianceEvaluationRequirementFindingPolicy
      */
     public function delete(User $user, ComplianceEvaluationRequirementFinding $complianceEvaluationRequirementFinding = new ComplianceEvaluationRequirementFinding): bool
     {
-        if ($user->haveAnyAccessRights(['superadmin.edit']))
-            return true;
-
-        return $user->can('update', $complianceEvaluationRequirementFinding);
+                return $user->can('update', $complianceEvaluationRequirementFinding);
     }
 
     /**

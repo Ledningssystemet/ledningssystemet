@@ -45,10 +45,7 @@ class ActivityPolicy
      */
     public function delete(User $user, Activity $activity = new Activity): bool
     {
-        if ($user->haveAnyAccessRights(['superadmin.edit']))
-            return true;
-
-        return $user->can('update', $activity);
+                return $user->can('update', $activity);
     }
 
     /**

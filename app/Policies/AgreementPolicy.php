@@ -13,10 +13,7 @@ class AgreementPolicy
      */
     public function viewAny(User $user): bool
     {
-        if ($user->haveAnyAccessRights(['superadmin.edit']))
-            return true;
-
-        return $user->haveAnyAccessRights(['agreements.read', 'agreements.edit']);
+                return $user->haveAnyAccessRights(['agreements.read', 'agreements.edit']);
     }
 
     /**
@@ -24,10 +21,7 @@ class AgreementPolicy
      */
     public function view(User $user, Agreement $agreement = new Agreement): bool
     {
-        if ($user->haveAnyAccessRights(['superadmin.edit']))
-            return true;
-
-        return $user->haveAnyAccessRights(['agreements.read', 'agreements.edit']);
+                return $user->haveAnyAccessRights(['agreements.read', 'agreements.edit']);
     }
 
     /**
@@ -35,7 +29,7 @@ class AgreementPolicy
      */
     public function create(User $user): bool
     {
-        return $user->haveAnyAccessRights(['agreements.edit', 'superadmin.edit']);
+        return $user->haveAnyAccessRights(['agreements.edit']);
     }
 
     /**
@@ -51,10 +45,7 @@ class AgreementPolicy
      */
     public function delete(User $user, Agreement $agreement = new Agreement): bool
     {
-        if ($user->haveAnyAccessRights(['superadmin.edit']))
-            return true;
-
-        return $user->can('update', $agreement);
+                return $user->can('update', $agreement);
     }
 
     /**

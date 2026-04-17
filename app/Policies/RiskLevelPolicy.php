@@ -29,7 +29,7 @@ class RiskLevelPolicy
      */
     public function create(User $user): bool
     {
-        return $user->haveAnyAccessRights(['managementtools.edit', 'superadmin.edit']);
+        return $user->haveAnyAccessRights(['managementtools.edit']);
     }
 
     /**
@@ -45,10 +45,6 @@ class RiskLevelPolicy
      */
     public function delete(User $user, RiskLevel $riskLevel = new RiskLevel): bool
     {
-        if ($user->haveAnyAccessRights(['superadmin.edit'])) {
-            return true;
-        }
-
         return $user->can('update', $riskLevel);
     }
 

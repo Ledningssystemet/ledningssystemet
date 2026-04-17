@@ -29,7 +29,7 @@ class ConfidentialityClassPolicy
      */
     public function create(User $user): bool
     {
-        return $user->haveAnyAccessRights(['managementtools.edit', 'superadmin.edit']);
+        return $user->haveAnyAccessRights(['managementtools.edit']);
     }
 
     /**
@@ -45,10 +45,7 @@ class ConfidentialityClassPolicy
      */
     public function delete(User $user, ConfidentialityClass $confidentialityClass = new ConfidentialityClass): bool
     {
-        if ($user->haveAnyAccessRights(['superadmin.edit']))
-            return true;
-
-        return $user->can('update', $confidentialityClass);
+                return $user->can('update', $confidentialityClass);
     }
 
     /**

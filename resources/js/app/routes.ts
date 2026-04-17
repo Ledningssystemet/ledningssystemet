@@ -1,5 +1,6 @@
 import type { MenuCategoryDto, MenuItemDto } from "@/types/menu";
 
+
 export const APP_BASE_PATH = "/app";
 export const APP_HOME_PATH = "/";
 export const APP_MY_PROFILE_PATH = "/my-profile";

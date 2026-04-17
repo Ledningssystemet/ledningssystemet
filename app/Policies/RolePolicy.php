@@ -29,7 +29,7 @@ class RolePolicy
      */
     public function create(User $user): bool
     {
-        return (!config('ledningssystemet.disable_staff', false)) && $user->haveAnyAccessRights(['managementtools.edit', 'superadmin.edit']);
+        return (!config('ledningssystemet.disable_staff', false)) && $user->haveAnyAccessRights(['managementtools.edit']);
     }
 
     /**
@@ -45,10 +45,7 @@ class RolePolicy
      */
     public function delete(User $user, Role $role = new Role): bool
     {
-        if ($user->haveAnyAccessRights(['superadmin.edit']))
-            return true;
-
-        return $user->can('update', $role);
+                return $user->can('update', $role);
     }
 
     /**

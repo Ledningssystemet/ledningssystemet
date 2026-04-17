@@ -13,7 +13,7 @@ class PersonalAccessTokenPolicy
      */
     public function viewAny(User $user): bool
     {
-        return $user->haveAnyAccessRights(['systemadministrator.edit', 'superadmin.edit']);
+        return $user->haveAnyAccessRights(['systemadministrator.edit']);
     }
 
     /**
@@ -21,7 +21,7 @@ class PersonalAccessTokenPolicy
      */
     public function view(User $user, PersonalAccessToken $personalAccessToken = new PersonalAccessToken): bool
     {
-        return $user->haveAnyAccessRights(['systemadministrator.edit', 'superadmin.edit']);
+        return $user->haveAnyAccessRights(['systemadministrator.edit']);
     }
 
     /**
@@ -29,7 +29,7 @@ class PersonalAccessTokenPolicy
      */
     public function create(User $user): bool
     {
-        return $user->haveAnyAccessRights(['systemadministrator.edit', 'superadmin.edit']);
+        return $user->haveAnyAccessRights(['systemadministrator.edit']);
     }
 
     /**
@@ -37,7 +37,7 @@ class PersonalAccessTokenPolicy
      */
     public function update(User $user, PersonalAccessToken $personalAccessToken = new PersonalAccessToken): bool
     {
-        return $user->haveAnyAccessRights(['systemadministrator.edit', 'superadmin.edit']);
+        return $user->haveAnyAccessRights(['systemadministrator.edit']);
     }
 
     /**
@@ -45,7 +45,7 @@ class PersonalAccessTokenPolicy
      */
     public function delete(User $user, PersonalAccessToken $personalAccessToken = new PersonalAccessToken): bool
     {
-        return $user->haveAnyAccessRights(['systemadministrator.edit', 'superadmin.edit']);
+        return $user->haveAnyAccessRights(['systemadministrator.edit']);
     }
 
     /**

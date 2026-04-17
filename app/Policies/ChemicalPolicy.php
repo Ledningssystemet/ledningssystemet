@@ -13,10 +13,7 @@ class ChemicalPolicy
      */
     public function viewAny(User $user): bool
     {
-        if ($user->haveAnyAccessRights(['superadmin.edit']))
-            return true;
-
-        return $user->haveAnyAccessRights(['chemicalregister.read', 'chemicalregister.edit']);
+                return $user->haveAnyAccessRights(['chemicalregister.read', 'chemicalregister.edit']);
     }
 
     /**
@@ -24,10 +21,7 @@ class ChemicalPolicy
      */
     public function view(User $user, Chemical $chemical = new Chemical): bool
     {
-        if ($user->haveAnyAccessRights(['superadmin.edit']))
-            return true;
-
-        return $user->haveAnyAccessRights(['chemicalregister.read', 'chemicalregister.edit']);
+                return $user->haveAnyAccessRights(['chemicalregister.read', 'chemicalregister.edit']);
     }
 
     /**
@@ -35,7 +29,7 @@ class ChemicalPolicy
      */
     public function create(User $user): bool
     {
-        return $user->haveAnyAccessRights(['chemicalregister.edit', 'superadmin.edit']);
+        return $user->haveAnyAccessRights(['chemicalregister.edit']);
     }
 
     /**
@@ -43,10 +37,7 @@ class ChemicalPolicy
      */
     public function update(User $user, Chemical $chemical = new Chemical): bool
     {
-        if ($user->haveAnyAccessRights(['superadmin.edit']))
-            return true;
-
-        return $user->haveAnyAccessRights(['chemicalregister.edit']);
+                return $user->haveAnyAccessRights(['chemicalregister.edit']);
     }
 
     /**
@@ -54,10 +45,7 @@ class ChemicalPolicy
      */
     public function delete(User $user, Chemical $chemical = new Chemical): bool
     {
-        if ($user->haveAnyAccessRights(['superadmin.edit']))
-            return true;
-
-        return $user->can('update', $chemical);
+                return $user->can('update', $chemical);
     }
 
     /**

@@ -6,11 +6,6 @@ use App\Models\ObjectHistory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 
-/**
- * @mixin Model
- * @phpstan-require-extends Model
- * @method mixed morphMany(string $related, string $name, ?string $type = null, ?string $id = null, ?string $localKey = null)
- */
 trait HasHistory
 {
     abstract public function morphMany($related, $name, $type = null, $id = null, $localKey = null);

@@ -13,10 +13,7 @@ class ProcessPerformanceMetricPolicy
      */
     public function viewAny(User $user): bool
     {
-        if ($user->haveAnyAccessRights(['superadmin.edit']))
-            return true;
-
-        return $user->haveAnyAccessRights(['processmetrics.read', 'processmetrics.edit']);
+                return $user->haveAnyAccessRights(['processmetrics.read', 'processmetrics.edit']);
     }
 
     /**
@@ -24,10 +21,7 @@ class ProcessPerformanceMetricPolicy
      */
     public function view(User $user, ProcessPerformanceMetric $processPerformanceMetric = new ProcessPerformanceMetric): bool
     {
-        if ($user->haveAnyAccessRights(['superadmin.edit']))
-            return true;
-
-        return $user->haveAnyAccessRights(['processmetrics.read', 'processmetrics.edit']);
+                return $user->haveAnyAccessRights(['processmetrics.read', 'processmetrics.edit']);
     }
 
     /**
@@ -35,7 +29,7 @@ class ProcessPerformanceMetricPolicy
      */
     public function create(User $user): bool
     {
-        return $user->haveAnyAccessRights(['processmetrics.edit', 'superadmin.edit']);
+        return $user->haveAnyAccessRights(['processmetrics.edit']);
     }
 
     /**
@@ -43,10 +37,7 @@ class ProcessPerformanceMetricPolicy
      */
     public function update(User $user, ProcessPerformanceMetric $processPerformanceMetric = new ProcessPerformanceMetric): bool
     {
-        if ($user->haveAnyAccessRights(['superadmin.edit']))
-            return true;
-
-        return $user->haveAnyAccessRights(['processmetrics.edit']);
+                return $user->haveAnyAccessRights(['processmetrics.edit']);
     }
 
     /**
@@ -54,10 +45,7 @@ class ProcessPerformanceMetricPolicy
      */
     public function delete(User $user, ProcessPerformanceMetric $processPerformanceMetric = new ProcessPerformanceMetric): bool
     {
-        if ($user->haveAnyAccessRights(['superadmin.edit']))
-            return true;
-
-        return $user->can('update', $processPerformanceMetric);
+                return $user->can('update', $processPerformanceMetric);
     }
 
     /**

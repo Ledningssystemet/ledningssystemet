@@ -29,7 +29,7 @@ class SubjectCategoryPolicy
      */
     public function create(User $user): bool
     {
-        return $user->haveAnyAccessRights(['managementtools.edit', 'superadmin.edit']);
+        return $user->haveAnyAccessRights(['managementtools.edit']);
     }
 
     /**
@@ -45,10 +45,6 @@ class SubjectCategoryPolicy
      */
     public function delete(User $user, SubjectCategory $subjectCategory = new SubjectCategory): bool
     {
-        if ($user->haveAnyAccessRights(['superadmin.edit'])) {
-            return true;
-        }
-
         return $user->can('update', $subjectCategory);
     }
 
