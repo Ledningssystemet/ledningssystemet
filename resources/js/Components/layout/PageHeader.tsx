@@ -1,7 +1,9 @@
 import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { APP_HOME_PATH } from '@/app/routes';
+import { PluginSlot } from '@/components/plugins/PluginSlot';
 import { useTranslations } from '@/hooks/useTranslations';
+import { getPluginSlotContributions } from '@/plugins/runtime';
 import type { AppSectionRoute } from '@/app/routes';
 
 interface PageHeaderProps {
@@ -29,6 +31,15 @@ export function PageHeader({ title, description, icon, route, actions }: PageHea
     }, [title, t]);
 
     const resolvedDescription = route?.description ?? description;
+    const hasGlobalPluginActions = getPluginSlotContributions('page.header.actions').length > 0;
+    const routeSlotName = route ? `page.header.actions.${route.key}` : null;
+    const hasRoutePluginActions = routeSlotName ? getPluginSlotContributions(routeSlotName).length > 0 : false;
+    const hasActions = Boolean(actions) || hasGlobalPluginActions || hasRoutePluginActions;
+    const slotContext = {
+        route,
+        title,
+        description: resolvedDescription,
+    };
 
     return (
         <>
@@ -57,7 +68,13 @@ export function PageHeader({ title, description, icon, route, actions }: PageHea
                             )}
                         </div>
                     </div>
-                    {actions && <div className="flex shrink-0 items-center gap-2">{actions}</div>}
+                    {hasActions && (
+                        <div className="flex shrink-0 items-center gap-2">
+                            {actions}
+                            <PluginSlot name="page.header.actions" context={slotContext} />
+                            {routeSlotName && <PluginSlot name={routeSlotName} context={slotContext} />}
+                        </div>
+                    )}
                 </div>
             </section>
         </>

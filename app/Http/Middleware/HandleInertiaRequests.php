@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Plugins\PluginRuntime;
 use App\Services\MenuCategoryBuilder;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
@@ -36,7 +37,7 @@ class HandleInertiaRequests extends Middleware
      */
     public function share(Request $request): array
     {
-        return [
+        return app(PluginRuntime::class)->extendInertiaShared([
             ...parent::share($request),
             'locale' => app()->getLocale(),
             'auth' => [
@@ -79,6 +80,7 @@ class HandleInertiaRequests extends Middleware
                     'external_provider_name' => (string) config('authentication.oauth.external_provider_name', 'External provider'),
                 ],
             ],
-        ];
+            'plugins' => fn () => app(PluginRuntime::class)->frontendRuntimeConfig($request),
+        ], $request);
     }
 }

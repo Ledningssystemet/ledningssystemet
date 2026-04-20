@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Plugins\PluginRuntime;
 use Illuminate\Support\Facades\Gate;
 
 class MenuCategoryBuilder
@@ -390,7 +391,7 @@ class MenuCategoryBuilder
             ],
         ];
 
-        return $categories;
+        return app(PluginRuntime::class)->extendMenu($categories, request());
     }
 
     private function allows(string $ability, string $modelClass): bool

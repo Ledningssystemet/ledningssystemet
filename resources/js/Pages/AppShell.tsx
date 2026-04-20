@@ -10,6 +10,7 @@ import {
 } from '@/app/routes';
 import { resolveAppRouteElement } from '@/app/pageRegistry';
 import { useMenuData } from '@/hooks/useMenuData';
+import { getPluginRoutes } from '@/plugins/runtime';
 import { useTranslations } from '@/hooks/useTranslations';
 import AppNotFoundPage from './AppNotFoundPage';
 import UserDashboard from './UserDashboard';
@@ -30,6 +31,7 @@ function PageLoader() {
 export default function AppShell() {
     const categories = useMenuData();
     const menuRoutes = useMemo(() => buildMenuRoutes(categories), [categories]);
+    const pluginRoutes = useMemo(() => getPluginRoutes(), []);
 
     const utilityRoutes = [
         { key: 'my-profile', path: APP_MY_PROFILE_PATH },
@@ -71,6 +73,21 @@ export default function AppShell() {
                                 element={
                                     <Suspense fallback={<PageLoader />}>
                                         {element ?? <AppNotFoundPage />}
+                                    </Suspense>
+                                }
+                            />
+                        );
+                    })}
+                    {pluginRoutes.map((route) => {
+                        const PluginPage = route.component;
+
+                        return (
+                            <Route
+                                key={`plugin:${route.key}:${route.path}`}
+                                path={route.path}
+                                element={
+                                    <Suspense fallback={<PageLoader />}>
+                                        <PluginPage route={route} />
                                     </Suspense>
                                 }
                             />

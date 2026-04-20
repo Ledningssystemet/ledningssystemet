@@ -6,8 +6,13 @@ use App\Http\Controllers\Auth\OtpChallengeController;
 use App\Http\Controllers\Auth\ResetPasswordController;
 use App\Http\Controllers\OpenApiDocumentationController;
 use App\Http\Controllers\OAuthController;
+use App\Http\Controllers\PluginAssetController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
+
+Route::get('/'.trim((string) config('plugins.asset_route_prefix', 'plugin-assets'), '/').'/{plugin}/{path}', PluginAssetController::class)
+    ->where('path', '.*')
+    ->name('plugins.asset');
 
 Route::middleware('auth')->group(function (): void {
     /**
