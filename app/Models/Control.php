@@ -52,7 +52,6 @@ class Control extends Model
             'not_applicable_at' => ['nullable', 'date'],
             'reviewed_at' => ['nullable', 'date'],
             'tags' => ['sometimes', 'array'],
-            'tags.*' => ['nullable', 'string', 'max:25'],
         ];
     }
 

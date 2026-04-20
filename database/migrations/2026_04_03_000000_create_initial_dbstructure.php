@@ -6,8 +6,13 @@ use Illuminate\Support\Facades\DB;
 return new class extends Migration {
     public function up(): void
     {
-        // Check if database tables already exists
-        if (DB::select('SHOW TABLES') == []) {
+        // Ignore Laravel's own migrations table when deciding if schema bootstrap is needed.
+        $tables = collect(DB::select('SHOW TABLES'))
+            ->map(static fn ($table): string => (string) array_values((array) $table)[0])
+            ->filter(static fn (string $table): bool => $table !== 'migrations')
+            ->values();
+
+        if ($tables->isEmpty()) {
             $schemaPath = database_path('schema/baseline_schema.sql');
 
             if (!is_file($schemaPath)) {

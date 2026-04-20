@@ -26,7 +26,7 @@ class ProcessPerformanceMetricReportPolicyTest extends TestCase
             ->with(['processmetrics.read', 'processmetrics.edit'])
             ->andReturn(true);
         $reader->shouldReceive('haveAnyAccessRights')
-            ->with(['processmetrics.edit', 'superadmin.edit'])
+            ->with(['processmetrics.edit'])
             ->andReturn(false);
 
         $editor = Mockery::mock(User::class);
@@ -34,7 +34,7 @@ class ProcessPerformanceMetricReportPolicyTest extends TestCase
             ->with(['processmetrics.read', 'processmetrics.edit'])
             ->andReturn(true);
         $editor->shouldReceive('haveAnyAccessRights')
-            ->with(['processmetrics.edit', 'superadmin.edit'])
+            ->with(['processmetrics.edit'])
             ->andReturn(true);
 
         $denied = Mockery::mock(User::class);
@@ -42,7 +42,7 @@ class ProcessPerformanceMetricReportPolicyTest extends TestCase
             ->with(['processmetrics.read', 'processmetrics.edit'])
             ->andReturn(false);
         $denied->shouldReceive('haveAnyAccessRights')
-            ->with(['processmetrics.edit', 'superadmin.edit'])
+            ->with(['processmetrics.edit'])
             ->andReturn(false);
 
         $this->assertTrue($policy->viewAny($reader));

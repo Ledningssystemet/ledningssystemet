@@ -40,7 +40,6 @@ class Chemical extends Model
             'handlingguidance' => ['nullable', 'string'],
             'ohs_danger_properties' => ['nullable', 'integer', 'min:0'],
             'danger' => ['nullable', 'array'],
-            'danger.*' => ['string', Rule::in(array_keys(static::dangerProperties()))],
             'sdbfile' => ['nullable', 'file', 'mimetypes:application/pdf', 'max:10240'],
             'sdbfilename' => ['nullable', 'string', 'max:255'],
             'sdbcontenttype' => ['nullable', 'string', 'max:255'],

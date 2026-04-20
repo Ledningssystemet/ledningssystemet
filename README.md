@@ -76,3 +76,53 @@ Den öppna kärnan av ledningssystemet är en flexibel och kostnadsfri plattform
 - möjliggöra samarbete och gemensam utveckling
 
 Systemet är skapat för att stödja verksamheter i att fokusera på det som verkligen spelar roll — **kvalitet, säkerhet, samhällsnytta och ständig förbättring**.
+
+## 🧪 E2E-tester med Playwright
+
+Projektet är konfigurerat för Playwright med tester i `tests/e2e`.
+Testmiljön delas med PHPUnit via `.env.testing` (separat testdatabas).
+Innan varje e2e-körning körs `php artisan --env=testing migrate:fresh --seed --force` automatiskt.
+
+Installera beroenden och browser:
+
+```bash
+npm install
+npm run e2e:install
+```
+
+Kör tester:
+
+```bash
+npm run e2e:prepare
+npm run e2e
+```
+
+Användbara varianter:
+
+```bash
+npm run e2e:ui
+npm run e2e:headed
+```
+
+Login-testet använder seedad standardanvändare:
+
+```bash
+email: test@example.com
+password: password
+```
+
+Du kan fortfarande skriva över med miljövariabler vid behov:
+
+```bash
+E2E_USER_EMAIL=annan@example.com
+E2E_USER_PASSWORD=hemligt
+npm run e2e
+```
+
+Standardkonfigurationen startar automatiskt Laravel-servern (`php artisan serve`) vid testkörning.
+
+## ✅ Testmiljö för PHPUnit + E2E
+
+`phpunit.xml` sätter `APP_ENV=testing`, vilket gör att Laravel läser `.env.testing`.
+Playwright startar också appen med `--env=testing`, så både `php artisan test` och `npm run e2e` använder samma testkonfiguration och testdatabas.
+

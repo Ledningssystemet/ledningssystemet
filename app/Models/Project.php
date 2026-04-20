@@ -54,7 +54,6 @@ class Project extends Model
             'archived_at' => ['nullable', 'date'],
             'project_type_id' => ['nullable', 'integer', 'min:0', 'exists:project_types,id'],
             'users' => ['sometimes', 'array'],
-            'users.*' => ['integer', 'min:1', 'exists:users,id'],
         ];
     }
 

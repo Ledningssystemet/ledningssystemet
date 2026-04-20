@@ -53,7 +53,6 @@ class Objective extends Model
             'action_plan' => ['nullable', 'string'],
             'department_id' => ['nullable', 'integer', 'min:0', 'exists:departments,id'],
             'tags' => ['sometimes', 'array'],
-            'tags.*' => ['nullable', 'string', 'max:25'],
         ];
     }
 

@@ -55,7 +55,6 @@ class Agreement extends Model
             'customer_id' => ['nullable', 'integer', 'min:0', 'exists:customers,id'],
             'archived_at' => ['nullable', 'date'],
             'tags' => ['sometimes', 'array'],
-            'tags.*' => ['nullable', 'string', 'max:25'],
         ];
     }
 

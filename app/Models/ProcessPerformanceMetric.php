@@ -62,9 +62,7 @@ class ProcessPerformanceMetric extends Model
             'postprocessing' => ['nullable', 'string'],
             'alarm_threshold' => ['nullable', 'integer'],
             'process_ids' => ['sometimes', 'array'],
-            'process_ids.*' => ['integer', 'min:1', 'exists:processes,id'],
             'tags' => ['sometimes', 'array'],
-            'tags.*' => ['nullable', 'string', 'max:25'],
         ];
     }
 

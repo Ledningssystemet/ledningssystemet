@@ -77,13 +77,9 @@ class ProcessSustainabilityAspect extends Model
             'sustainability_aspect_id' => ['required', 'integer', 'min:0', 'exists:sustainability_aspects,id'],
             'process_id' => ['required', 'integer', 'min:0', 'exists:processes,id'],
             'tags' => ['sometimes', 'array'],
-            'tags.*' => ['nullable', 'string', 'max:25'],
             'objectives' => ['sometimes', 'array'],
-            'objectives.*' => ['integer', 'min:1', 'exists:objectives,id'],
             'process_performance_metrics' => ['sometimes', 'array'],
-            'process_performance_metrics.*' => ['integer', 'min:1', 'exists:process_performance_metrics,id'],
             'sustainability_metrics' => ['sometimes', 'array'],
-            'sustainability_metrics.*' => ['nullable'],
         ];
     }
 

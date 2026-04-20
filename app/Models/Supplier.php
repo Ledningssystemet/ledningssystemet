@@ -50,7 +50,6 @@ class Supplier extends Model
             'dataprocessor' => ['nullable', 'boolean'],
             'external_supplier_id' => ['nullable', 'string', 'max:255'],
             'tags' => ['sometimes', 'array'],
-            'tags.*' => ['nullable', 'string', 'max:25'],
         ];
     }
 

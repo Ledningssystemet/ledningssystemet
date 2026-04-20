@@ -17,3 +17,6 @@ composer.lock
 .idea
 /package-lock.json
 /doc
+playwright-report
+test-results
+.playwright

@@ -71,13 +71,9 @@ class Site extends Model
             'responsible_user_id' => ['nullable', 'integer', 'min:0', 'exists:users,id'],
             'external_provider_group_id' => ['nullable', 'integer', 'min:0', 'exists:external_provider_groups,id'],
             'users' => ['nullable', 'array'],
-            'users.*' => ['integer', 'min:1', 'exists:users,id'],
             'departments' => ['nullable', 'array'],
-            'departments.*' => ['integer', 'min:1', 'exists:departments,id'],
             'assets' => ['nullable', 'array'],
-            'assets.*' => ['integer', 'min:1', 'exists:assets,id'],
             'tags' => ['sometimes', 'array'],
-            'tags.*' => ['nullable', 'string', 'max:25'],
         ];
     }
 

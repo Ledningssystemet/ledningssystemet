@@ -16,7 +16,7 @@ class SupplierRequirementPolicy
             return false;
         }
 
-        return $user->haveAnyAccessRights(['managementtools.edit']);
+        return $user->haveAnyAccessRights(['managementtools.edit', 'superadmin.edit']);
     }
 
     /**
@@ -28,7 +28,7 @@ class SupplierRequirementPolicy
             return false;
         }
 
-        return $user->haveAnyAccessRights(['managementtools.edit']);
+        return $user->haveAnyAccessRights(['managementtools.edit', 'superadmin.edit']);
     }
 
     /**
@@ -40,7 +40,7 @@ class SupplierRequirementPolicy
             return false;
         }
 
-        return $user->haveAnyAccessRights(['managementtools.edit']);
+        return $user->haveAnyAccessRights(['managementtools.edit', 'superadmin.edit']);
     }
 
     /**
@@ -52,7 +52,7 @@ class SupplierRequirementPolicy
             return false;
         }
 
-        return $user->haveAnyAccessRights(['managementtools.edit']);
+        return $user->haveAnyAccessRights(['managementtools.edit', 'superadmin.edit']);
     }
 
     /**
@@ -64,6 +64,6 @@ class SupplierRequirementPolicy
             return false;
         }
 
-        return $user->haveAnyAccessRights(['managementtools.edit']);
+        return $user->haveAnyAccessRights(['managementtools.edit', 'superadmin.edit']);
     }
 }

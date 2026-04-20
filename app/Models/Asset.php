@@ -53,7 +53,6 @@ class Asset extends Model
             'rpo' => ['nullable', 'integer', 'min:0'],
             'site_id' => ['nullable', 'integer', 'min:0', 'exists:sites,id'],
             'tags' => ['sometimes', 'array'],
-            'tags.*' => ['nullable', 'string', 'max:25'],
         ];
     }
 

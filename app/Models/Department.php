@@ -48,7 +48,6 @@ class Department extends Model
             'parent_department_id' => ['nullable', 'integer', 'min:0', 'exists:departments,id'],
             'site_id' => ['nullable', 'integer', 'min:0', 'exists:sites,id'],
             'user_ids' => ['nullable', 'array'],
-            'user_ids.*' => ['integer', 'min:1', 'exists:users,id'],
         ];
     }
 

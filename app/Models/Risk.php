@@ -109,9 +109,7 @@ class Risk extends Model
             'post_probability_id' => ['nullable', 'integer', 'min:0', 'exists:probability_levels,id'],
             'post_consequence_id' => ['nullable', 'integer', 'min:0', 'exists:consequence_levels,id'],
             'tags' => ['sometimes', 'array'],
-            'tags.*' => ['nullable', 'string', 'max:25'],
             'risk_controls' => ['sometimes', 'array'],
-            'risk_controls.*' => ['integer', 'min:1', 'exists:controls,id'],
         ];
     }
 

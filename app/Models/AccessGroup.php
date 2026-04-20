@@ -40,11 +40,9 @@ class AccessGroup extends Model
         return [
             'name' => ['required', 'string', 'max:255'],
             'claims' => ['nullable', 'array'],
-            'claims.*' => ['string', 'max:255'],
             'risk_level_id' => ['nullable', 'integer', 'min:0', 'exists:risk_levels,id'],
             'external_provider_group_id' => ['nullable', 'integer', 'min:0', 'exists:external_provider_groups,id'],
             'user_ids' => ['nullable', 'array'],
-            'user_ids.*' => ['integer', 'min:1', 'exists:users,id'],
         ];
     }
 

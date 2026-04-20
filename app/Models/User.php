@@ -77,11 +77,8 @@ class User extends Authenticatable
             'manager_user_id' => ['nullable', 'integer', 'min:0', 'exists:users,id'],
             'site_id' => ['nullable', 'integer', 'min:0', 'exists:sites,id'],
             'departments' => ['nullable', 'array'],
-            'departments.*' => ['integer', 'min:1', 'exists:departments,id'],
             'roles' => ['nullable', 'array'],
-            'roles.*' => ['integer', 'min:1', 'exists:roles,id'],
             'accessgroups' => ['nullable', 'array'],
-            'accessgroups.*' => ['integer', 'min:1', 'exists:access_groups,id'],
         ];
     }
 

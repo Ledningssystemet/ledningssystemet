@@ -45,7 +45,6 @@ class ProjectTypeRiskTemplate extends Model
             'probability_id' => ['nullable', 'integer', 'min:0', 'exists:probability_levels,id'],
             'consequence_id' => ['nullable', 'integer', 'min:0', 'exists:consequence_levels,id'],
             'controls' => ['sometimes', 'array'],
-            'controls.*' => ['integer', 'min:1', 'exists:controls,id'],
         ];
     }
 
