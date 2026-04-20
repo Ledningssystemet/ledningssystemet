@@ -370,8 +370,9 @@ export function CrudModule({ config, onEditFormDataChange }: CrudModuleProps) {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>{t("ui.crud.action_cancel")}</AlertDialogCancel>
+            <AlertDialogCancel data-testid="crud-delete-cancel">{t("ui.crud.action_cancel")}</AlertDialogCancel>
             <AlertDialogAction
+              data-testid="crud-delete-confirm"
               onClick={executeDelete}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >

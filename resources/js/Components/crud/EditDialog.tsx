@@ -37,12 +37,10 @@ export function EditDialog({
      if (open) {
        const initialData = item ? { ...item } : {};
 
-       // Ensure required boolean values are always present in create forms.
-       if (!item) {
-         for (const field of fields) {
-           if (field.type === "boolean" && initialData[field.key] === undefined) {
-             initialData[field.key] = false;
-           }
+        // Keep boolean fields explicit so validation and save-button enablement stay stable.
+        for (const field of fields) {
+          if (field.type === "boolean" && initialData[field.key] === undefined) {
+            initialData[field.key] = false;
          }
        }
 
@@ -145,6 +143,7 @@ export function EditDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange} modal={false}>
       <DialogContent
+        data-testid="crud-edit-dialog"
         className="max-w-lg max-h-[85vh] flex flex-col overflow-visible"
         onInteractOutside={(event) => event.preventDefault()}
         onEscapeKeyDown={(event) => event.preventDefault()}
@@ -190,10 +189,10 @@ export function EditDialog({
         </div>
 
         <DialogFooter className="flex items-center gap-2">
-          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={saving}>
+          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={saving} data-testid="crud-cancel-button">
             {t("ui.crud.action_cancel")}
           </Button>
-          <Button onClick={handleSave} disabled={saving}>
+          <Button onClick={handleSave} disabled={saving} data-testid="crud-save-button">
             {saving && <Loader2 className="h-4 w-4 mr-1 animate-spin" />}
             {isNew ? t("ui.crud.action_create") : t("ui.crud.action_save")}
           </Button>
@@ -221,6 +220,8 @@ function renderFieldInput(
     case "textarea":
       return (
         <Textarea
+          id={field.key}
+          name={field.key}
           value={val || ""}
           onChange={(e) => setValue(field.key, e.target.value)}
           placeholder={field.placeholder}
@@ -230,6 +231,8 @@ function renderFieldInput(
     case "number":
       return (
         <Input
+          id={field.key}
+          name={field.key}
           type="number"
           value={val ?? ""}
           onChange={(e) => setValue(field.key, e.target.value ? Number(e.target.value) : "")}
@@ -239,6 +242,8 @@ function renderFieldInput(
     case "color":
       return (
         <Input
+          id={field.key}
+          name={field.key}
           type="color"
           value={normalizeColorForInput(val)}
           onChange={(e) => setValue(field.key, e.target.value.replace(/^#/, ""))}
@@ -247,6 +252,8 @@ function renderFieldInput(
     case "date":
       return (
         <Input
+          id={field.key}
+          name={field.key}
           type="date"
           value={val || ""}
           onChange={(e) => setValue(field.key, e.target.value)}
@@ -256,6 +263,8 @@ function renderFieldInput(
       return (
         <div className="grid gap-2">
           <Input
+            id={field.key}
+            name={field.key}
             type="file"
             accept={field.accept}
             onChange={(e) => {
@@ -271,6 +280,7 @@ function renderFieldInput(
     case "boolean":
       return (
         <Switch
+          id={field.key}
           checked={!!val}
           onCheckedChange={(checked) => setValue(field.key, checked)}
         />
@@ -278,6 +288,8 @@ function renderFieldInput(
     case "select":
       return (
         <Select2Field
+          inputId={field.key}
+          name={field.key}
           options={field.options || []}
           optionsUrl={field.optionsUrl}
           createOptionUrl={field.createOptionUrl}
@@ -294,6 +306,8 @@ function renderFieldInput(
     case "multiselect":
       return (
         <Select2Field
+          inputId={field.key}
+          name={field.key}
           options={field.options || []}
           optionsUrl={field.optionsUrl}
           createOptionUrl={field.createOptionUrl}
@@ -352,6 +366,8 @@ function renderFieldInput(
     case "inline-tags":
       return (
         <Select2Field
+          inputId={field.key}
+          name={field.key}
           options={field.options || []}
           optionsUrl={field.optionsUrl}
           createOptionUrl={field.createOptionUrl}
@@ -370,6 +386,8 @@ function renderFieldInput(
     default:
       return (
         <Input
+          id={field.key}
+          name={field.key}
           type={field.type === "email" ? "email" : field.type === "url" ? "url" : "text"}
           value={val || ""}
           onChange={(e) => setValue(field.key, e.target.value)}

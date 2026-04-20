@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\AccessGroup;
 use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
@@ -18,11 +19,18 @@ class DatabaseSeeder extends Seeder
     {
         // User::factory(10)->create();
 
-        User::factory()->create([
+        $user = User::factory()->create([
             'name' => 'Test User',
             'email' => 'test@example.com',
             'password' => Hash::make('password'),
             'enabled' => true,
         ]);
+
+        $accessGroup = AccessGroup::query()->create([
+            'name' => 'E2E Management Access',
+            'claims' => ['managementtools.edit', 'systemadministrator.edit'],
+        ]);
+
+        $accessGroup->int_users()->syncWithoutDetaching([$user->id]);
     }
 }

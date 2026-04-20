@@ -176,6 +176,7 @@ export function FilterBar({
           <div className="relative flex-1 min-w-[200px] max-w-sm">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
+              data-testid="crud-search-input"
               value={localSearch}
               onChange={(e) => {
                 setLocalSearch(e.target.value);
@@ -291,7 +292,7 @@ export function FilterBar({
           </div>
 
           {onAdd && (
-            <Button onClick={onAdd} size="sm">
+            <Button onClick={onAdd} size="sm" data-testid="crud-add-button">
               <Plus className="h-4 w-4 mr-1" />
               {t("ui.crud.filter.add_new")}
             </Button>

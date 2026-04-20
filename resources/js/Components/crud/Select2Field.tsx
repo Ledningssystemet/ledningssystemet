@@ -8,6 +8,8 @@ interface Select2FieldProps {
   options: SelectOption[];
   value: any;
   onChange: (value: any) => void;
+  inputId?: string;
+  name?: string;
   placeholder?: string;
   isMulti?: boolean;
   isDisabled?: boolean;
@@ -123,6 +125,8 @@ export const Select2Field = React.forwardRef<any, Select2FieldProps>(function Se
     options,
     value,
     onChange,
+    inputId,
+    name,
     placeholder,
     isMulti = false,
     isDisabled,
@@ -280,6 +284,8 @@ export const Select2Field = React.forwardRef<any, Select2FieldProps>(function Se
       value={selectedValue}
       onChange={handleChange}
       onCreateOption={canCreate ? handleCreate : undefined}
+      inputId={inputId}
+      name={name}
       placeholder={placeholder || t("ui.crud.select_placeholder")}
       styles={customStyles}
       isDisabled={isDisabled}

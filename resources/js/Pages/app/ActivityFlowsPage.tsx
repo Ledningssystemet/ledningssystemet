@@ -86,13 +86,13 @@ export default function ActivityFlowsPage({ route }: ActivityFlowsPageProps) {
                 editable: false,
                 category: t('pages.activity_flows.category_relations'),
                 renderCell: (_, row) => (
-                    <Button type="button" variant="outline" size="sm" className="gap-1" onClick={() => setActiveFlow(row)}>
+                    <Button data-testid="activity-flow-open-items" type="button" variant="outline" size="sm" className="gap-1" onClick={() => setActiveFlow(row)}>
                         <ListTree className="h-4 w-4" />
                         {t('pages.activity_flows.open_items_button')}
                     </Button>
                 ),
                 renderDetail: (_, row) => (
-                    <Button type="button" variant="outline" size="sm" className="gap-1" onClick={() => setActiveFlow(row)}>
+                    <Button data-testid="activity-flow-open-items" type="button" variant="outline" size="sm" className="gap-1" onClick={() => setActiveFlow(row)}>
                         <ListTree className="h-4 w-4" />
                         {t('pages.activity_flows.open_items_button')}
                     </Button>
@@ -238,6 +238,7 @@ export default function ActivityFlowsPage({ route }: ActivityFlowsPageProps) {
                     onEscapeKeyDown={(event) => event.preventDefault()}
                 >
                     <Button
+                        data-testid="activity-flow-close-items"
                         type="button"
                         variant="default"
                         size="sm"
@@ -248,7 +249,7 @@ export default function ActivityFlowsPage({ route }: ActivityFlowsPageProps) {
                         {t('pages.activity_flows.items.close_panel_button')}
                     </Button>
 
-                    <div className="flex h-full min-h-0 min-w-0 flex-col">
+                    <div className="flex h-full min-h-0 min-w-0 flex-col" data-testid="activity-flow-items-panel">
                         <div className="sticky top-0 z-10 border-b bg-background p-4 pr-36">
                             <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                                 <div className="min-w-0">

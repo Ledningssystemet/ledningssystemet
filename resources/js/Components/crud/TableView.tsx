@@ -173,6 +173,8 @@ export function TableView({
                     </tr>
                   )}
                   <tr
+                    data-testid="crud-row"
+                    data-row-id={String(id)}
                     data-crud-drag-item
                     className={`border-b crud-row-hover ${isSelected ? "crud-row-selected" : ""} ${statusRowClass(status)} ${draggedId !== null && String(draggedId) === String(id) ? "opacity-45" : ""}`}
                     onDragOver={(event) => {
@@ -249,6 +251,7 @@ export function TableView({
                       <div className="flex items-center gap-1">
                         {canEdit && (editableKey ? item[editableKey] !== false : true) && onEdit && (
                           <Button
+                            data-testid="crud-row-edit"
                             variant="ghost"
                             size="icon"
                             className="h-8 w-8"
@@ -259,6 +262,7 @@ export function TableView({
                         )}
                         {canDelete && (deletableKey ? item[deletableKey] !== false : true) && onDelete && (
                           <Button
+                            data-testid="crud-row-delete"
                             variant="ghost"
                             size="icon"
                             className="h-8 w-8 text-destructive hover:text-destructive"
