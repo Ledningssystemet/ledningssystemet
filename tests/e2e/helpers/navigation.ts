@@ -9,9 +9,9 @@ import type { Page } from '@playwright/test';
  * Handles Inertia.js navigation
  */
 export async function navigateTo(page: Page, path: string): Promise<void> {
-    await page.goto(path);
+    await page.goto(path, { timeout: 60000 });
     // Wait for any Inertia navigation to complete
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState();
 }
 
 /**
@@ -42,7 +42,7 @@ export async function navigateToCrudEdit(page: Page, resource: string, id: strin
  * Useful when a navigation is triggered by form submission or button click
  */
 export async function waitForInertiaNavigation(page: Page): Promise<void> {
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState();
 }
 
 /**

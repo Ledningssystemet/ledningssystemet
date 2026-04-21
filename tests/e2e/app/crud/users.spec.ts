@@ -18,8 +18,8 @@ import { fillAndSubmitForm, getTableRows, findEntityInList, deleteEntity } from 
  * 4. Run: npm run test:e2e -- tests/e2e/app/crud/[resource].spec.ts
  */
 
-const RESOURCE = '[RESOURCE]'; // e.g., 'tags', 'sites', 'departments'
-const SINGULAR = '[singular]'; // e.g., 'tag', 'site', 'department'
+const RESOURCE = 'users'; // e.g., 'tags', 'sites', 'departments'
+const SINGULAR = 'user'; // e.g., 'tag', 'site', 'department'
 
 interface TestData {
     create: Record<string, string | boolean | number>;
