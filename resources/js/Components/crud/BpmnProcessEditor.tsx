@@ -1,9 +1,10 @@
-import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
+import { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import { LocateFixed } from 'lucide-react';
 import Modeler from 'bpmn-js/lib/Modeler';
 import 'bpmn-js/dist/assets/diagram-js.css';
-import 'bpmn-js/dist/assets/bpmn-font/css/bpmn.css';
+import '../../../css/bpmn-font-local.css';
 import { cn } from '@/lib/utils';
+import BpmnCustomRulesModule from './BpmnCustomRules';
 
 const DEFAULT_BPMN_XML = `<?xml version="1.0" encoding="UTF-8"?>
 <bpmn:definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -39,18 +40,42 @@ type BpmnXmlResult = {
   xml?: string;
 };
 
+const MIN_EDITOR_HEIGHT = 800;
+const MIN_MEASURED_HEIGHT = 100;
+
+type BpmnCanvasApi = {
+  zoom: (scale: 'fit-viewport', center: 'auto') => void;
+  resized: () => void;
+};
+
 const BpmnProcessEditor = forwardRef<BpmnProcessEditorHandle, BpmnProcessEditorProps>(
   ({ xml, className, invalidMessage, fitButtonLabel }, ref) => {
+    const wrapperRef = useRef<HTMLDivElement | null>(null);
     const containerRef = useRef<HTMLDivElement | null>(null);
     const modelerRef = useRef<Modeler | null>(null);
     const [renderError, setRenderError] = useState<string | null>(null);
+    const [editorHeight, setEditorHeight] = useState<number>(MIN_EDITOR_HEIGHT);
 
-    const fitViewport = () => {
+    const fitViewport = useCallback(() => {
       const modeler = modelerRef.current;
       if (!modeler) return;
-      const canvas = modeler.get('canvas') as { zoom: (scale: 'fit-viewport', center: 'auto') => void };
+      const canvas = modeler.get('canvas') as BpmnCanvasApi;
       canvas.zoom('fit-viewport', 'auto');
-    };
+    }, []);
+
+    const syncEditorHeight = useCallback(() => {
+      const wrapper = wrapperRef.current;
+      if (!wrapper) {
+        return;
+      }
+
+      const wrapperHeight = wrapper.clientHeight;
+      const parentHeight = wrapper.parentElement?.clientHeight ?? 0;
+      const measuredHeight = Math.max(wrapperHeight, parentHeight);
+      const nextHeight = measuredHeight > MIN_MEASURED_HEIGHT ? measuredHeight : MIN_EDITOR_HEIGHT;
+
+      setEditorHeight((currentHeight) => (currentHeight === nextHeight ? currentHeight : nextHeight));
+    }, []);
 
     useImperativeHandle(ref, () => ({
       exportXml: async (): Promise<string | null> => {
@@ -73,6 +98,7 @@ const BpmnProcessEditor = forwardRef<BpmnProcessEditorHandle, BpmnProcessEditorP
 
       const modeler = new Modeler({
         container: containerRef.current,
+        additionalModules: [BpmnCustomRulesModule],
       });
       modelerRef.current = modeler;
 
@@ -81,6 +107,42 @@ const BpmnProcessEditor = forwardRef<BpmnProcessEditorHandle, BpmnProcessEditorP
         modelerRef.current = null;
       };
     }, []);
+
+    useEffect(() => {
+      syncEditorHeight();
+
+      const wrapper = wrapperRef.current;
+      if (!wrapper || typeof ResizeObserver === 'undefined') {
+        return undefined;
+      }
+
+      const resizeObserver = new ResizeObserver(() => {
+          syncEditorHeight();
+      });
+
+      resizeObserver.observe(wrapper);
+
+      if (wrapper.parentElement) {
+        resizeObserver.observe(wrapper.parentElement);
+      }
+
+      window.addEventListener('resize', syncEditorHeight);
+
+      return () => {
+        resizeObserver.disconnect();
+        window.removeEventListener('resize', syncEditorHeight);
+      };
+    }, [syncEditorHeight]);
+
+    useEffect(() => {
+      const modeler = modelerRef.current;
+      if (!modeler) {
+        return;
+      }
+
+      const canvas = modeler.get('canvas') as BpmnCanvasApi;
+      canvas.resized();
+    }, [editorHeight]);
 
     useEffect(() => {
       const modeler = modelerRef.current;
@@ -110,7 +172,7 @@ const BpmnProcessEditor = forwardRef<BpmnProcessEditorHandle, BpmnProcessEditorP
     }, [invalidMessage, xml]);
 
     return (
-      <div className={cn('relative overflow-hidden rounded-lg border border-border bg-muted/20', className)}>
+      <div ref={wrapperRef} className={cn('relative h-full min-h-[50rem] overflow-hidden rounded-lg border border-border bg-muted/20', className)}>
         {fitButtonLabel && (
           <button
             type="button"
@@ -130,7 +192,7 @@ const BpmnProcessEditor = forwardRef<BpmnProcessEditorHandle, BpmnProcessEditorP
           </div>
         )}
 
-        <div ref={containerRef} className="bpmn-editor h-full min-h-[50rem] w-full" />
+        <div ref={containerRef} className="bpmn-editor w-full" style={{ height: `${editorHeight}px` }} />
       </div>
     );
   }

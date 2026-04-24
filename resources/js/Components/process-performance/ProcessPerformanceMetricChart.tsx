@@ -1,6 +1,5 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useTranslations } from '@/hooks/useTranslations';
-import { useGoogleCharts } from '@/hooks/useGoogleCharts';
 import type { ProcessPerformanceMetricItem, ProcessPerformanceMetricReportItem } from '@/types/processPerformance';
 
 interface ProcessPerformanceMetricChartProps {
@@ -10,8 +9,6 @@ interface ProcessPerformanceMetricChartProps {
 
 export function ProcessPerformanceMetricChart({ metric, compact = false }: ProcessPerformanceMetricChartProps) {
     const { t } = useTranslations();
-    const chartsLoaded = useGoogleCharts();
-    const containerRef = useRef<HTMLDivElement | null>(null);
     const [reports, setReports] = useState<ProcessPerformanceMetricReportItem[]>([]);
     const [loading, setLoading] = useState(metric.metric_type !== 3);
     const [error, setError] = useState(false);
@@ -70,59 +67,55 @@ export function ProcessPerformanceMetricChart({ metric, compact = false }: Proce
             ]) as Array<[Date, number]>;
     }, [reports]);
 
-    useEffect(() => {
-        if (!chartsLoaded || !containerRef.current || chartRows.length === 0 || metric.metric_type === 3) {
-            return;
-        }
+    const chartGeometry = useMemo(() => {
+        const chartWidth = compact ? 240 : 1000;
+        const chartHeight = compact ? 88 : 220;
+        const padding = compact
+            ? { top: 8, right: 8, bottom: 8, left: 8 }
+            : { top: 16, right: 16, bottom: 34, left: 44 };
 
-        const google = window.google;
-        if (!google?.visualization?.DataTable || !google.visualization.LineChart) {
-            return;
-        }
+        const sortedRows = [...chartRows].sort((left, right) => left[0].getTime() - right[0].getTime());
+        const xValues = sortedRows.map(([date]) => date.getTime());
+        const yValues = sortedRows.map(([, value]) => value);
 
-        const dataTable = new google.visualization.DataTable();
-        dataTable.addColumn('date', t('pages.process_performance.chart_axis_date'));
-        dataTable.addColumn('number', metric.name);
-        dataTable.addRows(chartRows);
+        const minX = xValues[0] ?? 0;
+        const maxX = xValues[xValues.length - 1] ?? minX;
+        const minYFromData = yValues.length > 0 ? Math.min(...yValues) : 0;
+        const maxYFromData = yValues.length > 0 ? Math.max(...yValues) : 0;
 
-        const chart = new google.visualization.LineChart(containerRef.current);
-        chart.draw(dataTable, {
-            backgroundColor: 'transparent',
-            chartArea: {
-                left: compact ? 8 : 36,
-                top: compact ? 8 : 16,
-                width: compact ? '96%' : '88%',
-                height: compact ? '78%' : '72%',
-            },
-            colors: ['#2563eb'],
-            curveType: 'function',
-            fontName: 'Inter',
-            hAxis: {
-                textPosition: compact ? 'none' : 'out',
-                gridlines: { color: '#e5e7eb' },
-                baselineColor: '#d1d5db',
-            },
-            legend: { position: 'none' },
-            lineWidth: 2,
-            pointSize: chartRows.length === 1 ? 4 : 2,
-            tooltip: { trigger: 'focus' },
-            vAxis: {
-                format: metric.unit ? `#,##0.## ${metric.unit}` : '#,##0.##',
-                gridlines: { color: '#e5e7eb' },
-                baselineColor: '#d1d5db',
-                textPosition: compact ? 'none' : 'out',
-                viewWindow:
-                    typeof metric.minvalue === 'number' || typeof metric.maxvalue === 'number'
-                        ? {
-                              min: typeof metric.minvalue === 'number' ? metric.minvalue : undefined,
-                              max: typeof metric.maxvalue === 'number' ? metric.maxvalue : undefined,
-                          }
-                        : undefined,
-            },
-            width: '100%',
-            height: compact ? 88 : 220,
+        const minY =
+            typeof metric.minvalue === 'number' ? Math.min(metric.minvalue, minYFromData) : minYFromData;
+        const maxY =
+            typeof metric.maxvalue === 'number' ? Math.max(metric.maxvalue, maxYFromData) : maxYFromData;
+
+        const xRange = maxX - minX || 1;
+        const yRange = maxY - minY || 1;
+        const plotWidth = chartWidth - padding.left - padding.right;
+        const plotHeight = chartHeight - padding.top - padding.bottom;
+
+        const points = sortedRows.map(([date, value]) => {
+            const x = padding.left + ((date.getTime() - minX) / xRange) * plotWidth;
+            const y = padding.top + (1 - (value - minY) / yRange) * plotHeight;
+
+            return { date, value, x, y };
         });
-    }, [chartRows, chartsLoaded, compact, metric.maxvalue, metric.metric_type, metric.minvalue, metric.name, metric.unit, t]);
+
+        const path = points
+            .map((point, index) => `${index === 0 ? 'M' : 'L'}${point.x.toFixed(2)} ${point.y.toFixed(2)}`)
+            .join(' ');
+
+        return {
+            chartWidth,
+            chartHeight,
+            minX,
+            maxX,
+            minY,
+            maxY,
+            points,
+            path,
+            yTicks: [0, 0.25, 0.5, 0.75, 1].map((ratio) => padding.top + ratio * plotHeight),
+        };
+    }, [chartRows, compact, metric.maxvalue, metric.minvalue]);
 
     if (metric.metric_type === 3) {
         return <span className="text-xs text-muted-foreground">{t('pages.process_performance.chart_not_available')}</span>;
@@ -140,6 +133,46 @@ export function ProcessPerformanceMetricChart({ metric, compact = false }: Proce
         return <span className="text-xs text-muted-foreground">{t('pages.process_performance.chart_empty')}</span>;
     }
 
-    return <div ref={containerRef} className={compact ? 'h-[88px] w-[240px] min-w-[240px]' : 'h-[220px] w-full'} />;
+    const numberFormatter = new Intl.NumberFormat(undefined, { maximumFractionDigits: 2 });
+    const dateFormatter = new Intl.DateTimeFormat(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
+    const axisLabelClassName = 'fill-muted-foreground text-[10px]';
+
+    return (
+        <svg
+            viewBox={`0 0 ${chartGeometry.chartWidth} ${chartGeometry.chartHeight}`}
+            className={compact ? 'h-[88px] w-[240px] min-w-[240px]' : 'h-[220px] w-full'}
+            role="img"
+            aria-label={metric.name}
+        >
+            {chartGeometry.yTicks.map((tickY) => (
+                <line key={tickY} x1={0} y1={tickY} x2={chartGeometry.chartWidth} y2={tickY} stroke="#e5e7eb" strokeWidth={1} />
+            ))}
+
+            <path d={chartGeometry.path} fill="none" stroke="#2563eb" strokeWidth={2} />
+
+            {chartGeometry.points.map((point) => (
+                <circle key={`${point.date.toISOString()}-${point.value}`} cx={point.x} cy={point.y} r={chartGeometry.points.length === 1 ? 4 : 2.5} fill="#2563eb">
+                    <title>{`${dateFormatter.format(point.date)}: ${numberFormatter.format(point.value)}${metric.unit ? ` ${metric.unit}` : ''}`}</title>
+                </circle>
+            ))}
+
+            {!compact && (
+                <>
+                    <text x={0} y={chartGeometry.chartHeight - 6} className={axisLabelClassName}>
+                        {dateFormatter.format(new Date(chartGeometry.minX))}
+                    </text>
+                    <text x={chartGeometry.chartWidth} y={chartGeometry.chartHeight - 6} textAnchor="end" className={axisLabelClassName}>
+                        {dateFormatter.format(new Date(chartGeometry.maxX))}
+                    </text>
+                    <text x={2} y={12} className={axisLabelClassName}>
+                        {`${numberFormatter.format(chartGeometry.maxY)}${metric.unit ? ` ${metric.unit}` : ''}`}
+                    </text>
+                    <text x={2} y={chartGeometry.chartHeight - 38} className={axisLabelClassName}>
+                        {`${numberFormatter.format(chartGeometry.minY)}${metric.unit ? ` ${metric.unit}` : ''}`}
+                    </text>
+                </>
+            )}
+        </svg>
+    );
 }
 

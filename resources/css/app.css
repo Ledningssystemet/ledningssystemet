@@ -1,4 +1,12 @@
-@import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
+@import '../../node_modules/@fontsource/quicksand/400.css';
+@import '../../node_modules/@fontsource/quicksand/500.css';
+@import '../../node_modules/@fontsource/quicksand/600.css';
+@import '../../node_modules/@fontsource/quicksand/700.css';
+@import '../../node_modules/@fontsource/inter/300.css';
+@import '../../node_modules/@fontsource/inter/400.css';
+@import '../../node_modules/@fontsource/inter/500.css';
+@import '../../node_modules/@fontsource/inter/600.css';
+@import '../../node_modules/@fontsource/inter/700.css';
 @import 'tailwindcss';
 @config '../../tailwind.config.js';
 

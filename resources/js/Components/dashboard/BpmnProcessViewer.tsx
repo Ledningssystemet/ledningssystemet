@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { LocateFixed } from 'lucide-react';
 import NavigatedViewer from 'bpmn-js/lib/NavigatedViewer';
 import 'bpmn-js/dist/assets/diagram-js.css';
-import 'bpmn-js/dist/assets/bpmn-font/css/bpmn.css';
+import '../../../css/bpmn-font-local.css';
 import { cn } from '@/lib/utils';
 
 interface BpmnProcessViewerProps {

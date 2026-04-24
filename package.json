@@ -25,6 +25,8 @@
         "vite": "^8.0.0"
     },
     "dependencies": {
+        "@fontsource/inter": "^5.2.8",
+        "@fontsource/quicksand": "^5.2.8",
         "@editorjs/editorjs": "^2.31.6",
         "@editorjs/header": "^2.8.8",
         "@editorjs/list": "^2.0.9",

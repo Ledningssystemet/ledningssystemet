@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Check, Maximize2, RotateCcw } from "lucide-react";
 import { useTranslations } from "@/hooks/useTranslations";
 import { DashboardWidgetProps } from "@/types/dashboard";
@@ -7,15 +7,89 @@ import ProcessMapDialog from "./ProcessMapDialog";
 import Cookies from "js-cookie";
 
 const PREFERRED_PROCESS_COOKIE = 'dashboard_preferred_process_id';
+const PROCESS_HASH_KEY = 'dashboard-process';
+
+function getProcessIdFromHash(hash: string): number | null | undefined {
+  if (!hash.startsWith('#')) {
+    return undefined;
+  }
+
+  const raw = hash.slice(1);
+  const [key, value] = raw.split('=');
+  if (key !== PROCESS_HASH_KEY) {
+    return undefined;
+  }
+
+  if (!value || value === 'null') {
+    return null;
+  }
+
+  const parsed = Number(value);
+  if (Number.isFinite(parsed)) {
+    return parsed;
+  }
+
+  return undefined;
+}
+
+function toProcessHash(processId: number | null): string {
+  return processId === null ? `#${PROCESS_HASH_KEY}=null` : `#${PROCESS_HASH_KEY}=${processId}`;
+}
 
 export default function ProcessCard({ data, loading, error, setSelectedProcessId }: DashboardWidgetProps) {
   const { t } = useTranslations();
   const [isFullscreenOpen, setIsFullscreenOpen] = useState(false);
   const [preferredProcessId, setPreferredProcessId] = useState<number | null>(null);
   const [showSavedNotice, setShowSavedNotice] = useState(false);
+  const currentProcessIdRef = useRef<number | null>(data.selectedProcessId);
+  const suppressHashWriteRef = useRef(false);
   const hasProcess = data.selectedProcessId !== null;
   const isPreferred = hasProcess && preferredProcessId === data.selectedProcessId;
   const hasPreferredProcess = preferredProcessId !== null;
+
+  useEffect(() => {
+    currentProcessIdRef.current = data.selectedProcessId;
+  }, [data.selectedProcessId]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return;
+    }
+
+    if (suppressHashWriteRef.current) {
+      return;
+    }
+
+    const targetHash = toProcessHash(data.selectedProcessId);
+    if (window.location.hash !== targetHash) {
+      window.location.hash = targetHash;
+    }
+  }, [data.selectedProcessId]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return;
+    }
+
+    const handleHashChange = () => {
+      const hashProcessId = getProcessIdFromHash(window.location.hash);
+      if (hashProcessId === undefined || hashProcessId === currentProcessIdRef.current) {
+        return;
+      }
+
+      suppressHashWriteRef.current = true;
+      setSelectedProcessId(hashProcessId);
+
+      window.setTimeout(() => {
+        suppressHashWriteRef.current = false;
+      }, 0);
+    };
+
+    window.addEventListener('hashchange', handleHashChange);
+    return () => {
+      window.removeEventListener('hashchange', handleHashChange);
+    };
+  }, [setSelectedProcessId]);
 
   useEffect(() => {
     const rawPreferredProcessId = Cookies.get(PREFERRED_PROCESS_COOKIE);
@@ -45,8 +119,23 @@ export default function ProcessCard({ data, loading, error, setSelectedProcessId
       .sort((a, b) => a.label.localeCompare(b.label));
   }, [data.processOptions, t]);
 
+  const handleProcessSelection = (processId: number | null) => {
+    if (processId === currentProcessIdRef.current) {
+      return;
+    }
+
+    if (!suppressHashWriteRef.current && typeof window !== 'undefined') {
+      const targetHash = toProcessHash(processId);
+      if (window.location.hash !== targetHash) {
+        window.location.hash = targetHash;
+      }
+    }
+
+    setSelectedProcessId(processId);
+  };
+
   const handleProcessChange = (value: string) => {
-    setSelectedProcessId(value === '' ? null : Number(value));
+    handleProcessSelection(value === '' ? null : Number(value));
   };
 
   const handleSetAsPreferred = () => {
@@ -68,13 +157,13 @@ export default function ProcessCard({ data, loading, error, setSelectedProcessId
     setPreferredProcessId(null);
 
     const defaultProcessId = data.processOptions.find((process) => process.isStartProcess)?.id ?? data.processOptions[0]?.id ?? null;
-    setSelectedProcessId(defaultProcessId);
+    handleProcessSelection(defaultProcessId);
   };
 
   const handleSubProcessClick = (name: string) => {
     const match = data.processOptions.find((process) => process.name === name);
     if (match) {
-      setSelectedProcessId(match.id);
+      handleProcessSelection(match.id);
     }
   };
 
@@ -192,7 +281,7 @@ export default function ProcessCard({ data, loading, error, setSelectedProcessId
         processId={data.selectedProcessId}
         processOptions={data.processOptions}
         selectedProcessId={data.selectedProcessId}
-        onProcessChange={setSelectedProcessId}
+        onProcessChange={handleProcessSelection}
         onSetAsPreferred={handleSetAsPreferred}
         onResetPreferred={handleResetPreferredProcess}
         isPreferred={Boolean(isPreferred)}
