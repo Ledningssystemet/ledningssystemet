@@ -28,12 +28,6 @@ class MenuCategoryBuilder
                     'heading' => __('My responsibility'),
                     'items' => [
                         [
-                            'key' => 'my-profile',
-                            'label' => __('My profile'),
-                            'icon' => 'account_circle',
-                            'description' => __('Your profile and personal settings'),
-                        ],
-                        [
                             'key' => 'my-risks',
                             'label' => __('My risks'),
                             'icon' => 'warning',

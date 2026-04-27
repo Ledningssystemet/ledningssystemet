@@ -4,17 +4,14 @@ import {
     AccordionItem,
     AccordionTrigger,
 } from "@/components/ui/accordion";
-import {Button} from "@/components/ui/button";
 import { MaterialSymbol } from "@/components/ui/material-symbol";
 import {Badge} from "@/components/ui/badge";
-import {FieldConfig, ItemBadgeConfig, ItemStatus, RowActionConfig, SelectOption} from "./types";
+import {FieldConfig, ItemBadgeConfig, ItemStatus, RowActionConfig} from "./types";
 import {StatusDot} from "./StatusIndicator";
-import {InlineTagsEditor} from "./InlineTagsEditor";
-import {useAllSelectOptions, resolveOptions} from "./optionsCache";
 import {DragEvent, Fragment, useEffect, useMemo, useRef, useState} from "react";
 import {setupDragPreview} from "./dragPreview";
 import {useTranslations} from "@/hooks/useTranslations";
-import {CollapsedMultiValueBadges} from "./CollapsedMultiValueBadges";
+import {ItemDetailsContent} from "./ItemDetailsContent";
 
 type DropPosition = "before" | "after";
 type CrudItem = Record<string, any>;
@@ -64,7 +61,6 @@ export function AccordionView({
     const labelField = fields.find((f) => f.masterLabel) || fields[0];
     const descField = fields.find((f) => f.masterDescription);
     const detailFields = fields.filter((f) => !f.hidden);
-    const optionsMap = useAllSelectOptions(fields);
     const [draggedId, setDraggedId] = useState<string | number | null>(null);
     const [dropTarget, setDropTarget] = useState<{ id: string | number; position: DropPosition } | null>(null);
     const dragPreviewCleanupRef = useRef<(() => void) | null>(null);
@@ -128,9 +124,6 @@ export function AccordionView({
         dragPreviewCleanupRef.current = setupDragPreview(event);
     };
 
-    // Group by category
-    const categories = groupByCategory(detailFields);
-
     return (
         <div className="overflow-hidden">
             {normalizedItems.length === 0 ? (
@@ -142,9 +135,6 @@ export function AccordionView({
                     {normalizedItems.map((item: CrudItem) => {
                         const status = getItemStatus?.(item) ?? null;
                         const itemId = item[primaryKey] as string | number;
-                        const canDeleteItem = canDelete && (deletableKey ? item[deletableKey] !== false : true);
-                        const visibleRowActions = rowActions.filter((action) => (action.isVisible ? action.isVisible(item) : true));
-                        const showActions = (canEdit && Boolean(onEdit)) || (canDeleteItem && Boolean(onDelete)) || visibleRowActions.length > 0;
                         return (
                             <Fragment key={item[primaryKey]}>
                                 {dropTarget && String(dropTarget.id) === String(itemId) && dropTarget.position === "before" && draggedId !== null && String(draggedId) !== String(itemId) && (
@@ -208,77 +198,19 @@ export function AccordionView({
                                         </div>
                                     </AccordionTrigger>
                                     <AccordionContent className="px-4 pb-4">
-                                        <div className="bg-muted/30 rounded-md p-4 space-y-4">
-                                            {categories.map(({category, fields: catFields}) => (
-                                                <div key={category}>
-                                                    {category !== "__uncategorized__" && (
-                                                        <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2 border-b pb-1">
-                                                            {category}
-                                                        </h4>
-                                                    )}
-                                                    <div className="grid gap-3">
-                                                        {catFields.map((field) => (
-                                                            <div key={field.key}
-                                                                 className="grid grid-cols-3 gap-2 text-sm">
-                              <span className="text-muted-foreground font-medium">
-                                {field.label}
-                              </span>
-                                                                <span className="col-span-2">
-                                {field.type === "inline-tags" && field.editable !== false && onInlineFieldUpdate
-                                    ? (
-                                        <InlineTagsEditor
+                                        <ItemDetailsContent
                                             item={item}
-                                            field={field}
-                                            value={item[field.key]}
-                                            onSave={onInlineFieldUpdate}
+                                            fields={detailFields}
+                                            onInlineFieldUpdate={onInlineFieldUpdate}
+                                            primaryKey={primaryKey}
+                                            canEdit={canEdit}
+                                            onEdit={onEdit}
+                                            canDelete={canDelete}
+                                            onDelete={onDelete}
+                                            rowActions={rowActions}
+                                            onRowAction={onRowAction}
+                                            deletableKey={deletableKey}
                                         />
-                                    )
-                                    : field.renderDetail
-                                        ? field.renderDetail(item[field.key], item)
-                                        : field.renderCell
-                                            ? field.renderCell(item[field.key], item)
-                                            : renderAccVal(item[field.key], field, optionsMap, t)}
-                              </span>
-                                                            </div>
-                                                        ))}
-                                                    </div>
-                                                </div>
-                                            ))}
-                                            {showActions && (
-                                                <div className="pt-2 flex justify-end gap-2">
-                                                    {canEdit && onEdit && (
-                                                        <Button variant="outline" size="sm"
-                                                                onClick={() => onEdit(item)}>
-                                                            <MaterialSymbol name="edit" className="h-4 w-4 mr-1"/>
-                                                            {t("ui.crud.action_edit")}
-                                                        </Button>
-                                                    )}
-                                                    {canDeleteItem && onDelete && (
-                                                        <Button
-                                                            variant="outline"
-                                                            size="sm"
-                                                            className="text-destructive hover:text-destructive"
-                                                            onClick={() => onDelete(itemId)}
-                                                        >
-                                                            <MaterialSymbol name="delete" className="h-4 w-4 mr-1"/>
-                                                            {t("ui.crud.action_delete")}
-                                                        </Button>
-                                                    )}
-                                                    {visibleRowActions.map((action) => (
-                                                        <Button
-                                                            key={action.key}
-                                                            variant={action.variant || "outline"}
-                                                            size="sm"
-                                                            onClick={() => void onRowAction?.(action, item)}
-                                                        >
-                                                            {action.icon ? <span
-                                                                className="mr-1 inline-flex">{action.icon}</span> : null}
-                                                            {action.label}
-                                                        </Button>
-                                                    ))}
-                                                </div>
-                                            )}
-                                        </div>
                                     </AccordionContent>
                                 </AccordionItem>
                                 {dropTarget && String(dropTarget.id) === String(itemId) && dropTarget.position === "after" && draggedId !== null && String(draggedId) !== String(itemId) && (
@@ -293,62 +225,3 @@ export function AccordionView({
     );
 }
 
-function groupByCategory(fields: FieldConfig[]) {
-    const map = new Map<string, FieldConfig[]>();
-    for (const f of fields) {
-        const cat = f.category || "__uncategorized__";
-        if (!map.has(cat)) map.set(cat, []);
-        map.get(cat)!.push(f);
-    }
-    return Array.from(map.entries()).map(([category, fields]) => ({category, fields}));
-}
-
-function renderAccVal(
-    value: any,
-    field: FieldConfig,
-    optionsMap: Map<string, SelectOption[]>,
-    t: (key: string, replacements?: Record<string, string | number>) => string,
-) {
-    if (value == null) return "-";
-    if (field.type === "boolean") return value ? t("ui.crud.yes") : t("ui.crud.no");
-    if ((field.type === "multiselect" || field.type === "tags" || field.type === "inline-tags") && Array.isArray(value)) {
-        const opts = resolveOptions(field, optionsMap);
-        return (
-            <CollapsedMultiValueBadges
-                values={value}
-                options={opts}
-                moreLabel={(remaining) => t("ui.crud.multi_value_more", {count: remaining})}
-            />
-        );
-    }
-    if (Array.isArray(value)) {
-        const opts = resolveOptions(field, optionsMap);
-        return (
-            <div className="flex flex-wrap gap-1">
-                {value.map((v: any) => {
-                    const opt = opts.find((o) => String(o.value) === String(v));
-                    return (
-                        <Badge key={v} variant="secondary" className="text-xs">
-                            {opt?.label || v}
-                        </Badge>
-                    );
-                })}
-            </div>
-        );
-    }
-    if (field.type === "select") {
-        const opts = resolveOptions(field, optionsMap);
-        return opts.find((o) => String(o.value) === String(value))?.label ?? String(value);
-    }
-    if (field.type === "textarea") return <span className="whitespace-pre-line">{String(value)}</span>;
-
-    if (field.type === "date" && typeof value === "string") {
-        return new Date(value).toLocaleDateString();
-    }
-
-    if (field.type === "datetime" && typeof value === "string") {
-        return new Date(value).toLocaleString();
-    }
-
-    return String(value);
-}

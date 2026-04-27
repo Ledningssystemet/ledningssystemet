@@ -19,7 +19,7 @@ return [
 		'company_name_placeholder' => 'Company',
 		'account_menu_label' => 'Open account menu',
 		'open_side_menu' => 'Open side menu',
-		'my_preferences' => 'My preferences',
+		'my_profile' => 'My profile',
 		'log_out' => 'Log out',
 	],
 

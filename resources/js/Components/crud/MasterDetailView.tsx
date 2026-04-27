@@ -1,16 +1,13 @@
-import {FieldConfig, ItemBadgeConfig, ItemStatus, RowActionConfig, SelectOption} from "./types";
-import { MaterialSymbol } from "@/components/ui/material-symbol";
-import {Button} from "@/components/ui/button";
+import {FieldConfig, ItemBadgeConfig, ItemStatus, RowActionConfig} from "./types";
+import {MaterialSymbol} from "@/components/ui/material-symbol";
 import {Badge} from "@/components/ui/badge";
 import {ScrollArea} from "@/components/ui/scroll-area";
 import {StatusDot} from "./StatusIndicator";
 import {ResizablePanelGroup, ResizablePanel, ResizableHandle} from "@/components/ui/resizable";
-import {InlineTagsEditor} from "./InlineTagsEditor";
-import {useAllSelectOptions, resolveOptions} from "./optionsCache";
 import {DragEvent, Fragment, useEffect, useMemo, useRef, useState} from "react";
 import {setupDragPreview} from "./dragPreview";
 import {useTranslations} from "@/hooks/useTranslations";
-import {CollapsedMultiValueBadges} from "./CollapsedMultiValueBadges";
+import {ItemDetailsContent} from "./ItemDetailsContent";
 
 type DropPosition = "before" | "after";
 
@@ -58,7 +55,6 @@ export function MasterDetailView({
     const labelField = fields.find((f) => f.masterLabel) || fields[0];
     const descField = fields.find((f) => f.masterDescription);
     const detailFields = fields.filter((f) => !f.hidden);
-    const optionsMap = useAllSelectOptions(fields);
     const [draggedId, setDraggedId] = useState<string | number | null>(null);
     const [dropTarget, setDropTarget] = useState<{ id: string | number; position: DropPosition } | null>(null);
     const dragPreviewCleanupRef = useRef<(() => void) | null>(null);
@@ -121,18 +117,6 @@ export function MasterDetailView({
         dragPreviewCleanupRef.current?.();
         dragPreviewCleanupRef.current = setupDragPreview(event);
     };
-
-    // Group detail fields by category
-    const categories = groupByCategory(detailFields);
-
-    const activeItemId = activeItem?.[primaryKey];
-    const canDeleteActiveItem = Boolean(
-        canDelete && activeItem && activeItemId !== undefined && activeItemId !== null && (deletableKey ? activeItem[deletableKey] !== false : true)
-    );
-    const visibleActiveRowActions = activeItem
-        ? rowActions.filter((action) => (action.isVisible ? action.isVisible(activeItem) : true))
-        : [];
-    const showActions = canEdit || canDeleteActiveItem || visibleActiveRowActions.length > 0;
 
     return (
         <ResizablePanelGroup orientation="horizontal" className="border rounded-lg overflow-hidden"
@@ -245,76 +229,21 @@ export function MasterDetailView({
                                             </div>
                                         </div>
                                     </div>
-                                    {showActions && (
-                                        <div className="flex items-center gap-2">
-                                            {canEdit && onEdit && (
-                                                <Button variant="outline" size="sm" onClick={() => onEdit(activeItem)}>
-                                                    <MaterialSymbol name="edit" className="h-4 w-4 mr-1"/>
-                                                    {t("ui.crud.action_edit")}
-                                                </Button>
-                                            )}
-                                            {canDeleteActiveItem && onDelete && (
-                                                <Button
-                                                    variant="outline"
-                                                    size="sm"
-                                                    className="text-destructive hover:text-destructive"
-                                                    onClick={() => onDelete(activeItemId as string | number)}
-                                                >
-                                                    <MaterialSymbol name="delete" className="h-4 w-4 mr-1"/>
-                                                    {t("ui.crud.action_delete")}
-                                                </Button>
-                                            )}
-                                            {activeItem && visibleActiveRowActions.map((action) => (
-                                                <Button
-                                                    key={action.key}
-                                                    variant={action.variant || "outline"}
-                                                    size="sm"
-                                                    onClick={() => void onRowAction?.(action, activeItem)}
-                                                >
-                                                    {action.icon ?
-                                                        <span className="mr-1 inline-flex">{action.icon}</span> : null}
-                                                    {action.label}
-                                                </Button>
-                                            ))}
-                                        </div>
-                                    )}
                                 </div>
 
-                                {categories.map(({category, fields: catFields}) => (
-                                    <div key={category} className="mb-6">
-                                        {category !== "__uncategorized__" && (
-                                            <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3 border-b pb-1">
-                                                {category}
-                                            </h3>
-                                        )}
-                                        <div className="grid gap-4">
-                                            {catFields.map((field) => {
-                                                const value = activeItem[field.key];
-                                                return (
-                                                    <div key={field.key} className="grid grid-cols-3 gap-2">
-                            <span className="text-sm font-medium text-muted-foreground">
-                              {field.label}
-                            </span>
-                                                        <span className="text-sm col-span-2">
-                              {field.type === "inline-tags" && field.editable !== false && onInlineFieldUpdate
-                                  ? (
-                                      <InlineTagsEditor
-                                          item={activeItem}
-                                          field={field}
-                                          value={value}
-                                          onSave={onInlineFieldUpdate}
-                                      />
-                                  )
-                                  : field.renderDetail
-                                      ? field.renderDetail(value, activeItem)
-                                      : renderDetailValue(value, field, optionsMap, t)}
-                            </span>
-                                                    </div>
-                                                );
-                                            })}
-                                        </div>
-                                    </div>
-                                ))}
+                                <ItemDetailsContent
+                                    item={activeItem}
+                                    fields={detailFields}
+                                    onInlineFieldUpdate={onInlineFieldUpdate}
+                                    primaryKey={primaryKey}
+                                    canEdit={canEdit}
+                                    onEdit={onEdit}
+                                    canDelete={canDelete}
+                                    onDelete={onDelete}
+                                    rowActions={rowActions}
+                                    onRowAction={onRowAction}
+                                    deletableKey={deletableKey}
+                                />
                             </div>
                         </ScrollArea>
                     ) : (
@@ -328,49 +257,3 @@ export function MasterDetailView({
     );
 }
 
-function groupByCategory(fields: FieldConfig[]) {
-    const map = new Map<string, FieldConfig[]>();
-    for (const f of fields) {
-        const cat = f.category || "__uncategorized__";
-        if (!map.has(cat)) map.set(cat, []);
-        map.get(cat)!.push(f);
-    }
-    return Array.from(map.entries()).map(([category, fields]) => ({category, fields}));
-}
-
-function renderDetailValue(
-    value: any,
-    field: FieldConfig,
-    optionsMap: Map<string, SelectOption[]>,
-    t: (key: string, replacements?: Record<string, string | number>) => string,
-) {
-    if (value == null) return "-";
-    if (field.type === "boolean") return value ? t("ui.crud.yes") : t("ui.crud.no");
-    if ((field.type === "multiselect" || field.type === "tags" || field.type === "inline-tags") && Array.isArray(value)) {
-        const opts = resolveOptions(field, optionsMap);
-        return (
-            <CollapsedMultiValueBadges
-                values={value}
-                options={opts}
-                moreLabel={(remaining) => t("ui.crud.multi_value_more", {count: remaining})}
-            />
-        );
-    }
-    if (field.type === "select") {
-        const opts = resolveOptions(field, optionsMap);
-        return opts.find((o) => String(o.value) === String(value))?.label ?? String(value);
-    }
-    if (field.type === "textarea") {
-        return <span className="whitespace-pre-line">{String(value)}</span>;
-    }
-
-    if (field.type === "date" && typeof value === "string") {
-        return new Date(value).toLocaleDateString();
-    }
-
-    if (field.type === "datetime" && typeof value === "string") {
-        return new Date(value).toLocaleString();
-    }
-
-    return String(value);
-}
