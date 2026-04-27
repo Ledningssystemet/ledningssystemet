@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState, forwardRef, useImperativeHandle } from 'react';
+import { MaterialSymbol } from "@/components/ui/material-symbol";
 import EditorJS, { EditorConfig, ToolConstructable } from '@editorjs/editorjs';
 import Header from '@editorjs/header';
 import List from '@editorjs/list';
 import Paragraph from '@editorjs/paragraph';
-import { AlertCircle, Loader2 } from 'lucide-react';
 import { useTranslations } from '@/hooks/useTranslations';
 
 interface DocumentEditorProps {
@@ -206,7 +206,7 @@ export const DocumentEditor = forwardRef<any, DocumentEditorProps>(function Docu
     if (loading) {
         return (
             <div className="flex items-center justify-center py-8">
-                <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                <MaterialSymbol name="progress_activity" className="h-6 w-6 animate-spin text-primary" />
             </div>
         );
     }
@@ -215,7 +215,7 @@ export const DocumentEditor = forwardRef<any, DocumentEditorProps>(function Docu
         <div className="space-y-4">
             {error && (
                 <div className="flex items-center gap-2 rounded-md border border-destructive/50 bg-destructive/10 p-3">
-                    <AlertCircle className="h-4 w-4 text-destructive" />
+                    <MaterialSymbol name="error" className="h-4 w-4 text-destructive" />
                     <p className="text-sm text-destructive">{error}</p>
                 </div>
             )}

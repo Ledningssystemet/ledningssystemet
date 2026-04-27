@@ -1,7 +1,7 @@
-﻿import { useMemo } from 'react';
+import { useMemo } from 'react';
+import { MaterialSymbol } from "@/components/ui/material-symbol";
 import { usePage } from '@inertiajs/react';
 import type { PageProps } from '@inertiajs/core';
-import { Download, Handshake, ListChecks, Truck, Waypoints } from 'lucide-react';
 import AppLayout from '@/layouts/AppLayout';
 import { CrudModule } from '@/components/crud';
 import type { CrudModuleConfig } from '@/components/crud';
@@ -50,7 +50,7 @@ export default function SuppliersPage({ route }: SuppliersPageProps) {
                 {
                     key: 'categories',
                     label: t('pages.suppliers.categories.open_button'),
-                    icon: <Waypoints className="h-4 w-4" />,
+                    icon: <MaterialSymbol name="alt_route" className="h-4 w-4" />,
                     dialogMaxWidth: 'max-w-4xl',
                     dialogTitle: (item) => t('pages.suppliers.categories.panel_title', { supplier: String(item.name || '') }),
                     dialogDescription: t('pages.suppliers.categories.panel_description'),
@@ -76,7 +76,7 @@ export default function SuppliersPage({ route }: SuppliersPageProps) {
                 {
                     key: 'evaluation',
                     label: t('pages.suppliers.evaluation.open_button'),
-                    icon: <ListChecks className="h-4 w-4" />,
+                    icon: <MaterialSymbol name="checklist" className="h-4 w-4" />,
                     dialogMaxWidth: 'max-w-5xl',
                     dialogTitle: (item) => t('pages.suppliers.evaluation.panel_title', { supplier: String(item.name || '') }),
                     dialogDescription: t('pages.suppliers.evaluation.panel_description'),
@@ -104,7 +104,7 @@ export default function SuppliersPage({ route }: SuppliersPageProps) {
                 {
                     key: 'agreements',
                     label: t('pages.suppliers.agreements.open_button'),
-                    icon: <Handshake className="h-4 w-4" />,
+                    icon: <MaterialSymbol name="handshake" className="h-4 w-4" />,
                     dialogMaxWidth: 'max-w-5xl',
                     dialogTitle: (item) => t('pages.suppliers.agreements.panel_title', { supplier: String(item.name || '') }),
                     dialogDescription: t('pages.suppliers.agreements.panel_description'),
@@ -158,14 +158,14 @@ export default function SuppliersPage({ route }: SuppliersPageProps) {
                 <PageHeader
                     title={t('pages.suppliers.title')}
                     description={t('pages.suppliers.description')}
-                    icon={<Truck className="h-6 w-6 text-primary" />}
+                    icon={<MaterialSymbol name="local_shipping" className="h-6 w-6 text-primary" />}
                     route={route}
                     actions={
                         <a
                             href="/api/v1/ReportCentral/Suppliers/0"
                             className="flex items-center gap-2 rounded-lg border border-border bg-background px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted"
                         >
-                            <Download className="h-4 w-4" />
+                            <MaterialSymbol name="download" className="h-4 w-4" />
                             {t('pages.suppliers.export_excel')}
                         </a>
                     }

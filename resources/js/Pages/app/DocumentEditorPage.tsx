@@ -1,6 +1,6 @@
 import { useEffect, useState, useMemo, useRef } from 'react';
+import { MaterialSymbol } from "@/components/ui/material-symbol";
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, Save, FileText, Eye, AlertCircle, Loader2, Download } from 'lucide-react';
 import AppLayout from '@/layouts/AppLayout';
 import { Button } from '@/components/ui/button';
 import { Select2Field } from '@/components/crud/Select2Field';
@@ -306,7 +306,7 @@ export default function DocumentEditorPage({ route }: DocumentEditorPageProps) {
         return (
             <AppLayout>
                 <div className="flex items-center justify-center py-12">
-                    <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                    <MaterialSymbol name="progress_activity" className="h-8 w-8 animate-spin text-primary" />
                 </div>
             </AppLayout>
         );
@@ -327,13 +327,13 @@ export default function DocumentEditorPage({ route }: DocumentEditorPageProps) {
                     </nav>
 
                     <div className="flex items-center gap-3 rounded-md border border-destructive/50 bg-destructive/10 p-4">
-                        <AlertCircle className="h-5 w-5 text-destructive" />
+                        <MaterialSymbol name="error" className="h-5 w-5 text-destructive" />
                         <p className="text-sm text-destructive">{t(errorKey || 'pages.document_editor.load_error')}</p>
                     </div>
 
                     <Link to={APP_DOCUMENTS_PATH}>
                         <Button variant="outline">
-                            <ArrowLeft className="h-4 w-4 mr-2" />
+                            <MaterialSymbol name="arrow_back" className="h-4 w-4 mr-2" />
                             {t('pages.document_editor.back')}
                         </Button>
                     </Link>
@@ -362,7 +362,7 @@ export default function DocumentEditorPage({ route }: DocumentEditorPageProps) {
                     <div className="flex items-center justify-between gap-4">
                         <div className="flex items-center gap-4">
                             <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
-                                <FileText className="h-6 w-6 text-primary" />
+                                <MaterialSymbol name="description" className="h-6 w-6 text-primary" />
                             </div>
                             <div>
                                 <h1 className="text-2xl font-semibold tracking-tight text-foreground">
@@ -377,7 +377,7 @@ export default function DocumentEditorPage({ route }: DocumentEditorPageProps) {
 
                         <Link to={APP_DOCUMENTS_PATH}>
                             <Button variant="outline">
-                                <ArrowLeft className="h-4 w-4 mr-2" />
+                                <MaterialSymbol name="arrow_back" className="h-4 w-4 mr-2" />
                                 {t('pages.document_editor.back')}
                             </Button>
                         </Link>
@@ -387,7 +387,7 @@ export default function DocumentEditorPage({ route }: DocumentEditorPageProps) {
                 {/* Error message */}
                 {errorKey && (
                     <div className="flex items-center gap-3 rounded-md border border-destructive/50 bg-destructive/10 p-4">
-                        <AlertCircle className="h-5 w-5 text-destructive" />
+                        <MaterialSymbol name="error" className="h-5 w-5 text-destructive" />
                         <p className="text-sm text-destructive">{t(errorKey)}</p>
                     </div>
                 )}
@@ -441,8 +441,8 @@ export default function DocumentEditorPage({ route }: DocumentEditorPageProps) {
                                 disabled={!isDirty || saving}
                                 className="gap-2"
                             >
-                                {saving && <Loader2 className="h-4 w-4 animate-spin" />}
-                                <Save className="h-4 w-4" />
+                                {saving && <MaterialSymbol name="progress_activity" className="h-4 w-4 animate-spin" />}
+                                <MaterialSymbol name="save" className="h-4 w-4" />
                                 {t('pages.document_editor.save')}
                             </Button>
 
@@ -452,7 +452,7 @@ export default function DocumentEditorPage({ route }: DocumentEditorPageProps) {
                                 variant="destructive"
                                 className="gap-2"
                             >
-                                {saving && <Loader2 className="h-4 w-4 animate-spin" />}
+                                {saving && <MaterialSymbol name="progress_activity" className="h-4 w-4 animate-spin" />}
                                 {t('pages.document_editor.finish')}
                             </Button>
                         </>
@@ -465,7 +465,7 @@ export default function DocumentEditorPage({ route }: DocumentEditorPageProps) {
                                 disabled={saving}
                                 className="gap-2 bg-green-600 hover:bg-green-700"
                             >
-                                {saving && <Loader2 className="h-4 w-4 animate-spin" />}
+                                {saving && <MaterialSymbol name="progress_activity" className="h-4 w-4 animate-spin" />}
                                 {t('pages.document_editor.approve')}
                             </Button>
 
@@ -475,7 +475,7 @@ export default function DocumentEditorPage({ route }: DocumentEditorPageProps) {
                                 variant="destructive"
                                 className="gap-2"
                             >
-                                {saving && <Loader2 className="h-4 w-4 animate-spin" />}
+                                {saving && <MaterialSymbol name="progress_activity" className="h-4 w-4 animate-spin" />}
                                 {t('pages.document_editor.reject')}
                             </Button>
                         </>
@@ -488,7 +488,7 @@ export default function DocumentEditorPage({ route }: DocumentEditorPageProps) {
                         variant="outline"
                         className="gap-2"
                     >
-                        <Eye className="h-4 w-4" />
+                        <MaterialSymbol name="visibility" className="h-4 w-4" />
                         {t('pages.document_editor.preview_pdf')}
                     </Button>
 
@@ -497,7 +497,7 @@ export default function DocumentEditorPage({ route }: DocumentEditorPageProps) {
                             href={`/api/v1/items/DocumentVersion/${version.id}/download`}
                             className="inline-flex items-center gap-2 rounded-lg border border-border bg-background px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted"
                         >
-                            <Download className="h-4 w-4" />
+                            <MaterialSymbol name="download" className="h-4 w-4" />
                             {t('pages.document_editor.download_pdf')}
                         </a>
                     )}

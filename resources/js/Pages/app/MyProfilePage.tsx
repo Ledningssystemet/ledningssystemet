@@ -1,13 +1,14 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { MaterialSymbol } from "@/components/ui/material-symbol";
 import AppLayout from '@/layouts/AppLayout';
 import { useTranslations } from '@/hooks/useTranslations';
+import { useMenuLayoutPreference } from '@/hooks/useMenuLayoutPreference';
 import { APP_HOME_PATH } from '@/app/routes';
 import { Link } from 'react-router-dom';
-import { UserCircle } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import type { AppSectionRoute } from '@/app/routes';
 
-// ─── Tab keys ────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Tab keys â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const TAB_KEYS = [
     'general_info',
@@ -28,7 +29,7 @@ function getTabFromHash(hash: string): ProfileTab {
     return isProfileTab(normalized) ? normalized : 'general_info';
 }
 
-// ─── API types ────────────────────────────────────────────────────────────────
+// â”€â”€â”€ API types â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 interface ProfileData {
     id: number;
@@ -94,7 +95,7 @@ interface ResponsibilitiesData {
     controls: { id: number; name: string }[];
 }
 
-// ─── Helper: expiry status ────────────────────────────────────────────────────
+// â”€â”€â”€ Helper: expiry status â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function expiryStatus(expiresAt: string | null): 'expired' | 'soon' | 'ok' | null {
     if (!expiresAt) return null;
@@ -104,7 +105,7 @@ function expiryStatus(expiresAt: string | null): 'expired' | 'soon' | 'ok' | nul
     return 'ok';
 }
 
-// ─── Sub-components ───────────────────────────────────────────────────────────
+// â”€â”€â”€ Sub-components â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function InfoRow({ label, children }: { label: string; children: React.ReactNode }) {
     return (
@@ -136,7 +137,7 @@ function ErrorPlaceholder({ label }: { label: string }) {
     );
 }
 
-// ─── Tab: General information ─────────────────────────────────────────────────
+// â”€â”€â”€ Tab: General information â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function GeneralInfoTab({ data, loading, error, t }: {
     data: ProfileData | null;
@@ -151,8 +152,8 @@ function GeneralInfoTab({ data, loading, error, t }: {
     return (
         <div className="space-y-3">
             <InfoRow label={t('pages.my_profile.name_label')}>{data.name}</InfoRow>
-            <InfoRow label={t('pages.my_profile.email_label')}>{data.email || '—'}</InfoRow>
-            <InfoRow label={t('pages.my_profile.general.label_title')}>{data.title || '—'}</InfoRow>
+            <InfoRow label={t('pages.my_profile.email_label')}>{data.email || 'â€”'}</InfoRow>
+            <InfoRow label={t('pages.my_profile.general.label_title')}>{data.title || 'â€”'}</InfoRow>
             <InfoRow label={t('pages.my_profile.general.label_departments')}>
                 {data.departments.length > 0
                     ? data.departments.map((d) => d.name).join(', ')
@@ -170,7 +171,7 @@ function GeneralInfoTab({ data, loading, error, t }: {
     );
 }
 
-// ─── Tab: Roles and tasks ─────────────────────────────────────────────────────
+// â”€â”€â”€ Tab: Roles and tasks â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function ActivityGroup({ activities }: { activities: ProcessActivity[] }) {
     const byProcess = useMemo(() => {
@@ -254,7 +255,7 @@ function RolesTab({ data, loading, error, t }: {
     );
 }
 
-// ─── Tab: Qualifications ──────────────────────────────────────────────────────
+// â”€â”€â”€ Tab: Qualifications â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function QualificationsTab({ data, loading, error, t }: {
     data: QualificationsData | null;
@@ -281,11 +282,11 @@ function QualificationsTab({ data, loading, error, t }: {
                                         <div className="mt-1 flex flex-wrap gap-2 text-xs">
                                             {q.finished_at ? (
                                                 <span className="rounded bg-emerald-100 px-2 py-0.5 text-emerald-700">
-                                                    ✓ {t('pages.my_profile.qualifications.label_achieved')} {q.finished_at}
+                                                    âœ“ {t('pages.my_profile.qualifications.label_achieved')} {q.finished_at}
                                                 </span>
                                             ) : (
                                                 <span className="rounded bg-destructive/10 px-2 py-0.5 text-destructive">
-                                                    ✗ {t('pages.my_profile.qualifications.label_not_achieved')}
+                                                    âœ— {t('pages.my_profile.qualifications.label_not_achieved')}
                                                 </span>
                                             )}
                                             {q.planned_at && (
@@ -329,7 +330,7 @@ function QualificationsTab({ data, loading, error, t }: {
     );
 }
 
-// ─── Tab: Competences ─────────────────────────────────────────────────────────
+// â”€â”€â”€ Tab: Competences â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function CompetencesTab({ data, loading, error, t }: {
     data: CompetenceEntry[] | null;
@@ -383,20 +384,20 @@ function CompetencesTab({ data, loading, error, t }: {
                                             )}
                                         </td>
                                         <td className={`border border-border p-2 ${!c.acceptable_ok ? 'text-destructive' : ''}`}>
-                                            {c.acceptable_level_name ?? '—'}
+                                            {c.acceptable_level_name ?? 'â€”'}
                                         </td>
                                         <td className={`border border-border p-2 ${c.evaluated && !c.desired_ok ? 'text-amber-600' : ''}`}>
-                                            {c.desired_level_name ?? '—'}
+                                            {c.desired_level_name ?? 'â€”'}
                                         </td>
                                         <td className={`border border-border p-2 ${!c.acceptable_ok ? 'text-destructive' : (c.evaluated && !c.desired_ok ? 'text-amber-600' : '')}`}>
-                                            {c.achieved_level_name ?? '—'}
+                                            {c.achieved_level_name ?? 'â€”'}
                                         </td>
                                         <td className={`border border-border p-2 ${!c.evaluated ? 'text-destructive' : 'text-emerald-700'}`}>
                                             {c.evaluated
-                                                ? (c.updated_at ? `${c.updated_at}${c.updated_by ? ` (${c.updated_by})` : ''}` : '✓')
+                                                ? (c.updated_at ? `${c.updated_at}${c.updated_by ? ` (${c.updated_by})` : ''}` : 'âœ“')
                                                 : t('pages.my_profile.competences.label_not_evaluated')}
                                         </td>
-                                        <td className="border border-border p-2 text-muted-foreground">{c.note ?? '—'}</td>
+                                        <td className="border border-border p-2 text-muted-foreground">{c.note ?? 'â€”'}</td>
                                     </tr>
                                 ))}
                             </tbody>
@@ -407,7 +408,7 @@ function CompetencesTab({ data, loading, error, t }: {
     );
 }
 
-// ─── Tab: Responsibilities ────────────────────────────────────────────────────
+// â”€â”€â”€ Tab: Responsibilities â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function ResponsibilityGroup({ title, items }: { title: string; items: { id: number; name: string }[] }) {
     if (items.length === 0) return null;
@@ -457,7 +458,7 @@ function ResponsibilitiesTab({ data, loading, error, t }: {
     );
 }
 
-// ─── Page ─────────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Page â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 interface MyProfilePageProps {
     route: AppSectionRoute;
@@ -465,6 +466,7 @@ interface MyProfilePageProps {
 
 export default function MyProfilePage({ route }: MyProfilePageProps) {
     const { t } = useTranslations();
+    const { menuLayout, setMenuLayout } = useMenuLayoutPreference();
 
     const [activeTab, setActiveTab] = useState<ProfileTab>(() => getTabFromHash(window.location.hash));
 
@@ -599,6 +601,23 @@ export default function MyProfilePage({ route }: MyProfilePageProps) {
         { key: 'responsibilities' as const, title: t('pages.my_profile.tabs.responsibilities') },
     ], [t]);
 
+    const layoutOptions = [
+        {
+            key: 'mega-menu' as const,
+            title: t('pages.my_profile.layout.mega_menu_label'),
+            description: t('pages.my_profile.layout.mega_menu_description'),
+            icon: 'page_header',
+            testId: 'layout-option-mega-menu',
+        },
+        {
+            key: 'side-menu' as const,
+            title: t('pages.my_profile.layout.side_menu_label'),
+            description: t('pages.my_profile.layout.side_menu_description'),
+            icon: 'side_navigation',
+            testId: 'layout-option-side-menu',
+        },
+    ];
+
     return (
         <AppLayout>
             <div className="space-y-6">
@@ -615,7 +634,7 @@ export default function MyProfilePage({ route }: MyProfilePageProps) {
                 <section className="rounded-2xl border border-border bg-card p-6 shadow-sm">
                     <div className="flex items-center gap-4">
                         <div className="flex h-14 w-14 items-center justify-center rounded-full bg-primary/10">
-                            <UserCircle className="h-8 w-8 text-primary" />
+                            <MaterialSymbol name="account_circle" className="h-8 w-8 text-primary" />
                         </div>
                         <div>
                             <h1 className="text-2xl font-semibold tracking-tight text-foreground">
@@ -625,6 +644,40 @@ export default function MyProfilePage({ route }: MyProfilePageProps) {
                                 {route.description ?? t('pages.my_profile.description')}
                             </p>
                         </div>
+                    </div>
+                </section>
+
+                <section className="rounded-2xl border border-border bg-card p-6 shadow-sm" data-testid="layout-settings-card">
+                    <h2 className="text-lg font-semibold text-foreground">{t('pages.my_profile.layout.title')}</h2>
+                    <p className="mt-1 text-sm text-muted-foreground">{t('pages.my_profile.layout.description')}</p>
+                    <div className="mt-4 grid gap-3 md:grid-cols-2">
+                        {layoutOptions.map((option) => {
+                            const Icon = option.icon;
+                            const isSelected = menuLayout === option.key;
+
+                            return (
+                                <button
+                                    key={option.key}
+                                    type="button"
+                                    data-testid={option.testId}
+                                    aria-pressed={isSelected}
+                                    onClick={() => setMenuLayout(option.key)}
+                                    className={`flex items-start gap-3 rounded-xl border px-4 py-3 text-left transition-colors ${
+                                        isSelected
+                                            ? 'border-[#288c98] bg-[#288c98]/10 text-foreground'
+                                            : 'border-border bg-card text-foreground hover:bg-muted/40'
+                                    }`}
+                                >
+                                    <span className={`mt-0.5 rounded-md p-2 ${isSelected ? 'bg-[#288c98]/20 text-[#1e6670]' : 'bg-muted text-muted-foreground'}`}>
+                                        <MaterialSymbol name={Icon} className="h-4 w-4" />
+                                    </span>
+                                    <span className="flex-1">
+                                        <span className="block text-sm font-semibold">{option.title}</span>
+                                        <span className="mt-0.5 block text-xs text-muted-foreground">{option.description}</span>
+                                    </span>
+                                </button>
+                            );
+                        })}
                     </div>
                 </section>
 

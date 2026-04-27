@@ -1,5 +1,5 @@
-﻿import { useCallback, useEffect, useMemo, useState } from 'react';
-import { GraduationCap, Shield, Sparkles } from 'lucide-react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { MaterialSymbol } from "@/components/ui/material-symbol";
 import AppLayout from '@/layouts/AppLayout';
 import { CrudModule } from '@/components/crud';
 import type { CrudModuleConfig } from '@/components/crud';
@@ -84,7 +84,7 @@ export default function RolesPage({ route }: RolesPageProps) {
             {
                 key: 'competences',
                 label: t('pages.roles.open_competences_button'),
-                icon: <Sparkles className="h-4 w-4" />,
+                icon: <MaterialSymbol name="auto_awesome" className="h-4 w-4" />,
                 variant: 'outline',
                 refreshOnComplete: false,
                 onClick: (item) => setActiveRoleForCompetences(item),
@@ -94,7 +94,7 @@ export default function RolesPage({ route }: RolesPageProps) {
             {
                 key: 'qualifications',
                 label: t('pages.roles.open_qualifications_button'),
-                icon: <GraduationCap className="h-4 w-4" />,
+                icon: <MaterialSymbol name="school" className="h-4 w-4" />,
                 dialogMaxWidth: 'max-w-3xl',
                 dialogTitle: (item) => t('pages.roles.qualifications.panel_title', { role: String(item.name || '') }),
                 dialogDescription: t('pages.roles.qualifications.panel_description'),
@@ -144,7 +144,7 @@ export default function RolesPage({ route }: RolesPageProps) {
                 <PageHeader
                     title={t('pages.roles.title')}
                     description={t('pages.roles.description')}
-                    icon={<Shield className="h-6 w-6 text-primary" />}
+                    icon={<MaterialSymbol name="shield" className="h-6 w-6 text-primary" />}
                     route={route}
                 />
                 <section className="rounded-2xl border border-border bg-card p-6 shadow-sm">
@@ -161,7 +161,7 @@ export default function RolesPage({ route }: RolesPageProps) {
                     <DialogContent className="max-w-3xl">
                         <DialogHeader>
                             <DialogTitle className="flex items-center gap-2">
-                                <Sparkles className="h-5 w-5" />
+                                <MaterialSymbol name="auto_awesome" className="h-5 w-5" />
                                 {t('pages.roles.competences.panel_title', { role: String(activeRoleForCompetences?.name || '') })}
                             </DialogTitle>
                             <DialogDescription>{t('pages.roles.competences.panel_description')}</DialogDescription>

@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
+import { MaterialSymbol } from "@/components/ui/material-symbol";
 import AppLayout from '@/layouts/AppLayout';
 import { useTranslations } from '@/hooks/useTranslations';
 import { APP_HOME_PATH } from '@/app/routes';
 import { Link } from 'react-router-dom';
-import { ClipboardList } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { AppSectionRoute } from '@/app/routes';
 
@@ -49,7 +49,7 @@ export default function MyTasksPage({ route }: MyTasksPageProps) {
                     <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                         <div className="flex items-center gap-4">
                             <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
-                                <ClipboardList className="h-6 w-6 text-primary" />
+                                <MaterialSymbol name="checklist" className="h-6 w-6 text-primary" />
                             </div>
                             <div>
                                 <h1 className="text-2xl font-semibold tracking-tight text-foreground">
@@ -102,7 +102,7 @@ export default function MyTasksPage({ route }: MyTasksPageProps) {
                 <section className="rounded-2xl border border-border bg-card shadow-sm">
                     <div className="flex flex-col items-center justify-center gap-4 py-16 text-center">
                         <div className="flex h-14 w-14 items-center justify-center rounded-full bg-muted">
-                            <ClipboardList className="h-7 w-7 text-muted-foreground" />
+                            <MaterialSymbol name="checklist" className="h-7 w-7 text-muted-foreground" />
                         </div>
                         <p className="text-sm text-muted-foreground">{t('pages.my_tasks.no_tasks')}</p>
                     </div>

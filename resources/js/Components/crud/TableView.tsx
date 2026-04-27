@@ -1,8 +1,8 @@
 import {Checkbox} from "@/components/ui/checkbox";
+import { MaterialSymbol } from "@/components/ui/material-symbol";
 import {Button} from "@/components/ui/button";
 import {Badge} from "@/components/ui/badge";
 import {FieldConfig, ItemBadgeConfig, ItemStatus, RowActionConfig, SelectOption} from "./types";
-import {GripVertical, Pencil, Trash2} from "lucide-react";
 import {StatusDot, statusRowClass} from "./StatusIndicator";
 import {InlineTagsEditor} from "./InlineTagsEditor";
 import {useAllSelectOptions, resolveOptions} from "./optionsCache";
@@ -214,7 +214,7 @@ export function TableView({
                           }}
                           title={t("ui.crud.drag_to_reorder")}
                       >
-                        <GripVertical className="h-4 w-4"/>
+                        <MaterialSymbol name="drag_indicator" className="h-4 w-4"/>
                       </span>
                                         </td>
                                     )}
@@ -257,7 +257,7 @@ export function TableView({
                                                         className="h-8 w-8"
                                                         onClick={() => onEdit(item)}
                                                     >
-                                                        <Pencil className="h-3.5 w-3.5"/>
+                                                        <MaterialSymbol name="edit" className="h-3.5 w-3.5"/>
                                                     </Button>
                                                 )}
                                                 {canDelete && (deletableKey ? item[deletableKey] !== false : true) && onDelete && (
@@ -268,7 +268,7 @@ export function TableView({
                                                         className="h-8 w-8 text-destructive hover:text-destructive"
                                                         onClick={() => onDelete(id)}
                                                     >
-                                                        <Trash2 className="h-3.5 w-3.5"/>
+                                                        <MaterialSymbol name="delete" className="h-3.5 w-3.5"/>
                                                     </Button>
                                                 )}
                                                 {visibleRowActions.map((action) => (
@@ -321,7 +321,7 @@ function renderValue(
     optionsMap: Map<string, SelectOption[]>,
     t: (key: string, replacements?: Record<string, string | number>) => string,
 ) {
-    if (value == null) return <span className="text-muted-foreground">—</span>;
+    if (value == null) return <span className="text-muted-foreground">â€”</span>;
 
     if (field.type === "boolean") {
         return (

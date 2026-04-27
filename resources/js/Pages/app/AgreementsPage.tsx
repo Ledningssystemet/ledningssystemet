@@ -1,7 +1,7 @@
-﻿import { useMemo } from 'react';
+import { useMemo } from 'react';
+import { MaterialSymbol } from "@/components/ui/material-symbol";
 import { usePage } from '@inertiajs/react';
 import type { PageProps } from '@inertiajs/core';
-import { FileSignature } from 'lucide-react';
 import AppLayout from '@/layouts/AppLayout';
 import { CrudModule } from '@/components/crud';
 import type { CrudModuleConfig } from '@/components/crud';
@@ -242,7 +242,7 @@ export default function AgreementsPage({ route }: AgreementsPageProps) {
                 <PageHeader
                     title={t('pages.agreements.title')}
                     description={t('pages.agreements.description')}
-                    icon={<FileSignature className="h-6 w-6 text-primary" />}
+                    icon={<MaterialSymbol name="signature" className="h-6 w-6 text-primary" />}
                     route={route}
                 />
 

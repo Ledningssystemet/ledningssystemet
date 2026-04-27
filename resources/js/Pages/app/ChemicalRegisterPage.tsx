@@ -1,5 +1,5 @@
-﻿import { useMemo } from 'react';
-import { FlaskConical, Download } from 'lucide-react';
+import { useMemo } from 'react';
+import { MaterialSymbol } from "@/components/ui/material-symbol";
 import AppLayout from '@/layouts/AppLayout';
 import { CrudModule } from '@/components/crud';
 import type { CrudModuleConfig, FieldConfig } from '@/components/crud';
@@ -227,7 +227,7 @@ export default function ChemicalRegisterPage({ route }: ChemicalRegisterPageProp
                                 href={`/api/v1/items/Chemical/${row.id}/download`}
                                 className="inline-flex items-center gap-1 rounded-md border border-border px-2 py-1 text-xs font-medium text-foreground transition-colors hover:bg-muted"
                             >
-                                <Download className="h-3.5 w-3.5" />
+                                <MaterialSymbol name="download" className="h-3.5 w-3.5" />
                                 {t('pages.chemical_register.download_safety_datasheet')}
                             </a>
                         );
@@ -241,7 +241,7 @@ export default function ChemicalRegisterPage({ route }: ChemicalRegisterPageProp
                                 href={`/api/v1/items/Chemical/${row.id}/download`}
                                 className="inline-flex items-center gap-1 rounded-md border border-border px-2 py-1 text-xs font-medium text-foreground transition-colors hover:bg-muted"
                             >
-                                <Download className="h-3.5 w-3.5" />
+                                <MaterialSymbol name="download" className="h-3.5 w-3.5" />
                                 {t('pages.chemical_register.download_safety_datasheet')}
                             </a>
                         );
@@ -268,7 +268,7 @@ export default function ChemicalRegisterPage({ route }: ChemicalRegisterPageProp
                 <PageHeader
                     title={t('pages.chemical_register.title')}
                     description={t('pages.chemical_register.description')}
-                    icon={<FlaskConical className="h-6 w-6 text-primary" />}
+                    icon={<MaterialSymbol name="science" className="h-6 w-6 text-primary" />}
                     route={route}
                 />
 

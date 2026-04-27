@@ -1,5 +1,5 @@
-﻿import { useEffect, useMemo, useState } from 'react';
-import { Leaf, ListChecks } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
+import { MaterialSymbol } from "@/components/ui/material-symbol";
 import AppLayout from '@/layouts/AppLayout';
 import { CrudModule } from '@/components/crud';
 import type { CrudModuleConfig } from '@/components/crud';
@@ -62,7 +62,7 @@ export default function SustainabilityAspectsPage({ route }: SustainabilityAspec
                 {
                     key: 'assess-metrics',
                     label: t('pages.sustainability_aspects.assessment.open_button'),
-                    icon: <ListChecks className="h-4 w-4" />,
+                    icon: <MaterialSymbol name="checklist" className="h-4 w-4" />,
                     variant: 'outline',
                     refreshOnComplete: false,
                     onClick: (item) => {
@@ -331,7 +331,7 @@ export default function SustainabilityAspectsPage({ route }: SustainabilityAspec
                 <PageHeader
                     title={t('pages.sustainability_aspects.title')}
                     description={t('pages.sustainability_aspects.description')}
-                    icon={<Leaf className="h-6 w-6 text-primary" />}
+                    icon={<MaterialSymbol name="eco" className="h-6 w-6 text-primary" />}
                     route={route}
                 />
 
@@ -347,7 +347,7 @@ export default function SustainabilityAspectsPage({ route }: SustainabilityAspec
                 <DialogContent className="max-w-3xl">
                     <DialogHeader>
                         <DialogTitle className="flex items-center gap-2">
-                            <ListChecks className="h-5 w-5" />
+                            <MaterialSymbol name="checklist" className="h-5 w-5" />
                             {t('pages.sustainability_aspects.assessment.panel_title', {
                                 aspect: String(activeAssessmentItem?.name || ''),
                             })}

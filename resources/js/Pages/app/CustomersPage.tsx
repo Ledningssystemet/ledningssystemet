@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
+import { MaterialSymbol } from "@/components/ui/material-symbol";
 import AppLayout from '@/layouts/AppLayout';
 import { useTranslations } from '@/hooks/useTranslations';
-import { Building2 } from 'lucide-react';
 import { CrudModule } from '@/components/crud';
 import type { CrudModuleConfig } from '@/components/crud';
 import type { AppSectionRoute } from '@/app/routes';
@@ -12,7 +12,7 @@ interface CustomersPageProps {
 }
 
 function formatCreatedAt(value: unknown): string {
-    if (!value) return '—';
+    if (!value) return 'â€”';
     const date = new Date(String(value));
     return Number.isNaN(date.getTime()) ? String(value) : date.toLocaleDateString();
 }
@@ -107,7 +107,7 @@ export default function CustomersPage({ route }: CustomersPageProps) {
                 <PageHeader
                     title={t('pages.customers.title')}
                     description={t('pages.customers.description')}
-                    icon={<Building2 className="h-6 w-6 text-primary" />}
+                    icon={<MaterialSymbol name="apartment" className="h-6 w-6 text-primary" />}
                     route={route}
                 />
 

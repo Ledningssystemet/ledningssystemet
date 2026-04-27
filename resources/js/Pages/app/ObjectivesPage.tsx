@@ -1,7 +1,7 @@
-﻿import { useMemo } from 'react';
+import { useMemo } from 'react';
+import { MaterialSymbol } from "@/components/ui/material-symbol";
 import { usePage } from '@inertiajs/react';
 import type { PageProps } from '@inertiajs/core';
-import { Target } from 'lucide-react';
 import AppLayout from '@/layouts/AppLayout';
 import { CrudModule } from '@/components/crud';
 import type { CrudModuleConfig } from '@/components/crud';
@@ -208,7 +208,7 @@ export default function ObjectivesPage({ route }: ObjectivesPageProps) {
                 <PageHeader
                     title={t('pages.objectives.title')}
                     description={t('pages.objectives.description')}
-                    icon={<Target className="h-6 w-6 text-primary" />}
+                    icon={<MaterialSymbol name="target" className="h-6 w-6 text-primary" />}
                     route={route}
                 />
 

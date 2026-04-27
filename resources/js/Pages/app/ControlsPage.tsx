@@ -1,5 +1,5 @@
-﻿import { useMemo, useState } from 'react';
-import { ClipboardCheck, Download, ListChecks } from 'lucide-react';
+import { useMemo, useState } from 'react';
+import { MaterialSymbol } from "@/components/ui/material-symbol";
 import AppLayout from '@/layouts/AppLayout';
 import { CrudModule } from '@/components/crud';
 import type { CrudModuleConfig } from '@/components/crud';
@@ -249,7 +249,7 @@ export default function ControlsPage({ route }: ControlsPageProps) {
                 <PageHeader
                     title={t('pages.controls.title')}
                     description={t('pages.controls.description')}
-                    icon={<ClipboardCheck className="h-6 w-6 text-primary" />}
+                    icon={<MaterialSymbol name="fact_check" className="h-6 w-6 text-primary" />}
                     route={route}
                 />
 
@@ -263,7 +263,7 @@ export default function ControlsPage({ route }: ControlsPageProps) {
                     <DialogContent className="max-w-5xl">
                         <DialogHeader>
                             <DialogTitle className="flex items-center gap-2">
-                                <ListChecks className="h-5 w-5" />
+                                <MaterialSymbol name="checklist" className="h-5 w-5" />
                                 {t('pages.controls.actions.panel_title', {
                                     control: String(activeControl?.name || ''),
                                 })}

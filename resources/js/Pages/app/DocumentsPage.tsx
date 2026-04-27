@@ -1,6 +1,6 @@
-﻿import { useState, useMemo } from 'react';
+import { useState, useMemo } from 'react';
+import { MaterialSymbol } from "@/components/ui/material-symbol";
 import { useNavigate } from 'react-router-dom';
-import { FileText, Download, Edit2 } from 'lucide-react';
 import AppLayout from '@/layouts/AppLayout';
 import { CrudModule } from '@/components/crud';
 import type { CrudModuleConfig } from '@/components/crud';
@@ -98,7 +98,7 @@ export default function DocumentsPage({ route }: DocumentsPageProps) {
                     if (row.contenttype === 'ledningssystemet/document') {
                         return (
                             <span className="inline-flex items-center gap-2 rounded-md bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 border border-blue-200">
-                                <FileText className="h-3.5 w-3.5" />
+                                <MaterialSymbol name="description" className="h-3.5 w-3.5" />
                                 {t('pages.documents.ledningssystemet_document')}
                             </span>
                         );
@@ -109,7 +109,7 @@ export default function DocumentsPage({ route }: DocumentsPageProps) {
                     if (row.contenttype === 'ledningssystemet/document') {
                         return (
                             <span className="inline-flex items-center gap-2 rounded-md bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 border border-blue-200">
-                                <FileText className="h-3.5 w-3.5" />
+                                <MaterialSymbol name="description" className="h-3.5 w-3.5" />
                                 {t('pages.documents.ledningssystemet_document')}
                             </span>
                         );
@@ -144,7 +144,7 @@ export default function DocumentsPage({ route }: DocumentsPageProps) {
                                 onClick={() => navigate(APP_DOCUMENT_EDITOR_PATH.replace(':libraryDocumentId', String(row.id)))}
                                 className="inline-flex items-center gap-1 rounded-md border border-border px-2 py-1 text-xs font-medium text-foreground transition-colors hover:bg-muted"
                             >
-                                <Edit2 className="h-3.5 w-3.5" />
+                                <MaterialSymbol name="edit" className="h-3.5 w-3.5" />
                                 {t('pages.documents.edit')}
                             </button>
                         );
@@ -159,7 +159,7 @@ export default function DocumentsPage({ route }: DocumentsPageProps) {
                             href={`/api/v1/LibraryDocument/${row.id}/download`}
                             className="inline-flex items-center gap-1 rounded-md border border-border px-2 py-1 text-xs font-medium text-foreground transition-colors hover:bg-muted"
                         >
-                            <Download className="h-3.5 w-3.5" />
+                            <MaterialSymbol name="download" className="h-3.5 w-3.5" />
                             {t('pages.documents.download')}
                         </a>
                     );
@@ -171,7 +171,7 @@ export default function DocumentsPage({ route }: DocumentsPageProps) {
                                 onClick={() => navigate(APP_DOCUMENT_EDITOR_PATH.replace(':libraryDocumentId', String(row.id)))}
                                 className="inline-flex items-center gap-1 rounded-md border border-border px-2 py-1 text-xs font-medium text-foreground transition-colors hover:bg-muted"
                             >
-                                <Edit2 className="h-3.5 w-3.5" />
+                                <MaterialSymbol name="edit" className="h-3.5 w-3.5" />
                                 {t('pages.documents.edit')}
                             </button>
                         );
@@ -186,7 +186,7 @@ export default function DocumentsPage({ route }: DocumentsPageProps) {
                             href={`/api/v1/LibraryDocument/${row.id}/download`}
                             className="inline-flex items-center gap-1 rounded-md border border-border px-2 py-1 text-xs font-medium text-foreground transition-colors hover:bg-muted"
                         >
-                            <Download className="h-3.5 w-3.5" />
+                            <MaterialSymbol name="download" className="h-3.5 w-3.5" />
                             {t('pages.documents.download')}
                         </a>
                     );
@@ -219,7 +219,7 @@ export default function DocumentsPage({ route }: DocumentsPageProps) {
                 <PageHeader
                     title={t('pages.documents.title')}
                     description={t('pages.documents.description')}
-                    icon={<FileText className="h-6 w-6 text-primary" />}
+                    icon={<MaterialSymbol name="description" className="h-6 w-6 text-primary" />}
                     route={route}
                 />
 

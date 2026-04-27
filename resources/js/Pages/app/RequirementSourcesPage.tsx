@@ -1,7 +1,7 @@
-﻿import { useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
+import { MaterialSymbol } from "@/components/ui/material-symbol";
 import { usePage } from '@inertiajs/react';
 import type { PageProps } from '@inertiajs/core';
-import { ListChecks, Scale } from 'lucide-react';
 import AppLayout from '@/layouts/AppLayout';
 import { CrudModule } from '@/components/crud';
 import type { CrudModuleConfig } from '@/components/crud';
@@ -290,7 +290,7 @@ export default function RequirementSourcesPage({ route }: RequirementSourcesPage
                 <PageHeader
                     title={t('pages.requirement_sources.title')}
                     description={t('pages.requirement_sources.description')}
-                    icon={<Scale className="h-6 w-6 text-primary" />}
+                    icon={<MaterialSymbol name="balance" className="h-6 w-6 text-primary" />}
                     route={route}
                 />
 
@@ -307,7 +307,7 @@ export default function RequirementSourcesPage({ route }: RequirementSourcesPage
                     <DialogContent className="max-w-5xl">
                         <DialogHeader>
                             <DialogTitle className="flex items-center gap-2">
-                                <ListChecks className="h-5 w-5" />
+                                <MaterialSymbol name="checklist" className="h-5 w-5" />
                                 {t('pages.requirement_sources.requirements.panel_title', {
                                     source: String(activeSourceForRequirements?.reference || activeSourceForRequirements?.name || ''),
                                 })}

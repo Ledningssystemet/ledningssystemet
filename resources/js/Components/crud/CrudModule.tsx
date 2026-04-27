@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { MaterialSymbol } from "@/components/ui/material-symbol";
 import { CrudModuleConfig, FieldConfig, RowActionConfig, SubTableActionConfig } from "./types";
 import { useCrudModule } from "./useCrudModule";
 import { useCsvExport } from "./useCsvExport";
@@ -9,7 +10,6 @@ import { AccordionView } from "./AccordionView";
 import { EditDialog } from "./EditDialog";
 import { MassEditDialog } from "./MassEditDialog";
 import { CrudPagination } from "./Pagination";
-import { Loader2 } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -37,7 +37,7 @@ interface CrudModuleProps {
 export function CrudModule({ config, onEditFormDataChange }: CrudModuleProps) {
   const { t } = useTranslations();
 
-  // ── Merge filterFields into fields (hidden, non-editable, filterable) ──────
+  // â”€â”€ Merge filterFields into fields (hidden, non-editable, filterable) â”€â”€â”€â”€â”€â”€
   const effectiveConfig = useMemo((): CrudModuleConfig => {
     if (!config.filterFields?.length) return config;
     const extraFields: FieldConfig[] = config.filterFields.map((ff) => ({
@@ -56,8 +56,8 @@ export function CrudModule({ config, onEditFormDataChange }: CrudModuleProps) {
     return { ...config, fields: [...config.fields, ...extraFields] };
   }, [config]);
 
-  // ── Sub-table dialog state ────────────────────────────────────────────────
-  // Maps actionKey → active item (null = dialog closed)
+  // â”€â”€ Sub-table dialog state â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // Maps actionKey â†’ active item (null = dialog closed)
   const [subTableItems, setSubTableItems] = useState<Record<string, Record<string, any> | null>>({});
 
   const openSubTable = (key: string, item: Record<string, any>) =>
@@ -199,14 +199,14 @@ export function CrudModule({ config, onEditFormDataChange }: CrudModuleProps) {
         <div className="flex items-center gap-3">
           <h1 className="text-2xl font-semibold">{configWithCombinedActions.title}</h1>
           {state.loading && (
-            <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+            <MaterialSymbol name="progress_activity" className="h-5 w-5 animate-spin text-muted-foreground" />
           )}
         </div>
       )}
 
       {!configWithCombinedActions.title && state.loading && (
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <Loader2 className="h-4 w-4 animate-spin" />
+          <MaterialSymbol name="progress_activity" className="h-4 w-4 animate-spin" />
           {t("ui.common.loading")}
         </div>
       )}

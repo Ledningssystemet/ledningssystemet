@@ -1,5 +1,5 @@
-﻿import { useMemo, useState } from 'react';
-import { Download, ListChecks, ShieldAlert } from 'lucide-react';
+import { useMemo, useState } from 'react';
+import { MaterialSymbol } from "@/components/ui/material-symbol";
 import AppLayout from '@/layouts/AppLayout';
 import { CrudModule } from '@/components/crud';
 import type { CrudModuleConfig } from '@/components/crud';
@@ -373,14 +373,14 @@ export default function ProjectsPage({ route }: ProjectRisksPageProps) {
                 <PageHeader
                     title={t('pages.projects.title')}
                     description={t('pages.projects.description')}
-                    icon={<ShieldAlert className="h-6 w-6 text-primary" />}
+                    icon={<MaterialSymbol name="gpp_bad" className="h-6 w-6 text-primary" />}
                     route={route}
                     actions={
                         <a
                             href="/api/v1/ReportCentral/Project/0"
                             className="flex items-center gap-2 rounded-lg border border-border bg-background px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted"
                         >
-                            <Download className="h-4 w-4" />
+                            <MaterialSymbol name="download" className="h-4 w-4" />
                             {t('pages.projects.export_excel')}
                         </a>
                     }
@@ -396,7 +396,7 @@ export default function ProjectsPage({ route }: ProjectRisksPageProps) {
                     <DialogContent className="max-w-8xl">
                         <DialogHeader>
                             <DialogTitle className="flex items-center gap-2">
-                                <ListChecks className="h-5 w-5" />
+                                <MaterialSymbol name="checklist" className="h-5 w-5" />
                                 {t('pages.projects.risks.panel_title', {
                                     project: String(activeProjectForRisks?.name || ''),
                                 })}

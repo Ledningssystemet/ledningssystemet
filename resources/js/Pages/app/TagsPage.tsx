@@ -1,5 +1,5 @@
-﻿import { useMemo } from 'react';
-import { Tags } from 'lucide-react';
+import { useMemo } from 'react';
+import { MaterialSymbol } from "@/components/ui/material-symbol";
 import AppLayout from '@/layouts/AppLayout';
 import { CrudModule } from '@/components/crud';
 import type { CrudModuleConfig } from '@/components/crud';
@@ -66,7 +66,7 @@ export default function TagsPage({ route }: TagsPageProps) {
                 <PageHeader
                     title={t('pages.tags.title')}
                     description={t('pages.tags.description')}
-                    icon={<Tags className="h-6 w-6 text-primary" />}
+                    icon={<MaterialSymbol name="sell" className="h-6 w-6 text-primary" />}
                     route={route}
                 />
 

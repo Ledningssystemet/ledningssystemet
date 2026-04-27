@@ -1,5 +1,5 @@
-﻿import { useMemo } from 'react';
-import { AlertCircle, ListChecks } from 'lucide-react';
+import { useMemo } from 'react';
+import { MaterialSymbol } from "@/components/ui/material-symbol";
 import AppLayout from '@/layouts/AppLayout';
 import { CrudModule } from '@/components/crud';
 import type { CrudModuleConfig } from '@/components/crud';
@@ -51,7 +51,7 @@ export default function ObservationsPage({ route }: ObservationsPageProps) {
             {
                 key: 'actions',
                 label: t('pages.observations.actions_button'),
-                icon: <ListChecks className="h-4 w-4" />,
+                icon: <MaterialSymbol name="checklist" className="h-4 w-4" />,
                 dialogMaxWidth: 'max-w-3xl',
                 dialogTitle: (item) => t('pages.observations.actions.panel_title', { observation: String(item.name || '') }),
                 dialogDescription: t('pages.observations.actions.panel_description'),
@@ -231,7 +231,7 @@ export default function ObservationsPage({ route }: ObservationsPageProps) {
                 <PageHeader
                     title={t('pages.observations.title')}
                     description={t('pages.observations.description')}
-                    icon={<AlertCircle className="h-6 w-6 text-primary" />}
+                    icon={<MaterialSymbol name="error" className="h-6 w-6 text-primary" />}
                     route={route}
                 />
                 <section className="rounded-2xl border border-border bg-card p-6 shadow-sm">

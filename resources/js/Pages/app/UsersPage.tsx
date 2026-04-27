@@ -1,5 +1,5 @@
-﻿import { useMemo, useState, useEffect } from 'react';
-import { Users, ArrowRightLeft, KeyRound } from 'lucide-react';
+import { useMemo, useState, useEffect } from 'react';
+import { MaterialSymbol } from "@/components/ui/material-symbol";
 import AppLayout from '@/layouts/AppLayout';
 import { CrudModule } from '@/components/crud';
 import type { CrudModuleConfig } from '@/components/crud';
@@ -299,7 +299,7 @@ export default function UsersPage({ route }: UsersPageProps) {
             {
                 key: 'reassign',
                 label: t('pages.users.reassign_action'),
-                icon: <ArrowRightLeft className="h-4 w-4" />,
+                icon: <MaterialSymbol name="swap_horiz" className="h-4 w-4" />,
                 variant: 'outline',
                 refreshOnComplete: false,
                 isVisible: (item) => Boolean(
@@ -322,7 +322,7 @@ export default function UsersPage({ route }: UsersPageProps) {
             {
                 key: 'password_reset',
                 label: t('pages.users.password_reset_action'),
-                icon: <KeyRound className="h-4 w-4" />,
+                icon: <MaterialSymbol name="vpn_key" className="h-4 w-4" />,
                 variant: 'outline',
                 refreshOnComplete: false,
                 onClick: async (item) => {
@@ -353,7 +353,7 @@ export default function UsersPage({ route }: UsersPageProps) {
                 <PageHeader
                     title={t('pages.users.title')}
                     description={t('pages.users.description')}
-                    icon={<Users className="h-6 w-6 text-primary" />}
+                    icon={<MaterialSymbol name="group" className="h-6 w-6 text-primary" />}
                     route={route}
                 />
 

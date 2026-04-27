@@ -1,5 +1,5 @@
-﻿import { useMemo } from 'react';
-import { FileType, Download } from 'lucide-react';
+import { useMemo } from 'react';
+import { MaterialSymbol } from "@/components/ui/material-symbol";
 import AppLayout from '@/layouts/AppLayout';
 import { CrudModule } from '@/components/crud';
 import type { CrudModuleConfig } from '@/components/crud';
@@ -271,14 +271,14 @@ export default function InformationTypesPage({ route }: InformationTypesPageProp
                 <PageHeader
                     title={t('pages.information_types.title')}
                     description={t('pages.information_types.description')}
-                    icon={<FileType className="h-6 w-6 text-primary" />}
+                    icon={<MaterialSymbol name="description" className="h-6 w-6 text-primary" />}
                     route={route}
                     actions={
                         <a
                             href="/api/v1/ReportCentral/InformationTypes/0"
                             className="flex items-center gap-2 rounded-lg border border-border bg-background px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted"
                         >
-                            <Download className="h-4 w-4" />
+                            <MaterialSymbol name="download" className="h-4 w-4" />
                             {t('pages.information_types.export_excel')}
                         </a>
                     }

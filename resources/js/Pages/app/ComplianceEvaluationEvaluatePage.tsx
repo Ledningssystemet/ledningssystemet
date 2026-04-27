@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
+import { MaterialSymbol } from "@/components/ui/material-symbol";
 import { Link, useParams } from 'react-router-dom';
-import { ArrowLeft, ChevronDown, ChevronRight, Save, CheckSquare, XSquare, AlertTriangle, ClipboardList } from 'lucide-react';
 import AppLayout from '@/layouts/AppLayout';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -173,7 +173,7 @@ function RequirementCard({
 
             <div className="flex flex-wrap gap-2">
                 <Button size="sm" variant="outline" onClick={saveNote}>
-                    <Save className="h-4 w-4 mr-1" />
+                    <MaterialSymbol name="save" className="h-4 w-4 mr-1" />
                     {t('pages.compliance_evaluation_evaluate.save_note')}
                 </Button>
                 <Button
@@ -181,7 +181,7 @@ function RequirementCard({
                     variant={isComplete ? 'default' : 'outline'}
                     onClick={toggleComplete}
                 >
-                    <CheckSquare className="h-4 w-4 mr-1" />
+                    <MaterialSymbol name="check_box" className="h-4 w-4 mr-1" />
                     {t('pages.compliance_evaluation_evaluate.evaluation_complete')}
                 </Button>
                 <Button
@@ -189,7 +189,7 @@ function RequirementCard({
                     variant={isNA ? 'default' : 'outline'}
                     onClick={toggleNA}
                 >
-                    <XSquare className="h-4 w-4 mr-1" />
+                    <MaterialSymbol name="disabled_by_default" className="h-4 w-4 mr-1" />
                     {t('pages.compliance_evaluation_evaluate.not_applicable')}
                 </Button>
                 <Button
@@ -197,7 +197,7 @@ function RequirementCard({
                     variant="outline"
                     onClick={() => setShowFindings((v) => !v)}
                 >
-                    <AlertTriangle className="h-4 w-4 mr-1" />
+                    <MaterialSymbol name="warning" className="h-4 w-4 mr-1" />
                     {t('pages.compliance_evaluation_evaluate.findings')}
                 </Button>
             </div>
@@ -272,7 +272,7 @@ function RequirementSourceSection({
                 onClick={() => setOpen((v) => !v)}
             >
                 <span>{cers.reference} {cers.name}</span>
-                {open ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+                {open ? <MaterialSymbol name="keyboard_arrow_down" className="h-4 w-4" /> : <MaterialSymbol name="keyboard_arrow_right" className="h-4 w-4" />}
             </button>
 
             {open && (
@@ -288,11 +288,11 @@ function RequirementSourceSection({
                         />
                         <div className="flex gap-2">
                             <Button size="sm" variant="outline" onClick={saveNote}>
-                                <Save className="h-4 w-4 mr-1" />
+                                <MaterialSymbol name="save" className="h-4 w-4 mr-1" />
                                 {t('pages.compliance_evaluation_evaluate.save_summary')}
                             </Button>
                             <Button size="sm" variant="outline" onClick={approveAll}>
-                                <CheckSquare className="h-4 w-4 mr-1" />
+                                <MaterialSymbol name="check_box" className="h-4 w-4 mr-1" />
                                 {t('pages.compliance_evaluation_evaluate.approve_all_button')}
                             </Button>
                         </div>
@@ -373,12 +373,12 @@ export default function ComplianceEvaluationEvaluatePage({ route }: ComplianceEv
                 <PageHeader
                     title={evaluation?.name ?? t('pages.compliance_evaluations.title')}
                     description={t('pages.compliance_evaluation_evaluate.back_to_list')}
-                    icon={<ClipboardList className="h-6 w-6 text-primary" />}
+                    icon={<MaterialSymbol name="checklist" className="h-6 w-6 text-primary" />}
                     route={route}
                     actions={
                         <Link to="/compliance-evaluation">
                             <Button variant="outline" size="sm">
-                                <ArrowLeft className="h-4 w-4 mr-1" />
+                                <MaterialSymbol name="arrow_back" className="h-4 w-4 mr-1" />
                                 {t('pages.compliance_evaluation_evaluate.back_to_list')}
                             </Button>
                         </Link>
@@ -408,7 +408,7 @@ export default function ComplianceEvaluationEvaluatePage({ route }: ComplianceEv
                                 rows={3}
                             />
                             <Button size="sm" variant="outline" onClick={saveSummary}>
-                                <Save className="h-4 w-4 mr-1" />
+                                <MaterialSymbol name="save" className="h-4 w-4 mr-1" />
                                 {t('pages.compliance_evaluation_evaluate.save_summary')}
                             </Button>
                         </section>

@@ -1,5 +1,5 @@
-﻿import { useMemo } from 'react';
-import { HardDrive, Download } from 'lucide-react';
+import { useMemo } from 'react';
+import { MaterialSymbol } from "@/components/ui/material-symbol";
 import AppLayout from '@/layouts/AppLayout';
 import { CrudModule } from '@/components/crud';
 import type { CrudModuleConfig } from '@/components/crud';
@@ -296,7 +296,7 @@ export default function AssetsPage({ route }: AssetsPageProps) {
                 <PageHeader
                     title={t('pages.assets.title')}
                     description={t('pages.assets.description')}
-                    icon={<HardDrive className="h-6 w-6 text-primary" />}
+                    icon={<MaterialSymbol name="hard_drive_2" className="h-6 w-6 text-primary" />}
                     route={route}
                 />
                 <section className="rounded-2xl border border-border bg-card p-6 shadow-sm">

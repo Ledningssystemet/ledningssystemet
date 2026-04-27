@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Check, Maximize2, RotateCcw } from "lucide-react";
+import { MaterialSymbol } from "@/components/ui/material-symbol";
 import { useTranslations } from "@/hooks/useTranslations";
 import { DashboardWidgetProps } from "@/types/dashboard";
 import BpmnProcessViewer from "./BpmnProcessViewer";
@@ -189,7 +189,7 @@ export default function ProcessCard({ data, loading, error, setSelectedProcessId
               title={t('pages.dashboard.process.fullscreen')}
               className="p-1.5 rounded-md hover:bg-muted transition-colors disabled:cursor-not-allowed disabled:opacity-50"
             >
-              <Maximize2 className="h-3.5 w-3.5 text-muted-foreground" />
+              <MaterialSymbol name="open_in_full" className="h-3.5 w-3.5 text-muted-foreground" />
             </button>
           </div>
         </div>
@@ -219,7 +219,7 @@ export default function ProcessCard({ data, loading, error, setSelectedProcessId
                   title={t('pages.dashboard.process.set_as_preferred_process_tooltip')}
                   className="inline-flex shrink-0 items-center gap-2 rounded-md bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground shadow-sm transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-60"
                 >
-                  <Check className="h-3.5 w-3.5" />
+                  <MaterialSymbol name="check" className="h-3.5 w-3.5" />
                   {t('pages.dashboard.process.set_as_preferred_process')}
                 </button>
               )}
@@ -230,7 +230,7 @@ export default function ProcessCard({ data, loading, error, setSelectedProcessId
                   title={t('pages.dashboard.process.reset_preferred_process_tooltip')}
                   className="inline-flex shrink-0 items-center gap-2 rounded-md border border-border px-3 py-1.5 text-xs font-semibold text-foreground transition-colors hover:bg-muted"
                 >
-                  <RotateCcw className="h-3.5 w-3.5" />
+                  <MaterialSymbol name="undo" className="h-3.5 w-3.5" />
                   {t('pages.dashboard.process.reset_preferred_process')}
                 </button>
               )}

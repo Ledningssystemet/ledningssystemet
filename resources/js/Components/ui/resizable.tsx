@@ -1,5 +1,5 @@
-import { GripVertical } from "lucide-react";
 import type { ComponentProps } from "react";
+import { MaterialSymbol } from "@/components/ui/material-symbol";
 import {
   Group as ResizableGroup,
   Panel as ResizablePanelPrimitive,
@@ -33,7 +33,7 @@ const ResizableHandle = ({
   >
     {withHandle && (
       <div className="z-10 flex h-4 w-3 items-center justify-center rounded-sm border bg-border/90 transition-colors group-hover:bg-border">
-        <GripVertical className="h-2.5 w-2.5" />
+        <MaterialSymbol name="drag_indicator" className="h-2.5 w-2.5" />
       </div>
     )}
   </ResizableSeparator>

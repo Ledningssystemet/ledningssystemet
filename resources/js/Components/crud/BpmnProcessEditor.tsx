@@ -1,5 +1,5 @@
 import { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState } from 'react';
-import { LocateFixed } from 'lucide-react';
+import { MaterialSymbol } from "@/components/ui/material-symbol";
 import Modeler from 'bpmn-js/lib/Modeler';
 import 'bpmn-js/dist/assets/diagram-js.css';
 import '../../../css/bpmn-font-local.css';
@@ -132,7 +132,7 @@ const BpmnProcessEditor = forwardRef<BpmnProcessEditorHandle, BpmnProcessEditorP
             title={fitButtonLabel}
             aria-label={fitButtonLabel}
           >
-            <LocateFixed className="h-3.5 w-3.5" />
+            <MaterialSymbol name="my_location" className="h-3.5 w-3.5" />
             {fitButtonLabel}
           </button>
         )}

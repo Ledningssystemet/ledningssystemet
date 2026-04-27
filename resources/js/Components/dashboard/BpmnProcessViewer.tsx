@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { LocateFixed } from 'lucide-react';
+import { MaterialSymbol } from "@/components/ui/material-symbol";
 import NavigatedViewer from 'bpmn-js/lib/NavigatedViewer';
 import 'bpmn-js/dist/assets/diagram-js.css';
 import '../../../css/bpmn-font-local.css';
@@ -178,7 +178,7 @@ export default function BpmnProcessViewer({
           title={fitButtonLabel}
           aria-label={fitButtonLabel}
         >
-          <LocateFixed className="h-3.5 w-3.5" />
+          <MaterialSymbol name="my_location" className="h-3.5 w-3.5" />
           {fitButtonLabel}
         </button>
       )}

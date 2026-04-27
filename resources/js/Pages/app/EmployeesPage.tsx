@@ -1,5 +1,5 @@
-﻿import { useMemo, useState } from 'react';
-import { Users } from 'lucide-react';
+import { useMemo, useState } from 'react';
+import { MaterialSymbol } from "@/components/ui/material-symbol";
 import AppLayout from '@/layouts/AppLayout';
 import { CrudModule } from '@/components/crud';
 import type { CrudModuleConfig } from '@/components/crud';
@@ -33,7 +33,7 @@ export default function EmployeesPage({ route }: EmployeesPageProps) {
             {
                 key: 'view_details',
                 label: t('pages.employees.action_open'),
-                icon: <Users className="h-4 w-4" />,
+                icon: <MaterialSymbol name="group" className="h-4 w-4" />,
                 variant: 'outline',
                 refreshOnComplete: false,
                 onClick: (item: Record<string, any>) => {
@@ -53,7 +53,7 @@ export default function EmployeesPage({ route }: EmployeesPageProps) {
                 <PageHeader
                     title={t('pages.employees.title')}
                     description={t('pages.employees.description')}
-                    icon={<Users className="h-6 w-6 text-primary" />}
+                    icon={<MaterialSymbol name="group" className="h-6 w-6 text-primary" />}
                     route={route}
                 />
                 <section className="rounded-2xl border border-border bg-card p-6 shadow-sm">

@@ -1,5 +1,5 @@
-﻿import { useMemo, useState } from 'react';
-import { ListTree, Workflow, X } from 'lucide-react';
+import { useMemo, useState } from 'react';
+import { MaterialSymbol } from "@/components/ui/material-symbol";
 import AppLayout from '@/layouts/AppLayout';
 import { CrudModule } from '@/components/crud';
 import type { CrudModuleConfig } from '@/components/crud';
@@ -70,13 +70,13 @@ export default function ActivityFlowTemplatesPage({ route }: ActivityFlowTemplat
                         className="gap-1"
                         onClick={() => setActiveTemplate(row)}
                     >
-                        <ListTree className="h-4 w-4" />
+                        <MaterialSymbol name="account_tree" className="h-4 w-4" />
                         {t('pages.activity_flow_templates.open_items_button')}
                     </Button>
                 ),
                 renderDetail: (_, row) => (
                     <Button data-testid="activity-flow-template-open-items" type="button" variant="outline" size="sm" className="gap-1" onClick={() => setActiveTemplate(row)}>
-                        <ListTree className="h-4 w-4" />
+                        <MaterialSymbol name="account_tree" className="h-4 w-4" />
                         {t('pages.activity_flow_templates.open_items_button')}
                     </Button>
                 ),
@@ -232,7 +232,7 @@ export default function ActivityFlowTemplatesPage({ route }: ActivityFlowTemplat
                 <PageHeader
                     title={t('pages.activity_flow_templates.title')}
                     description={t('pages.activity_flow_templates.description')}
-                    icon={<Workflow className="h-6 w-6 text-primary" />}
+                    icon={<MaterialSymbol name="schema" className="h-6 w-6 text-primary" />}
                     route={route}
                 />
 
@@ -256,7 +256,7 @@ export default function ActivityFlowTemplatesPage({ route }: ActivityFlowTemplat
                         className="absolute right-4 top-4 z-50 gap-2"
                         onClick={() => setActiveTemplate(null)}
                     >
-                        <X className="h-4 w-4" />
+                        <MaterialSymbol name="close" className="h-4 w-4" />
                         {t('pages.activity_flow_templates.items.close_panel_button')}
                     </Button>
 

@@ -1,5 +1,5 @@
-﻿import { useMemo, useState } from 'react';
-import { GraduationCap, Users, Shield } from 'lucide-react';
+import { useMemo, useState } from 'react';
+import { MaterialSymbol } from "@/components/ui/material-symbol";
 import AppLayout from '@/layouts/AppLayout';
 import { CrudModule } from '@/components/crud';
 import type { CrudModuleConfig } from '@/components/crud';
@@ -72,13 +72,13 @@ export default function QualificationsPage({ route }: QualificationsPageProps) {
                 category: t('pages.qualifications_page.category_relations'),
                 renderCell: (_value, row) => (
                     <Button type="button" variant="outline" size="sm" className="gap-1" onClick={() => setActiveQualificationForEmployees(row)}>
-                        <Users className="h-4 w-4" />
+                        <MaterialSymbol name="group" className="h-4 w-4" />
                         {t('pages.qualifications_page.open_employees_button')}
                     </Button>
                 ),
                 renderDetail: (_value, row) => (
                     <Button type="button" variant="outline" size="sm" className="gap-1" onClick={() => setActiveQualificationForEmployees(row)}>
-                        <Users className="h-4 w-4" />
+                        <MaterialSymbol name="group" className="h-4 w-4" />
                         {t('pages.qualifications_page.open_employees_button')}
                     </Button>
                 ),
@@ -92,13 +92,13 @@ export default function QualificationsPage({ route }: QualificationsPageProps) {
                 category: t('pages.qualifications_page.category_relations'),
                 renderCell: (_value, row) => (
                     <Button type="button" variant="outline" size="sm" className="gap-1" onClick={() => setActiveQualificationForRoles(row)}>
-                        <Shield className="h-4 w-4" />
+                        <MaterialSymbol name="shield" className="h-4 w-4" />
                         {t('pages.qualifications_page.open_roles_button')}
                     </Button>
                 ),
                 renderDetail: (_value, row) => (
                     <Button type="button" variant="outline" size="sm" className="gap-1" onClick={() => setActiveQualificationForRoles(row)}>
-                        <Shield className="h-4 w-4" />
+                        <MaterialSymbol name="shield" className="h-4 w-4" />
                         {t('pages.qualifications_page.open_roles_button')}
                     </Button>
                 ),
@@ -230,7 +230,7 @@ export default function QualificationsPage({ route }: QualificationsPageProps) {
                 <PageHeader
                     title={t('pages.qualifications_page.title')}
                     description={t('pages.qualifications_page.description')}
-                    icon={<GraduationCap className="h-6 w-6 text-primary" />}
+                    icon={<MaterialSymbol name="school" className="h-6 w-6 text-primary" />}
                     route={route}
                 />
 

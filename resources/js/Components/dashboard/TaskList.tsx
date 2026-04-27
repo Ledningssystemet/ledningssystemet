@@ -1,5 +1,5 @@
-import { ExternalLink } from "lucide-react";
 import { useTranslations } from "@/hooks/useTranslations";
+import { MaterialSymbol } from "@/components/ui/material-symbol";
 import { DashboardWidgetProps } from "@/types/dashboard";
 
 export default function TaskList({ data, loading, error }: DashboardWidgetProps) {
@@ -53,7 +53,7 @@ export default function TaskList({ data, loading, error }: DashboardWidgetProps)
                 </span>
               </div>
             </div>
-            <ExternalLink className="h-3.5 w-3.5 text-muted-foreground/0 group-hover:text-muted-foreground transition-colors mt-1" />
+            <MaterialSymbol name="open_in_new" className="h-3.5 w-3.5 text-muted-foreground/0 group-hover:text-muted-foreground transition-colors mt-1" />
           </button>
         ))}
       </div>

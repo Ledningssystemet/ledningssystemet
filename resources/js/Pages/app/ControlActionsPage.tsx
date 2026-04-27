@@ -1,5 +1,5 @@
-﻿import { useMemo } from 'react';
-import { ListChecks } from 'lucide-react';
+import { useMemo } from 'react';
+import { MaterialSymbol } from "@/components/ui/material-symbol";
 import AppLayout from '@/layouts/AppLayout';
 import { CrudModule } from '@/components/crud';
 import type { CrudModuleConfig } from '@/components/crud';
@@ -23,7 +23,7 @@ export default function ControlActionsPage({ route }: ControlActionsPageProps) {
                 <PageHeader
                     title={t('pages.control_actions.title')}
                     description={t('pages.control_actions.description')}
-                    icon={<ListChecks className="h-6 w-6 text-primary" />}
+                    icon={<MaterialSymbol name="checklist" className="h-6 w-6 text-primary" />}
                     route={route}
                 />
 

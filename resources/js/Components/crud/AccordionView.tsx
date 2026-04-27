@@ -5,9 +5,9 @@ import {
     AccordionTrigger,
 } from "@/components/ui/accordion";
 import {Button} from "@/components/ui/button";
+import { MaterialSymbol } from "@/components/ui/material-symbol";
 import {Badge} from "@/components/ui/badge";
 import {FieldConfig, ItemBadgeConfig, ItemStatus, RowActionConfig, SelectOption} from "./types";
-import {GripVertical, Pencil, Trash2} from "lucide-react";
 import {StatusDot, statusRowClass} from "./StatusIndicator";
 import {InlineTagsEditor} from "./InlineTagsEditor";
 import {useAllSelectOptions, resolveOptions} from "./optionsCache";
@@ -55,7 +55,7 @@ export function AccordionView({
                                   onReorder,
                               }: AccordionViewProps) {
     const {t} = useTranslations();
-    // Gör komponenten robust mot att items är null, undefined eller objekt med data-array
+    // GÃ¶r komponenten robust mot att items Ã¤r null, undefined eller objekt med data-array
     const normalizedItems: CrudItem[] = Array.isArray(items)
         ? items
         : Array.isArray((items as { data?: CrudItem[] } | null | undefined)?.data)
@@ -186,7 +186,7 @@ export function AccordionView({
                                                     onClick={(event) => event.preventDefault()}
                                                     title={t("ui.crud.drag_to_reorder")}
                                                 >
-                        <GripVertical className="h-4 w-4"/>
+                        <MaterialSymbol name="drag_indicator" className="h-4 w-4"/>
                       </span>
                                             )}
                                             <StatusDot status={status}/>
@@ -249,7 +249,7 @@ export function AccordionView({
                                                     {canEdit && onEdit && (
                                                         <Button variant="outline" size="sm"
                                                                 onClick={() => onEdit(item)}>
-                                                            <Pencil className="h-4 w-4 mr-1"/>
+                                                            <MaterialSymbol name="edit" className="h-4 w-4 mr-1"/>
                                                             {t("ui.crud.action_edit")}
                                                         </Button>
                                                     )}
@@ -260,7 +260,7 @@ export function AccordionView({
                                                             className="text-destructive hover:text-destructive"
                                                             onClick={() => onDelete(itemId)}
                                                         >
-                                                            <Trash2 className="h-4 w-4 mr-1"/>
+                                                            <MaterialSymbol name="delete" className="h-4 w-4 mr-1"/>
                                                             {t("ui.crud.action_delete")}
                                                         </Button>
                                                     )}

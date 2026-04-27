@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
+import { MaterialSymbol } from "@/components/ui/material-symbol";
 import {
   Dialog,
   DialogContent,
@@ -14,7 +15,6 @@ import { Switch } from "@/components/ui/switch";
 import { Select2Field } from "./Select2Field";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { EditDialogProps, FieldConfig } from "./types";
-import { Loader2, AlertCircle } from "lucide-react";
 import { useTranslations } from "@/hooks/useTranslations";
 
 export function EditDialog({
@@ -124,7 +124,7 @@ export function EditDialog({
         <Label htmlFor={field.key} className="flex items-center gap-1">
           {field.label}
           {field.required && <span className="text-destructive">*</span>}
-          {isInvalid && <AlertCircle className="h-3.5 w-3.5 text-destructive" />}
+          {isInvalid && <MaterialSymbol name="error" className="h-3.5 w-3.5 text-destructive" />}
         </Label>
         {field.helpText && (
           <p className="text-xs text-muted-foreground">{field.helpText}</p>
@@ -193,7 +193,7 @@ export function EditDialog({
             {t("ui.crud.action_cancel")}
           </Button>
           <Button onClick={handleSave} disabled={saving} data-testid="crud-save-button">
-            {saving && <Loader2 className="h-4 w-4 mr-1 animate-spin" />}
+            {saving && <MaterialSymbol name="progress_activity" className="h-4 w-4 mr-1 animate-spin" />}
             {isNew ? t("ui.crud.action_create") : t("ui.crud.action_save")}
           </Button>
         </DialogFooter>

@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
+import { MaterialSymbol } from "@/components/ui/material-symbol";
 import { Link } from 'react-router-dom';
-import { Workflow, SquareArrowOutUpRight } from 'lucide-react';
 import AppLayout from '@/layouts/AppLayout';
 import { CrudModule } from '@/components/crud';
 import type { CrudModuleConfig } from '@/components/crud';
@@ -118,7 +118,7 @@ export default function ProcessesPage({ route }: ProcessesPageProps) {
                         to={buildProcessEditorPath(row.id)}
                         className="inline-flex items-center gap-1 rounded-md border border-border px-2 py-1 text-xs font-medium text-foreground transition-colors hover:bg-muted"
                     >
-                        <SquareArrowOutUpRight className="h-3.5 w-3.5" />
+                        <MaterialSymbol name="open_in_new" className="h-3.5 w-3.5" />
                         {t('pages.processes.open_editor')}
                     </Link>
                 ),
@@ -127,7 +127,7 @@ export default function ProcessesPage({ route }: ProcessesPageProps) {
                         to={buildProcessEditorPath(row.id)}
                         className="inline-flex items-center gap-1 rounded-md border border-border px-2 py-1 text-xs font-medium text-foreground transition-colors hover:bg-muted"
                     >
-                        <SquareArrowOutUpRight className="h-3.5 w-3.5" />
+                        <MaterialSymbol name="open_in_new" className="h-3.5 w-3.5" />
                         {t('pages.processes.open_editor')}
                     </Link>
                 ),
@@ -141,7 +141,7 @@ export default function ProcessesPage({ route }: ProcessesPageProps) {
                 <PageHeader
                     title={t('pages.processes.title')}
                     description={t('pages.processes.description')}
-                    icon={<Workflow className="h-6 w-6 text-primary" />}
+                    icon={<MaterialSymbol name="schema" className="h-6 w-6 text-primary" />}
                     route={route}
                 />
 

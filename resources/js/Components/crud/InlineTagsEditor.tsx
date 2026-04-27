@@ -1,5 +1,5 @@
 import {useEffect, useMemo, useState} from "react";
-import {Tag} from "lucide-react";
+import { MaterialSymbol } from "@/components/ui/material-symbol";
 import {Button} from "@/components/ui/button";
 import {
     Dialog,
@@ -59,11 +59,11 @@ export function InlineTagsEditor({item, field, value, onSave}: InlineTagsEditorP
                 onClick={() => setOpen(true)}
                 aria-label={t("ui.crud.inline_tags_open_aria", {field: field.label})}
             >
-                <Tag className="h-3.5 w-3.5"/>
+                <MaterialSymbol name="sell" className="h-3.5 w-3.5"/>
             </Button>
             <div className="flex flex-wrap gap-1 min-w-0">
                 {currentValues.length === 0 ? (
-                    <span className="text-muted-foreground">—</span>
+                    <span className="text-muted-foreground">â€”</span>
                 ) : (
                     currentValues.map((tagValue) => {
                         const option = field.options?.find((opt) => String(opt.value) === String(tagValue));

@@ -1,5 +1,5 @@
-﻿import { useMemo, useState } from 'react';
-import { ListTree, Sparkles } from 'lucide-react';
+import { useMemo, useState } from 'react';
+import { MaterialSymbol } from "@/components/ui/material-symbol";
 import AppLayout from '@/layouts/AppLayout';
 import { CrudModule } from '@/components/crud';
 import type { CrudModuleConfig } from '@/components/crud';
@@ -57,13 +57,13 @@ export default function CompentencesPage({ route }: CompentencesPageProps) {
                 category: t('pages.competences.category_levels'),
                 renderCell: (_, row) => (
                     <Button type="button" variant="outline" size="sm" className="gap-1" onClick={() => setActiveCompetence(row)}>
-                        <ListTree className="h-4 w-4" />
+                        <MaterialSymbol name="account_tree" className="h-4 w-4" />
                         {t('pages.competences.open_levels_button')}
                     </Button>
                 ),
                 renderDetail: (_, row) => (
                     <Button type="button" variant="outline" size="sm" className="gap-1" onClick={() => setActiveCompetence(row)}>
-                        <ListTree className="h-4 w-4" />
+                        <MaterialSymbol name="account_tree" className="h-4 w-4" />
                         {t('pages.competences.open_levels_button')}
                     </Button>
                 ),
@@ -134,7 +134,7 @@ export default function CompentencesPage({ route }: CompentencesPageProps) {
                 <PageHeader
                     title={t('pages.competences.title')}
                     description={t('pages.competences.description')}
-                    icon={<Sparkles className="h-6 w-6 text-primary" />}
+                    icon={<MaterialSymbol name="auto_awesome" className="h-6 w-6 text-primary" />}
                     route={route}
                 />
 

@@ -1,7 +1,7 @@
 import {FieldConfig, ItemBadgeConfig, ItemStatus, RowActionConfig, SelectOption} from "./types";
+import { MaterialSymbol } from "@/components/ui/material-symbol";
 import {Button} from "@/components/ui/button";
 import {Badge} from "@/components/ui/badge";
-import {GripVertical, Pencil, Trash2} from "lucide-react";
 import {ScrollArea} from "@/components/ui/scroll-area";
 import {StatusDot, statusRowClass} from "./StatusIndicator";
 import {ResizablePanelGroup, ResizablePanel, ResizableHandle} from "@/components/ui/resizable";
@@ -187,7 +187,7 @@ export function MasterDetailView({
                                                     onClick={(event) => event.preventDefault()}
                                                     title={t("ui.crud.drag_to_reorder")}
                                                 >
-                        <GripVertical className="h-4 w-4"/>
+                        <MaterialSymbol name="drag_indicator" className="h-4 w-4"/>
                       </span>
                                             )}
                                             <StatusDot status={status}/>
@@ -254,7 +254,7 @@ export function MasterDetailView({
                                         <div className="flex items-center gap-2">
                                             {canEdit && onEdit && (
                                                 <Button variant="outline" size="sm" onClick={() => onEdit(activeItem)}>
-                                                    <Pencil className="h-4 w-4 mr-1"/>
+                                                    <MaterialSymbol name="edit" className="h-4 w-4 mr-1"/>
                                                     {t("ui.crud.action_edit")}
                                                 </Button>
                                             )}
@@ -265,7 +265,7 @@ export function MasterDetailView({
                                                     className="text-destructive hover:text-destructive"
                                                     onClick={() => onDelete(activeItemId as string | number)}
                                                 >
-                                                    <Trash2 className="h-4 w-4 mr-1"/>
+                                                    <MaterialSymbol name="delete" className="h-4 w-4 mr-1"/>
                                                     {t("ui.crud.action_delete")}
                                                 </Button>
                                             )}
@@ -349,7 +349,7 @@ function renderDetailValue(
     optionsMap: Map<string, SelectOption[]>,
     t: (key: string, replacements?: Record<string, string | number>) => string,
 ) {
-    if (value == null) return "—";
+    if (value == null) return "â€”";
     if (field.type === "boolean") return value ? t("ui.crud.yes") : t("ui.crud.no");
     if ((field.type === "multiselect" || field.type === "tags" || field.type === "inline-tags") && Array.isArray(value)) {
         const opts = resolveOptions(field, optionsMap);

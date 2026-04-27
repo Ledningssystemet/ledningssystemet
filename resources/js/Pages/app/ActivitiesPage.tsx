@@ -1,5 +1,5 @@
-﻿import { useMemo } from 'react';
-import { Workflow } from 'lucide-react';
+import { useMemo } from 'react';
+import { MaterialSymbol } from "@/components/ui/material-symbol";
 import AppLayout from '@/layouts/AppLayout';
 import { CrudModule } from '@/components/crud';
 import type { CrudModuleConfig } from '@/components/crud';
@@ -133,7 +133,7 @@ export default function ActivitiesPage({ route }: ActivitiesPageProps) {
                 <PageHeader
                     title={t('pages.activities.title')}
                     description={t('pages.activities.description')}
-                    icon={<Workflow className="h-6 w-6 text-primary" />}
+                    icon={<MaterialSymbol name="schema" className="h-6 w-6 text-primary" />}
                     route={route}
                 />
 

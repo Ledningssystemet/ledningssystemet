@@ -558,6 +558,14 @@ return [
 	'my_profile' => [
 		'title' => 'My profile',
 		'description' => 'Manage your personal details, contact information, and profile settings.',
+		'layout' => [
+			'title' => 'Navigation layout',
+			'description' => 'Choose which navigation layout the application should use.',
+			'mega_menu_label' => 'Mega menu',
+			'mega_menu_description' => 'Top navigation with grouped dropdown panels.',
+			'side_menu_label' => 'Side menu',
+			'side_menu_description' => 'Left side navigation inspired by the legacy layout.',
+		],
 		'section_personal_info' => 'Personal information',
 		'section_contact' => 'Contact details',
 		'section_account' => 'Account settings',

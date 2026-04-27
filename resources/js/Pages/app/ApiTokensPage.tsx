@@ -1,5 +1,5 @@
-﻿import { useEffect, useMemo, useState } from 'react';
-import { KeyRound, ExternalLink, Copy, Check } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
+import { MaterialSymbol } from "@/components/ui/material-symbol";
 import AppLayout from '@/layouts/AppLayout';
 import { CrudModule } from '@/components/crud';
 import type { CrudModuleConfig } from '@/components/crud';
@@ -135,7 +135,7 @@ export default function ApiTokensPage({ route }: ApiTokensPageProps) {
                 <PageHeader
                     title={t('pages.api_tokens.title')}
                     description={t('pages.api_tokens.description')}
-                    icon={<KeyRound className="h-6 w-6 text-primary" />}
+                    icon={<MaterialSymbol name="vpn_key" className="h-6 w-6 text-primary" />}
                     route={route}
                 />
 
@@ -155,7 +155,7 @@ export default function ApiTokensPage({ route }: ApiTokensPageProps) {
                                     className="inline-flex items-center gap-1 text-primary hover:underline"
                                 >
                                     {t('pages.api_tokens.api_docs_link')}
-                                    <ExternalLink className="h-4 w-4" />
+                                    <MaterialSymbol name="open_in_new" className="h-4 w-4" />
                                 </a>
                                 <a
                                     href={openApiSpecUrl}
@@ -164,7 +164,7 @@ export default function ApiTokensPage({ route }: ApiTokensPageProps) {
                                     className="inline-flex items-center gap-1 text-primary hover:underline"
                                 >
                                     {t('pages.api_tokens.api_docs_spec_link')}
-                                    <ExternalLink className="h-4 w-4" />
+                                    <MaterialSymbol name="open_in_new" className="h-4 w-4" />
                                 </a>
                             </div>
                         </div>
@@ -203,7 +203,7 @@ export default function ApiTokensPage({ route }: ApiTokensPageProps) {
                             </div>
                             <div className="flex items-center gap-2">
                                 <Button variant="outline" onClick={() => void handleCopyToken()} disabled={!plainToken}>
-                                    {copyStatus === 'success' ? <Check className="mr-2 h-4 w-4" /> : <Copy className="mr-2 h-4 w-4" />}
+                                    {copyStatus === 'success' ? <MaterialSymbol name="check" className="mr-2 h-4 w-4" /> : <MaterialSymbol name="content_copy" className="mr-2 h-4 w-4" />}
                                     {copyStatus === 'success'
                                         ? t('pages.api_tokens.copy_button_copied')
                                         : t('pages.api_tokens.copy_button')}

@@ -1,26 +1,14 @@
 import React, { useState, useRef, useEffect, useMemo } from "react";
 import { cn } from "@/lib/utils";
+import { MaterialSymbol } from "@/components/ui/material-symbol";
 import logoWhite from "@/assets/logo_se_white.svg";
 import logo from "@/assets/logo_se.svg";
 import {
     APP_HOME_PATH,
     APP_MY_PROFILE_PATH,
-    buildMenuRoutes,
     getMenuItemPath,
     isExternalUrl,
 } from "@/app/routes";
-import {
-    Home, LayoutDashboard, ChevronDown, Menu, X,
-    ClipboardList, UserCircle, FileText,
-    Scale, GitBranch, Shield, Globe,
-    Truck, FileSignature, CheckCircle2, Leaf, FlaskConical,
-    Database, AlertTriangle,
-    Settings, HelpCircle, Search, Bell, User, LogOut, SlidersHorizontal,
-    FolderOpen, RefreshCcw, ScanSearch, UserRoundCheck,
-    Briefcase, Users, Building2, Target, TrendingUp, Tag,
-    GraduationCap, Key, Layers, Brain, ChartNoAxesCombined,
-    type LucideProps,
-} from "lucide-react";
 import type { MenuCategoryDto, BadgeDto, BadgeSeverity } from "@/types/menu";
 import { useMenuData } from "@/hooks/useMenuData";
 import { useMenuBadges } from "@/hooks/useMenuBadges";
@@ -38,38 +26,28 @@ interface SharedProps extends PageProps{
     };
 }
 
-// ─── Icon registry ────────────────────────────────────────────────────────────
-type IconComponent = React.ComponentType<LucideProps>;
 
-const iconRegistry: Record<string, IconComponent> = {
-    AlertTriangle, Bell, Brain, Briefcase, Building2, CheckCircle2, ChevronDown, ClipboardList,
-    Database, FileSignature, FileText, FlaskConical, FolderOpen,
-    GitBranch, Globe, GraduationCap, Home, HelpCircle, Key, LayoutDashboard, Layers, Leaf,
-    Menu, RefreshCcw, Scale, ScanSearch, Search, Settings,
-    Shield, Tag, Target, TrendingUp, Truck, User, UserCircle, Users, X, UserRoundCheck, ChartNoAxesCombined
-};
+// ─── Badge helpers ───────────────────────────────────────────────────────────
 
-function resolveIcon(name: string): IconComponent {
-    return iconRegistry[name] ?? Shield;
-}
-
-// ─── Badge helpers ────────────────────────────────────────────────────────────
-function getSubtleBadgeClasses(severity: BadgeSeverity = "info") {
+function iconBgClasses(severity?: BadgeSeverity): string {
     switch (severity) {
-        case "warning": return "bg-warning/15 text-warning";
-        case "danger":  return "bg-destructive/15 text-destructive";
-        default:        return "bg-accent/15 text-accent";
+        case "warning": return "bg-yellow-400";
+        case "danger":  return "bg-orange-500";
+        case "info":    return "bg-teal-500";
+        default:        return "bg-gray-500";
     }
 }
 
-function getSolidBadgeClasses(severity: BadgeSeverity = "info") {
+function categoryBarClasses(severity?: BadgeSeverity): string {
     switch (severity) {
-        case "warning": return "bg-warning text-warning-foreground";
-        case "danger":  return "bg-destructive text-destructive-foreground";
-        default:        return "bg-accent text-accent-foreground";
+        case "warning": return "bg-yellow-400";
+        case "danger":  return "bg-orange-500";
+        case "info":    return "bg-teal-500";
+        default:        return "bg-gray-300";
     }
 }
 
+// ─── Top-level nav styles ─────────────────────────────────────────────────────
 function getTopLevelNavClasses(isActive: boolean) {
     return cn(
         "flex items-center gap-1.5 px-3 py-2 rounded-md text-sm font-medium transition-colors",
@@ -79,6 +57,7 @@ function getTopLevelNavClasses(isActive: boolean) {
     );
 }
 
+// ─── Dropdown item styles ─────────────────────────────────────────────────────
 function getDropdownItemClasses(isActive: boolean) {
     return cn(
         "w-full flex items-start gap-3 px-3 py-2.5 rounded-lg transition-colors group text-left",
@@ -86,6 +65,7 @@ function getDropdownItemClasses(isActive: boolean) {
     );
 }
 
+// ─── Mobile item styles ───────────────────────────────────────────────────────
 function getMobileItemClasses(isActive: boolean) {
     return cn(
         "w-full flex items-center gap-2.5 px-3 py-2 rounded-md transition-colors text-sm",
@@ -95,6 +75,7 @@ function getMobileItemClasses(isActive: boolean) {
     );
 }
 
+// ─── Profile menu item styles ─────────────────────────────────────────────────
 function getProfileMenuItemClasses(isActive = false) {
     return cn(
         "flex w-full items-center gap-2.5 rounded-md px-3 py-2 text-sm transition-colors",
@@ -172,27 +153,18 @@ function MegaMenuDropdown({ category, itemBadges, activePath, onClose }: MegaMen
                                 )}
                                 <div className="space-y-1">
                                     {col.items.map((item) => {
-                                        const ItemIcon = resolveIcon(item.icon);
                                         const badge = itemBadges[item.key];
 
                                         const content = (
                                             <>
-                                                <div className="mt-0.5 p-1.5 rounded-md bg-muted group-hover:bg-primary/10 transition-colors">
-                                                    <ItemIcon className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
+                                                <div className={cn("mt-0.5 p-1.5 rounded-md shrink-0", iconBgClasses(badge?.severity))}>
+                                                    <MaterialSymbol name={item.icon} className="h-4 w-4 text-white" />
                                                 </div>
                                                 <div className="flex-1 min-w-0">
                                                     <div className="flex items-center gap-2">
                                                         <span className="text-sm font-medium text-card-foreground group-hover:text-primary transition-colors">
                                                             {item.label}
                                                         </span>
-                                                        {badge && (
-                                                            <span className={cn(
-                                                                "text-[10px] font-bold px-1.5 py-0.5 rounded-full",
-                                                                getSubtleBadgeClasses(badge.severity),
-                                                            )}>
-                                                                {badge.count}
-                                                            </span>
-                                                        )}
                                                     </div>
                                                     {item.description && (
                                                         <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">
@@ -242,11 +214,12 @@ interface MobileMenuProps {
     onClose: () => void;
     categories: MenuCategoryDto[];
     itemBadges: Record<string, BadgeDto>;
+    categoryBadges: Record<string, BadgeDto>;
     activePath: string;
     preferredHomePath: string;
 }
 
-function MobileMenu({ open, onClose, categories, itemBadges, activePath, preferredHomePath }: MobileMenuProps) {
+function MobileMenu({ open, onClose, categories, itemBadges, categoryBadges, activePath, preferredHomePath }: MobileMenuProps) {
     const { t } = useTranslations();
     const [expandedCategory, setExpandedCategory] = useState<string | null>(null);
 
@@ -259,20 +232,11 @@ function MobileMenu({ open, onClose, categories, itemBadges, activePath, preferr
                 <div className="flex items-center justify-between p-4 border-b border-border">
                     <img src={logo} alt="Ledningssystemet.se" className="h-7" />
                     <button onClick={onClose} className="p-2 rounded-md hover:bg-muted transition-colors">
-                        <X className="h-5 w-5 text-foreground" />
+                        <MaterialSymbol name="close" className="h-5 w-5 text-foreground" />
                     </button>
                 </div>
 
                 <div className="p-3">
-                    <div className="relative mb-3">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
-                        <input
-                            type="text"
-                            placeholder={t('ui.common.search_placeholder')}
-                            className="w-full bg-muted text-foreground text-sm rounded-lg pl-9 pr-3 py-2.5 border border-border focus:outline-none focus:ring-2 focus:ring-ring"
-                        />
-                    </div>
-
                     <Link to={preferredHomePath} onClick={onClose}
                         className={cn(
                             "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg font-medium text-sm mb-1 transition-colors",
@@ -280,25 +244,24 @@ function MobileMenu({ open, onClose, categories, itemBadges, activePath, preferr
                                 ? "bg-primary/5 text-primary"
                                 : "text-foreground hover:bg-muted",
                         )}>
-                        <Home className="h-4 w-4" />
+                        <MaterialSymbol name="home" className="h-4 w-4" />
                         {t('ui.common.home')}
                     </Link>
 
                     {categories.map((cat) => {
-                        const CatIcon = resolveIcon(cat.categoryIcon ?? "Home");
                         const allItems = cat.columns.flatMap((c) => c.items);
+                        const catBadge = categoryBadges[cat.label];
                         return (
                             <div key={cat.label} className="mt-1">
                                 <button type="button"
                                     onClick={() => setExpandedCategory(
                                         expandedCategory === cat.label ? null : cat.label
                                     )}
-                                    className="w-full flex items-center justify-between px-3 py-2.5 rounded-lg hover:bg-muted transition-colors text-sm font-medium text-foreground">
-                                    <span className="flex items-center gap-2">
-                                        <CatIcon className="h-4 w-4 text-muted-foreground" />
-                                        {cat.label}
-                                    </span>
-                                    <ChevronDown className={cn(
+                                    className="w-full flex items-center gap-2 px-2 py-2.5 rounded-lg hover:bg-muted transition-colors text-sm font-medium text-foreground">
+                                    <span className={cn("w-1 self-stretch rounded-full my-1 shrink-0", categoryBarClasses(catBadge?.severity))} />
+                                    <MaterialSymbol name={(cat.categoryIcon ?? "help")} className="h-4 w-4 text-muted-foreground" />
+                                    <span className="flex-1 text-left">{cat.label}</span>
+                                    <MaterialSymbol name="keyboard_arrow_down" className={cn(
                                         "h-4 w-4 transition-transform",
                                         expandedCategory === cat.label && "rotate-180",
                                     )} />
@@ -307,20 +270,13 @@ function MobileMenu({ open, onClose, categories, itemBadges, activePath, preferr
                                 {expandedCategory === cat.label && (
                                     <div className="ml-2 border-l-2 border-border pl-2 mt-1 mb-2 space-y-0.5">
                                         {allItems.map((item) => {
-                                            const ItemIcon = resolveIcon(item.icon);
                                             const badge = itemBadges[item.key];
                                             const content = (
                                                 <>
-                                                    <ItemIcon className="h-4 w-4" />
+                                                    <span className={cn("flex h-7 w-7 shrink-0 items-center justify-center rounded-md", iconBgClasses(badge?.severity))}>
+                                                        <MaterialSymbol name={item.icon} className="h-4 w-4 text-white" />
+                                                    </span>
                                                     <span>{item.label}</span>
-                                                    {badge && (
-                                                        <span className={cn(
-                                                            "text-[10px] font-bold px-1.5 py-0.5 rounded-full ml-auto",
-                                                            getSubtleBadgeClasses(badge.severity),
-                                                        )}>
-                                                            {badge.count}
-                                                        </span>
-                                                    )}
                                                 </>
                                             );
                                             const external = isExternalUrl(item.href);
@@ -429,13 +385,13 @@ export default function MegaNav() {
 
     return (
         <>
-            <nav ref={navRef} className="relative topbar-gradient border-b border-border/10 flex-shrink-0 z-50">
+            <nav ref={navRef} className="relative topbar-gradient border-b border-border/10 flex-shrink-0 z-50" data-testid="mega-nav">
                 <div className="max-w-[1600px] mx-auto px-4 lg:px-6 flex items-center h-14">
 
                     {/* Hamburger (mobile) */}
                     <button type="button" onClick={() => setMobileOpen(true)}
                         className="lg:hidden p-2 -ml-2 rounded-md text-primary-foreground/70 hover:text-primary-foreground transition-colors">
-                        <Menu className="h-5 w-5" />
+                        <MaterialSymbol name="menu" className="h-5 w-5" />
                     </button>
 
                     {/* Logo */}
@@ -449,13 +405,12 @@ export default function MegaNav() {
                         <NavLink to={preferredHomePath} end
                             className={({ isActive }) => getTopLevelNavClasses(isActive)}
                             onClick={() => setOpenMenu(null)} onMouseEnter={() => handleMouseEnter("")}>
-                            <Home className="h-4 w-4" />
+                            <MaterialSymbol name="home" className="h-4 w-4" />
                             <span className="hidden xl:inline">{t('ui.common.home')}</span>
                         </NavLink>
 
                         {/* Dynamic categories */}
                         {categories.map((cat) => {
-                            const CatIcon = resolveIcon(cat.categoryIcon ?? "Home");
                             const badge = categoryBadges[cat.label];
                             return (
                                 <button key={cat.label} type="button"
@@ -468,16 +423,10 @@ export default function MegaNav() {
                                     onClick={() => setOpenMenu(openMenu === cat.label ? null : cat.label)}
                                     onMouseEnter={() => handleMouseEnter(cat.label)}
                                     title={cat.label}>
-                                    <CatIcon className="h-4 w-4 flex-shrink-0" />
+                                    <span className={cn("w-1 self-stretch rounded-full my-1 shrink-0", categoryBarClasses(badge?.severity))} />
+                                    <MaterialSymbol name={(cat.categoryIcon ?? "help")} className="h-4 w-4 flex-shrink-0" />
                                     <span className="hidden xl:inline">{cat.label}</span>
-                                    {badge && (
-                                        <span className={cn(
-                                            "text-[10px] font-bold min-w-[12px] min-h-[12px] text-center px-1 py-0.5 rounded-full leading-none",
-                                            getSolidBadgeClasses(badge.severity),
-                                        )}>
-                                        </span>
-                                    )}
-                                    <ChevronDown className={cn(
+                                    <MaterialSymbol name="keyboard_arrow_down" className={cn(
                                         "h-3.5 w-3.5 transition-transform duration-200 flex-shrink-0",
                                         openMenu === cat.label && "rotate-180",
                                     )} />
@@ -494,6 +443,7 @@ export default function MegaNav() {
                         <div ref={profileMenuRef} className="relative pl-1">
                             <button
                                 type="button"
+                                data-testid="account-menu-trigger"
                                 aria-haspopup="menu"
                                 aria-expanded={profileMenuOpen}
                                 aria-label={t("ui.nav.account_menu_label")}
@@ -508,9 +458,9 @@ export default function MegaNav() {
                                     <div className="text-[10px] text-primary-foreground/50">{profileEmail}</div>
                                 </div>
                                 <div className="h-8 w-8 rounded-full bg-accent/20 border border-accent/30 flex items-center justify-center">
-                                    <User className="h-4 w-4 text-accent" />
+                                    <MaterialSymbol name="person" className="h-4 w-4 text-accent" />
                                 </div>
-                                <ChevronDown className={cn(
+                                <MaterialSymbol name="keyboard_arrow_down" className={cn(
                                     "hidden h-4 w-4 text-primary-foreground/70 transition-transform sm:block",
                                     profileMenuOpen && "rotate-180",
                                 )} />
@@ -531,7 +481,7 @@ export default function MegaNav() {
                                             onClick={() => setProfileMenuOpen(false)}
                                             className={getProfileMenuItemClasses(location.pathname === profilePreferencesPath)}
                                         >
-                                            <SlidersHorizontal className="h-4 w-4 text-muted-foreground" />
+                                            <MaterialSymbol name="tune" className="h-4 w-4 text-muted-foreground" />
                                             <span>{t("ui.nav.my_preferences")}</span>
                                         </Link>
 
@@ -540,7 +490,7 @@ export default function MegaNav() {
                                             onClick={() => setProfileMenuOpen(false)}
                                             className={getProfileMenuItemClasses()}
                                         >
-                                            <LogOut className="h-4 w-4 text-muted-foreground" />
+                                            <MaterialSymbol name="logout" className="h-4 w-4 text-muted-foreground" />
                                             <span>{t("ui.nav.log_out")}</span>
                                         </a>
                                     </div>
@@ -570,9 +520,11 @@ export default function MegaNav() {
                 onClose={() => setMobileOpen(false)}
                 categories={categories}
                 itemBadges={itemBadges}
+                categoryBadges={categoryBadges}
                 activePath={location.pathname}
                 preferredHomePath={preferredHomePath}
             />
         </>
     );
 }
+

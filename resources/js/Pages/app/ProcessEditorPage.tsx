@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { MaterialSymbol } from "@/components/ui/material-symbol";
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, Save, Upload } from 'lucide-react';
 import AppLayout from '@/layouts/AppLayout';
 import { Button } from '@/components/ui/button';
 import BpmnProcessEditor, { type BpmnProcessEditorHandle } from '@/components/crud/BpmnProcessEditor';
@@ -208,16 +208,16 @@ export default function ProcessEditorPage({ route }: ProcessEditorPageProps) {
 
                         <div className="flex items-center justify-between gap-3">
                             <Button variant="outline" onClick={() => navigate(APP_PROCESSES_PATH)}>
-                                <ArrowLeft className="mr-2 h-4 w-4" />
+                                <MaterialSymbol name="arrow_back" className="mr-2 h-4 w-4" />
                                 {t('pages.process_editor.back_to_processes')}
                             </Button>
                             <div className="flex items-center gap-2">
                                 <Button onClick={() => void persistProcess(false)} disabled={saveMode !== null}>
-                                    <Save className="mr-2 h-4 w-4" />
+                                    <MaterialSymbol name="save" className="mr-2 h-4 w-4" />
                                     {saveMode === 'save' ? t('pages.process_editor.saving') : t('pages.process_editor.save')}
                                 </Button>
                                 <Button onClick={() => void persistProcess(true)} disabled={saveMode !== null}>
-                                    <Upload className="mr-2 h-4 w-4" />
+                                    <MaterialSymbol name="upload" className="mr-2 h-4 w-4" />
                                     {saveMode === 'publish' ? t('pages.process_editor.publishing') : t('pages.process_editor.publish')}
                                 </Button>
                             </div>

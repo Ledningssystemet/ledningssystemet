@@ -1,7 +1,7 @@
-﻿import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { MaterialSymbol } from "@/components/ui/material-symbol";
 import { usePage } from '@inertiajs/react';
 import type { PageProps } from '@inertiajs/core';
-import { Building2, ArrowRightLeft } from 'lucide-react';
 import AppLayout from '@/layouts/AppLayout';
 import { CrudModule } from '@/components/crud';
 import type { CrudModuleConfig } from '@/components/crud';
@@ -266,7 +266,7 @@ export default function DepartmentsPage({ route }: DepartmentsPageProps) {
                 {
                     key: 'reassign',
                     label: t('pages.departments.reassign_action'),
-                    icon: <ArrowRightLeft className="h-4 w-4" />,
+                    icon: <MaterialSymbol name="swap_horiz" className="h-4 w-4" />,
                     variant: 'outline',
                     refreshOnComplete: false,
                     isVisible: (item) =>
@@ -286,7 +286,7 @@ export default function DepartmentsPage({ route }: DepartmentsPageProps) {
                 <PageHeader
                     title={t('pages.departments.title')}
                     description={t('pages.departments.description')}
-                    icon={<Building2 className="h-6 w-6 text-primary" />}
+                    icon={<MaterialSymbol name="apartment" className="h-6 w-6 text-primary" />}
                     route={route}
                 />
 

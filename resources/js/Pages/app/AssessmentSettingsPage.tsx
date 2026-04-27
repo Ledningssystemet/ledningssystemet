@@ -1,5 +1,5 @@
-﻿import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Settings2 } from 'lucide-react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { MaterialSymbol } from "@/components/ui/material-symbol";
 import AppLayout from '@/layouts/AppLayout';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -476,7 +476,7 @@ export default function AssessmentSettingsPage({ route }: AssessmentSettingsPage
                 <PageHeader
                     title={route.label}
                     description={t('pages.assessment_settings.description')}
-                    icon={<Settings2 className="h-6 w-6 text-primary" />}
+                    icon={<MaterialSymbol name="settings" className="h-6 w-6 text-primary" />}
                     route={route}
                 />
 

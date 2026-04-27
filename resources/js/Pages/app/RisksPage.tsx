@@ -1,5 +1,5 @@
-﻿import { useMemo } from 'react';
-import { Download, ListChecks, ShieldAlert } from 'lucide-react';
+import { useMemo } from 'react';
+import { MaterialSymbol } from "@/components/ui/material-symbol";
 import AppLayout from '@/layouts/AppLayout';
 import { CrudModule } from '@/components/crud';
 import type { CrudModuleConfig } from '@/components/crud';
@@ -61,7 +61,7 @@ export default function RisksPage({ route }: RisksPageProps) {
                 {
                     key: 'actions',
                     label: t('pages.risks.actions_button'),
-                    icon: <ListChecks className="h-4 w-4" />,
+                    icon: <MaterialSymbol name="checklist" className="h-4 w-4" />,
                     dialogMaxWidth: 'max-w-3xl',
                     dialogTitle: (item) => t('pages.risks.actions.panel_title', { risk: String(item.name || '') }),
                     dialogDescription: t('pages.risks.actions.panel_description'),
@@ -136,7 +136,7 @@ export default function RisksPage({ route }: RisksPageProps) {
                 <PageHeader
                     title={t('pages.risks.title')}
                     description={t('pages.risks.description')}
-                    icon={<ShieldAlert className="h-6 w-6 text-primary" />}
+                    icon={<MaterialSymbol name="gpp_bad" className="h-6 w-6 text-primary" />}
                     route={route}
                 />
                 <section className="rounded-2xl border border-border bg-card p-6 shadow-sm">

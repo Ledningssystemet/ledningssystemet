@@ -1,4 +1,5 @@
 import { useCallback, useState, useEffect } from "react";
+import { MaterialSymbol } from "@/components/ui/material-symbol";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -12,20 +13,6 @@ import {
 import { Label } from "@/components/ui/label";
 import { FieldConfig, ViewMode } from "./types";
 import { useAllSelectOptions, resolveOptions } from "./optionsCache";
-import {
-  Search,
-  Plus,
-  LayoutList,
-  Table2,
-  PanelLeftClose,
-  X,
-  Trash2,
-  SlidersHorizontal,
-  ArrowUp,
-  ArrowDown,
-  Download,
-  Loader2,
-} from "lucide-react";
 import { useTranslations } from "@/hooks/useTranslations";
 
 interface FilterBarProps {
@@ -174,7 +161,7 @@ export function FilterBar({
       <div className="crud-toolbar flex-wrap">
         {showSortFilterControls && searchable && (
           <div className="relative flex-1 min-w-[200px] max-w-sm">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <MaterialSymbol name="search" className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               data-testid="crud-search-input"
               value={localSearch}
@@ -194,7 +181,7 @@ export function FilterBar({
             size="sm"
             onClick={() => setFilterDialogOpen(true)}
           >
-            <SlidersHorizontal className="h-4 w-4 mr-1" />
+            <MaterialSymbol name="tune" className="h-4 w-4 mr-1" />
             {t("ui.crud.filter.open_dialog")}
             {activeBadges.length > 0 && (
               <span className="ml-1.5 inline-flex items-center justify-center h-5 w-5 rounded-full bg-primary text-primary-foreground text-xs font-medium">
@@ -206,7 +193,7 @@ export function FilterBar({
 
         {showSortFilterControls && hasActiveFilters && (
           <Button variant="ghost" size="sm" onClick={clearAll}>
-            <X className="h-4 w-4 mr-1" />
+            <MaterialSymbol name="close" className="h-4 w-4 mr-1" />
             {t("ui.crud.filter.clear")}
           </Button>
         )}
@@ -223,13 +210,13 @@ export function FilterBar({
           )}
           {selectedCount > 0 && onMassDelete && (
             <Button variant="destructive" size="sm" onClick={onMassDelete}>
-              <Trash2 className="h-4 w-4 mr-1" />
+              <MaterialSymbol name="delete" className="h-4 w-4 mr-1" />
               {t("ui.crud.filter.mass_delete_selected", { count: selectedCount })}
             </Button>
           )}
           {selectedCount > 0 && onClearSelection && (
             <Button variant="ghost" size="sm" onClick={onClearSelection}>
-              <X className="h-4 w-4 mr-1" />
+              <MaterialSymbol name="close" className="h-4 w-4 mr-1" />
               {t("ui.crud.filter.clear_selection")}
             </Button>
           )}
@@ -238,16 +225,16 @@ export function FilterBar({
             <>
               {onExportSelected && selectedCount > 0 && (
                 <Button variant="outline" size="sm" onClick={onExportSelected} disabled={exportingAll}>
-                  <Download className="h-4 w-4 mr-1" />
+                  <MaterialSymbol name="download" className="h-4 w-4 mr-1" />
                   {t("ui.crud.filter.export_selected", { count: selectedCount })}
                 </Button>
               )}
               {onExportAll && (
                 <Button variant="outline" size="sm" onClick={() => void onExportAll()} disabled={exportingAll}>
                   {exportingAll ? (
-                    <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                    <MaterialSymbol name="progress_activity" className="h-4 w-4 mr-1 animate-spin" />
                   ) : (
-                    <Download className="h-4 w-4 mr-1" />
+                    <MaterialSymbol name="download" className="h-4 w-4 mr-1" />
                   )}
                   {t("ui.crud.filter.export_all")}
                 </Button>
@@ -265,7 +252,7 @@ export function FilterBar({
               }`}
               title={t("ui.crud.filter.view_master_detail")}
             >
-              <PanelLeftClose className="h-4 w-4" />
+              <MaterialSymbol name="left_panel_close" className="h-4 w-4" />
             </button>
             <button
               onClick={() => onViewModeChange("table")}
@@ -276,7 +263,7 @@ export function FilterBar({
               }`}
               title={t("ui.crud.filter.view_table")}
             >
-              <Table2 className="h-4 w-4" />
+              <MaterialSymbol name="table_view" className="h-4 w-4" />
             </button>
             <button
               onClick={() => onViewModeChange("accordion")}
@@ -287,13 +274,13 @@ export function FilterBar({
               }`}
               title={t("ui.crud.filter.view_list")}
             >
-              <LayoutList className="h-4 w-4" />
+              <MaterialSymbol name="view_list" className="h-4 w-4" />
             </button>
           </div>
 
           {onAdd && (
             <Button onClick={onAdd} size="sm" data-testid="crud-add-button">
-              <Plus className="h-4 w-4 mr-1" />
+              <MaterialSymbol name="add" className="h-4 w-4 mr-1" />
               {t("ui.crud.filter.add_new")}
             </Button>
           )}
@@ -315,7 +302,7 @@ export function FilterBar({
                   onClick={badge.onRemove}
                   className="ml-0.5 rounded-full hover:bg-muted-foreground/20 p-0.5"
                 >
-                  <X className="h-3 w-3" />
+                  <MaterialSymbol name="close" className="h-3 w-3" />
                 </button>
               )}
             </Badge>
@@ -432,11 +419,11 @@ export function FilterBar({
                     >
                       {sortDirection === "asc" ? (
                         <>
-                          <ArrowUp className="h-4 w-4" /> {t("ui.crud.filter.direction_asc")}
+                          <MaterialSymbol name="arrow_upward" className="h-4 w-4" /> {t("ui.crud.filter.direction_asc")}
                         </>
                       ) : (
                         <>
-                          <ArrowDown className="h-4 w-4" /> {t("ui.crud.filter.direction_desc")}
+                          <MaterialSymbol name="arrow_downward" className="h-4 w-4" /> {t("ui.crud.filter.direction_desc")}
                         </>
                       )}
                     </button>

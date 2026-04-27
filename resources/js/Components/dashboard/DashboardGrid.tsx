@@ -1,4 +1,5 @@
 import React, { useState, useCallback, useMemo } from "react";
+import { MaterialSymbol } from "@/components/ui/material-symbol";
 import { ResponsiveGridLayout, useContainerWidth } from "react-grid-layout";
 
 type LayoutItem = { i: string; x: number; y: number; w: number; h: number; minW?: number; minH?: number };
@@ -8,11 +9,6 @@ import { cn } from "@/lib/utils";
 import { useTranslations } from "@/hooks/useTranslations";
 import { useDashboardData } from "@/hooks/useDashboardData";
 import { DashboardWidgetProps } from "@/types/dashboard";
-import {
-  GripVertical, X, Plus, Settings2, RotateCcw,
-  ClipboardList, Target, AlertTriangle, GitBranch,
-  BarChart3, TrendingUp,
-} from "lucide-react";
 import StatsRow from "./StatsRow";
 import TaskList from "./TaskList";
 import GoalsCard from "./GoalsCard";
@@ -27,18 +23,18 @@ const COOKIE_KEY = "dashboard_layout";
 interface WidgetConfig {
   id: string;
   labelKey: string;
-  icon: React.ElementType;
+  icon: string;
   component: React.ComponentType<DashboardWidgetProps>;
   defaultSize: { w: number; h: number; minW?: number; minH?: number };
 }
 
 const allWidgets: WidgetConfig[] = [
-  { id: "stats", labelKey: "pages.dashboard.widgets.stats", icon: TrendingUp, component: StatsRow, defaultSize: { w: 12, h: 3, minW: 6, minH: 3 } },
-  { id: "tasks", labelKey: "pages.dashboard.widgets.tasks", icon: ClipboardList, component: TaskList, defaultSize: { w: 4, h: 8, minW: 3, minH: 4 } },
-  { id: "goals", labelKey: "pages.dashboard.widgets.goals", icon: Target, component: GoalsCard, defaultSize: { w: 4, h: 5, minW: 3, minH: 4 } },
-  { id: "process", labelKey: "pages.dashboard.widgets.process", icon: GitBranch, component: ProcessCard, defaultSize: { w: 4, h: 5, minW: 3, minH: 4 } },
-  { id: "toprisks", labelKey: "pages.dashboard.widgets.top_risks", icon: AlertTriangle, component: TopRisks, defaultSize: { w: 4, h: 5, minW: 3, minH: 4 } },
-  { id: "riskmatrix", labelKey: "pages.dashboard.widgets.risk_matrix", icon: BarChart3, component: RiskOverview, defaultSize: { w: 4, h: 5, minW: 3, minH: 4 } },
+  { id: "stats", labelKey: "pages.dashboard.widgets.stats", icon: "trending_up", component: StatsRow, defaultSize: { w: 12, h: 3, minW: 6, minH: 3 } },
+  { id: "tasks", labelKey: "pages.dashboard.widgets.tasks", icon: "assignment", component: TaskList, defaultSize: { w: 4, h: 8, minW: 3, minH: 4 } },
+  { id: "goals", labelKey: "pages.dashboard.widgets.goals", icon: "target", component: GoalsCard, defaultSize: { w: 4, h: 5, minW: 3, minH: 4 } },
+  { id: "process", labelKey: "pages.dashboard.widgets.process", icon: "account_tree", component: ProcessCard, defaultSize: { w: 4, h: 5, minW: 3, minH: 4 } },
+  { id: "toprisks", labelKey: "pages.dashboard.widgets.top_risks", icon: "warning", component: TopRisks, defaultSize: { w: 4, h: 5, minW: 3, minH: 4 } },
+  { id: "riskmatrix", labelKey: "pages.dashboard.widgets.risk_matrix", icon: "bar_chart", component: RiskOverview, defaultSize: { w: 4, h: 5, minW: 3, minH: 4 } },
 ];
 
 const defaultLayouts: Layouts = {
@@ -154,7 +150,7 @@ export default function DashboardGrid() {
               onClick={() => setShowAddMenu(!showAddMenu)}
               className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium bg-accent text-accent-foreground hover:bg-accent/90 transition-colors"
             >
-              <Plus className="h-3.5 w-3.5" />
+              <MaterialSymbol name="add" className="h-3.5 w-3.5" />
               {t('ui.widget.add')}
             </button>
             {showAddMenu && (
@@ -165,7 +161,7 @@ export default function DashboardGrid() {
                     onClick={() => addWidget(w.id)}
                     className="w-full flex items-center gap-2 px-3 py-2 text-sm rounded-md hover:bg-muted transition-colors text-left"
                   >
-                    <w.icon className="h-4 w-4 text-muted-foreground" />
+                    <MaterialSymbol name={w.icon} className="h-4 w-4 text-muted-foreground" />
                     {t(w.labelKey)}
                   </button>
                 ))}
@@ -178,7 +174,7 @@ export default function DashboardGrid() {
             onClick={resetLayout}
             className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium border border-border text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
           >
-            <RotateCcw className="h-3.5 w-3.5" />
+            <MaterialSymbol name="undo" className="h-3.5 w-3.5" />
             {t('ui.widget.reset')}
           </button>
         )}
@@ -191,7 +187,7 @@ export default function DashboardGrid() {
               : "border border-border text-muted-foreground hover:text-foreground hover:bg-muted"
           )}
         >
-          <Settings2 className="h-3.5 w-3.5" />
+          <MaterialSymbol name="settings" className="h-3.5 w-3.5" />
           {editing ? t('ui.widget.done') : t('ui.widget.customize')}
         </button>
       </div>
@@ -225,14 +221,14 @@ export default function DashboardGrid() {
               {editing && (
                 <div className="absolute top-0 left-0 right-0 z-10 flex items-center justify-between px-2 py-1 bg-primary/10 backdrop-blur-sm rounded-t-xl">
                   <div className="widget-drag-handle flex items-center gap-1.5 cursor-grab active:cursor-grabbing text-xs font-medium text-primary">
-                    <GripVertical className="h-3.5 w-3.5" />
+                    <MaterialSymbol name="drag_indicator" className="h-3.5 w-3.5" />
                     {t(config.labelKey)}
                   </div>
                   <button
                     onClick={() => removeWidget(id)}
                     className="p-0.5 rounded hover:bg-destructive/20 text-muted-foreground hover:text-destructive transition-colors"
                   >
-                    <X className="h-3.5 w-3.5" />
+                    <MaterialSymbol name="close" className="h-3.5 w-3.5" />
                   </button>
                 </div>
               )}

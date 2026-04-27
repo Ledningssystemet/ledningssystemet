@@ -1,5 +1,5 @@
-﻿import { useEffect, useMemo, useState } from 'react';
-import { SlidersHorizontal } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
+import { MaterialSymbol } from "@/components/ui/material-symbol";
 import axios from 'axios';
 import AppLayout from '@/layouts/AppLayout';
 import { type AppSectionRoute } from '@/app/routes';
@@ -187,7 +187,7 @@ export default function CustomPropertiesPage({ route }: CustomPropertiesPageProp
                 <PageHeader
                     title={t('pages.custom_properties.title')}
                     description={t('pages.custom_properties.description')}
-                    icon={<SlidersHorizontal className="h-6 w-6 text-primary" />}
+                    icon={<MaterialSymbol name="tune" className="h-6 w-6 text-primary" />}
                     route={route}
                 />
 

@@ -1,5 +1,5 @@
-﻿import { useMemo } from 'react';
-import { ListChecks, ShieldAlert } from 'lucide-react';
+import { useMemo } from 'react';
+import { MaterialSymbol } from "@/components/ui/material-symbol";
 import AppLayout from '@/layouts/AppLayout';
 import { CrudModule } from '@/components/crud';
 import type { CrudModuleConfig } from '@/components/crud';
@@ -26,7 +26,7 @@ export default function ProjectTypesPage({ route }: ProjectTypesPageProps) {
                 {
                     key: 'templates',
                     label: t('pages.project_types.open_templates_button'),
-                    icon: <ListChecks className="h-4 w-4" />,
+                    icon: <MaterialSymbol name="checklist" className="h-4 w-4" />,
                     dialogMaxWidth: 'max-w-5xl',
                     dialogTitle: (item) => t('pages.project_types.templates.panel_title', { type: String(item.name || '') }),
                     dialogDescription: t('pages.project_types.templates.panel_description'),
@@ -77,7 +77,7 @@ export default function ProjectTypesPage({ route }: ProjectTypesPageProps) {
                 <PageHeader
                     title={t('pages.project_types.title')}
                     description={t('pages.project_types.description')}
-                    icon={<ShieldAlert className="h-6 w-6 text-primary" />}
+                    icon={<MaterialSymbol name="gpp_bad" className="h-6 w-6 text-primary" />}
                     route={route}
                 />
                 <section className="rounded-2xl border border-border bg-card p-6 shadow-sm">

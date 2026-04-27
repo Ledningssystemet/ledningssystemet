@@ -1,7 +1,7 @@
-﻿import { useMemo } from 'react';
+import { useMemo } from 'react';
+import { MaterialSymbol } from "@/components/ui/material-symbol";
 import { usePage } from '@inertiajs/react';
 import type { PageProps } from '@inertiajs/core';
-import { KeyRound, TriangleAlert } from 'lucide-react';
 import AppLayout from '@/layouts/AppLayout';
 import { CrudModule } from '@/components/crud';
 import type { CrudModuleConfig, FieldConfig } from '@/components/crud';
@@ -118,14 +118,14 @@ export default function AccessGroupsPage({ route }: AccessGroupsPageProps) {
                 <PageHeader
                     title={t('pages.access_groups.title')}
                     description={t('pages.access_groups.description')}
-                    icon={<KeyRound className="h-6 w-6 text-primary" />}
+                    icon={<MaterialSymbol name="vpn_key" className="h-6 w-6 text-primary" />}
                     route={route}
                 />
 
                 {externalSyncEnabled && (
                     <section className="rounded-2xl border border-warning/30 bg-warning/5 p-4 shadow-sm">
                         <div className="flex items-start gap-3 text-sm text-foreground">
-                            <TriangleAlert className="mt-0.5 h-4 w-4 text-warning" />
+                            <MaterialSymbol name="warning" className="mt-0.5 h-4 w-4 text-warning" />
                             <p>{t('pages.access_groups.users_sync_warning')}</p>
                         </div>
                     </section>

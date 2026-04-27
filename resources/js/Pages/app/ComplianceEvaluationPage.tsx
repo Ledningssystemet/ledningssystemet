@@ -1,6 +1,6 @@
-﻿import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { MaterialSymbol } from "@/components/ui/material-symbol";
 import { useNavigate } from 'react-router-dom';
-import { ClipboardList } from 'lucide-react';
 import AppLayout from '@/layouts/AppLayout';
 import { CrudModule } from '@/components/crud';
 import type { CrudModuleConfig } from '@/components/crud';
@@ -337,7 +337,7 @@ export default function ComplianceEvaluationPage({ route }: ComplianceEvaluation
                 <PageHeader
                     title={t('pages.compliance_evaluations.title')}
                     description={t('pages.compliance_evaluations.description')}
-                    icon={<ClipboardList className="h-6 w-6 text-primary" />}
+                    icon={<MaterialSymbol name="checklist" className="h-6 w-6 text-primary" />}
                     route={route}
                 />
 

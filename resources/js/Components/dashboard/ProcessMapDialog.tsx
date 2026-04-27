@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { MaterialSymbol } from "@/components/ui/material-symbol";
 import {
   Dialog,
   DialogContent,
@@ -7,7 +8,6 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import BpmnProcessViewer from './BpmnProcessViewer';
-import { Check, RotateCcw } from 'lucide-react';
 import { useTranslations } from '@/hooks/useTranslations';
 import { DashboardProcessOption } from '@/types/dashboard';
 
@@ -111,7 +111,7 @@ export default function ProcessMapDialog({
                 title={setAsStartProcessTooltip || t('pages.dashboard.process.set_as_preferred_process_tooltip')}
                 className="inline-flex shrink-0 items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow-sm transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-60"
               >
-                <Check className="h-4 w-4" />
+                <MaterialSymbol name="check" className="h-4 w-4" />
                 {setAsStartProcessLabel || t('pages.dashboard.process.set_as_preferred_process')}
               </button>
               )}
@@ -122,7 +122,7 @@ export default function ProcessMapDialog({
                   title={resetStartProcessTooltip || t('pages.dashboard.process.reset_preferred_process_tooltip')}
                   className="inline-flex shrink-0 items-center gap-2 rounded-md border border-border px-4 py-2 text-sm font-semibold text-foreground transition-colors hover:bg-muted"
                 >
-                  <RotateCcw className="h-4 w-4" />
+                  <MaterialSymbol name="undo" className="h-4 w-4" />
                   {resetStartProcessLabel || t('pages.dashboard.process.reset_preferred_process')}
                 </button>
               )}

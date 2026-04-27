@@ -22,7 +22,7 @@ class MenuCategoryBuilder
 
         $categories[] = [
             'label' => __('My work'),
-            'categoryIcon' => 'UserRoundCheck',
+            'categoryIcon' => 'how_to_reg',
             'columns' => [
                 [
                     'heading' => __('My responsibility'),
@@ -30,25 +30,25 @@ class MenuCategoryBuilder
                         [
                             'key' => 'my-profile',
                             'label' => __('My profile'),
-                            'icon' => 'UserCircle',
+                            'icon' => 'account_circle',
                             'description' => __('Your profile and personal settings'),
                         ],
                         [
                             'key' => 'my-risks',
                             'label' => __('My risks'),
-                            'icon' => 'AlertTriangle',
+                            'icon' => 'warning',
                             'description' => __('Risks that you are responsible for managing'),
                         ],
                         [
                             'key' => 'my-tasks',
                             'label' => __('My tasks'),
-                            'icon' => 'ClipboardList',
+                            'icon' => 'checklist',
                             'description' => __('Activities and control actions assigned to you'),
                         ],
                         [
                             'key' => 'my-documents',
                             'label' => __('My documents'),
-                            'icon' => 'FolderOpen',
+                            'icon' => 'folder_open',
                             'description' => __('Documents where you are responsible or publisher'),
                         ],
                     ],
@@ -59,13 +59,13 @@ class MenuCategoryBuilder
                         [
                             'key' => 'chemical-register',
                             'label' => __('Chemical register'),
-                            'icon' => 'FlaskConical',
+                            'icon' => 'science',
                             'description' => __('An overview of the chemicals we use and how we handle them safely'),
                         ],
                         [
                             'key' => 'documents',
                             'label' => __('Documents'),
-                            'icon' => 'FileText',
+                            'icon' => 'description',
                             'description' => __('The documents we use to support our processes, including policies, instructions, and records'),
                         ],
                     ],
@@ -75,7 +75,7 @@ class MenuCategoryBuilder
 
         $categories[] = [
             'label' => __('Inventory'),
-            'categoryIcon' => 'Layers',
+            'categoryIcon' => 'layers',
             'columns' => [
                 [
                     'heading' => __('Way of working'),
@@ -83,37 +83,37 @@ class MenuCategoryBuilder
                         [
                             'key' => 'requirement-sources',
                             'label' => __('Requirements'),
-                            'icon' => 'Scale',
+                            'icon' => 'balance',
                             'description' => __('Laws, regulations, and other sources of requirements we must comply with'),
                         ],
                         [
                             'key' => 'controls',
                             'label' => __('Control register'),
-                            'icon' => 'CheckCircle2',
+                            'icon' => 'check_circle',
                             'description' => __('Our ways of controlling and monitoring our work, including the activities we perform and the results we achieve'),
                         ],
                         [
                             'key' => 'processes',
                             'label' => __('Processes'),
-                            'icon' => 'GitBranch',
+                            'icon' => 'account_tree',
                             'description' => __('The processes we follow to get our work done'),
                         ],
                         [
                             'key' => 'information-types',
                             'label' => __('Information types'),
-                            'icon' => 'Layers',
+                            'icon' => 'layers',
                             'description' => __('The types of information we handle in our processes'),
                         ],
                         [
                             'key' => 'assets',
                             'label' => __('Assets'),
-                            'icon' => 'Database',
+                            'icon' => 'database',
                             'description' => __('The assets we use to support our processes and handle information, including IT systems and physical assets'),
                         ],
                         [
                             'key' => 'sustainability-aspects',
                             'label' => __('Sustainability aspects'),
-                            'icon' => 'Leaf',
+                            'icon' => 'eco',
                             'description' => __('Our impact on the environment and the ways we can reduce our impact'),
                         ],
                     ],
@@ -124,19 +124,19 @@ class MenuCategoryBuilder
                         [
                             'key' => 'customers',
                             'label' => __('Customers'),
-                            'icon' => 'Users',
+                            'icon' => 'group',
                             'description' => __('The customers we serve'),
                         ],
                         [
                             'key' => 'suppliers',
                             'label' => __('Suppliers'),
-                            'icon' => 'Truck',
+                            'icon' => 'local_shipping',
                             'description' => __('The suppliers we work with'),
                         ],
                         [
                             'key' => 'agreements',
                             'label' => __('Agreements'),
-                            'icon' => 'FileSignature',
+                            'icon' => 'signature',
                             'description' => __('An overview of our agreements with suppliers and customers'),
                         ],
                     ],
@@ -147,13 +147,13 @@ class MenuCategoryBuilder
                         [
                             'key' => 'gdpr-register',
                             'label' => __('Record of processing activities'),
-                            'icon' => 'Shield',
+                            'icon' => 'shield',
                             'description' => __('Our record of processing activities for compliance with personal data legislation'),
                         ],
                         [
                             'key' => 'information-handling-plan',
                             'label' => __('Information handling plan'),
-                            'icon' => 'FileText',
+                            'icon' => 'description',
                             'description' => __('An overview of our information handling, including diary and archiving'),
                         ],
                     ],
@@ -163,7 +163,7 @@ class MenuCategoryBuilder
 
         $categories[] = [
             'label' => __('Continuous improvement'),
-            'categoryIcon' => 'TrendingUp',
+            'categoryIcon' => 'trending_up',
             'columns' => [
                 [
                     'heading' => __('Planning and evaluation'),
@@ -171,25 +171,25 @@ class MenuCategoryBuilder
                         [
                             'key' => 'company-dashboard',
                             'label' => __('Company dashboard'),
-                            'icon' => 'ChartNoAxesCombined',
+                            'icon' => 'bar_chart',
                             'description' => __('Provides an overview of our continuous improvement'),
                         ],
                         [
                             'key' => 'process-performance',
                             'label' => __('Process performance'),
-                            'icon' => 'TrendingUp',
+                            'icon' => 'trending_up',
                             'description' => __('Our performance indicators to evaluate how well our processes are performing'),
                         ],
                         [
                             'key' => 'objectives',
                             'label' => __('Company objectives'),
-                            'icon' => 'Target',
+                            'icon' => 'target',
                             'description' => __('The objectives we have set for our company and the ways we plan to achieve them'),
                         ],
                         [
                             'key' => 'compliance-evaluation',
                             'label' => __('Compliance evaluation'),
-                            'icon' => 'ScanSearch',
+                            'icon' => 'manage_search',
                             'description' => __('Internal audits and other evaluations of compliance'),
                         ],
                     ],
@@ -200,19 +200,19 @@ class MenuCategoryBuilder
                         [
                             'key' => 'risks',
                             'label' => __('Risk register'),
-                            'icon' => 'AlertTriangle',
+                            'icon' => 'warning',
                             'description' => __('The risks we need to manage and the ways we can reduce them'),
                         ],
                         [
                             'key' => 'projects',
                             'label' => __('Projects'),
-                            'icon' => 'Briefcase',
+                            'icon' => 'work',
                             'description' => __('The projects we are running'),
                         ],
                         [
                             'key' => 'observations',
                             'label' => __('Observations'),
-                            'icon' => 'ScanSearch',
+                            'icon' => 'manage_search',
                             'description' => __('Non-conformities and other observations we have made in our processes'),
                         ],
                     ],
@@ -222,7 +222,7 @@ class MenuCategoryBuilder
 
         $categories[] = [
             'label' => __('Act to improve'),
-            'categoryIcon' => 'CheckCircle2',
+            'categoryIcon' => 'check_circle',
             'columns' => [
                 [
                     'heading' => __('Tasks'),
@@ -230,19 +230,19 @@ class MenuCategoryBuilder
                         [
                             'key' => 'incidents',
                             'label' => __('Incidents'),
-                            'icon' => 'AlertTriangle',
+                            'icon' => 'warning',
                             'description' => __('Incidents and other events that we need to investigate and learn from'),
                         ],
                         [
                             'key' => 'control-actions',
                             'label' => __('Control actions'),
-                            'icon' => 'Settings',
+                            'icon' => 'settings',
                             'description' => __('Improvements to our processes and controls that we have implemented'),
                         ],
                         [
                             'key' => 'activities',
                             'label' => __('Activities'),
-                            'icon' => 'ClipboardList',
+                            'icon' => 'checklist',
                             'description' => __('Activities, recurring or one-time, that we have planned'),
                         ],
                     ],
@@ -253,7 +253,7 @@ class MenuCategoryBuilder
                         [
                             'key' => 'activity-flows',
                             'label' => __('Activity flows'),
-                            'icon' => 'GitBranch',
+                            'icon' => 'account_tree',
                             'description' => __('Chain of activities that we perform in specific occasions'),
                         ],
                     ],
@@ -263,7 +263,7 @@ class MenuCategoryBuilder
 
         $categories[] = [
             'label' => __('Staff'),
-            'categoryIcon' => 'Users',
+            'categoryIcon' => 'group',
             'columns' => [
                 [
                     'heading' => __('Employees and roles'),
@@ -271,25 +271,25 @@ class MenuCategoryBuilder
                         [
                             'key' => 'employees',
                             'label' => __('Employees'),
-                            'icon' => 'Users',
+                            'icon' => 'group',
                             'description' => __('Our employees and their roles and responsibilities'),
                         ],
                         [
                             'key' => 'roles',
                             'label' => __('Roles'),
-                            'icon' => 'Shield',
+                            'icon' => 'shield',
                             'description' => __('The roles we have defined in our organization and their responsibilities'),
                         ],
                         [
                             'key' => 'qualifications',
                             'label' => __('Qualifications'),
-                            'icon' => 'GraduationCap',
+                            'icon' => 'school',
                             'description' => __('Training and qualifications we need to maintain'),
                         ],
                         [
                             'key' => 'compentences',
                             'label' => __('Competences'),
-                            'icon' => 'Brain',
+                            'icon' => 'psychology',
                             'description' => __('Competences we want to evaluate and that are necessary for our work'),
                         ],
                     ],
@@ -299,7 +299,7 @@ class MenuCategoryBuilder
 
         $categories[] = [
             'label' => __('System administration'),
-            'categoryIcon' => 'Settings',
+            'categoryIcon' => 'settings',
             'columns' => [
                 [
                     'heading' => __('Management system settings'),
@@ -307,25 +307,25 @@ class MenuCategoryBuilder
                         [
                             'key' => 'assessment-settings',
                             'label' => __('Assessment settings'),
-                            'icon' => 'ScanSearch',
+                            'icon' => 'manage_search',
                             'description' => __('Settings for classification, risk assessment and more'),
                         ],
                         [
                             'key' => 'supplier-categories',
                             'label' => __('Supplier categories'),
-                            'icon' => 'Truck',
+                            'icon' => 'local_shipping',
                             'description' => __('The framework for supplier evaluation'),
                         ],
                         [
                             'key' => 'activity-flow-templates',
                             'label' => __('Activity flow templates'),
-                            'icon' => 'GitBranch',
+                            'icon' => 'account_tree',
                             'description' => __('Templates for activity flows to coordinate our work'),
                         ],
                         [
                             'key' => 'Project types',
                             'label' => __('Project types'),
-                            'icon' => 'Briefcase',
+                            'icon' => 'work',
                             'description' => __('The types of projects we have defined, and also risks that are to be evaluated for them'),
                         ],
                     ],
@@ -336,25 +336,25 @@ class MenuCategoryBuilder
                         [
                             'key' => 'users',
                             'label' => __('Users'),
-                            'icon' => 'Users',
+                            'icon' => 'group',
                             'description' => __('Users with access to the system'),
                         ],
                         [
                             'key' => 'sites',
                             'label' => __('Sites'),
-                            'icon' => 'Building2',
+                            'icon' => 'apartment',
                             'description' => __('Locations where we work'),
                         ],
                         [
                             'key' => 'departments',
                             'label' => __('Departments'),
-                            'icon' => 'Layers',
+                            'icon' => 'layers',
                             'description' => __('Departments within our organization'),
                         ],
                         [
                             'key' => 'user-notification-settings',
                             'label' => __('User notification settings'),
-                            'icon' => 'Bell',
+                            'icon' => 'notifications',
                             'description' => __('Settings for how users receive notifications from the system'),
                         ],
                     ],
@@ -365,25 +365,25 @@ class MenuCategoryBuilder
                         [
                             'key' => 'access-groups',
                             'label' => __('Access groups'),
-                            'icon' => 'Key',
+                            'icon' => 'key',
                             'description' => __('User access groups for managing permissions'),
                         ],
                         [
                             'key' => 'custom-properties',
                             'label' => __('Custom properties'),
-                            'icon' => 'Settings',
+                            'icon' => 'settings',
                             'description' => __('Company-defined properties for customizing the system'),
                         ],
                         [
                             'key' => 'api-tokens',
                             'label' => __('API tokens'),
-                            'icon' => 'Key',
+                            'icon' => 'key',
                             'description' => __('API tokens for external integrations'),
                         ],
                         [
                             'key' => 'tags',
                             'label' => __('Tag collection'),
-                            'icon' => 'Tag',
+                            'icon' => 'sell',
                             'description' => __('Tags being used throughout the system'),
                         ],
                     ],

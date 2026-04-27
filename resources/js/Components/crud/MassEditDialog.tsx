@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { MaterialSymbol } from "@/components/ui/material-symbol";
 import {
   Dialog,
   DialogContent,
@@ -14,7 +15,6 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Select2Field } from "./Select2Field";
 import { FieldConfig } from "./types";
-import { Loader2 } from "lucide-react";
 import { useTranslations } from "@/hooks/useTranslations";
 
 interface MassEditDialogProps {
@@ -117,7 +117,7 @@ export function MassEditDialog({ open, onOpenChange, fields, count, onSave }: Ma
             {t("ui.crud.action_cancel")}
           </Button>
           <Button onClick={handleSave} disabled={saving || enabled.size === 0}>
-            {saving && <Loader2 className="h-4 w-4 mr-1 animate-spin" />}
+            {saving && <MaterialSymbol name="progress_activity" className="h-4 w-4 mr-1 animate-spin" />}
             {t("ui.crud.mass_edit.update_selected", { count })}
           </Button>
         </DialogFooter>

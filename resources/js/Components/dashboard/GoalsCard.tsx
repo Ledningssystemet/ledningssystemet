@@ -1,4 +1,3 @@
-import { Check, Minus, X } from "lucide-react";
 import { useTranslations } from "@/hooks/useTranslations";
 import { DashboardWidgetProps } from "@/types/dashboard";
 
@@ -6,9 +5,9 @@ export default function GoalsCard({ data, loading, error }: DashboardWidgetProps
   const { t } = useTranslations();
   const goals = data.goals;
   const statusConfig = {
-    achieved: { label: t('pages.dashboard.goals.status_achieved'), dotClass: "status-dot-success", icon: Check },
-    acceptable: { label: t('pages.dashboard.goals.status_acceptable'), dotClass: "status-dot-warning", icon: Minus },
-    unacceptable: { label: t('pages.dashboard.goals.status_unacceptable'), dotClass: "status-dot-danger", icon: X },
+    achieved: { label: t('pages.dashboard.goals.status_achieved'), dotClass: "status-dot-success" },
+    acceptable: { label: t('pages.dashboard.goals.status_acceptable'), dotClass: "status-dot-warning" },
+    unacceptable: { label: t('pages.dashboard.goals.status_unacceptable'), dotClass: "status-dot-danger" },
   };
 
   if (loading) {

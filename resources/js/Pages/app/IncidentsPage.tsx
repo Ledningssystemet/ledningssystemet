@@ -1,5 +1,5 @@
-﻿import { useMemo } from 'react';
-import { AlertTriangle, FileText, ListChecks } from 'lucide-react';
+import { useMemo } from 'react';
+import { MaterialSymbol } from "@/components/ui/material-symbol";
 import AppLayout from '@/layouts/AppLayout';
 import { CrudModule } from '@/components/crud';
 import type { CrudModuleConfig } from '@/components/crud';
@@ -61,7 +61,7 @@ export default function IncidentsPage({ route }: IncidentsPageProps) {
                 {
                     key: 'logs',
                     label: t('pages.incidents.logs_button'),
-                    icon: <FileText className="h-4 w-4" />,
+                    icon: <MaterialSymbol name="description" className="h-4 w-4" />,
                     dialogMaxWidth: 'max-w-3xl',
                     dialogTitle: (item) => t('pages.incidents.logs.panel_title', { incident: String(item.name || '') }),
                     dialogDescription: t('pages.incidents.logs.panel_description'),
@@ -70,7 +70,7 @@ export default function IncidentsPage({ route }: IncidentsPageProps) {
                 {
                     key: 'actions',
                     label: t('pages.incidents.actions_button'),
-                    icon: <ListChecks className="h-4 w-4" />,
+                    icon: <MaterialSymbol name="checklist" className="h-4 w-4" />,
                     dialogMaxWidth: 'max-w-3xl',
                     dialogTitle: (item) => t('pages.incidents.actions.panel_title', { incident: String(item.name || '') }),
                     dialogDescription: t('pages.incidents.actions.panel_description'),
@@ -124,7 +124,7 @@ export default function IncidentsPage({ route }: IncidentsPageProps) {
                 <PageHeader
                     title={t('pages.incidents.title')}
                     description={t('pages.incidents.description')}
-                    icon={<AlertTriangle className="h-6 w-6 text-primary" />}
+                    icon={<MaterialSymbol name="warning" className="h-6 w-6 text-primary" />}
                     route={route}
                 />
                 <section className="rounded-2xl border border-border bg-card p-6 shadow-sm">

@@ -1,5 +1,5 @@
-﻿import { useMemo, useState } from 'react';
-import { ListChecks, Waypoints } from 'lucide-react';
+import { useMemo, useState } from 'react';
+import { MaterialSymbol } from "@/components/ui/material-symbol";
 import AppLayout from '@/layouts/AppLayout';
 import { CrudModule } from '@/components/crud';
 import type { CrudModuleConfig } from '@/components/crud';
@@ -199,7 +199,7 @@ export default function SupplierCategoriesPage({ route }: SupplierCategoriesPage
                 <PageHeader
                     title={t('pages.supplier_categories.title')}
                     description={t('pages.supplier_categories.description')}
-                    icon={<Waypoints className="h-6 w-6 text-primary" />}
+                    icon={<MaterialSymbol name="alt_route" className="h-6 w-6 text-primary" />}
                     route={route}
                 />
 
@@ -216,7 +216,7 @@ export default function SupplierCategoriesPage({ route }: SupplierCategoriesPage
                     <DialogContent className="max-w-5xl">
                         <DialogHeader>
                             <DialogTitle className="flex items-center gap-2">
-                                <ListChecks className="h-5 w-5" />
+                                <MaterialSymbol name="checklist" className="h-5 w-5" />
                                 {t('pages.supplier_categories.requirements.panel_title', {
                                     category: String(activeCategoryForRequirements?.name || ''),
                                 })}

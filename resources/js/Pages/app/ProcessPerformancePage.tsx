@@ -1,7 +1,7 @@
-﻿import { useMemo, useState, useEffect } from 'react';
+import { useMemo, useState, useEffect } from 'react';
+import { MaterialSymbol } from "@/components/ui/material-symbol";
 import { usePage } from '@inertiajs/react';
 import type { PageProps } from '@inertiajs/core';
-import { Activity, ChartNoAxesCombined } from 'lucide-react';
 import AppLayout from '@/layouts/AppLayout';
 import { CrudModule } from '@/components/crud';
 import type { CrudModuleConfig } from '@/components/crud';
@@ -117,7 +117,7 @@ export default function ProcessPerformancePage({ route }: ProcessPerformancePage
                 {
                     key: 'reports',
                     label: t('pages.process_performance.reports.open_button'),
-                    icon: <ChartNoAxesCombined className="h-4 w-4" />,
+                    icon: <MaterialSymbol name="bar_chart" className="h-4 w-4" />,
                     variant: 'outline',
                     refreshOnComplete: false,
                     onClick: (item) => {
@@ -283,7 +283,7 @@ export default function ProcessPerformancePage({ route }: ProcessPerformancePage
                 <PageHeader
                     title={t('pages.process_performance.title')}
                     description={t('pages.process_performance.description')}
-                    icon={<Activity className="h-6 w-6 text-primary" />}
+                    icon={<MaterialSymbol name="monitoring" className="h-6 w-6 text-primary" />}
                     route={route}
                 />
 
@@ -360,7 +360,7 @@ export default function ProcessPerformancePage({ route }: ProcessPerformancePage
                     <DialogContent className="max-w-5xl">
                         <DialogHeader>
                             <DialogTitle className="flex items-center gap-2">
-                                <ChartNoAxesCombined className="h-5 w-5" />
+                                <MaterialSymbol name="bar_chart" className="h-5 w-5" />
                                 {t('pages.process_performance.reports.panel_title', {
                                     metric: String(activeMetricForReports.name || ''),
                                 })}

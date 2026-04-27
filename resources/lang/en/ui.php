@@ -12,11 +12,13 @@ return [
 	],
 
 	'nav' => [
+		'app_name' => 'Ledningssystemet.se',
 		'observation' => 'Observation',
 		'system_settings' => 'System settings',
 		'profile_name_placeholder' => 'User',
 		'company_name_placeholder' => 'Company',
 		'account_menu_label' => 'Open account menu',
+		'open_side_menu' => 'Open side menu',
 		'my_preferences' => 'My preferences',
 		'log_out' => 'Log out',
 	],

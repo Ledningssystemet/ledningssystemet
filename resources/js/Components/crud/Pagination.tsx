@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import { MaterialSymbol } from "@/components/ui/material-symbol";
 import {
   Select,
   SelectContent,
@@ -6,7 +7,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useTranslations } from "@/hooks/useTranslations";
 
 const PER_PAGE_OPTIONS = [10, 25, 50, 100, 250];
@@ -55,7 +55,7 @@ export function CrudPagination({ page, totalPages, total, perPage, onPageChange,
             disabled={page <= 1}
             onClick={() => onPageChange(page - 1)}
           >
-            <ChevronLeft className="h-4 w-4" />
+            <MaterialSymbol name="keyboard_arrow_left" className="h-4 w-4" />
           </Button>
           <span className="text-sm px-3 text-muted-foreground">
             {page} / {totalPages}
@@ -67,7 +67,7 @@ export function CrudPagination({ page, totalPages, total, perPage, onPageChange,
             disabled={page >= totalPages}
             onClick={() => onPageChange(page + 1)}
           >
-            <ChevronRight className="h-4 w-4" />
+            <MaterialSymbol name="keyboard_arrow_right" className="h-4 w-4" />
           </Button>
         </div>
       )}

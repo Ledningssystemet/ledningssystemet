@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
+import { MaterialSymbol } from "@/components/ui/material-symbol";
 import AppLayout from '@/layouts/AppLayout';
 import { useTranslations } from '@/hooks/useTranslations';
 import { APP_HOME_PATH } from '@/app/routes';
 import { Link } from 'react-router-dom';
-import { FolderOpen, Search, Upload } from 'lucide-react';
 import type { AppSectionRoute } from '@/app/routes';
 
 interface MyDocumentsPageProps {
@@ -39,7 +39,7 @@ export default function MyDocumentsPage({ route }: MyDocumentsPageProps) {
                     <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                         <div className="flex items-center gap-4">
                             <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
-                                <FolderOpen className="h-6 w-6 text-primary" />
+                                <MaterialSymbol name="folder_open" className="h-6 w-6 text-primary" />
                             </div>
                             <div>
                                 <h1 className="text-2xl font-semibold tracking-tight text-foreground">
@@ -55,7 +55,7 @@ export default function MyDocumentsPage({ route }: MyDocumentsPageProps) {
                             type="button"
                             className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
                         >
-                            <Upload className="h-4 w-4" />
+                            <MaterialSymbol name="upload" className="h-4 w-4" />
                             {t('pages.my_documents.upload_document')}
                         </button>
                     </div>
@@ -63,7 +63,7 @@ export default function MyDocumentsPage({ route }: MyDocumentsPageProps) {
 
                 {/* Search */}
                 <div className="relative">
-                    <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                    <MaterialSymbol name="search" className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                     <input
                         type="text"
                         value={searchQuery}
@@ -82,14 +82,14 @@ export default function MyDocumentsPage({ route }: MyDocumentsPageProps) {
                     </div>
                     <div className="flex flex-col items-center justify-center gap-4 py-16 text-center">
                         <div className="flex h-14 w-14 items-center justify-center rounded-full bg-muted">
-                            <FolderOpen className="h-7 w-7 text-muted-foreground" />
+                            <MaterialSymbol name="folder_open" className="h-7 w-7 text-muted-foreground" />
                         </div>
                         <p className="text-sm text-muted-foreground">{t('pages.my_documents.no_documents')}</p>
                         <button
                             type="button"
                             className="inline-flex items-center gap-2 rounded-lg border border-border bg-background px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted"
                         >
-                            <Upload className="h-4 w-4" />
+                            <MaterialSymbol name="upload" className="h-4 w-4" />
                             {t('pages.my_documents.upload_document')}
                         </button>
                     </div>
