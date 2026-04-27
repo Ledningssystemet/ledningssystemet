@@ -44,7 +44,7 @@ type DialogContentProps = React.ComponentPropsWithoutRef<typeof DialogPrimitive.
 const DialogContent = React.forwardRef<
   React.ComponentRef<typeof DialogPrimitive.Content>,
   DialogContentProps
->(({ className, children, onPointerDownOutside, onInteractOutside, onFocusOutside, resizable = false, ...props }, ref) => (
+>(({ className, children, onPointerDownOutside, onInteractOutside, onFocusOutside, resizable = true, ...props }, ref) => (
   <DialogPortal>
     <DialogOverlay />
     <DialogPrimitive.Content

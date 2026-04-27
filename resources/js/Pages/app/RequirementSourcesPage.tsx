@@ -304,7 +304,7 @@ export default function RequirementSourcesPage({ route }: RequirementSourcesPage
                     open={Boolean(activeSourceForRequirements)}
                     onOpenChange={(open) => !open && setActiveSourceForRequirements(null)}
                 >
-                    <DialogContent className="max-w-5xl">
+                    <DialogContent>
                         <DialogHeader>
                             <DialogTitle className="flex items-center gap-2">
                                 <MaterialSymbol name="checklist" className="h-5 w-5" />

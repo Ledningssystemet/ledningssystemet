@@ -63,7 +63,7 @@ export function InlineTagsEditor({item, field, value, onSave}: InlineTagsEditorP
             </Button>
             <div className="flex flex-wrap gap-1 min-w-0">
                 {currentValues.length === 0 ? (
-                    <span className="text-muted-foreground">â€”</span>
+                    <span className="text-muted-foreground">-</span>
                 ) : (
                     currentValues.map((tagValue) => {
                         const option = field.options?.find((opt) => String(opt.value) === String(tagValue));

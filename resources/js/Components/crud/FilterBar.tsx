@@ -242,10 +242,10 @@ export function FilterBar({
             </>
           )}
 
-          <div className="flex border rounded-md overflow-hidden">
+          <div className="flex h-9 border rounded-md overflow-hidden">
             <button
               onClick={() => onViewModeChange("master-detail")}
-              className={`p-2 transition-colors ${
+              className={`h-full px-2 inline-flex items-center justify-center transition-colors ${
                 viewMode === "master-detail"
                   ? "bg-primary text-primary-foreground"
                   : "hover:bg-muted"
@@ -256,7 +256,7 @@ export function FilterBar({
             </button>
             <button
               onClick={() => onViewModeChange("table")}
-              className={`p-2 transition-colors ${
+              className={`h-full px-2 inline-flex items-center justify-center transition-colors ${
                 viewMode === "table"
                   ? "bg-primary text-primary-foreground"
                   : "hover:bg-muted"
@@ -267,7 +267,7 @@ export function FilterBar({
             </button>
             <button
               onClick={() => onViewModeChange("accordion")}
-              className={`p-2 transition-colors ${
+              className={`h-full px-2 inline-flex items-center justify-center transition-colors ${
                 viewMode === "accordion"
                   ? "bg-primary text-primary-foreground"
                   : "hover:bg-muted"

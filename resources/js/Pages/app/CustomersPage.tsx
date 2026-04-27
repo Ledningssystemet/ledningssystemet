@@ -12,7 +12,7 @@ interface CustomersPageProps {
 }
 
 function formatCreatedAt(value: unknown): string {
-    if (!value) return 'â€”';
+    if (!value) return '-';
     const date = new Date(String(value));
     return Number.isNaN(date.getTime()) ? String(value) : date.toLocaleDateString();
 }

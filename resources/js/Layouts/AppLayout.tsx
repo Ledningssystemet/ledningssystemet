@@ -69,11 +69,11 @@ export default function AppLayout({ children }: AppLayoutProps) {
 
         {/* Full-width header */}
         <header
-          className="hidden h-14 shrink-0 items-center justify-between border-b border-border/10 topbar-gradient px-3 text-white lg:flex lg:px-5"
+          className="hidden h-16 shrink-0 items-center justify-between border-b border-border/10 topbar-gradient px-3 text-white lg:flex lg:px-5"
           data-testid="side-layout-header"
         >
           <Link to={APP_HOME_PATH} className="flex items-center">
-            <img src={logoWhite} alt={t('ui.nav.app_name')} className="h-7" />
+            <img src={logoWhite} alt={t('ui.nav.app_name')} className="h-10" />
           </Link>
 
           <div ref={profileMenuRef} className="relative">

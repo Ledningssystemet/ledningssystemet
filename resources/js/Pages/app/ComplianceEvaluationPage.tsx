@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+﻿import { useEffect, useMemo, useState } from 'react';
 import { MaterialSymbol } from "@/components/ui/material-symbol";
 import { useNavigate } from 'react-router-dom';
 import AppLayout from '@/layouts/AppLayout';
@@ -78,7 +78,7 @@ function GenerateChecklistDialog({ evaluation, onClose, onGenerated }: GenerateC
 
     return (
         <Dialog open={Boolean(evaluation)} onOpenChange={(open) => !open && onClose()}>
-            <DialogContent className="max-w-lg">
+            <DialogContent>
                 <DialogHeader>
                     <DialogTitle>{t('pages.compliance_evaluations.action_generate_checklist')}</DialogTitle>
                     <DialogDescription>

@@ -8,7 +8,7 @@ import {Button} from "@/components/ui/button";
 import { MaterialSymbol } from "@/components/ui/material-symbol";
 import {Badge} from "@/components/ui/badge";
 import {FieldConfig, ItemBadgeConfig, ItemStatus, RowActionConfig, SelectOption} from "./types";
-import {StatusDot, statusRowClass} from "./StatusIndicator";
+import {StatusDot} from "./StatusIndicator";
 import {InlineTagsEditor} from "./InlineTagsEditor";
 import {useAllSelectOptions, resolveOptions} from "./optionsCache";
 import {DragEvent, Fragment, useEffect, useMemo, useRef, useState} from "react";
@@ -132,13 +132,13 @@ export function AccordionView({
     const categories = groupByCategory(detailFields);
 
     return (
-        <div className="border rounded-lg overflow-hidden">
+        <div className="overflow-hidden">
             {normalizedItems.length === 0 ? (
                 <div className="p-8 text-center text-muted-foreground">
                     {t("ui.crud.no_results")}
                 </div>
             ) : (
-                <Accordion type="single" collapsible className="divide-y">
+                <Accordion type="multiple" className="divide-y">
                     {normalizedItems.map((item: CrudItem) => {
                         const status = getItemStatus?.(item) ?? null;
                         const itemId = item[primaryKey] as string | number;
@@ -153,7 +153,7 @@ export function AccordionView({
                                 <AccordionItem
                                     data-crud-drag-item
                                     value={String(item[primaryKey])}
-                                    className={`border-none crud-row-hover transition-all ${statusRowClass(status)} ${draggedId !== null && String(draggedId) === String(itemId) ? "opacity-45" : ""}`}
+                                    className={`border rounded-lg crud-row-hover mb-3 transition-all ${draggedId !== null && String(draggedId) === String(itemId) ? "opacity-45" : ""}`}
                                     onDragOver={(event) => {
                                         if (!canReorder) return;
                                         event.preventDefault();
@@ -200,7 +200,7 @@ export function AccordionView({
                                                     )}
                                                 </div>
                                                 {descField && (
-                                                    <p className="text-xs text-muted-foreground">
+                                                    <p className="text-xs text-muted-foreground overflow-hidden max-h-8 font-normal">
                                                         {item[descField.key]}
                                                     </p>
                                                 )}

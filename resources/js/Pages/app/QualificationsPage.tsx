@@ -241,7 +241,7 @@ export default function QualificationsPage({ route }: QualificationsPageProps) {
 
             {employeesConfig && (
                 <Dialog open={!!activeQualificationForEmployees} onOpenChange={(open) => { if (!open) setActiveQualificationForEmployees(null); }}>
-                    <DialogContent className="max-w-4xl">
+                    <DialogContent>
                         <DialogHeader>
                             <DialogTitle>
                                 {t('pages.qualifications_page.employees.panel_title', {
@@ -261,7 +261,7 @@ export default function QualificationsPage({ route }: QualificationsPageProps) {
 
             {rolesConfig && (
                 <Dialog open={!!activeQualificationForRoles} onOpenChange={(open) => { if (!open) setActiveQualificationForRoles(null); }}>
-                    <DialogContent className="max-w-4xl">
+                    <DialogContent>
                         <DialogHeader>
                             <DialogTitle>
                                 {t('pages.qualifications_page.roles.panel_title', {

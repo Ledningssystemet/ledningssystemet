@@ -40,6 +40,27 @@ function resolveLabel(
         const opt = opts.find((o) => String(o.value) === String(value));
         return opt?.label ?? String(value);
     }
+    if (field.type === "date") {
+        if(value instanceof Date)
+            return value.toLocaleDateString();
+
+        const date = new Date(value);
+        if (!isNaN(date.getTime()))
+            return date.toLocaleDateString();
+
+        return "";
+    }
+
+    if (field.type === "datetime") {
+        if(value instanceof Date)
+            return value.toLocaleString();
+
+        const date = new Date(value);
+        if (!isNaN(date.getTime()))
+            return date.toLocaleString();
+
+        return "";
+    }
 
     return String(value);
 }

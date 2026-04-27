@@ -3,7 +3,7 @@ import { MaterialSymbol } from "@/components/ui/material-symbol";
 import {Button} from "@/components/ui/button";
 import {Badge} from "@/components/ui/badge";
 import {ScrollArea} from "@/components/ui/scroll-area";
-import {StatusDot, statusRowClass} from "./StatusIndicator";
+import {StatusDot} from "./StatusIndicator";
 import {ResizablePanelGroup, ResizablePanel, ResizableHandle} from "@/components/ui/resizable";
 import {InlineTagsEditor} from "./InlineTagsEditor";
 import {useAllSelectOptions, resolveOptions} from "./optionsCache";
@@ -153,7 +153,7 @@ export function MasterDetailView({
                                     <button
                                         data-crud-drag-item
                                         onClick={() => onSelectItem(item)}
-                                        className={`w-full text-left p-4 transition-colors crud-row-hover ${statusRowClass(status)} ${
+                                        className={`w-full text-left p-4 transition-colors crud-row-hover ${
                                             isActive ? "crud-row-selected border-l-2 border-l-primary" : ""
                                         } ${draggedId !== null && String(draggedId) === String(id) ? "opacity-45" : ""}`}
                                         onDragOver={(event) => {
@@ -202,7 +202,7 @@ export function MasterDetailView({
                                                     )}
                                                 </div>
                                                 {descField && (
-                                                    <p className="text-xs text-muted-foreground mt-1 truncate">
+                                                    <p className="text-xs text-muted-foreground mt-1 overflow-hidden max-h-8">
                                                         {item[descField.key]}
                                                     </p>
                                                 )}
@@ -236,18 +236,13 @@ export function MasterDetailView({
                                         <StatusDot status={getItemStatus?.(activeItem) ?? null} className="h-3 w-3"/>
                                         <div>
                                             <div className="flex items-center gap-2">
-                                                <h2 className="text-xl font-semibold">{activeItem[labelField.key]}</h2>
+                                                <h2 className="text-xl font-medium">{activeItem[labelField.key]}</h2>
                                                 {getItemBadge?.(activeItem) && (
                                                     <Badge variant={getItemBadge(activeItem)?.variant || "secondary"}>
                                                         {getItemBadge(activeItem)?.label}
                                                     </Badge>
                                                 )}
                                             </div>
-                                            {descField && (
-                                                <p className="text-muted-foreground mt-1 whitespace-pre-line">
-                                                    {activeItem[descField.key]}
-                                                </p>
-                                            )}
                                         </div>
                                     </div>
                                     {showActions && (
@@ -349,7 +344,7 @@ function renderDetailValue(
     optionsMap: Map<string, SelectOption[]>,
     t: (key: string, replacements?: Record<string, string | number>) => string,
 ) {
-    if (value == null) return "â€”";
+    if (value == null) return "-";
     if (field.type === "boolean") return value ? t("ui.crud.yes") : t("ui.crud.no");
     if ((field.type === "multiselect" || field.type === "tags" || field.type === "inline-tags") && Array.isArray(value)) {
         const opts = resolveOptions(field, optionsMap);

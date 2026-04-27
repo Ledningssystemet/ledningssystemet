@@ -386,7 +386,7 @@ export default function MegaNav() {
     return (
         <>
             <nav ref={navRef} className="relative topbar-gradient border-b border-border/10 flex-shrink-0 z-50" data-testid="mega-nav">
-                <div className="max-w-[1600px] mx-auto px-4 lg:px-6 flex items-center h-14">
+                <div className="max-w-[1600px] mx-auto px-4 lg:px-6 flex items-center h-16">
 
                     {/* Hamburger (mobile) */}
                     <button type="button" onClick={() => setMobileOpen(true)}
@@ -395,8 +395,8 @@ export default function MegaNav() {
                     </button>
 
                     {/* Logo */}
-                    <Link to={preferredHomePath} className="flex items-center mr-8" onClick={() => setOpenMenu(null)}>
-                        <img src={logoWhite} alt="Ledningssystemet.se" className="h-7" />
+                    <Link to={preferredHomePath} className="flex items-center mr-4" onClick={() => setOpenMenu(null)}>
+                        <img src={logoWhite} alt="Ledningssystemet.se" className="h-10" />
                     </Link>
 
                     {/* Desktop nav */}

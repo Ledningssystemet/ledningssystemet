@@ -3,7 +3,7 @@ import { MaterialSymbol } from "@/components/ui/material-symbol";
 import {Button} from "@/components/ui/button";
 import {Badge} from "@/components/ui/badge";
 import {FieldConfig, ItemBadgeConfig, ItemStatus, RowActionConfig, SelectOption} from "./types";
-import {StatusDot, statusRowClass} from "./StatusIndicator";
+import {StatusDot} from "./StatusIndicator";
 import {InlineTagsEditor} from "./InlineTagsEditor";
 import {useAllSelectOptions, resolveOptions} from "./optionsCache";
 import {DragEvent, Fragment, useEffect, useMemo, useRef, useState} from "react";
@@ -176,7 +176,7 @@ export function TableView({
                                     data-testid="crud-row"
                                     data-row-id={String(id)}
                                     data-crud-drag-item
-                                    className={`border-b crud-row-hover ${isSelected ? "crud-row-selected" : ""} ${statusRowClass(status)} ${draggedId !== null && String(draggedId) === String(id) ? "opacity-45" : ""}`}
+                                    className={`border-b crud-row-hover ${isSelected ? "crud-row-selected" : ""} ${draggedId !== null && String(draggedId) === String(id) ? "opacity-45" : ""}`}
                                     onDragOver={(event) => {
                                         if (!canReorder) return;
                                         event.preventDefault();
@@ -321,7 +321,7 @@ function renderValue(
     optionsMap: Map<string, SelectOption[]>,
     t: (key: string, replacements?: Record<string, string | number>) => string,
 ) {
-    if (value == null) return <span className="text-muted-foreground">â€”</span>;
+    if (value == null) return <span className="text-muted-foreground">-</span>;
 
     if (field.type === "boolean") {
         return (

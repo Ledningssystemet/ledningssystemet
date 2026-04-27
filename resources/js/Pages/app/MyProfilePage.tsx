@@ -152,8 +152,8 @@ function GeneralInfoTab({ data, loading, error, t }: {
     return (
         <div className="space-y-3">
             <InfoRow label={t('pages.my_profile.name_label')}>{data.name}</InfoRow>
-            <InfoRow label={t('pages.my_profile.email_label')}>{data.email || 'â€”'}</InfoRow>
-            <InfoRow label={t('pages.my_profile.general.label_title')}>{data.title || 'â€”'}</InfoRow>
+            <InfoRow label={t('pages.my_profile.email_label')}>{data.email || '-'}</InfoRow>
+            <InfoRow label={t('pages.my_profile.general.label_title')}>{data.title || '-'}</InfoRow>
             <InfoRow label={t('pages.my_profile.general.label_departments')}>
                 {data.departments.length > 0
                     ? data.departments.map((d) => d.name).join(', ')
@@ -282,11 +282,11 @@ function QualificationsTab({ data, loading, error, t }: {
                                         <div className="mt-1 flex flex-wrap gap-2 text-xs">
                                             {q.finished_at ? (
                                                 <span className="rounded bg-emerald-100 px-2 py-0.5 text-emerald-700">
-                                                    âœ“ {t('pages.my_profile.qualifications.label_achieved')} {q.finished_at}
+                                                    {t('pages.my_profile.qualifications.label_achieved')} {q.finished_at}
                                                 </span>
                                             ) : (
                                                 <span className="rounded bg-destructive/10 px-2 py-0.5 text-destructive">
-                                                    âœ— {t('pages.my_profile.qualifications.label_not_achieved')}
+                                                    {t('pages.my_profile.qualifications.label_not_achieved')}
                                                 </span>
                                             )}
                                             {q.planned_at && (
@@ -384,20 +384,20 @@ function CompetencesTab({ data, loading, error, t }: {
                                             )}
                                         </td>
                                         <td className={`border border-border p-2 ${!c.acceptable_ok ? 'text-destructive' : ''}`}>
-                                            {c.acceptable_level_name ?? 'â€”'}
+                                            {c.acceptable_level_name ?? '-'}
                                         </td>
                                         <td className={`border border-border p-2 ${c.evaluated && !c.desired_ok ? 'text-amber-600' : ''}`}>
-                                            {c.desired_level_name ?? 'â€”'}
+                                            {c.desired_level_name ?? '-'}
                                         </td>
                                         <td className={`border border-border p-2 ${!c.acceptable_ok ? 'text-destructive' : (c.evaluated && !c.desired_ok ? 'text-amber-600' : '')}`}>
-                                            {c.achieved_level_name ?? 'â€”'}
+                                            {c.achieved_level_name ?? '-'}
                                         </td>
                                         <td className={`border border-border p-2 ${!c.evaluated ? 'text-destructive' : 'text-emerald-700'}`}>
                                             {c.evaluated
-                                                ? (c.updated_at ? `${c.updated_at}${c.updated_by ? ` (${c.updated_by})` : ''}` : 'âœ“')
+                                                ? (c.updated_at ? `${c.updated_at}${c.updated_by ? ` (${c.updated_by})` : ''}` : '-')
                                                 : t('pages.my_profile.competences.label_not_evaluated')}
                                         </td>
-                                        <td className="border border-border p-2 text-muted-foreground">{c.note ?? 'â€”'}</td>
+                                        <td className="border border-border p-2 text-muted-foreground">{c.note ?? '-'}</td>
                                     </tr>
                                 ))}
                             </tbody>

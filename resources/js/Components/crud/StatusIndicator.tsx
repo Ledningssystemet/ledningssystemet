@@ -7,8 +7,8 @@ interface StatusIndicatorProps {
 }
 
 const statusStyles: Record<ItemStatus, string> = {
-  info: "bg-blue-500",
-  warning: "bg-yellow-500",
+  info: "bg-success",
+  warning: "bg-warning",
   danger: "bg-destructive",
 };
 
@@ -20,14 +20,4 @@ export function StatusDot({ status, className }: StatusIndicatorProps) {
       title={status}
     />
   );
-}
-
-export function statusRowClass(status: ItemStatus | null | undefined): string {
-  if (!status) return "";
-  const map: Record<ItemStatus, string> = {
-    info: "border-l-2 border-l-blue-500",
-    warning: "border-l-2 border-l-yellow-500",
-    danger: "border-l-2 border-l-destructive bg-destructive/5",
-  };
-  return map[status];
 }
