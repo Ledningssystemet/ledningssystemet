@@ -1,108 +1,597 @@
-/**
- * Custom BPMN connection rules that restrict which elements can be connected.
- *
- * Allowed connections:
- *   startEvent          → task
- *   task                → task
- *   task                → exclusiveGateway
- *   exclusiveGateway    → task
- *   task                → endEvent
- *   task                → dataObjectReference
- *   dataObjectReference → dataStoreReference
- *   task                → subProcess
- *   any                 ↔ textAnnotation  (Association)
- */
-
 import { is } from 'bpmn-js/lib/util/ModelUtil';
-import { isAny } from "bpmn-js/lib/features/modeling/util/ModelingUtil";
-
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type AnyObj = Record<string, any>;
-
-// Priority higher than bpmn-js built-in rules (default ~1000) so our rules win.
-const HIGH_PRIORITY = 1500;
-
-/** Directional whitelist for SequenceFlow / DataAssociation connections. */
-const ALLOWED_CONNECTIONS: [string, string, any][] = [
-    ['bpmn:StartEvent', 'bpmn:Task', { 'type': 'bpmn:SequenceFlow'}],
-    ['bpmn:Task', 'bpmn:Task', { 'type': 'bpmn:SequenceFlow'}],
-    ['bpmn:Task', 'bpmn:ExclusiveGateway', { 'type': 'bpmn:SequenceFlow'}],
-    ['bpmn:ExclusiveGateway', 'bpmn:Task', { 'type': 'bpmn:SequenceFlow'}],
-    ['bpmn:Task', 'bpmn:EndEvent', { 'type': 'bpmn:SequenceFlow'}],
-    ['bpmn:Task', 'bpmn:DataObjectReference', { 'type': 'bpmn:Association' }],
-    ['bpmn:DataObjectReference', 'bpmn:Task', { 'type': 'bpmn:Association' }],
-    ['bpmn:DataObjectReference', 'bpmn:DataStoreReference', { 'type': 'bpmn:Association', associationDirection: 'None' }],
-    ['bpmn:DataStoreReference', 'bpmn:DataObjectReference', { 'type': 'bpmn:Association', associationDirection: 'None' }],
-    ['bpmn:Task', 'bpmn:SubProcess', { 'type': 'bpmn:SequenceFlow'}],
-    ['bpmn:SubProcess', 'bpmn:Task', { 'type': 'bpmn:SequenceFlow'}],
-    ['bpmn:DataStoreReference', 'bpmn:DataObjectReference', { 'type': 'bpmn:Association', associationDirection: 'None' }],
-];
-// ---------------------------------------------------------------------------
-// Provider class — mirrors the pattern of diagram-js RuleProvider.
-// We extend it by prototypal inheritance so that bpmn-js's dependency
-// injection (didi) can resolve it correctly.
-// ---------------------------------------------------------------------------
-
 import RuleProvider from 'diagram-js/lib/features/rules/RuleProvider';
 import type EventBus from 'diagram-js/lib/core/EventBus';
-import {all} from "axios";
+
+type AnyObj = Record<string, unknown>;
+
+export interface BpmnEditorLabels {
+    activateHandTool: string;
+    activateLassoTool: string;
+    activateSpaceTool: string;
+    activateGlobalConnectTool: string;
+    createStartEvent: string;
+    createEndEvent: string;
+    createExclusiveGateway: string;
+    createTask: string;
+    createDataObjectReference: string;
+    createDataStoreReference: string;
+    createSubProcess: string;
+    appendTask: string;
+    appendEndEvent: string;
+    appendExclusiveGateway: string;
+    appendDataObjectReference: string;
+    appendDataStoreReference: string;
+    appendSubProcess: string;
+    connect: string;
+    delete: string;
+}
+
+export const DEFAULT_BPMN_EDITOR_LABELS: BpmnEditorLabels = {
+    activateHandTool: 'Activate hand tool',
+    activateLassoTool: 'Activate lasso tool',
+    activateSpaceTool: 'Activate create/remove space tool',
+    activateGlobalConnectTool: 'Activate global connect tool',
+    createStartEvent: 'Create start event',
+    createEndEvent: 'Create end event',
+    createExclusiveGateway: 'Create exclusive gateway',
+    createTask: 'Create task',
+    createDataObjectReference: 'Create data object reference',
+    createDataStoreReference: 'Create data store reference',
+    createSubProcess: 'Create expanded sub-process',
+    appendTask: 'Append task',
+    appendEndEvent: 'Append end event',
+    appendExclusiveGateway: 'Append exclusive gateway',
+    appendDataObjectReference: 'Append data object reference',
+    appendDataStoreReference: 'Append data store reference',
+    appendSubProcess: 'Append sub-process',
+    connect: 'Start connection',
+    delete: 'Delete',
+};
+
+type ConnectionDefinition = {
+    sourceType: string;
+    targetType: string;
+    connection: Record<string, string>;
+};
+
+type ShapeDefinition = {
+    type: string;
+    options?: Record<string, unknown>;
+};
+
+type PaletteActionDefinition = ShapeDefinition & {
+    actionId: string;
+    group: string;
+    className: string;
+    getTitle: (labels: BpmnEditorLabels) => string;
+};
+
+type ContextPadActionDefinition = ShapeDefinition & {
+    actionId: string;
+    className: string;
+    getTitle: (labels: BpmnEditorLabels) => string;
+};
+
+type BpmnUiModule = {
+    __init__: string[];
+    bpmnEditorLabels: ['value', BpmnEditorLabels];
+    bpmnCustomRulesProvider: ['type', typeof BpmnCustomRulesProvider];
+    paletteProvider: ['type', typeof RestrictedBpmnPaletteProvider];
+    contextPadProvider: ['type', typeof RestrictedBpmnContextPadProvider];
+};
+
+const HIGH_PRIORITY = 1500;
+
+const ALLOWED_CREATABLE_TYPES = new Set([
+    'bpmn:Task',
+    'bpmn:DataObjectReference',
+    'bpmn:DataStoreReference',
+    'bpmn:ExclusiveGateway',
+    'bpmn:StartEvent',
+    'bpmn:EndEvent',
+    'bpmn:SubProcess',
+]);
+
+const ALLOWED_CONNECTIONS: ConnectionDefinition[] = [
+    { sourceType: 'bpmn:StartEvent', targetType: 'bpmn:Task', connection: { type: 'bpmn:SequenceFlow' } },
+    { sourceType: 'bpmn:Task', targetType: 'bpmn:Task', connection: { type: 'bpmn:SequenceFlow' } },
+    { sourceType: 'bpmn:Task', targetType: 'bpmn:ExclusiveGateway', connection: { type: 'bpmn:SequenceFlow' } },
+    { sourceType: 'bpmn:ExclusiveGateway', targetType: 'bpmn:Task', connection: { type: 'bpmn:SequenceFlow' } },
+    { sourceType: 'bpmn:Task', targetType: 'bpmn:EndEvent', connection: { type: 'bpmn:SequenceFlow' } },
+    { sourceType: 'bpmn:Task', targetType: 'bpmn:DataObjectReference', connection: { type: 'bpmn:Association', associationDirection: 'None' } },
+    { sourceType: 'bpmn:DataObjectReference', targetType: 'bpmn:DataStoreReference', connection: { type: 'bpmn:Association', associationDirection: 'None' } },
+    { sourceType: 'bpmn:Task', targetType: 'bpmn:SubProcess', connection: { type: 'bpmn:Association', associationDirection: 'None' } },
+];
+
+const PALETTE_ACTIONS: PaletteActionDefinition[] = [
+    {
+        actionId: 'create.start-event',
+        group: 'event',
+        className: 'bpmn-icon-start-event-none',
+        type: 'bpmn:StartEvent',
+        getTitle: (labels) => labels.createStartEvent,
+    },
+    {
+        actionId: 'create.end-event',
+        group: 'event',
+        className: 'bpmn-icon-end-event-none',
+        type: 'bpmn:EndEvent',
+        getTitle: (labels) => labels.createEndEvent,
+    },
+    {
+        actionId: 'create.exclusive-gateway',
+        group: 'gateway',
+        className: 'bpmn-icon-gateway-none',
+        type: 'bpmn:ExclusiveGateway',
+        getTitle: (labels) => labels.createExclusiveGateway,
+    },
+    {
+        actionId: 'create.task',
+        group: 'activity',
+        className: 'bpmn-icon-task',
+        type: 'bpmn:Task',
+        getTitle: (labels) => labels.createTask,
+    },
+    {
+        actionId: 'create.data-object-reference',
+        group: 'data-object',
+        className: 'bpmn-icon-data-object',
+        type: 'bpmn:DataObjectReference',
+        getTitle: (labels) => labels.createDataObjectReference,
+    },
+    {
+        actionId: 'create.data-store-reference',
+        group: 'data-store',
+        className: 'bpmn-icon-data-store',
+        type: 'bpmn:DataStoreReference',
+        getTitle: (labels) => labels.createDataStoreReference,
+    },
+    {
+        actionId: 'create.sub-process',
+        group: 'activity',
+        className: 'bpmn-icon-subprocess-collapsed',
+        type: 'bpmn:SubProcess',
+        options: { isExpanded: false },
+        getTitle: (labels) => labels.createSubProcess,
+    },
+];
+
+const CONTEXT_PAD_APPEND_ACTIONS: Record<string, ContextPadActionDefinition[]> = {
+    'bpmn:StartEvent': [
+        {
+            actionId: 'append.task',
+            className: 'bpmn-icon-task',
+            type: 'bpmn:Task',
+            getTitle: (labels) => labels.appendTask,
+        },
+    ],
+    'bpmn:Task': [
+        {
+            actionId: 'append.task',
+            className: 'bpmn-icon-task',
+            type: 'bpmn:Task',
+            getTitle: (labels) => labels.appendTask,
+        },
+        {
+            actionId: 'append.exclusive-gateway',
+            className: 'bpmn-icon-gateway-none',
+            type: 'bpmn:ExclusiveGateway',
+            getTitle: (labels) => labels.appendExclusiveGateway,
+        },
+        {
+            actionId: 'append.end-event',
+            className: 'bpmn-icon-end-event-none',
+            type: 'bpmn:EndEvent',
+            getTitle: (labels) => labels.appendEndEvent,
+        },
+        {
+            actionId: 'append.data-object-reference',
+            className: 'bpmn-icon-data-object',
+            type: 'bpmn:DataObjectReference',
+            getTitle: (labels) => labels.appendDataObjectReference,
+        },
+        {
+            actionId: 'append.sub-process',
+            className: 'bpmn-icon-subprocess-expanded',
+            type: 'bpmn:SubProcess',
+            options: { isExpanded: false },
+            getTitle: (labels) => labels.appendSubProcess,
+        },
+    ],
+    'bpmn:ExclusiveGateway': [
+        {
+            actionId: 'append.task',
+            className: 'bpmn-icon-task',
+            type: 'bpmn:Task',
+            getTitle: (labels) => labels.appendTask,
+        },
+    ],
+    'bpmn:DataObjectReference': [
+        {
+            actionId: 'append.data-store-reference',
+            className: 'bpmn-icon-data-store',
+            type: 'bpmn:DataStoreReference',
+            getTitle: (labels) => labels.appendDataStoreReference,
+        },
+    ],
+};
+
+function getElementType(element: unknown): string | null {
+    if (!element || typeof element !== 'object') {
+        return null;
+    }
+
+    const candidate = element as {
+        type?: unknown;
+        businessObject?: {
+            $type?: unknown;
+        };
+    };
+
+    if (typeof candidate.type === 'string') {
+        return candidate.type;
+    }
+
+    if (typeof candidate.businessObject?.$type === 'string') {
+        return candidate.businessObject.$type;
+    }
+
+    return null;
+}
+
+function isInternalEditorShape(element: unknown): boolean {
+    const elementType = getElementType(element);
+
+    return elementType === null || elementType === 'label' || !elementType.startsWith('bpmn:');
+}
+
+function isAllowedCreatableShape(element: unknown): boolean {
+    const elementType = getElementType(element);
+
+    if (elementType === null) {
+        return false;
+    }
+
+    return ALLOWED_CREATABLE_TYPES.has(elementType);
+}
+
+function createShape(elementFactory: { createShape: (attributes: Record<string, unknown>) => unknown }, definition: ShapeDefinition): unknown {
+    return elementFactory.createShape({
+        type: definition.type,
+        ...definition.options,
+    });
+}
+
+function createPaletteAction(
+    create: { start: (event: MouseEvent, shape: unknown) => void },
+    elementFactory: { createShape: (attributes: Record<string, unknown>) => unknown },
+    definition: PaletteActionDefinition,
+    labels: BpmnEditorLabels,
+) {
+    const startCreate = (event: MouseEvent) => {
+        const shape = createShape(elementFactory, definition);
+        create.start(event, shape);
+    };
+
+    return {
+        group: definition.group,
+        className: definition.className,
+        title: definition.getTitle(labels),
+        action: {
+            dragstart: startCreate,
+            click: startCreate,
+        },
+    };
+}
+
+function createContextPadAppendAction(
+    create: { start: (event: MouseEvent, shape: unknown, context: { source: unknown }) => void },
+    elementFactory: { createShape: (attributes: Record<string, unknown>) => unknown },
+    definition: ContextPadActionDefinition,
+    labels: BpmnEditorLabels,
+) {
+    const append = (event: MouseEvent, element: unknown) => {
+        const shape = createShape(elementFactory, definition);
+        create.start(event, shape, { source: element });
+    };
+
+    return {
+        group: 'model',
+        className: definition.className,
+        title: definition.getTitle(labels),
+        action: {
+            dragstart: append,
+            click: append,
+        },
+    };
+}
+
+function getAllowedConnection(source: unknown, target: unknown): Record<string, string> | false {
+    if (is(source, 'bpmn:TextAnnotation') || is(target, 'bpmn:TextAnnotation')) {
+        return { type: 'bpmn:Association', associationDirection: 'None' };
+    }
+
+    const allowedConnection = ALLOWED_CONNECTIONS.find(({ sourceType, targetType }) => is(source, sourceType) && is(target, targetType));
+
+    return allowedConnection?.connection ?? false;
+}
 
 class BpmnCustomRulesProvider extends RuleProvider {
     static $inject = ['eventBus'];
 
-    constructor(eventBus: AnyObj) {
-        super(eventBus as unknown as EventBus);
+    constructor(eventBus: EventBus) {
+        super(eventBus);
     }
 
-    // Called by RuleProvider constructor.
     override init(): void {
+        this.addRule(['shape.create', 'shape.append'], HIGH_PRIORITY, (context: AnyObj) => {
+            const shape = context.shape;
+
+            if (isInternalEditorShape(shape)) {
+                return undefined;
+            }
+
+            return isAllowedCreatableShape(shape) ? undefined : false;
+        });
+
+        this.addRule(['elements.create'], HIGH_PRIORITY, (context: AnyObj) => {
+            const elements = Array.isArray(context.elements) ? context.elements : [];
+
+            if (elements.length === 0) {
+                return undefined;
+            }
+
+            const hasDisallowedElement = elements.some((element) => !isInternalEditorShape(element) && !isAllowedCreatableShape(element));
+
+            return hasDisallowedElement ? false : undefined;
+        });
+
+        this.addRule(['shape.replace'], HIGH_PRIORITY, (context: AnyObj) => {
+            const target = context.target;
+
+            if (isInternalEditorShape(target)) {
+                return undefined;
+            }
+
+            return isAllowedCreatableShape(target) ? undefined : false;
+        });
+
         this.addRule(['connection.create'], HIGH_PRIORITY, (context: AnyObj) => {
-            const source = context.source,
-                target = context.target,
-                hints = context.hints || {},
-                targetParent = hints.targetParent,
-                targetAttach = hints.targetAttach;
+            const source = context.source;
+            const target = context.target;
+            const hints = typeof context.hints === 'object' && context.hints !== null ? (context.hints as { targetParent?: unknown; targetAttach?: unknown }) : {};
+            const targetParent = hints.targetParent;
+            const targetAttach = hints.targetAttach;
 
             if (targetAttach) {
                 return false;
             }
 
-            if (targetParent) {
-                target.parent = targetParent;
+            if (target && targetParent && typeof target === 'object') {
+                (target as { parent?: unknown }).parent = targetParent;
             }
 
             if (!source || !target) {
-                // Keep default behavior until both sides are known.
                 return undefined;
             }
 
-           let retAssociationType: any = false;
-
-            Object(ALLOWED_CONNECTIONS).values().forEach(([sourceType, targetType, associationType] : [string, string, any]) => {
-                if(is(source, 'bpmn:TextAnnotation') || is(target, 'bpmn:TextAnnotation'))
-                    retAssociationType = { 'type': 'bpmn:Association', associationDirection: 'None' };
-                else if(is(source, sourceType) && is(target, targetType))
-                    retAssociationType = associationType;
-            });
-
             try {
-                return retAssociationType;
+                return getAllowedConnection(source, target);
             } finally {
-
-                // unset temporary target parent
-                if (targetParent) {
-                    target.parent = null;
+                if (target && targetParent && typeof target === 'object') {
+                    (target as { parent?: unknown }).parent = null;
                 }
             }
         });
     }
 }
 
-const BpmnCustomRulesModule = {
-    __init__: ['bpmnCustomRulesProvider'],
-    bpmnCustomRulesProvider: ['type', BpmnCustomRulesProvider],
-};
+class RestrictedBpmnPaletteProvider {
+    static $inject = ['palette', 'create', 'elementFactory', 'spaceTool', 'lassoTool', 'handTool', 'globalConnect', 'bpmnEditorLabels'];
 
-export default BpmnCustomRulesModule;
+    private readonly create: { start: (event: MouseEvent, shape: unknown) => void };
+
+    private readonly elementFactory: { createShape: (attributes: Record<string, unknown>) => unknown };
+
+    private readonly spaceTool: { activateSelection: (event: MouseEvent) => void };
+
+    private readonly lassoTool: { activateSelection: (event: MouseEvent) => void };
+
+    private readonly handTool: { activateHand: (event: MouseEvent) => void };
+
+    private readonly globalConnect: { start: (event: MouseEvent) => void };
+
+    private readonly labels: BpmnEditorLabels;
+
+    constructor(
+        palette: { registerProvider: (provider: RestrictedBpmnPaletteProvider) => void },
+        create: { start: (event: MouseEvent, shape: unknown) => void },
+        elementFactory: { createShape: (attributes: Record<string, unknown>) => unknown },
+        spaceTool: { activateSelection: (event: MouseEvent) => void },
+        lassoTool: { activateSelection: (event: MouseEvent) => void },
+        handTool: { activateHand: (event: MouseEvent) => void },
+        globalConnect: { start: (event: MouseEvent) => void },
+        labels: BpmnEditorLabels,
+    ) {
+        this.create = create;
+        this.elementFactory = elementFactory;
+        this.spaceTool = spaceTool;
+        this.lassoTool = lassoTool;
+        this.handTool = handTool;
+        this.globalConnect = globalConnect;
+        this.labels = labels;
+
+        palette.registerProvider(this);
+    }
+
+    getPaletteEntries() {
+        const actions: Record<string, unknown> = {
+            'hand-tool': {
+                group: 'tools',
+                className: 'bpmn-icon-hand-tool',
+                title: this.labels.activateHandTool,
+                action: {
+                    click: (event: MouseEvent) => {
+                        this.handTool.activateHand(event);
+                    },
+                },
+            },
+            'lasso-tool': {
+                group: 'tools',
+                className: 'bpmn-icon-lasso-tool',
+                title: this.labels.activateLassoTool,
+                action: {
+                    click: (event: MouseEvent) => {
+                        this.lassoTool.activateSelection(event);
+                    },
+                },
+            },
+            'space-tool': {
+                group: 'tools',
+                className: 'bpmn-icon-space-tool',
+                title: this.labels.activateSpaceTool,
+                action: {
+                    click: (event: MouseEvent) => {
+                        this.spaceTool.activateSelection(event);
+                    },
+                },
+            },
+            'global-connect-tool': {
+                group: 'tools',
+                className: 'bpmn-icon-connection-multi',
+                title: this.labels.activateGlobalConnectTool,
+                action: {
+                    click: (event: MouseEvent) => {
+                        this.globalConnect.start(event);
+                    },
+                },
+            },
+            'tool-separator': {
+                group: 'tools',
+                separator: true,
+            },
+        };
+
+        for (const definition of PALETTE_ACTIONS) {
+            actions[definition.actionId] = createPaletteAction(this.create, this.elementFactory, definition, this.labels);
+        }
+
+        return actions;
+    }
+}
+
+class RestrictedBpmnContextPadProvider {
+    static $inject = ['contextPad', 'modeling', 'elementFactory', 'connect', 'create', 'rules', 'bpmnEditorLabels'];
+
+    private readonly modeling: { removeElements: (elements: unknown[]) => void };
+
+    private readonly elementFactory: { createShape: (attributes: Record<string, unknown>) => unknown };
+
+    private readonly connect: { start: (event: MouseEvent, element: unknown) => void };
+
+    private readonly create: { start: (event: MouseEvent, shape: unknown, context: { source: unknown }) => void };
+
+    private readonly rules: { allowed: (action: string, context: Record<string, unknown>) => boolean | unknown[] };
+
+    private readonly labels: BpmnEditorLabels;
+
+    constructor(
+        contextPad: { registerProvider: (provider: RestrictedBpmnContextPadProvider) => void },
+        modeling: { removeElements: (elements: unknown[]) => void },
+        elementFactory: { createShape: (attributes: Record<string, unknown>) => unknown },
+        connect: { start: (event: MouseEvent, element: unknown) => void },
+        create: { start: (event: MouseEvent, shape: unknown, context: { source: unknown }) => void },
+        rules: { allowed: (action: string, context: Record<string, unknown>) => boolean | unknown[] },
+        labels: BpmnEditorLabels,
+    ) {
+        this.modeling = modeling;
+        this.elementFactory = elementFactory;
+        this.connect = connect;
+        this.create = create;
+        this.rules = rules;
+        this.labels = labels;
+
+        contextPad.registerProvider(this);
+    }
+
+    getContextPadEntries(element: { businessObject?: unknown }) {
+        const actions: Record<string, unknown> = {};
+
+        if (this.isDeleteAllowed([element])) {
+            actions.delete = {
+                group: 'edit',
+                className: 'bpmn-icon-trash',
+                title: this.labels.delete,
+                action: {
+                    click: (_event: MouseEvent, currentElement: unknown) => {
+                        this.modeling.removeElements([currentElement]);
+                    },
+                },
+            };
+        }
+
+        if (getElementType(element) === 'label') {
+            return actions;
+        }
+
+        actions.connect = {
+            group: 'connect',
+            className: 'bpmn-icon-connection-multi',
+            title: this.labels.connect,
+            action: {
+                click: (event: MouseEvent, currentElement: unknown) => {
+                    this.connect.start(event, currentElement);
+                },
+            },
+        };
+
+        const elementType = getElementType(element.businessObject ?? element);
+        const appendDefinitions = elementType ? CONTEXT_PAD_APPEND_ACTIONS[elementType] ?? [] : [];
+
+        for (const definition of appendDefinitions) {
+            actions[definition.actionId] = createContextPadAppendAction(this.create, this.elementFactory, definition, this.labels);
+        }
+
+        return actions;
+    }
+
+    getMultiElementContextPadEntries(elements: unknown[]) {
+        if (!this.isDeleteAllowed(elements)) {
+            return {};
+        }
+
+        return {
+            delete: {
+                group: 'edit',
+                className: 'bpmn-icon-trash',
+                title: this.labels.delete,
+                action: {
+                    click: () => {
+                        this.modeling.removeElements(elements.slice());
+                    },
+                },
+            },
+        };
+    }
+
+    private isDeleteAllowed(elements: unknown[]): boolean {
+        const allowed = this.rules.allowed('elements.delete', { elements });
+
+        if (Array.isArray(allowed)) {
+            return elements.every((element) => allowed.includes(element));
+        }
+
+        return Boolean(allowed);
+    }
+}
+
+export default function createBpmnEditorRestrictionsModule(labels: Partial<BpmnEditorLabels> = {}): BpmnUiModule {
+    return {
+        __init__: ['bpmnCustomRulesProvider', 'paletteProvider', 'contextPadProvider'],
+        bpmnEditorLabels: ['value', { ...DEFAULT_BPMN_EDITOR_LABELS, ...labels }],
+        bpmnCustomRulesProvider: ['type', BpmnCustomRulesProvider],
+        paletteProvider: ['type', RestrictedBpmnPaletteProvider],
+        contextPadProvider: ['type', RestrictedBpmnContextPadProvider],
+    };
+}
 

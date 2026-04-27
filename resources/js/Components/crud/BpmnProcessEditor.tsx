@@ -4,7 +4,7 @@ import Modeler from 'bpmn-js/lib/Modeler';
 import 'bpmn-js/dist/assets/diagram-js.css';
 import '../../../css/bpmn-font-local.css';
 import { cn } from '@/lib/utils';
-import BpmnCustomRulesModule from './BpmnCustomRules';
+import createBpmnEditorRestrictionsModule, { type BpmnEditorLabels } from './BpmnCustomRules';
 
 const DEFAULT_BPMN_XML = `<?xml version="1.0" encoding="UTF-8"?>
 <bpmn:definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -34,14 +34,14 @@ interface BpmnProcessEditorProps {
   className?: string;
   invalidMessage: string;
   fitButtonLabel?: string;
+  editorLabels?: Partial<BpmnEditorLabels>;
 }
 
 type BpmnXmlResult = {
   xml?: string;
 };
 
-const MIN_EDITOR_HEIGHT = 800;
-const MIN_MEASURED_HEIGHT = 100;
+const EDITOR_HEIGHT = 800;
 
 type BpmnCanvasApi = {
   zoom: (scale: 'fit-viewport', center: 'auto') => void;
@@ -49,32 +49,19 @@ type BpmnCanvasApi = {
 };
 
 const BpmnProcessEditor = forwardRef<BpmnProcessEditorHandle, BpmnProcessEditorProps>(
-  ({ xml, className, invalidMessage, fitButtonLabel }, ref) => {
+  ({ xml, className, invalidMessage, fitButtonLabel, editorLabels }, ref) => {
     const wrapperRef = useRef<HTMLDivElement | null>(null);
     const containerRef = useRef<HTMLDivElement | null>(null);
     const modelerRef = useRef<Modeler | null>(null);
+    const editorModuleRef = useRef(createBpmnEditorRestrictionsModule(editorLabels));
     const [renderError, setRenderError] = useState<string | null>(null);
-    const [editorHeight, setEditorHeight] = useState<number>(MIN_EDITOR_HEIGHT);
+
 
     const fitViewport = useCallback(() => {
       const modeler = modelerRef.current;
       if (!modeler) return;
       const canvas = modeler.get('canvas') as BpmnCanvasApi;
       canvas.zoom('fit-viewport', 'auto');
-    }, []);
-
-    const syncEditorHeight = useCallback(() => {
-      const wrapper = wrapperRef.current;
-      if (!wrapper) {
-        return;
-      }
-
-      const wrapperHeight = wrapper.clientHeight;
-      const parentHeight = wrapper.parentElement?.clientHeight ?? 0;
-      const measuredHeight = Math.max(wrapperHeight, parentHeight);
-      const nextHeight = measuredHeight > MIN_MEASURED_HEIGHT ? measuredHeight : MIN_EDITOR_HEIGHT;
-
-      setEditorHeight((currentHeight) => (currentHeight === nextHeight ? currentHeight : nextHeight));
     }, []);
 
     useImperativeHandle(ref, () => ({
@@ -98,7 +85,7 @@ const BpmnProcessEditor = forwardRef<BpmnProcessEditorHandle, BpmnProcessEditorP
 
       const modeler = new Modeler({
         container: containerRef.current,
-        additionalModules: [BpmnCustomRulesModule],
+        additionalModules: [editorModuleRef.current],
       });
       modelerRef.current = modeler;
 
@@ -107,42 +94,6 @@ const BpmnProcessEditor = forwardRef<BpmnProcessEditorHandle, BpmnProcessEditorP
         modelerRef.current = null;
       };
     }, []);
-
-    useEffect(() => {
-      syncEditorHeight();
-
-      const wrapper = wrapperRef.current;
-      if (!wrapper || typeof ResizeObserver === 'undefined') {
-        return undefined;
-      }
-
-      const resizeObserver = new ResizeObserver(() => {
-          syncEditorHeight();
-      });
-
-      resizeObserver.observe(wrapper);
-
-      if (wrapper.parentElement) {
-        resizeObserver.observe(wrapper.parentElement);
-      }
-
-      window.addEventListener('resize', syncEditorHeight);
-
-      return () => {
-        resizeObserver.disconnect();
-        window.removeEventListener('resize', syncEditorHeight);
-      };
-    }, [syncEditorHeight]);
-
-    useEffect(() => {
-      const modeler = modelerRef.current;
-      if (!modeler) {
-        return;
-      }
-
-      const canvas = modeler.get('canvas') as BpmnCanvasApi;
-      canvas.resized();
-    }, [editorHeight]);
 
     useEffect(() => {
       const modeler = modelerRef.current;
@@ -192,7 +143,7 @@ const BpmnProcessEditor = forwardRef<BpmnProcessEditorHandle, BpmnProcessEditorP
           </div>
         )}
 
-        <div ref={containerRef} className="bpmn-editor w-full" style={{ height: `${editorHeight}px` }} />
+        <div ref={containerRef} className="bpmn-editor w-full" style={{ height: `${EDITOR_HEIGHT}px` }} />
       </div>
     );
   }

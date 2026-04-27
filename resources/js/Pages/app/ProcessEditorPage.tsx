@@ -182,6 +182,27 @@ export default function ProcessEditorPage({ route }: ProcessEditorPageProps) {
                                 xml={process.bpmn}
                                 invalidMessage={t('pages.dashboard.process.invalid_bpmn')}
                                 fitButtonLabel={t('pages.dashboard.process.fit_to_screen')}
+                                editorLabels={{
+                                    activateHandTool: t('pages.process_editor.editor.activate_hand_tool'),
+                                    activateLassoTool: t('pages.process_editor.editor.activate_lasso_tool'),
+                                    activateSpaceTool: t('pages.process_editor.editor.activate_space_tool'),
+                                    activateGlobalConnectTool: t('pages.process_editor.editor.activate_global_connect_tool'),
+                                    createStartEvent: t('pages.process_editor.editor.create_start_event'),
+                                    createEndEvent: t('pages.process_editor.editor.create_end_event'),
+                                    createExclusiveGateway: t('pages.process_editor.editor.create_exclusive_gateway'),
+                                    createTask: t('pages.process_editor.editor.create_task'),
+                                    createDataObjectReference: t('pages.process_editor.editor.create_data_object_reference'),
+                                    createDataStoreReference: t('pages.process_editor.editor.create_data_store_reference'),
+                                    createSubProcess: t('pages.process_editor.editor.create_sub_process'),
+                                    appendTask: t('pages.process_editor.editor.append_task'),
+                                    appendEndEvent: t('pages.process_editor.editor.append_end_event'),
+                                    appendExclusiveGateway: t('pages.process_editor.editor.append_exclusive_gateway'),
+                                    appendDataObjectReference: t('pages.process_editor.editor.append_data_object_reference'),
+                                    appendDataStoreReference: t('pages.process_editor.editor.append_data_store_reference'),
+                                    appendSubProcess: t('pages.process_editor.editor.append_sub_process'),
+                                    connect: t('pages.process_editor.editor.connect'),
+                                    delete: t('pages.process_editor.editor.delete'),
+                                }}
                             />
                         </div>
 

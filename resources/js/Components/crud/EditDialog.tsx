@@ -120,7 +120,7 @@ export function EditDialog({
     const isInvalid = field.required && (val === undefined || val === null || val === "" || (Array.isArray(val) && val.length === 0));
 
     return (
-      <div key={field.key} className="grid gap-2">
+      <div key={field.key} className="grid gap-2 px-1">
         <Label htmlFor={field.key} className="flex items-center gap-1">
           {field.label}
           {field.required && <span className="text-destructive">*</span>}
