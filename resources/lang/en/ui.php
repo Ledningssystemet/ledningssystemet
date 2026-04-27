@@ -139,7 +139,7 @@ return [
 	'task' => [
 		'count' => ':count tasks',
 		'activity' => 'Activity',
-		'control' => 'Control',
+		'control_action' => 'Control action',
 	],
 ];
 

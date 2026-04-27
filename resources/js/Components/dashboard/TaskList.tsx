@@ -46,10 +46,10 @@ export default function TaskList({ data, loading, error }: DashboardWidgetProps)
               </p>
               <div className="flex items-center gap-2 mt-0.5">
                 <span className="text-[11px] text-muted-foreground">
-                  {task.date ? new Date(task.date).toLocaleDateString(locale) : '-'}
+                  {task.date ? new Date(task.date).toLocaleDateString() : '-'}
                 </span>
                 <span className="text-[10px] text-muted-foreground/60 bg-muted px-1.5 py-0.5 rounded">
-                  {task.type === "activity" ? t('ui.task.activity') : t('ui.task.control')}
+                  {task.type === "activity" ? t('ui.task.activity') : t('ui.task.control_action')}
                 </span>
               </div>
             </div>

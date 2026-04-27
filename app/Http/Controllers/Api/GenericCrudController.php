@@ -57,6 +57,8 @@ class GenericCrudController extends Controller
 
         if (method_exists($modelClass, 'applyCrudIndexFilters')) {
             $modelClass::applyCrudIndexFilters($query, $request);
+        } else if($request->has('filter')) {
+            $this->applyFilters($query, $request->query('filter'), $metadata);
         }
 
         $selectedColumns = $this->parseSelectedColumns($request, $metadata['selectable']);
