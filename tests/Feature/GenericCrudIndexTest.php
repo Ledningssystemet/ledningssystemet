@@ -103,6 +103,51 @@ class GenericCrudIndexTest extends TestCase
         $this->assertSame('SortMarker Zulu', $response->json('1.name'));
     }
 
+    public function test_it_can_filter_visible_columns_for_null_values(): void
+    {
+        Gate::before(static fn (): bool => true);
+
+        $this->actingAs($this->createUser('Auth User', 'auth-null-filter@example.com', true, 'Authenticated'), 'sanctum');
+        $this->createUser('NullFilter Null One', 'null-filter-1@example.com', true, null);
+        $this->createUser('NullFilter Value', 'null-filter-value@example.com', true, 'Manager');
+        $this->createUser('NullFilter Null Two', 'null-filter-2@example.com', true, null);
+
+        $response = $this->getJson('/api/crud/users?paginate=0&search=NullFilter&filter[title]=null&%24select=id,name,title');
+
+        $response->assertOk();
+        $response->assertJsonCount(2);
+        $this->assertSame(['NullFilter Null One', 'NullFilter Null Two'], collect($response->json())->pluck('name')->sort()->values()->all());
+        $this->assertTrue(collect($response->json())->every(static fn (array $row): bool => $row['title'] === null));
+    }
+
+    public function test_it_can_filter_visible_columns_for_non_null_values(): void
+    {
+        Gate::before(static fn (): bool => true);
+
+        $this->actingAs($this->createUser('Auth User', 'auth-not-null-filter@example.com', true, 'Authenticated'), 'sanctum');
+        $this->createUser('NotNullFilter Null', 'not-null-filter-1@example.com', true, null);
+        $this->createUser('NotNullFilter Value', 'not-null-filter-value@example.com', true, 'Lead');
+
+        $response = $this->getJson('/api/crud/users?paginate=0&search=NotNullFilter&filter[title]=not_null&%24select=id,name,title');
+
+        $response->assertOk();
+        $response->assertJsonCount(1);
+        $response->assertJsonPath('0.name', 'NotNullFilter Value');
+        $response->assertJsonPath('0.title', 'Lead');
+    }
+
+    public function test_it_rejects_null_filter_for_hidden_columns(): void
+    {
+        Gate::before(static fn (): bool => true);
+
+        $this->actingAs($this->createUser('Auth User', 'auth-hidden-filter@example.com', true, 'Authenticated'), 'sanctum');
+        $this->createUser('HiddenFilter User', 'hidden-filter@example.com', true, null);
+
+        $response = $this->getJson('/api/crud/users?paginate=0&filter[password]=null&%24select=id,name,title');
+
+        $response->assertBadRequest();
+    }
+
     public function test_it_can_store_model_via_generic_endpoint(): void
     {
         Gate::before(static fn (): bool => true);
@@ -175,13 +220,14 @@ class GenericCrudIndexTest extends TestCase
         $this->assertDatabaseMissing('users', ['id' => $created->id]);
     }
 
-    private function createUser(string $name, string $email, bool $enabled): User
+    private function createUser(string $name, string $email, bool $enabled, ?string $title = null): User
     {
         $id = DB::table('users')->insertGetId([
             'name' => $name,
             'email' => $email,
             'password' => Hash::make('password'),
             'enabled' => $enabled,
+            'title' => $title,
             'created_at' => now(),
             'updated_at' => now(),
         ]);

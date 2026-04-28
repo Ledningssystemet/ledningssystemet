@@ -447,7 +447,7 @@ function ResponsibilitiesTab({ data, loading, error, t }: {
         return <p className="text-sm text-muted-foreground">{t('pages.my_profile.responsibilities.no_responsibilities')}</p>;
 
     return (
-        <div className="grid gap-6 sm:grid-cols-2">
+        <div className="grid gap-12 sm:grid-cols-2">
             <ResponsibilityGroup title={t('pages.my_profile.responsibilities.processes')} items={data.processes} />
             <ResponsibilityGroup title={t('pages.my_profile.responsibilities.customers')} items={data.customers} />
             <ResponsibilityGroup title={t('pages.my_profile.responsibilities.suppliers')} items={data.suppliers} />

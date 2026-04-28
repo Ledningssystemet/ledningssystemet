@@ -36,11 +36,7 @@ class GenericCrudController extends Controller
 
         $search = trim($request->string('search')->toString());
 
-        $allowedFilters = [];
-
-        foreach (array_keys($metadata['filterable']) as $column) {
-            $allowedFilters[] = AllowedFilter::exact($column);
-        }
+        $allowedFilters = $this->allowedFiltersFor($metadata);
 
         $query = QueryBuilder::for($modelClass::query())
             ->allowedFilters(...$allowedFilters)
@@ -57,8 +53,6 @@ class GenericCrudController extends Controller
 
         if (method_exists($modelClass, 'applyCrudIndexFilters')) {
             $modelClass::applyCrudIndexFilters($query, $request);
-        } else if($request->has('filter')) {
-            $this->applyFilters($query, $request->query('filter'), $metadata);
         }
 
         $selectedColumns = $this->parseSelectedColumns($request, $metadata['selectable']);
@@ -253,6 +247,27 @@ class GenericCrudController extends Controller
             'searchable' => $crudSearch['direct'],
             'searchable_relations' => $crudSearch['relations'],
         ];
+    }
+
+    /**
+     * @param array<string, mixed> $metadata
+     * @return array<int, AllowedFilter>
+     */
+    private function allowedFiltersFor(array $metadata): array
+    {
+        $allowedFilters = [];
+
+        foreach ($metadata['selectable'] as $column) {
+            if (! is_string($column) || trim($column) === '') {
+                continue;
+            }
+
+            $allowedFilters[] = AllowedFilter::callback($column, function (mixed $query, mixed $value, string $property) use ($metadata): void {
+                $this->applyFilters($query, [$property => $value], $metadata);
+            });
+        }
+
+        return $allowedFilters;
     }
 
     /**
@@ -457,9 +472,29 @@ class GenericCrudController extends Controller
         }
 
         $allowedFilters = $metadata['filterable'];
+        $allowedNullableColumns = array_fill_keys($metadata['selectable'] ?? [], true);
 
         foreach ($filters as $field => $value) {
-            if (! is_string($field) || ! array_key_exists($field, $allowedFilters)) {
+            if (! is_string($field) || ! array_key_exists($field, $allowedNullableColumns)) {
+                throw ValidationException::withMessages([
+                    'filter' => [__('api.generic_crud.filter_field_not_allowed', ['field' => $field])],
+                ]);
+            }
+
+            $nullFilter = $this->normalizeNullFilterValue($value);
+            if ($nullFilter === 'null') {
+                $query->whereNull($field);
+
+                continue;
+            }
+
+            if ($nullFilter === 'not_null') {
+                $query->whereNotNull($field);
+
+                continue;
+            }
+
+            if (! array_key_exists($field, $allowedFilters)) {
                 throw ValidationException::withMessages([
                     'filter' => [__('api.generic_crud.filter_field_not_allowed', ['field' => $field])],
                 ]);
@@ -469,6 +504,28 @@ class GenericCrudController extends Controller
             $normalized = $this->normalizeFilterValue($field, $type, $value);
             $query->where($field, $normalized);
         }
+    }
+
+    private function normalizeNullFilterValue(mixed $value): ?string
+    {
+        if ($value === null) {
+            return 'null';
+        }
+
+        if (! is_string($value)) {
+            return null;
+        }
+
+        $normalized = Str::lower(trim($value));
+        if (in_array($normalized, ['null', 'is_null', 'is:null'], true)) {
+            return 'null';
+        }
+
+        if (in_array($normalized, ['not_null', 'is_not_null', 'is:not_null', '!null'], true)) {
+            return 'not_null';
+        }
+
+        return null;
     }
 
     /**

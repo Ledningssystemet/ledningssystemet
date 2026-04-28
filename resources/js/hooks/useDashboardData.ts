@@ -314,10 +314,10 @@ export function useDashboardData() {
         riskLevelMappingsResponse,
       ] = await Promise.all([
         axios.get<ActivityRecord[] | CrudResponse<ActivityRecord>>('/api/crud/activities', {
-          params: { '$select': 'id,name,due,completed_at', sort: 'due', 'filter': {'completed_at': ''} },
+          params: { '$select': 'id,name,due', sort: 'due', 'filter': {'completed_at': 'is_null'} },
         }),
         axios.get<ControlActionRecord[] | CrudResponse<ControlActionRecord>>('/api/crud/control-actions', {
-          params: { '$select': 'id,name,due,finished_at', sort: 'due' },
+          params: { '$select': 'id,name,due', sort: 'due', 'filter': {'finished_at': 'is_null'} },
         }),
         axios.get<ObjectiveRecord[] | CrudResponse<ObjectiveRecord>>('/api/crud/objectives', {
           params: { '$select': 'id,name,due,archived_at', sort: 'due' },
