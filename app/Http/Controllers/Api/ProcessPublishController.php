@@ -8,6 +8,7 @@ use App\Services\Bpmn\BpmnPublishValidator;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Validation\ValidationException;
 
 class ProcessPublishController extends Controller
 {
@@ -18,6 +19,12 @@ class ProcessPublishController extends Controller
         $data = $request->validate([
             'bpmn' => ['required', 'string'],
         ]);
+
+        if (($process->bpmn ?? null) !== $data['bpmn']) {
+            throw ValidationException::withMessages([
+                'publishedbpmn' => ['pages.process_editor.validation.save_before_publish'],
+            ]);
+        }
 
         $validator->validateForPublish($data['bpmn']);
 

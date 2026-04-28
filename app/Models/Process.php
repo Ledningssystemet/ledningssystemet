@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Services\Bpmn\BpmnTextContentValidator;
+use Closure;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -33,8 +35,24 @@ class Process extends Model
         return [
             'name' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
-            'bpmn' => ['nullable', 'string'],
-            'publishedbpmn' => ['nullable', 'string'],
+            'bpmn' => ['nullable', 'string', static function (string $attribute, mixed $value, Closure $fail): void {
+                if (! is_string($value) || trim($value) === '') {
+                    return;
+                }
+
+                if (app(BpmnTextContentValidator::class)->hasInvalidTextInXml($value)) {
+                    $fail(BpmnTextContentValidator::ERROR_KEY);
+                }
+            }],
+            'publishedbpmn' => ['nullable', 'string', static function (string $attribute, mixed $value, Closure $fail): void {
+                if (! is_string($value) || trim($value) === '') {
+                    return;
+                }
+
+                if (app(BpmnTextContentValidator::class)->hasInvalidTextInXml($value)) {
+                    $fail(BpmnTextContentValidator::ERROR_KEY);
+                }
+            }],
             'svg' => ['nullable', 'string'],
             'department_id' => ['required', 'integer', 'min:0', 'exists:departments,id'],
             'responsible_user_id' => ['nullable', 'integer', 'min:0', 'exists:users,id'],
@@ -54,14 +72,6 @@ class Process extends Model
             'direct' => [
                 'name',
                 'description',
-                'bpmn',
-                'publishedbpmn',
-                'svg',
-                'legalbasisdescription',
-                'thirdcountrytransferdescription',
-                'thirdcountrytransferprotectiondescription',
-                'securitymeasuredescription',
-                'data_processor_processing_activities',
             ],
             'relations' => [
                 // 'relation.path' => ['name'],

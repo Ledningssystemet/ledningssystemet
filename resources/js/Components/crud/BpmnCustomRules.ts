@@ -72,10 +72,14 @@ type ContextPadActionDefinition = ShapeDefinition & {
     getTitle: (labels: BpmnEditorLabels) => string;
 };
 
+export type BpmnShapeNameResolver = (shapeType: string) => Promise<string | null>;
+
 type BpmnUiModule = {
     __init__: string[];
     bpmnEditorLabels: ['value', BpmnEditorLabels];
+    bpmnShapeNameResolver: ['value', BpmnShapeNameResolver | null];
     bpmnCustomRulesProvider: ['type', typeof BpmnCustomRulesProvider];
+    bpmnDirectEditingRestrictionProvider: ['type', typeof BpmnDirectEditingRestrictionProvider];
     paletteProvider: ['type', typeof RestrictedBpmnPaletteProvider];
     contextPadProvider: ['type', typeof RestrictedBpmnContextPadProvider];
 };
@@ -153,7 +157,7 @@ const PALETTE_ACTIONS: PaletteActionDefinition[] = [
         type: 'bpmn:SubProcess',
         options: { isExpanded: false },
         getTitle: (labels) => labels.createSubProcess,
-    },
+    }
 ];
 
 const CONTEXT_PAD_APPEND_ACTIONS: Record<string, ContextPadActionDefinition[]> = {
@@ -255,11 +259,60 @@ function isAllowedCreatableShape(element: unknown): boolean {
     return ALLOWED_CREATABLE_TYPES.has(elementType);
 }
 
-function createShape(elementFactory: { createShape: (attributes: Record<string, unknown>) => unknown }, definition: ShapeDefinition): unknown {
-    return elementFactory.createShape({
+function requiresResolvedName(shapeType: string): boolean {
+    return shapeType === 'bpmn:DataObjectReference' || shapeType === 'bpmn:DataStoreReference';
+}
+
+async function resolveShapeName(shapeType: string, resolver: BpmnShapeNameResolver | null): Promise<string | null | undefined> {
+    if (!requiresResolvedName(shapeType) || !resolver) {
+        return undefined;
+    }
+
+    return resolver(shapeType);
+}
+
+function createShape(
+    elementFactory: { createShape: (attributes: Record<string, unknown>) => unknown },
+    definition: ShapeDefinition,
+    resolvedName?: string,
+): unknown {
+    const shape = elementFactory.createShape({
         type: definition.type,
+        ...(resolvedName ? { name: resolvedName } : {}),
         ...definition.options,
     });
+
+    if (!resolvedName || !shape || typeof shape !== 'object') {
+        return shape;
+    }
+
+    const shapeCandidate = shape as { name?: unknown; businessObject?: unknown };
+    shapeCandidate.name = resolvedName;
+
+    const businessObject = shapeCandidate.businessObject;
+    if (!businessObject || typeof businessObject !== 'object') {
+        return shape;
+    }
+
+    const businessObjectCandidate = businessObject as {
+        name?: unknown;
+        dataObjectRef?: unknown;
+        dataStoreRef?: unknown;
+    };
+
+    businessObjectCandidate.name = resolvedName;
+
+    const dataObjectRef = businessObjectCandidate.dataObjectRef;
+    if (dataObjectRef && typeof dataObjectRef === 'object') {
+        (dataObjectRef as { name?: unknown }).name = resolvedName;
+    }
+
+    const dataStoreRef = businessObjectCandidate.dataStoreRef;
+    if (dataStoreRef && typeof dataStoreRef === 'object') {
+        (dataStoreRef as { name?: unknown }).name = resolvedName;
+    }
+
+    return shape;
 }
 
 function createPaletteAction(
@@ -267,9 +320,15 @@ function createPaletteAction(
     elementFactory: { createShape: (attributes: Record<string, unknown>) => unknown },
     definition: PaletteActionDefinition,
     labels: BpmnEditorLabels,
+    nameResolver: BpmnShapeNameResolver | null,
 ) {
-    const startCreate = (event: MouseEvent) => {
-        const shape = createShape(elementFactory, definition);
+    const startCreate = async (event: MouseEvent) => {
+        const resolvedName = await resolveShapeName(definition.type, nameResolver);
+        if (resolvedName === null) {
+            return;
+        }
+
+        const shape = createShape(elementFactory, definition, resolvedName ?? undefined);
         create.start(event, shape);
     };
 
@@ -289,9 +348,15 @@ function createContextPadAppendAction(
     elementFactory: { createShape: (attributes: Record<string, unknown>) => unknown },
     definition: ContextPadActionDefinition,
     labels: BpmnEditorLabels,
+    nameResolver: BpmnShapeNameResolver | null,
 ) {
-    const append = (event: MouseEvent, element: unknown) => {
-        const shape = createShape(elementFactory, definition);
+    const append = async (event: MouseEvent, element: unknown) => {
+        const resolvedName = await resolveShapeName(definition.type, nameResolver);
+        if (resolvedName === null) {
+            return;
+        }
+
+        const shape = createShape(elementFactory, definition, resolvedName ?? undefined);
         create.start(event, shape, { source: element });
     };
 
@@ -386,8 +451,25 @@ class BpmnCustomRulesProvider extends RuleProvider {
     }
 }
 
+class BpmnDirectEditingRestrictionProvider {
+    static $inject = ['eventBus'];
+
+    constructor(eventBus: EventBus) {
+        eventBus.on('element.dblclick', HIGH_PRIORITY, (event: AnyObj) => {
+            const element = event.element;
+            if (!element) {
+                return undefined;
+            }
+
+            const elementType = getElementType(element);
+
+            return elementType === 'label' || (elementType !== null && elementType.startsWith('bpmn:')) ? false : undefined;
+        });
+    }
+}
+
 class RestrictedBpmnPaletteProvider {
-    static $inject = ['palette', 'create', 'elementFactory', 'spaceTool', 'lassoTool', 'handTool', 'globalConnect', 'bpmnEditorLabels'];
+    static $inject = ['palette', 'create', 'elementFactory', 'spaceTool', 'lassoTool', 'handTool', 'globalConnect', 'bpmnEditorLabels', 'bpmnShapeNameResolver'];
 
     private readonly create: { start: (event: MouseEvent, shape: unknown) => void };
 
@@ -403,6 +485,8 @@ class RestrictedBpmnPaletteProvider {
 
     private readonly labels: BpmnEditorLabels;
 
+    private readonly nameResolver: BpmnShapeNameResolver | null;
+
     constructor(
         palette: { registerProvider: (provider: RestrictedBpmnPaletteProvider) => void },
         create: { start: (event: MouseEvent, shape: unknown) => void },
@@ -412,6 +496,7 @@ class RestrictedBpmnPaletteProvider {
         handTool: { activateHand: (event: MouseEvent) => void },
         globalConnect: { start: (event: MouseEvent) => void },
         labels: BpmnEditorLabels,
+        nameResolver: BpmnShapeNameResolver | null,
     ) {
         this.create = create;
         this.elementFactory = elementFactory;
@@ -420,6 +505,7 @@ class RestrictedBpmnPaletteProvider {
         this.handTool = handTool;
         this.globalConnect = globalConnect;
         this.labels = labels;
+        this.nameResolver = nameResolver;
 
         palette.registerProvider(this);
     }
@@ -473,7 +559,7 @@ class RestrictedBpmnPaletteProvider {
         };
 
         for (const definition of PALETTE_ACTIONS) {
-            actions[definition.actionId] = createPaletteAction(this.create, this.elementFactory, definition, this.labels);
+            actions[definition.actionId] = createPaletteAction(this.create, this.elementFactory, definition, this.labels, this.nameResolver);
         }
 
         return actions;
@@ -481,7 +567,7 @@ class RestrictedBpmnPaletteProvider {
 }
 
 class RestrictedBpmnContextPadProvider {
-    static $inject = ['contextPad', 'modeling', 'elementFactory', 'connect', 'create', 'rules', 'bpmnEditorLabels'];
+    static $inject = ['contextPad', 'modeling', 'elementFactory', 'connect', 'create', 'rules', 'bpmnEditorLabels', 'bpmnShapeNameResolver'];
 
     private readonly modeling: { removeElements: (elements: unknown[]) => void };
 
@@ -495,6 +581,8 @@ class RestrictedBpmnContextPadProvider {
 
     private readonly labels: BpmnEditorLabels;
 
+    private readonly nameResolver: BpmnShapeNameResolver | null;
+
     constructor(
         contextPad: { registerProvider: (provider: RestrictedBpmnContextPadProvider) => void },
         modeling: { removeElements: (elements: unknown[]) => void },
@@ -503,6 +591,7 @@ class RestrictedBpmnContextPadProvider {
         create: { start: (event: MouseEvent, shape: unknown, context: { source: unknown }) => void },
         rules: { allowed: (action: string, context: Record<string, unknown>) => boolean | unknown[] },
         labels: BpmnEditorLabels,
+        nameResolver: BpmnShapeNameResolver | null,
     ) {
         this.modeling = modeling;
         this.elementFactory = elementFactory;
@@ -510,12 +599,17 @@ class RestrictedBpmnContextPadProvider {
         this.create = create;
         this.rules = rules;
         this.labels = labels;
+        this.nameResolver = nameResolver;
 
         contextPad.registerProvider(this);
     }
 
-    getContextPadEntries(element: { businessObject?: unknown }) {
+    getContextPadEntries(element?: { businessObject?: unknown }) {
         const actions: Record<string, unknown> = {};
+
+        if (!element) {
+            return actions;
+        }
 
         if (this.isDeleteAllowed([element])) {
             actions.delete = {
@@ -524,6 +618,10 @@ class RestrictedBpmnContextPadProvider {
                 title: this.labels.delete,
                 action: {
                     click: (_event: MouseEvent, currentElement: unknown) => {
+                        if (!currentElement) {
+                            return;
+                        }
+
                         this.modeling.removeElements([currentElement]);
                     },
                 },
@@ -540,6 +638,10 @@ class RestrictedBpmnContextPadProvider {
             title: this.labels.connect,
             action: {
                 click: (event: MouseEvent, currentElement: unknown) => {
+                    if (!currentElement) {
+                        return;
+                    }
+
                     this.connect.start(event, currentElement);
                 },
             },
@@ -549,7 +651,7 @@ class RestrictedBpmnContextPadProvider {
         const appendDefinitions = elementType ? CONTEXT_PAD_APPEND_ACTIONS[elementType] ?? [] : [];
 
         for (const definition of appendDefinitions) {
-            actions[definition.actionId] = createContextPadAppendAction(this.create, this.elementFactory, definition, this.labels);
+            actions[definition.actionId] = createContextPadAppendAction(this.create, this.elementFactory, definition, this.labels, this.nameResolver);
         }
 
         return actions;
@@ -575,21 +677,32 @@ class RestrictedBpmnContextPadProvider {
     }
 
     private isDeleteAllowed(elements: unknown[]): boolean {
-        const allowed = this.rules.allowed('elements.delete', { elements });
+        const deletableElements = elements.filter((element) => Boolean(element));
+
+        if (deletableElements.length === 0) {
+            return false;
+        }
+
+        const allowed = this.rules.allowed('elements.delete', { elements: deletableElements });
 
         if (Array.isArray(allowed)) {
-            return elements.every((element) => allowed.includes(element));
+            return deletableElements.every((element) => allowed.includes(element));
         }
 
         return Boolean(allowed);
     }
 }
 
-export default function createBpmnEditorRestrictionsModule(labels: Partial<BpmnEditorLabels> = {}): BpmnUiModule {
+export default function createBpmnEditorRestrictionsModule(
+    labels: Partial<BpmnEditorLabels> = {},
+    options: { resolveShapeName?: BpmnShapeNameResolver } = {},
+): BpmnUiModule {
     return {
-        __init__: ['bpmnCustomRulesProvider', 'paletteProvider', 'contextPadProvider'],
+        __init__: ['bpmnCustomRulesProvider', 'bpmnDirectEditingRestrictionProvider', 'paletteProvider', 'contextPadProvider'],
         bpmnEditorLabels: ['value', { ...DEFAULT_BPMN_EDITOR_LABELS, ...labels }],
+        bpmnShapeNameResolver: ['value', options.resolveShapeName ?? null],
         bpmnCustomRulesProvider: ['type', BpmnCustomRulesProvider],
+        bpmnDirectEditingRestrictionProvider: ['type', BpmnDirectEditingRestrictionProvider],
         paletteProvider: ['type', RestrictedBpmnPaletteProvider],
         contextPadProvider: ['type', RestrictedBpmnContextPadProvider],
     };

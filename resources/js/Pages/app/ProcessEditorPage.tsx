@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import BpmnProcessEditor, { type BpmnProcessEditorHandle } from '@/components/crud/BpmnProcessEditor';
 import { APP_HOME_PATH, APP_PROCESSES_PATH } from '@/app/routes';
 import { useTranslations } from '@/hooks/useTranslations';
+import { useDirtyStateNavigation } from '@/hooks/useDirtyStateNavigation';
 import type { AppSectionRoute } from '@/app/routes';
 
 interface ProcessEditorPageProps {
@@ -15,6 +16,36 @@ interface ProcessEditorPageProps {
 interface ProcessEditorRecord {
     id: number;
     bpmn: string | null;
+}
+
+interface NamedOption {
+    id: number | string;
+    name: string;
+}
+
+type CrudRowsPayload = {
+    data?: Array<Record<string, unknown>>;
+};
+
+function toNamedOptions(payload: unknown): NamedOption[] {
+    const rows = Array.isArray(payload)
+        ? payload
+        : Array.isArray((payload as CrudRowsPayload)?.data)
+            ? (payload as CrudRowsPayload).data ?? []
+            : [];
+
+    return rows
+        .map((row) => {
+            const name = typeof row?.name === 'string' ? row.name.trim() : '';
+            const id = typeof row?.id === 'number' || typeof row?.id === 'string' ? row.id : null;
+
+            if (id === null || name === '') {
+                return null;
+            }
+
+            return { id, name };
+        })
+        .filter((option): option is NamedOption => option !== null);
 }
 
 export default function ProcessEditorPage({ route }: ProcessEditorPageProps) {
@@ -27,7 +58,25 @@ export default function ProcessEditorPage({ route }: ProcessEditorPageProps) {
     const [saveMode, setSaveMode] = useState<'save' | 'publish' | null>(null);
     const [errorKey, setErrorKey] = useState<string | null>(null);
     const [process, setProcess] = useState<ProcessEditorRecord | null>(null);
+    const [informationTypeOptions, setInformationTypeOptions] = useState<NamedOption[]>([]);
+    const [assetOptions, setAssetOptions] = useState<NamedOption[]>([]);
+    const [isDirty, setIsDirty] = useState(false);
     const editorRef = useRef<BpmnProcessEditorHandle | null>(null);
+    const navigateRef = useRef(useNavigate());
+
+    // Prevent navigation with unsaved changes
+    useDirtyStateNavigation(isDirty && saveMode === null, t('pages.process_editor.unsaved_changes_confirm'));
+
+    // Safe navigate that checks dirty state
+    const safeNavigate = (path: string) => {
+        if (isDirty && saveMode === null) {
+            if (!window.confirm(t('pages.process_editor.unsaved_changes_confirm'))) {
+                return;
+            }
+        }
+        navigateRef.current(path);
+    };
+
 
     useEffect(() => {
         const previousTitle = document.title;
@@ -40,6 +89,7 @@ export default function ProcessEditorPage({ route }: ProcessEditorPageProps) {
     useEffect(() => {
         if (!Number.isFinite(parsedProcessId)) {
             setErrorKey('pages.process_editor.invalid_process_id');
+            setIsDirty(false);
             setLoading(false);
             return;
         }
@@ -49,27 +99,48 @@ export default function ProcessEditorPage({ route }: ProcessEditorPageProps) {
         const load = async () => {
             setLoading(true);
             setErrorKey(null);
+            setIsDirty(false);
 
             try {
                 const query = new URLSearchParams({
                     $select: 'id,bpmn',
                 });
-                const response = await fetch(`/api/crud/processes/${parsedProcessId}?${query.toString()}`, {
-                    signal: controller.signal,
-                    headers: { Accept: 'application/json' },
-                });
+                const [processResponse, informationTypesResponse, assetsResponse] = await Promise.all([
+                    fetch(`/api/crud/processes/${parsedProcessId}?${query.toString()}`, {
+                        signal: controller.signal,
+                        headers: { Accept: 'application/json' },
+                    }),
+                    fetch('/api/crud/information_types?paginate=0&%24select=id,name&sort=name', {
+                        signal: controller.signal,
+                        headers: { Accept: 'application/json' },
+                    }),
+                    fetch('/api/crud/assets?paginate=0&%24select=id,name&sort=name', {
+                        signal: controller.signal,
+                        headers: { Accept: 'application/json' },
+                    }),
+                ]);
 
-                if (!response.ok) {
+                if (!processResponse.ok) {
                     setErrorKey('pages.process_editor.load_error');
                     setProcess(null);
+                    setInformationTypeOptions([]);
+                    setAssetOptions([]);
                     return;
                 }
 
-                const payload = await response.json();
+                const payload = await processResponse.json();
                 setProcess(payload as ProcessEditorRecord);
+
+                const informationTypesPayload = informationTypesResponse.ok ? await informationTypesResponse.json() : [];
+                const assetsPayload = assetsResponse.ok ? await assetsResponse.json() : [];
+
+                setInformationTypeOptions(toNamedOptions(informationTypesPayload));
+                setAssetOptions(toNamedOptions(assetsPayload));
             } catch (loadError: unknown) {
                 if ((loadError as { name?: string })?.name !== 'AbortError') {
                     setErrorKey('pages.process_editor.load_error');
+                    setInformationTypeOptions([]);
+                    setAssetOptions([]);
                 }
             } finally {
                 setLoading(false);
@@ -85,6 +156,11 @@ export default function ProcessEditorPage({ route }: ProcessEditorPageProps) {
 
     const persistProcess = async (publish: boolean) => {
         if (!process) {
+            return;
+        }
+
+        if (publish && isDirty) {
+            setErrorKey('pages.process_editor.validation.save_before_publish');
             return;
         }
 
@@ -112,11 +188,11 @@ export default function ProcessEditorPage({ route }: ProcessEditorPageProps) {
             });
 
             if (!response.ok) {
-                if (publish && response.status === 422) {
+                if (response.status === 422) {
                     const validationPayload = (await response.json()) as {
-                        errors?: { publishedbpmn?: string[] };
+                        errors?: { bpmn?: string[]; publishedbpmn?: string[] };
                     };
-                    const firstError = validationPayload.errors?.publishedbpmn?.[0];
+                    const firstError = validationPayload.errors?.publishedbpmn?.[0] ?? validationPayload.errors?.bpmn?.[0];
                     if (firstError) {
                         setErrorKey(firstError);
                         return;
@@ -128,8 +204,13 @@ export default function ProcessEditorPage({ route }: ProcessEditorPageProps) {
             }
 
             setProcess((prev) => (prev ? { ...prev, bpmn: currentXml } : prev));
+            editorRef.current?.markCurrentReferencesAsSaved();
+            editorRef.current?.markCurrentStateAsSaved();
+            setIsDirty(false);
 
-            navigate(APP_PROCESSES_PATH);
+            if (publish) {
+                safeNavigate(APP_PROCESSES_PATH);
+            }
         } catch {
             setErrorKey(publish ? 'pages.process_editor.publish_error' : 'pages.process_editor.save_error');
         } finally {
@@ -174,9 +255,6 @@ export default function ProcessEditorPage({ route }: ProcessEditorPageProps) {
                 {!loading && !errorKey && process && (
                     <section className="space-y-6 rounded-2xl border border-border bg-card p-6 shadow-sm">
                         <div className="space-y-2">
-                            <div className="text-sm font-medium text-foreground">
-                                {t('pages.process_editor.bpmn_label')}
-                            </div>
                             <BpmnProcessEditor
                                 ref={editorRef}
                                 xml={process.bpmn}
@@ -203,11 +281,50 @@ export default function ProcessEditorPage({ route }: ProcessEditorPageProps) {
                                     connect: t('pages.process_editor.editor.connect'),
                                     delete: t('pages.process_editor.editor.delete'),
                                 }}
+                                propertyEditorLabels={{
+                                    panelTitle: t('pages.process_editor.property_editor.panel_title'),
+                                    appearanceGroup: t('pages.process_editor.property_editor.appearance_group'),
+                                    sizeGroup: t('pages.process_editor.property_editor.size_group'),
+                                    textGroup: t('pages.process_editor.property_editor.text_group'),
+                                    width: t('pages.process_editor.property_editor.width'),
+                                    height: t('pages.process_editor.property_editor.height'),
+                                    fontSize: t('pages.process_editor.property_editor.font_size'),
+                                    textColor: t('pages.process_editor.property_editor.text_color'),
+                                    taskBackgroundImage: t('pages.process_editor.property_editor.task_background_image'),
+                                    taskBackgroundImageFit: t('pages.process_editor.property_editor.task_background_image_fit'),
+                                    taskBackgroundImageFitCrop: t('pages.process_editor.property_editor.task_background_image_fit_crop'),
+                                    taskBackgroundImageFitContain: t('pages.process_editor.property_editor.task_background_image_fit_contain'),
+                                    taskBackgroundImageFitStretch: t('pages.process_editor.property_editor.task_background_image_fit_stretch'),
+                                    taskBackgroundImagePadding: t('pages.process_editor.property_editor.task_background_image_padding'),
+                                    clearTaskBackgroundImage: t('pages.process_editor.property_editor.clear_task_background_image'),
+                                    name: t('pages.process_editor.property_editor.name'),
+                                    fillColor: t('pages.process_editor.property_editor.fill_color'),
+                                    strokeColor: t('pages.process_editor.property_editor.stroke_color'),
+                                    invalidHexColor: t('pages.process_editor.property_editor.invalid_hex_color'),
+                                    invalidNumber: t('pages.process_editor.property_editor.invalid_number'),
+                                    invalidTextValue: t('pages.process_editor.property_editor.invalid_text_value'),
+                                     lockedReferenceNameMessage: t('pages.process_editor.property_editor.locked_reference_name_message'),
+                                }}
+                                informationTypeOptions={informationTypeOptions}
+                                assetOptions={assetOptions}
+                                creationDialogLabels={{
+                                    informationTypeTitle: t('pages.process_editor.creation_dialog.information_type_title'),
+                                    assetTitle: t('pages.process_editor.creation_dialog.asset_title'),
+                                    selectExistingLabel: t('pages.process_editor.creation_dialog.select_existing_label'),
+                                    selectExistingPlaceholder: t('pages.process_editor.creation_dialog.select_existing_placeholder'),
+                                    customNameLabel: t('pages.process_editor.creation_dialog.custom_name_label'),
+                                    customNamePlaceholder: t('pages.process_editor.creation_dialog.custom_name_placeholder'),
+                                    applyName: t('pages.process_editor.creation_dialog.apply_name'),
+                                    cancel: t('pages.process_editor.creation_dialog.cancel'),
+                                    nameRequired: t('pages.process_editor.creation_dialog.name_required'),
+                                    invalidName: t('pages.process_editor.creation_dialog.invalid_name'),
+                                }}
+                                onDirtyStateChange={setIsDirty}
                             />
                         </div>
 
                         <div className="flex items-center justify-between gap-3">
-                            <Button variant="outline" onClick={() => navigate(APP_PROCESSES_PATH)}>
+                            <Button variant="outline" onClick={() => safeNavigate(APP_PROCESSES_PATH)}>
                                 <MaterialSymbol name="arrow_back" className="mr-2 h-4 w-4" />
                                 {t('pages.process_editor.back_to_processes')}
                             </Button>
@@ -216,12 +333,22 @@ export default function ProcessEditorPage({ route }: ProcessEditorPageProps) {
                                     <MaterialSymbol name="save" className="mr-2 h-4 w-4" />
                                     {saveMode === 'save' ? t('pages.process_editor.saving') : t('pages.process_editor.save')}
                                 </Button>
-                                <Button onClick={() => void persistProcess(true)} disabled={saveMode !== null}>
+                                <Button
+                                    onClick={() => void persistProcess(true)}
+                                    disabled={saveMode !== null || isDirty}
+                                    title={isDirty ? t('pages.process_editor.publish_requires_saved_changes') : undefined}
+                                >
                                     <MaterialSymbol name="upload" className="mr-2 h-4 w-4" />
                                     {saveMode === 'publish' ? t('pages.process_editor.publishing') : t('pages.process_editor.publish')}
                                 </Button>
                             </div>
                         </div>
+
+                        {isDirty && (
+                            <p className="text-sm text-muted-foreground">
+                                {t('pages.process_editor.unsaved_changes_notice')}
+                            </p>
+                        )}
                     </section>
                 )}
             </div>

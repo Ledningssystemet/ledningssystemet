@@ -51,7 +51,7 @@ class ProcessPublishEndpointTest extends TestCase
             'updated_at' => now(),
         ]);
 
-        $referencedProcessName = 'Referenced Process '.Str::lower((string) Str::uuid());
+        $referencedProcessName = 'ReferencedProcess'.Str::random(8, 'abcdefghijklmnopqrstuvwxyz');
 
         DB::table('processes')->insert([
             'name' => $referencedProcessName,
@@ -63,19 +63,19 @@ class ProcessPublishEndpointTest extends TestCase
             'updated_at' => now(),
         ]);
 
+        $xml = $this->validBpmnXml($referencedProcessName);
+
         $processId = DB::table('processes')->insertGetId([
             'name' => $prefix.' draft',
             'description' => 'Draft description',
             'department_id' => $departmentId,
-            'bpmn' => '<definitions id="draft"></definitions>',
+            'bpmn' => $xml,
             'publishedbpmn' => null,
             'isstartprocess' => false,
             'dataprocessor' => false,
             'created_at' => now(),
             'updated_at' => now(),
         ]);
-
-        $xml = $this->validBpmnXml($referencedProcessName);
 
         $response = $this->postJson('/api/processes/'.$processId.'/publish', [
             'bpmn' => $xml,
@@ -105,16 +105,6 @@ class ProcessPublishEndpointTest extends TestCase
             'updated_at' => now(),
         ]);
 
-        $processId = DB::table('processes')->insertGetId([
-            'name' => $prefix.' draft',
-            'description' => 'Draft description',
-            'department_id' => $departmentId,
-            'isstartprocess' => false,
-            'dataprocessor' => false,
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
-
         $invalidXml = <<<'XML'
 <?xml version="1.0" encoding="UTF-8"?>
 <bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" id="Definitions_1" targetNamespace="http://bpmn.io/schema/bpmn">
@@ -125,6 +115,17 @@ class ProcessPublishEndpointTest extends TestCase
   </bpmn:process>
 </bpmn:definitions>
 XML;
+
+        $processId = DB::table('processes')->insertGetId([
+            'name' => $prefix.' draft',
+            'description' => 'Draft description',
+            'department_id' => $departmentId,
+            'bpmn' => $invalidXml,
+            'isstartprocess' => false,
+            'dataprocessor' => false,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
 
         $response = $this->postJson('/api/processes/'.$processId.'/publish', [
             'bpmn' => $invalidXml,
@@ -149,9 +150,48 @@ XML;
             'updated_at' => now(),
         ]);
 
-        $processId = DB::table('processes')->insertGetId([
-            'name' => $prefix.' draft',
-            'description' => 'Draft description',
+         $processId = DB::table('processes')->insertGetId([
+             'name' => $prefix.' draft',
+             'description' => 'Draft description',
+             'department_id' => $departmentId,
+             'isstartprocess' => false,
+             'dataprocessor' => false,
+             'created_at' => now(),
+             'updated_at' => now(),
+         ]);
+
+         $xml = $this->validBpmnXml('Missing Linked Process');
+
+         DB::table('processes')->where('id', $processId)->update(['bpmn' => $xml]);
+
+         $response = $this->postJson('/api/processes/'.$processId.'/publish', [
+             'bpmn' => $xml,
+        ]);
+
+        $response
+            ->assertStatus(422)
+            ->assertJsonValidationErrors(['publishedbpmn'])
+            ->assertJsonPath('errors.publishedbpmn.0', 'pages.process_editor.validation.sub_process_name_not_found');
+    }
+
+    public function test_publish_endpoint_rejects_unsaved_dirty_bpmn(): void
+    {
+        Gate::before(static fn (): bool => true);
+
+        $this->actingAs($this->createUser('Process Dirty Draft', 'process.dirty-draft@example.com'), 'sanctum');
+
+        $prefix = 'Process Dirty Draft '.Str::lower((string) Str::uuid());
+        $departmentId = DB::table('departments')->insertGetId([
+            'name' => $prefix.' department',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $referencedProcessName = 'ReferencedDraftProcess'.Str::random(8, 'abcdefghijklmnopqrstuvwxyz');
+
+        DB::table('processes')->insert([
+            'name' => $referencedProcessName,
+            'description' => 'Process used by subProcess link',
             'department_id' => $departmentId,
             'isstartprocess' => false,
             'dataprocessor' => false,
@@ -159,16 +199,35 @@ XML;
             'updated_at' => now(),
         ]);
 
-        $xml = $this->validBpmnXml('Missing Linked Process');
+        $savedXml = $this->validBpmnXml($referencedProcessName);
+        $dirtyXml = str_replace('name="Work"', 'name="Review"', $savedXml);
+
+        $processId = DB::table('processes')->insertGetId([
+            'name' => $prefix.' draft',
+            'description' => 'Draft description',
+            'department_id' => $departmentId,
+            'bpmn' => $savedXml,
+            'publishedbpmn' => null,
+            'isstartprocess' => false,
+            'dataprocessor' => false,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
 
         $response = $this->postJson('/api/processes/'.$processId.'/publish', [
-            'bpmn' => $xml,
+            'bpmn' => $dirtyXml,
         ]);
 
         $response
             ->assertStatus(422)
             ->assertJsonValidationErrors(['publishedbpmn'])
-            ->assertJsonPath('errors.publishedbpmn.0', 'pages.process_editor.validation.sub_process_name_not_found');
+            ->assertJsonPath('errors.publishedbpmn.0', 'pages.process_editor.validation.save_before_publish');
+
+        $saved = DB::table('processes')->where('id', $processId)->first();
+
+        $this->assertNotNull($saved);
+        $this->assertSame($savedXml, $saved->bpmn);
+        $this->assertNull($saved->publishedbpmn);
     }
 
     private function validBpmnXml(string $subProcessName): string

@@ -15,6 +15,10 @@ class BpmnPublishValidator
      */
     private array $errors = [];
 
+    public function __construct(private readonly BpmnTextContentValidator $textContentValidator)
+    {
+    }
+
     public function validateForPublish(string $xml): void
     {
         $this->errors = [];
@@ -30,6 +34,10 @@ class BpmnPublishValidator
         }
 
         $xpath = new DOMXPath($dom);
+
+        if ($this->textContentValidator->hasInvalidTextInXPath($xpath)) {
+            $this->addError(BpmnTextContentValidator::ERROR_KEY);
+        }
 
         $typesById = $this->collectElementTypesById($xpath);
         $namesById = $this->collectElementNamesById($xpath, ['dataObjectReference', 'subProcess']);

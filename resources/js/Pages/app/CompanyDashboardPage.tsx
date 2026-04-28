@@ -5,7 +5,6 @@ import { APP_HOME_PATH, type AppSectionRoute } from '@/app/routes';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useTranslations } from '@/hooks/useTranslations';
 import { useDashboardData } from '@/hooks/useDashboardData';
-import StatsRow from '@/components/dashboard/StatsRow';
 import TaskList from '@/components/dashboard/TaskList';
 import GoalsCard from '@/components/dashboard/GoalsCard';
 import TopRisks from '@/components/dashboard/TopRisks';
@@ -116,7 +115,6 @@ export default function CompanyDashboardPage({ route }: CompanyDashboardPageProp
                         </TabsList>
 
                         <TabsContent value="todo" className="mt-4 space-y-4">
-                            <StatsRow {...widgetProps} />
                             <div className="grid gap-4 lg:grid-cols-3">
                                 <div className="lg:col-span-1">
                                     <TaskList {...widgetProps} />
