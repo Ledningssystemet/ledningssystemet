@@ -15,7 +15,9 @@ class Chemical extends Model
 
     protected $table = 'chemicals';
 
-    protected $fillable = ['name', 'manufacturer', 'description', 'usagedescription', 'storagedescription', 'consumptiondescription', 'riskdescription', 'handlingguidance', 'ohs_danger_properties', 'danger', 'sdbfile', 'sdbfilename', 'sdbcontenttype', 'sdbcontentlength', 'sdbfilecontent'];
+    protected $fillable = ['name', 'manufacturer', 'description', 'usagedescription', 'storagedescription', 'consumptiondescription', 'riskdescription', 'handlingguidance', 'ohs_danger_properties', 'danger', 'sdbfile', 'sdbfilename', 'sdbcontenttype', 'sdbcontentlength'];
+
+    protected $hidden = ['sdbfilecontent'];
 
     protected $appends = ['danger'];
 

@@ -126,6 +126,7 @@ export function ItemDetailsContent({
 function groupByCategory(fields: FieldConfig[]) {
     const map = new Map<string, FieldConfig[]>();
     for (const field of fields) {
+        if (field.hiddenInDetails) continue;
         const category = field.category || "__uncategorized__";
         if (!map.has(category)) map.set(category, []);
         map.get(category)!.push(field);

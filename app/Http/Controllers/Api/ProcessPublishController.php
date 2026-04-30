@@ -20,13 +20,14 @@ class ProcessPublishController extends Controller
             'bpmn' => ['required', 'string'],
         ]);
 
+        $validator->validateForPublish($data['bpmn']);
+
         if (($process->bpmn ?? null) !== $data['bpmn']) {
             throw ValidationException::withMessages([
                 'publishedbpmn' => ['pages.process_editor.validation.save_before_publish'],
             ]);
         }
 
-        $validator->validateForPublish($data['bpmn']);
 
         $process->fill([
             'bpmn' => $data['bpmn'],

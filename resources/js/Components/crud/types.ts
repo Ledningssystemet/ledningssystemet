@@ -48,6 +48,7 @@ export interface FieldConfig {
     renderDetail?: (value: any, row: Record<string, any>) => ReactNode;
     hidden?: boolean;
     hiddenInTable?: boolean;
+    hiddenInDetails?: boolean;
     width?: string;
     masterLabel?: boolean;
     masterDescription?: boolean;

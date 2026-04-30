@@ -24,7 +24,7 @@ class Risk extends Model
 
     protected $fillable = ['name', 'context_type', 'department_id', 'context_id', 'scenariodescription', 'consequencedescription', 'riskowner_id', 'replacing_id', 'replacedby_id', 'assessed_at', 'replaced_at', 'created_by', 'probability_id', 'consequence_id', 'assessmentcomment', 'project_id', 'post_probability_id', 'post_consequence_id', 'tags', 'risk_controls'];
 
-    protected $appends = ['tags', 'risk_controls', 'risk_level_id'];
+    protected $appends = ['tags', 'risk_controls', 'risk_level_id', 'translated_name', 'translated_scenariodescription', 'translated_consequencedescription'];
 
     /**
      * @var array<int, string>
@@ -41,30 +41,105 @@ class Risk extends Model
     private bool $hasPendingControlUpdate = false;
 
 
-    protected function name(): Attribute
+    public function getTranslatedNameAttribute(): ?string
     {
-        return Attribute::make(
-            get: function ($value) {
-                $contextName = $this->resolveContextNameSafely();
-                if ($contextName === null) {
-                    return $value;
-                }
+        // If 'name' was not selected (e.g. $select only requested translated_name),
+        // lazy-load it so the placeholder replacement has something to work with.
+        // Generic CRUD may request only appended attributes via $select.
+        if (! array_key_exists('name', $this->attributes) && $this->exists && $this->getKey()) {
+            $fresh = static::query()->select(['id', 'name'])->find($this->getKey());
+            if ($fresh) {
+                $this->attributes['name'] = $fresh->attributes['name'] ?? null;
+            }
+        }
 
-                return str_replace('{name}', $contextName, (string) $value);
-            },
-        );
+        return $this->replaceContextNamePlaceholder($this->attributes['name'] ?? null);
+    }
+
+    public function getNameAttribute(mixed $value): mixed
+    {
+        return $this->replaceContextNamePlaceholder($value);
+    }
+
+    public function getTranslatedScenariodescriptionAttribute(): ?string
+    {
+        return $this->replaceContextNamePlaceholder($this->attributes['scenariodescription'] ?? null);
+    }
+
+    public function getTranslatedConsequencedescriptionAttribute(): ?string
+    {
+        return $this->replaceContextNamePlaceholder($this->attributes['consequencedescription'] ?? null);
+    }
+
+    private function replaceContextNamePlaceholder(mixed $value): mixed
+    {
+        if (! is_string($value)) {
+            return $value;
+        }
+
+
+
+        $contextName = $this->resolveContextNameSafely();
+        if ($contextName === null) {
+            return $value;
+        }
+
+        return preg_replace('/\{name\}/i', $contextName, $value) ?? $value;
     }
 
     private function resolveContextNameSafely(): ?string
     {
-        if ($this->context_type === null || $this->context_id === null) {
+        $contextType = $this->context_type;
+        $contextId = $this->context_id;
+
+        // Lazy-load context_type and context_id if missing but model exists in DB
+        if (($contextType === null || $contextId === null) && $this->exists && $this->getKey()) {
+            $fresh = static::query()->select(['context_type', 'context_id'])->find($this->getKey());
+            if ($fresh) {
+                $contextType = $fresh->context_type;
+                $contextId = $fresh->context_id;
+            }
+        }
+
+        if ($contextType === null || $contextId === null) {
             return null;
         }
 
         try {
+            // Temporarily update attributes so morphTo can resolve, then clean up after
+            $originalContextType = $this->getAttribute('context_type');
+            $originalContextId = $this->getAttribute('context_id');
+            $needsCleanup = false;
+
+            if ($originalContextType === null && $contextType !== null) {
+                $this->setAttribute('context_type', $contextType);
+                $needsCleanup = true;
+            }
+            if ($originalContextId === null && $contextId !== null) {
+                $this->setAttribute('context_id', $contextId);
+                $needsCleanup = true;
+            }
+
             $context = $this->int_context;
+
+            // Clean up: remove any attributes we added just for morphTo resolution
+            if ($needsCleanup) {
+                if ($originalContextType === null && isset($this->attributes['context_type'])) {
+                    unset($this->attributes['context_type']);
+                }
+                if ($originalContextId === null && isset($this->attributes['context_id'])) {
+                    unset($this->attributes['context_id']);
+                }
+            }
         } catch (Throwable) {
             // Legacy datasets may contain removed/renamed morph classes.
+            // Clean up any temporary attributes we added
+            if (isset($originalContextType) && $originalContextType === null && isset($this->attributes['context_type'])) {
+                unset($this->attributes['context_type']);
+            }
+            if (isset($originalContextId) && $originalContextId === null && isset($this->attributes['context_id'])) {
+                unset($this->attributes['context_id']);
+            }
             return null;
         }
 
@@ -131,7 +206,7 @@ class Risk extends Model
 
     public static function crudAppends(): array
     {
-        return ['tags', 'risk_controls', 'risk_level_id'];
+        return ['tags', 'risk_controls', 'risk_level_id', 'translated_name', 'translated_scenariodescription', 'translated_consequencedescription'];
     }
 
     protected static function booted(): void

@@ -330,6 +330,59 @@ class RisksCrudContractTest extends TestCase
         $this->assertSame('Legacy risk {name}', $risk['name']);
     }
 
+    public function test_risks_translated_attributes_work_without_context_in_select(): void
+    {
+        Gate::before(static fn (): bool => true);
+
+        $user = $this->createUser('Risk Translation Test', 'risk.translation@example.com');
+        $this->actingAs($user, 'sanctum');
+
+        $departmentId = DB::table('departments')->insertGetId([
+            'name' => 'Security Dept',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        // Create a risk with context and placeholders
+        $riskId = DB::table('risks')->insertGetId([
+            'name' => 'Risk in {name}',
+            'department_id' => $departmentId,
+            'riskowner_id' => $user->id,
+            'context_type' => 'App\\Models\\Department',
+            'context_id' => $departmentId,
+            'scenariodescription' => 'Scenario affecting {NAME}',
+            'consequencedescription' => 'Impact on {name} operations',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        // Fetch without context_type and context_id in $select
+        // This simulates the real-world scenario where users don't select these fields
+        $response = $this->getJson('/api/crud/risks?paginate=0&showdraft=1&showapproved=1&%24select=id,name,scenariodescription,consequencedescription,translated_name,translated_scenariodescription,translated_consequencedescription');
+
+        $response->assertOk();
+        $rows = collect($response->json());
+        $risk = $rows->firstWhere('id', $riskId);
+
+        $this->assertNotNull($risk);
+
+        // name accessor applies replacement automatically
+        $this->assertSame('Risk in Security Dept', $risk['name']);
+
+        // raw fields keep their placeholders when accessed directly via CRUD
+        $this->assertSame('Scenario affecting {NAME}', $risk['scenariodescription']);
+        $this->assertSame('Impact on {name} operations', $risk['consequencedescription']);
+
+        // Translated attributes also perform lazy-load and replace placeholders (same as name accessor)
+        $this->assertSame('Risk in Security Dept', $risk['translated_name']);
+        $this->assertSame('Scenario affecting Security Dept', $risk['translated_scenariodescription']);
+        $this->assertSame('Impact on Security Dept operations', $risk['translated_consequencedescription']);
+
+        // IMPORTANT: context_type and context_id should NOT be returned since they weren't in $select
+        $this->assertArrayNotHasKey('context_type', $risk);
+        $this->assertArrayNotHasKey('context_id', $risk);
+    }
+
     private function createUser(string $name, string $email): User
     {
         $id = DB::table('users')->insertGetId([

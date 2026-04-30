@@ -28,7 +28,7 @@ class DepartmentPolicy
      */
     public function create(User $user): bool
     {
-        return $user->haveAnyAccessRights(['systemadministrator.edit']);
+        return $user->haveAnyAccessRights(['managementtools.edit', 'systemadministrator.edit']);
     }
 
     /**
@@ -36,7 +36,7 @@ class DepartmentPolicy
      */
     public function update(User $user, Department $department = new Department): bool
     {
-        return $user->haveAnyAccessRights(['systemadministrator.edit']);
+        return $user->haveAnyAccessRights(['managementtools.edit', 'systemadministrator.edit']);
     }
 
     /**

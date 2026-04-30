@@ -82,12 +82,14 @@ class GenericCrudController extends Controller
 
             $result = $query->paginate($perPage)->appends($request->query());
             $this->appendSelectedAttributes($result, $selectedAppends);
+            $this->filterResultAttributes($result, $selectedColumns, $selectedAppends, $with, $withCount);
 
             return response()->json($result);
         }
 
         $result = $query->get();
         $this->appendSelectedAttributes($result, $selectedAppends);
+        $this->filterResultAttributes($result, $selectedColumns, $selectedAppends, $with, $withCount);
 
         return response()->json($result);
     }
@@ -152,6 +154,7 @@ class GenericCrudController extends Controller
         }
 
         $this->appendSelectedAttributes($model, $selectedAppends);
+        $this->filterResultAttributes($model, $selectedColumns, $selectedAppends, $with, $withCount);
 
         return response()->json($model);
     }
@@ -242,7 +245,7 @@ class GenericCrudController extends Controller
         return $this->metadataCache[$modelClass] = [
             'types' => $columnTypes,
             'selectable' => $selectable,
-            'appendable' => $this->resolveCrudAppends($model),
+            'appendable' => $this->resolveAppendableAttributes($model),
             'filterable' => $filterable,
             'searchable' => $crudSearch['direct'],
             'searchable_relations' => $crudSearch['relations'],
@@ -273,20 +276,22 @@ class GenericCrudController extends Controller
     /**
      * @return array<int, string>
      */
-    private function resolveCrudAppends(Model $model): array
+    private function resolveAppendableAttributes(Model $model): array
     {
+        $configuredAppends = [];
         $modelClass = $model::class;
-        if (! method_exists($modelClass, 'crudAppends')) {
-            return [];
+
+        if (method_exists($modelClass, 'crudAppends')) {
+            $resolved = $modelClass::crudAppends();
+            if (is_array($resolved)) {
+                $configuredAppends = $resolved;
+            }
         }
 
-        $configuredAppends = $modelClass::crudAppends();
-        if (! is_array($configuredAppends)) {
-            return [];
-        }
+        $defaultAppends = method_exists($model, 'getAppends') ? $model->getAppends() : [];
 
         return array_values(array_unique(array_filter(
-            $configuredAppends,
+            array_merge($defaultAppends, $configuredAppends),
             static fn (mixed $append): bool => is_string($append) && trim($append) !== ''
         )));
     }
@@ -801,6 +806,112 @@ class GenericCrudController extends Controller
 
         return (float) $value;
     }
+
+    /**
+     * Filter result attributes to only include explicitly selected columns and appends.
+     * Only applies filtering if $select was explicitly used by the client.
+     *
+     * @param array<int, string> $selectedColumns
+     * @param array<int, string> $selectedAppends
+     * @param array<int, string> $with
+     * @param array<int, string> $withCount
+     */
+    private function filterResultAttributes(mixed $result, array $selectedColumns, array $selectedAppends, array $with = [], array $withCount = []): void
+    {
+        // Only filter if columns were explicitly selected or if appends were selected
+        if ($selectedColumns === [] && $selectedAppends === []) {
+            return;
+        }
+
+        $allowedAttributes = array_merge(
+            $selectedColumns,
+            $selectedAppends,
+            $with,
+            $this->resolveWithCountAliases($withCount)
+        );
+
+        if ($result instanceof Model) {
+            $this->filterModelAttributes($result, $allowedAttributes);
+
+            return;
+        }
+
+        if ($result instanceof AbstractPaginator) {
+            $result->setCollection(
+                $result->getCollection()->map(function (mixed $item) use ($allowedAttributes): mixed {
+                    if ($item instanceof Model) {
+                        $this->filterModelAttributes($item, $allowedAttributes);
+                    }
+
+                    return $item;
+                })
+            );
+
+            return;
+        }
+
+        if ($result instanceof Collection) {
+            $result->each(function (mixed $item) use ($allowedAttributes): void {
+                if ($item instanceof Model) {
+                    $this->filterModelAttributes($item, $allowedAttributes);
+                }
+            });
+
+        }
+    }
+
+    /**
+     * Filter a single model to only include specified attributes.
+     *
+     * @param array<int, string> $allowedAttributes
+     */
+    private function filterModelAttributes(Model $model, array $allowedAttributes): void
+    {
+        if ($allowedAttributes === []) {
+            return;
+        }
+
+        $defaultAppends = method_exists($model, 'getAppends') ? $model->getAppends() : [];
+        $allowedAttributes = array_values(array_unique(array_merge($allowedAttributes, $defaultAppends)));
+
+        // Get all current attributes including eager-loaded relations
+        $allAttributes = array_keys($model->toArray());
+
+        // Find attributes that should be hidden (not in allowed list)
+        $attributesToHide = array_diff($allAttributes, $allowedAttributes);
+
+        if ($attributesToHide !== []) {
+            // Make all attributes visible first to ensure we can hide any of them
+            $model->makeVisible($model->getHidden());
+
+            // Then hide only the unselected ones
+            $model->makeHidden($attributesToHide);
+        }
+    }
+
+    /**
+     * @param array<int, string> $withCount
+     * @return array<int, string>
+     */
+    private function resolveWithCountAliases(array $withCount): array
+    {
+        $aliases = [];
+
+        foreach ($withCount as $relationCount) {
+            if (! is_string($relationCount) || trim($relationCount) === '') {
+                continue;
+            }
+
+            $segments = preg_split('/\s+as\s+/i', $relationCount);
+            if (is_array($segments) && isset($segments[1]) && is_string($segments[1]) && trim($segments[1]) !== '') {
+                $aliases[] = trim($segments[1]);
+
+                continue;
+            }
+
+            $aliases[] = trim($relationCount);
+        }
+
+        return array_values(array_unique($aliases));
+    }
 }
-
-

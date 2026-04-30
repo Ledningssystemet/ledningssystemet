@@ -14,6 +14,9 @@ Route::get('/'.trim((string) config('plugins.asset_route_prefix', 'plugin-assets
     ->where('path', '.*')
     ->name('plugins.asset');
 
+Route::get('/openapi.json', [OpenApiDocumentationController::class, 'spec'])->name('openapi.spec');
+Route::get('/api/docs', [OpenApiDocumentationController::class, 'show'])->name('openapi.docs');
+
 Route::middleware('auth')->group(function (): void {
     /**
      * Logout
@@ -28,8 +31,6 @@ Route::middleware('auth')->group(function (): void {
         return Inertia::render('AppShell');
     })->where('path', '.*')->name('home');
 
-    Route::get('/openapi.json', [OpenApiDocumentationController::class, 'spec'])->name('openapi.spec');
-    Route::get('/api/docs', [OpenApiDocumentationController::class, 'show'])->name('openapi.docs');
 
 });
 

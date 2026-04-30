@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\AccessGroupOptionsController;
 use App\Http\Controllers\Api\AssessmentSettingsRiskMappingController;
+use App\Http\Controllers\Api\ChemicalDatasheetDownloadController;
 use App\Http\Controllers\Api\ComplianceEvaluationController;
 use App\Http\Controllers\Api\EmployeeProfileController;
 use App\Http\Controllers\Api\UserPasswordResetController;
@@ -72,6 +73,8 @@ Route::middleware('auth:sanctum')->group(function (): void {
     Route::get('/crud/{resource}/{id}', [GenericCrudController::class, 'show'])->name('api.crud.show');
     Route::match(['put', 'patch'], '/crud/{resource}/{id}', [GenericCrudController::class, 'update'])->name('api.crud.update');
     Route::delete('/crud/{resource}/{id}', [GenericCrudController::class, 'destroy'])->name('api.crud.destroy');
+    Route::get('/v1/items/Chemical/{id}/download', [ChemicalDatasheetDownloadController::class, 'show'])
+        ->name('api.chemicals.datasheet.download');
     Route::post('/departments/{department}/reassign', [DepartmentReassignController::class, 'store'])
         ->name('api.departments.reassign');
     Route::post('/users/{user}/reassign', [UserReassignController::class, 'store'])

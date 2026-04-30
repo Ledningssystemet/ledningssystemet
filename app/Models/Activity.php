@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
 class Activity extends Model
@@ -54,6 +55,15 @@ class Activity extends Model
                 // 'relation.path' => ['name'],
             ],
         ];
+    }
+
+    public static function applyCrudIndexFilters(mixed $query, Request $request): void
+    {
+        $user = $request->user();
+
+        if ($user && ! $user->haveAnyAccessRights(['managementtools.edit'])) {
+            $query->where('responsible_user_id', $user->id);
+        }
     }
 
     protected static function booted(): void

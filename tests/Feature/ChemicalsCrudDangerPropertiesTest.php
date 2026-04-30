@@ -114,17 +114,24 @@ class ChemicalsCrudDangerPropertiesTest extends TestCase
 
         $namePrefix = 'Chemical '.Str::lower((string) Str::uuid());
 
+        $createTempPath = tempnam(sys_get_temp_dir(), 'chem_create_pdf_');
+        $this->assertNotFalse($createTempPath);
+        file_put_contents($createTempPath, "%PDF-1.7\n".random_bytes(64)."\n%%EOF");
+
         $createResponse = $this->post('/api/crud/chemicals', [
             'name' => $namePrefix.' with file',
-            'sdbfile' => UploadedFile::fake()->create('sdb-create.pdf', 32, 'application/pdf'),
+            'sdbfile' => new UploadedFile($createTempPath, 'sdb-create.pdf', 'application/pdf', null, true),
         ], [
             'Accept' => 'application/json',
         ]);
+
+        @unlink($createTempPath);
 
         $createResponse->assertCreated();
 
         $chemicalId = (int) $createResponse->json('id');
         $this->assertGreaterThan(0, $chemicalId);
+        $createResponse->assertJsonMissingPath('sdbfilecontent');
 
         $created = DB::table('chemicals')->where('id', $chemicalId)->first();
         $this->assertNotNull($created);
@@ -132,21 +139,79 @@ class ChemicalsCrudDangerPropertiesTest extends TestCase
         $this->assertSame('application/pdf', $created->sdbcontenttype);
         $this->assertNotNull($created->sdbfilecontent);
 
+        $updateTempPath = tempnam(sys_get_temp_dir(), 'chem_update_pdf_');
+        $this->assertNotFalse($updateTempPath);
+        file_put_contents($updateTempPath, "%PDF-1.7\n".random_bytes(96)."\n%%EOF");
+
         $updateResponse = $this->post('/api/crud/chemicals/'.$chemicalId, [
             '_method' => 'PUT',
-            'sdbfile' => UploadedFile::fake()->create('sdb-update.pdf', 48, 'application/pdf'),
+            'sdbfile' => new UploadedFile($updateTempPath, 'sdb-update.pdf', 'application/pdf', null, true),
         ], [
             'Accept' => 'application/json',
         ]);
 
+        @unlink($updateTempPath);
+
         $updateResponse->assertOk();
         $updateResponse->assertJsonPath('sdbfilename', 'sdb-update.pdf');
+        $updateResponse->assertJsonMissingPath('sdbfilecontent');
 
         $updated = DB::table('chemicals')->where('id', $chemicalId)->first();
         $this->assertNotNull($updated);
         $this->assertSame('sdb-update.pdf', $updated->sdbfilename);
         $this->assertSame('application/pdf', $updated->sdbcontenttype);
         $this->assertNotNull($updated->sdbfilecontent);
+    }
+
+    public function test_chemical_safety_datasheet_can_be_downloaded_via_legacy_endpoint(): void
+    {
+        Gate::before(static fn (): bool => true);
+
+        $this->actingAs($this->createUser('Chemicals Downloader', 'chemicals.downloader@example.com'), 'sanctum');
+
+        $tempPath = tempnam(sys_get_temp_dir(), 'chem_download_pdf_');
+        $this->assertNotFalse($tempPath);
+        $expectedContent = "%PDF-1.7\n".random_bytes(128)."\n%%EOF";
+        file_put_contents($tempPath, $expectedContent);
+
+        $createResponse = $this->post('/api/crud/chemicals', [
+            'name' => 'Chemical '.Str::lower((string) Str::uuid()),
+            'sdbfile' => new UploadedFile($tempPath, 'sdb-download.pdf', 'application/pdf', null, true),
+        ], [
+            'Accept' => 'application/json',
+        ]);
+
+        @unlink($tempPath);
+
+        $createResponse->assertCreated();
+        $chemicalId = (int) $createResponse->json('id');
+
+        $downloadResponse = $this->get('/api/v1/items/Chemical/'.$chemicalId.'/download');
+
+        $downloadResponse->assertOk();
+        $downloadResponse->assertHeader('content-type', 'application/pdf');
+        $this->assertStringContainsString(
+            'attachment; filename="sdb-download.pdf"',
+            (string) $downloadResponse->headers->get('content-disposition')
+        );
+        $this->assertSame($expectedContent, $downloadResponse->getContent());
+    }
+
+    public function test_chemical_safety_datasheet_download_returns_404_when_missing_file(): void
+    {
+        Gate::before(static fn (): bool => true);
+
+        $this->actingAs($this->createUser('Chemicals No File', 'chemicals.nofile@example.com'), 'sanctum');
+
+        $createResponse = $this->postJson('/api/crud/chemicals', [
+            'name' => 'Chemical '.Str::lower((string) Str::uuid()),
+        ]);
+
+        $createResponse->assertCreated();
+        $chemicalId = (int) $createResponse->json('id');
+
+        $downloadResponse = $this->get('/api/v1/items/Chemical/'.$chemicalId.'/download');
+        $downloadResponse->assertNotFound();
     }
 
     private function createUser(string $name, string $email): User

@@ -10,7 +10,7 @@ class BpmnTextContentValidator
 {
     public const ERROR_KEY = 'pages.process_editor.validation.invalid_text_content';
 
-    private const ALLOWED_TEXT_PATTERN = '/\A[a-zA-Z_ åäöÅÄÖ\-,.]*\z/u';
+    private const ALLOWED_TEXT_PATTERN = '/\A[0-9a-zA-Z_ åäöÅÄÖ\-,.]*\z/u';
 
     public function hasInvalidTextInXml(string $xml): bool
     {

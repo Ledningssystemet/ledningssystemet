@@ -18,7 +18,7 @@ class CrudResourceCatalog
 
         foreach ($this->configuredResources() as $resource => $modelClass) {
             $items[$resource] = [
-                'resource' => __($resource),
+                'resource' => $resource,
                 'model' => $modelClass,
             ];
         }

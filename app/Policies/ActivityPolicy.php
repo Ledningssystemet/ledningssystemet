@@ -12,7 +12,7 @@ class ActivityPolicy
      */
     public function viewAny(User $user): bool
     {
-        return $user->haveAnyAccessRights(['managementtools.edit']);
+        return true;
     }
 
     /**

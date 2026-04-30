@@ -12,7 +12,6 @@ use Tests\TestCase;
 
 class GenericCrudIndexTest extends TestCase
 {
-    protected $seed = true;
 
     protected function setUp(): void
     {
@@ -39,6 +38,9 @@ class GenericCrudIndexTest extends TestCase
         DB::statement('SET FOREIGN_KEY_CHECKS=0');
         if (Schema::hasTable('access_group_user')) {
             DB::table('access_group_user')->truncate();
+        }
+        if (Schema::hasTable('projects')) {
+            DB::table('projects')->truncate();
         }
         DB::table('users')->truncate();
         DB::statement('SET FOREIGN_KEY_CHECKS=1');

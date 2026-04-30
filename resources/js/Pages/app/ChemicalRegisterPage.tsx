@@ -200,6 +200,7 @@ export default function ChemicalRegisterPage({ route }: ChemicalRegisterPageProp
                     label: t('pages.chemical_register.column_safety_datasheet'),
                     type: 'text',
                     editable: false,
+                    hiddenInTable: true,
                     category: t('pages.chemical_register.category_files'),
                 },
                 {
@@ -210,6 +211,7 @@ export default function ChemicalRegisterPage({ route }: ChemicalRegisterPageProp
                     accept: 'application/pdf',
                     helpText: t('pages.chemical_register.help_upload_safety_datasheet'),
                     hiddenInTable: true,
+                    hiddenInDetails: true,
                     category: t('pages.chemical_register.category_files'),
                 },
                 {

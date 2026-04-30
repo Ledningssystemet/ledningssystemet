@@ -120,15 +120,6 @@ export function buildRequirementSourceRequirementsCrudConfig(
                 category: t('pages.requirement_sources.requirements.category_status'),
             },
             {
-                key: 'ordinal',
-                label: t('pages.requirement_sources.requirements.column_ordinal'),
-                type: 'number',
-                sortable: true,
-                editable: true,
-                required: true,
-                category: t('pages.requirement_sources.requirements.category_status'),
-            },
-            {
                 key: 'requirement_source_id',
                 label: t('pages.requirement_sources.requirements.column_requirement_source'),
                 type: 'select',

@@ -76,14 +76,16 @@ class ProcessBpmnTextValidationTest extends TestCase
 
     private function createProcessId(string $prefix): int
     {
+        $uniquePrefix = $prefix.' '.Str::lower((string) Str::uuid());
+
         $departmentId = DB::table('departments')->insertGetId([
-            'name' => $prefix.' '.Str::lower((string) Str::uuid()).' department',
+            'name' => $uniquePrefix.' department',
             'created_at' => now(),
             'updated_at' => now(),
         ]);
 
         return (int) DB::table('processes')->insertGetId([
-            'name' => $prefix.' draft',
+            'name' => $uniquePrefix.' draft',
             'description' => 'Draft description',
             'department_id' => $departmentId,
             'isstartprocess' => false,
