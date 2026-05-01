@@ -42,8 +42,6 @@ class ProjectsCrudContractTest extends TestCase
                 $table->id();
                 $table->string('name');
                 $table->text('description')->nullable();
-                $table->unsignedBigInteger('partner_id')->nullable();
-                $table->string('partner_name')->nullable();
                 $table->timestamps();
             });
         }

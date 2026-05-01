@@ -39,6 +39,7 @@ interface ObjectiveRecord {
 
 interface RiskRecord {
   id: number;
+  name: string;
   translated_name: string;
   probability_id: number | null;
   consequence_id: number | null;
@@ -324,7 +325,9 @@ export function useDashboardData() {
         }),
         axios.get<RiskRecord[] | CrudResponse<RiskRecord>>('/api/crud/risks', {
           params: {
-            '$select': 'id,translated_name,probability_id,consequence_id,post_probability_id,post_consequence_id',
+            '$select': 'id,name,translated_name,probability_id,consequence_id',
+            sort: '-risk_level_ordinal',
+              'filter': { 'replacedby_id': 'is_null', 'riskowner_id': 'current_user', 'assessed_at': 'not_null' },
           },
         }),
         axios.get<ProcessRecord[] | CrudResponse<ProcessRecord>>('/api/crud/processes', {

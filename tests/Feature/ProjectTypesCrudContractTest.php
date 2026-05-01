@@ -34,8 +34,6 @@ class ProjectTypesCrudContractTest extends TestCase
 				$table->id();
 				$table->string('name');
 				$table->text('description')->nullable();
-				$table->unsignedBigInteger('partner_id')->nullable();
-				$table->string('partner_name')->nullable();
 				$table->timestamps();
 			});
 		}
@@ -49,7 +47,6 @@ class ProjectTypesCrudContractTest extends TestCase
 				$table->text('consequencedescription')->nullable();
 				$table->unsignedBigInteger('probability_id')->nullable();
 				$table->unsignedBigInteger('consequence_id')->nullable();
-				$table->unsignedBigInteger('partner_id')->nullable();
 				$table->timestamps();
 			});
 		}

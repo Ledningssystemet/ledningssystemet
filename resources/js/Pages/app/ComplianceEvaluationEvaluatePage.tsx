@@ -186,14 +186,6 @@ function RequirementCard({
                 </Button>
                 <Button
                     size="sm"
-                    variant={isNA ? 'default' : 'outline'}
-                    onClick={toggleNA}
-                >
-                    <MaterialSymbol name="disabled_by_default" className="h-4 w-4 mr-1" />
-                    {t('pages.compliance_evaluation_evaluate.not_applicable')}
-                </Button>
-                <Button
-                    size="sm"
                     variant="outline"
                     onClick={() => setShowFindings((v) => !v)}
                 >

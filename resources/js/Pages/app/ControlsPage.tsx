@@ -34,7 +34,6 @@ export default function ControlsPage({ route }: ControlsPageProps) {
             'description',
             'statusdescription',
             'responsible_user_id',
-            'not_applicable_at',
             'reviewed_at',
             'tags',
         ],
@@ -44,73 +43,16 @@ export default function ControlsPage({ route }: ControlsPageProps) {
             tag_id: filters.tag_id || undefined,
             responsible_user_id: filters.responsible_user_id || undefined,
             show_my_only: filters.show_my_only || undefined,
-            hide_without_issues: filters.hide_without_issues || undefined,
-            show_not_applicable: filters.show_not_applicable || undefined,
+            hide_without_issues: filters.hide_without_issues || undefined
         }),
         getItemStatus: (item) => {
             if (!item.responsible_user_id) {
                 return 'danger';
             }
 
-            if (item.not_applicable_at) {
-                return 'info';
-            }
-
             return null;
         },
         rowActions: [
-            {
-                key: 'toggle-applicability',
-                label: t('pages.controls.mark_not_applicable'),
-                variant: 'outline',
-                isVisible: (item) => !item.not_applicable_at,
-                onClick: async (item) => {
-                    if (!window.confirm(t('pages.controls.mark_not_applicable_confirm'))) {
-                        return;
-                    }
-
-                    const response = await fetch(`/api/crud/controls/${item.id}`, {
-                        method: 'PATCH',
-                        headers: {
-                            Accept: 'application/json',
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({
-                            not_applicable_at: new Date().toISOString(),
-                        }),
-                    });
-
-                    if (!response.ok) {
-                        throw new Error(t('pages.controls.update_failed'));
-                    }
-                },
-            },
-            {
-                key: 'toggle-applicability-reset',
-                label: t('pages.controls.mark_applicable'),
-                variant: 'outline',
-                isVisible: (item) => Boolean(item.not_applicable_at),
-                onClick: async (item) => {
-                    if (!window.confirm(t('pages.controls.mark_applicable_confirm'))) {
-                        return;
-                    }
-
-                    const response = await fetch(`/api/crud/controls/${item.id}`, {
-                        method: 'PATCH',
-                        headers: {
-                            Accept: 'application/json',
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({
-                            not_applicable_at: null,
-                        }),
-                    });
-
-                    if (!response.ok) {
-                        throw new Error(t('pages.controls.update_failed'));
-                    }
-                },
-            },
             {
                 key: 'actions',
                 label: t('pages.controls.actions_button'),
@@ -176,14 +118,6 @@ export default function ControlsPage({ route }: ControlsPageProps) {
                 category: t('pages.controls.category_status'),
             },
             {
-                key: 'not_applicable_at',
-                label: t('pages.controls.column_not_applicable_at'),
-                type: 'date',
-                sortable: true,
-                editable: false,
-                category: t('pages.controls.category_status'),
-            },
-            {
                 key: 'reviewed_at',
                 label: t('pages.controls.column_reviewed_at'),
                 type: 'date',
@@ -214,15 +148,6 @@ export default function ControlsPage({ route }: ControlsPageProps) {
             {
                 key: 'hide_without_issues',
                 label: t('pages.controls.filter_hide_without_issues'),
-                type: 'boolean',
-                hidden: true,
-                editable: false,
-                filterable: true,
-                options: [{ value: '1', label: t('pages.controls.option_yes') }],
-            },
-            {
-                key: 'show_not_applicable',
-                label: t('pages.controls.filter_show_not_applicable'),
                 type: 'boolean',
                 hidden: true,
                 editable: false,

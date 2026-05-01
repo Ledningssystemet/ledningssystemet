@@ -44,9 +44,6 @@ class ProjectTypeRiskTemplatePolicy
      */
     public function delete(User $user, ProjectTypeRiskTemplate $riskProjectTypeRiskTemplate = new ProjectTypeRiskTemplate): bool
     {
-        if (null !== $riskProjectTypeRiskTemplate->partner_id) {
-            return false;
-        }
 
         return $user->haveAnyAccessRights(['managementtools.edit']);
     }

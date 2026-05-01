@@ -21,7 +21,7 @@ export default function ProjectTypesPage({ route }: ProjectTypesPageProps) {
             defaultSort: 'name',
             createTitle: t('pages.project_types.create_title'),
             editTitle: t('pages.project_types.edit_title'),
-            selectFields: ['id', 'name', 'description', 'partner_id', 'partner_name'],
+            selectFields: ['id', 'name', 'description'],
             subTableActions: [
                 {
                     key: 'templates',
@@ -31,16 +31,15 @@ export default function ProjectTypesPage({ route }: ProjectTypesPageProps) {
                     dialogTitle: (item) => t('pages.project_types.templates.panel_title', { type: String(item.name || '') }),
                     dialogDescription: t('pages.project_types.templates.panel_description'),
                     getConfig: (item): CrudModuleConfig => {
-                        const isReadOnly = Boolean(item.partner_id);
                         return {
                             apiUrl: '/api/crud/risk-project-type-risk-templates',
                             perPage: 100,
                             defaultSort: 'name',
                             fixedFilters: { project_type_id: Number(item.id) },
                             createDefaults: { project_type_id: Number(item.id) },
-                            canCreate: !isReadOnly,
-                            canEdit: !isReadOnly,
-                            canDelete: !isReadOnly,
+                            canCreate: true,
+                            canEdit: true,
+                            canDelete: true,
                             createTitle: t('pages.project_types.templates.create_title'),
                             editTitle: t('pages.project_types.templates.edit_title'),
                             selectFields: ['id', 'project_type_id', 'name', 'scenariodescription', 'consequencedescription', 'probability_id', 'consequence_id', 'controls'],
@@ -59,12 +58,6 @@ export default function ProjectTypesPage({ route }: ProjectTypesPageProps) {
             ],
             fields: [
                 { key: 'name', label: t('pages.project_types.column_name'), type: 'text', sortable: true, editable: true, required: true, masterLabel: true, category: t('pages.project_types.category_general') },
-                {
-                    key: 'partner_info', label: t('pages.project_types.column_partner_info'), type: 'text', sortable: false, editable: false,
-                    renderCell: (_, row) => row.partner_id ? t('pages.project_types.partner_info', { partner: String(row.partner_name ?? '') }) : '',
-                    renderDetail: (_, row) => row.partner_id ? t('pages.project_types.partner_info', { partner: String(row.partner_name ?? '') }) : '',
-                    category: t('pages.project_types.category_general'),
-                },
                 { key: 'description', label: t('pages.project_types.column_description'), type: 'textarea', sortable: false, editable: true, required: true, masterDescription: true, category: t('pages.project_types.category_general') },
             ],
         }),

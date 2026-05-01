@@ -36,7 +36,6 @@ class ControlsCrudContractTest extends TestCase
                 $table->text('description')->nullable();
                 $table->unsignedBigInteger('responsible_user_id')->nullable();
                 $table->text('statusdescription')->nullable();
-                $table->timestamp('not_applicable_at')->nullable();
                 $table->date('reviewed_at')->nullable();
                 $table->timestamps();
             });
@@ -117,7 +116,6 @@ class ControlsCrudContractTest extends TestCase
         DB::table('controls')->insert([
             'name' => 'Not applicable control',
             'description' => 'Should be hidden by default',
-            'not_applicable_at' => now(),
             'created_at' => now(),
             'updated_at' => now(),
         ]);
@@ -129,7 +127,7 @@ class ControlsCrudContractTest extends TestCase
         $tagId = (int) DB::table('tags')->where('name', 'ISO 27001')->value('id');
         $this->assertGreaterThan(0, $tagId);
 
-        $defaultIndex = $this->getJson('/api/crud/controls?paginate=0&%24select=id,name,responsible_user_id,not_applicable_at,tags');
+        $defaultIndex = $this->getJson('/api/crud/controls?paginate=0&%24select=id,name,responsible_user_id,tags');
         $defaultIndex->assertOk();
         $rows = collect($defaultIndex->json());
 
@@ -146,17 +144,17 @@ class ControlsCrudContractTest extends TestCase
         $this->assertTrue($myRows->contains(fn (array $row): bool => (int) $row['id'] === $activeControlId));
         $this->assertFalse($myRows->contains(fn (array $row): bool => ($row['name'] ?? null) === 'Other user control'));
 
-        $hideWithoutIssues = $this->getJson('/api/crud/controls?paginate=0&hide_without_issues=1&show_not_applicable=1&%24select=id,name,responsible_user_id');
+        $hideWithoutIssues = $this->getJson('/api/crud/controls?paginate=0&hide_without_issues=1&%24select=id,name,responsible_user_id');
         $hideWithoutIssues->assertOk();
         $issueRows = collect($hideWithoutIssues->json());
         $this->assertTrue($issueRows->contains(fn (array $row): bool => (int) $row['id'] === $missingOwnerControlId));
         $this->assertFalse($issueRows->contains(fn (array $row): bool => (int) $row['id'] === $activeControlId));
 
-        $tagFiltered = $this->getJson('/api/crud/controls?paginate=0&tag_id='.$tagId.'&show_not_applicable=1&%24select=id,name');
+        $tagFiltered = $this->getJson('/api/crud/controls?paginate=0&tag_id='.$tagId.'&%24select=id,name');
         $tagFiltered->assertOk();
         $this->assertSame([$activeControlId], collect($tagFiltered->json())->pluck('id')->all());
 
-        $showNotApplicable = $this->getJson('/api/crud/controls?paginate=0&show_not_applicable=1&%24select=id,name,not_applicable_at');
+        $showNotApplicable = $this->getJson('/api/crud/controls?paginate=0&%24select=id,name');
         $showNotApplicable->assertOk();
         $this->assertTrue(collect($showNotApplicable->json())->contains(fn (array $row): bool => ($row['name'] ?? null) === 'Not applicable control'));
     }

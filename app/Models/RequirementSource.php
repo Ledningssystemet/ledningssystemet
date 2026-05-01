@@ -17,7 +17,7 @@ class RequirementSource extends Model
 
     protected $table = 'requirement_sources';
 
-    protected $fillable = ['name', 'reference', 'description', 'responsible_user_id', 'approved_at', 'not_applicable_at', 'max_sanction_fee'];
+    protected $fillable = ['name', 'reference', 'description', 'responsible_user_id', 'approved_at', 'max_sanction_fee'];
 
     protected function casts(): array
     {
@@ -25,7 +25,6 @@ class RequirementSource extends Model
             'created_at' => 'datetime',
             'updated_at' => 'datetime',
             'approved_at' => 'datetime',
-            'not_applicable_at' => 'datetime',
         ];
     }
 
@@ -37,7 +36,6 @@ class RequirementSource extends Model
             'description' => ['nullable', 'string'],
             'responsible_user_id' => ['nullable', 'integer', 'min:0', 'exists:users,id'],
             'approved_at' => ['nullable', 'date'],
-            'not_applicable_at' => ['nullable', 'date'],
             'max_sanction_fee' => ['nullable', 'integer', 'min:0'],
         ];
     }

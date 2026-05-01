@@ -44,9 +44,6 @@ class ProjectTypePolicy
      */
     public function delete(User $user, ProjectType $riskProjectType = new ProjectType): bool
     {
-        if (null !== $riskProjectType->partner_id) {
-            return false;
-        }
 
         return $user->haveAnyAccessRights(['managementtools.edit']);
     }

@@ -23,7 +23,7 @@ class Control extends Model
 
     protected $table = 'controls';
 
-    protected $fillable = ['name', 'description', 'responsible_user_id', 'statusdescription', 'not_applicable_at', 'reviewed_at', 'tags'];
+    protected $fillable = ['name', 'description', 'responsible_user_id', 'statusdescription', 'reviewed_at', 'tags'];
 
     protected $appends = ['tags'];
 
@@ -39,7 +39,6 @@ class Control extends Model
         return [
             'created_at' => 'datetime',
             'updated_at' => 'datetime',
-            'not_applicable_at' => 'datetime',
             'reviewed_at' => 'datetime',
         ];
     }
@@ -51,7 +50,6 @@ class Control extends Model
             'description' => ['required', 'string'],
             'responsible_user_id' => ['nullable', 'integer', 'min:0', 'exists:users,id'],
             'statusdescription' => ['nullable', 'string'],
-            'not_applicable_at' => ['nullable', 'date'],
             'reviewed_at' => ['nullable', 'date'],
             'tags' => ['sometimes', 'array'],
         ];
@@ -118,10 +116,6 @@ class Control extends Model
 
     public static function applyCrudIndexFilters(Builder|QueryBuilder $query, Request $request): void
     {
-        if (! $request->boolean('show_not_applicable')) {
-            $query->whereNull('not_applicable_at');
-        }
-
         if ($request->boolean('show_my_only') && $request->user()) {
             $query->where('responsible_user_id', $request->user()->id);
         }

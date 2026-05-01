@@ -41,8 +41,6 @@ export default function SupplierCategoriesPage({ route }: SupplierCategoriesPage
                 'reassessment_interval',
                 'defaultvalue',
                 'formulaname',
-                'partner_id',
-                'partner_name',
             ],
             fields: [
                 {
@@ -53,26 +51,6 @@ export default function SupplierCategoriesPage({ route }: SupplierCategoriesPage
                     editable: true,
                     required: true,
                     masterLabel: true,
-                    category: t('pages.supplier_categories.category_general'),
-                },
-                {
-                    key: 'partner_info',
-                    label: t('pages.supplier_categories.column_partner_info'),
-                    type: 'text',
-                    sortable: false,
-                    editable: false,
-                    renderCell: (_, row) =>
-                        row.partner_id
-                            ? t('pages.supplier_categories.partner_info', {
-                                  partner: String(row.partner_name ?? ''),
-                              })
-                            : '',
-                    renderDetail: (_, row) =>
-                        row.partner_id
-                            ? t('pages.supplier_categories.partner_info', {
-                                  partner: String(row.partner_name ?? ''),
-                              })
-                            : '',
                     category: t('pages.supplier_categories.category_general'),
                 },
                 {
@@ -133,8 +111,6 @@ export default function SupplierCategoriesPage({ route }: SupplierCategoriesPage
             return null;
         }
 
-        const isReadOnly = Boolean(activeCategoryForRequirements.partner_id);
-
         return {
             apiUrl: '/api/crud/supplier-requirements',
             perPage: 100,
@@ -147,12 +123,12 @@ export default function SupplierCategoriesPage({ route }: SupplierCategoriesPage
                 supplier_category_id: Number(activeCategoryForRequirements.id),
                 reassessment: false,
             },
-            canCreate: !isReadOnly,
-            canEdit: !isReadOnly,
-            canDelete: !isReadOnly,
+            canCreate: true,
+            canEdit: true,
+            canDelete: true,
             createTitle: t('pages.supplier_categories.requirements.create_title'),
             editTitle: t('pages.supplier_categories.requirements.edit_title'),
-            selectFields: ['id', 'name', 'description', 'reassessment', 'supplier_category_id', 'partner_id'],
+            selectFields: ['id', 'name', 'description', 'reassessment', 'supplier_category_id'],
             fields: [
                 {
                     key: 'supplier_category_id',

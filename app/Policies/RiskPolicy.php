@@ -100,8 +100,6 @@ class RiskPolicy
         if ($user->haveAnyAccessRights(['riskadministrator.edit']))
             return true;
 
-        if (null != $risk->partner_id)
-            return false;
 
         return $user->can('update', $risk);
     }

@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Spatie\QueryBuilder\AllowedFilter;
+use Spatie\QueryBuilder\AllowedSort;
 use Spatie\QueryBuilder\QueryBuilder;
 use Symfony\Component\HttpFoundation\Response;
 use Throwable;
@@ -40,7 +41,7 @@ class GenericCrudController extends Controller
 
         $query = QueryBuilder::for($modelClass::query())
             ->allowedFilters(...$allowedFilters)
-            ->allowedSorts(...$metadata['selectable']);
+            ->allowedSorts(...$this->allowedSortsFor($modelClass, $metadata['selectable']));
 
         ['with' => $with, 'withCount' => $withCount] = $this->parseExtends($request, $modelClass);
 
@@ -85,6 +86,11 @@ class GenericCrudController extends Controller
             $this->filterResultAttributes($result, $selectedColumns, $selectedAppends, $with, $withCount);
 
             return response()->json($result);
+        }
+
+        if($request->has('limit')) {
+            $limit = $request->integer('limit', 100);
+            $query->limit($limit);
         }
 
         $result = $query->get();
@@ -711,6 +717,38 @@ class GenericCrudController extends Controller
         return array_filter($resolved, static fn (mixed $relation): bool => is_string($relation) && $relation !== '');
     }
 
+    /**
+     * @param class-string<Model> $modelClass
+     * @param array<int, string> $defaultSorts
+     * @return array<int, string|AllowedSort>
+     */
+    private function allowedSortsFor(string $modelClass, array $defaultSorts): array
+    {
+        $allowedSorts = $defaultSorts;
+
+        if (! method_exists($modelClass, 'crudSorts')) {
+            return $allowedSorts;
+        }
+
+        $configuredSorts = $modelClass::crudSorts();
+        if (! is_array($configuredSorts)) {
+            return $allowedSorts;
+        }
+
+        foreach ($configuredSorts as $sort) {
+            if (is_string($sort) && trim($sort) !== '') {
+                $allowedSorts[] = $sort;
+                continue;
+            }
+
+            if ($sort instanceof AllowedSort) {
+                $allowedSorts[] = $sort;
+            }
+        }
+
+        return $allowedSorts;
+    }
+
     private function resolveRelationMethod(Model $model, array $candidates): ?string
     {
         foreach ($candidates as $method) {
@@ -794,6 +832,11 @@ class GenericCrudController extends Controller
             return $normalized;
         }
 
+        // Convert current_user to the current user's ID if applicable'
+        if ($value === 'current_user') {
+            $value = auth()->id();
+        }
+
         if (! is_numeric($value)) {
             throw ValidationException::withMessages([
                 'filter' => [__('api.generic_crud.filter_value_numeric', ['field' => $field])],
@@ -871,9 +914,6 @@ class GenericCrudController extends Controller
             return;
         }
 
-        $defaultAppends = method_exists($model, 'getAppends') ? $model->getAppends() : [];
-        $allowedAttributes = array_values(array_unique(array_merge($allowedAttributes, $defaultAppends)));
-
         // Get all current attributes including eager-loaded relations
         $allAttributes = array_keys($model->toArray());
 
@@ -881,9 +921,6 @@ class GenericCrudController extends Controller
         $attributesToHide = array_diff($allAttributes, $allowedAttributes);
 
         if ($attributesToHide !== []) {
-            // Make all attributes visible first to ensure we can hide any of them
-            $model->makeVisible($model->getHidden());
-
             // Then hide only the unselected ones
             $model->makeHidden($attributesToHide);
         }

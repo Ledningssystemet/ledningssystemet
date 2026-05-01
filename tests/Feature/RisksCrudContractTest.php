@@ -383,6 +383,119 @@ class RisksCrudContractTest extends TestCase
         $this->assertArrayNotHasKey('context_id', $risk);
     }
 
+    public function test_risks_index_can_sort_by_risk_level_ordinal_desc(): void
+    {
+        Gate::before(static fn (): bool => true);
+
+        $user = $this->createUser('Risk Sort User', 'risk.sort.user@example.com');
+        $this->actingAs($user, 'sanctum');
+
+        $departmentId = DB::table('departments')->insertGetId([
+            'name' => 'Risk Sort Department',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $probabilityLowId = DB::table('probability_levels')->insertGetId([
+            'name' => 'Low Probability',
+            'description' => 'Low probability',
+            'ordinal' => 1,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $probabilityHighId = DB::table('probability_levels')->insertGetId([
+            'name' => 'High Probability',
+            'description' => 'High probability',
+            'ordinal' => 5,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $consequenceLowId = DB::table('consequence_levels')->insertGetId([
+            'name' => 'Low Consequence',
+            'description' => 'Low consequence',
+            'ordinal' => 1,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $consequenceHighId = DB::table('consequence_levels')->insertGetId([
+            'name' => 'High Consequence',
+            'description' => 'High consequence',
+            'ordinal' => 5,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $riskLevelLowId = DB::table('risk_levels')->insertGetId([
+            'name' => 'Low Risk',
+            'description' => 'Low risk level',
+            'ordinal' => 1,
+            'color' => '00ff00',
+            'reassessment_days_withoutplans' => 365,
+            'reassessment_days_withplans' => 180,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $riskLevelHighId = DB::table('risk_levels')->insertGetId([
+            'name' => 'High Risk',
+            'description' => 'High risk level',
+            'ordinal' => 9,
+            'color' => 'ff0000',
+            'reassessment_days_withoutplans' => 365,
+            'reassessment_days_withplans' => 180,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        DB::table('risk_level_mappings')->insert([
+            [
+                'probability_level_id' => $probabilityLowId,
+                'consequence_level_id' => $consequenceLowId,
+                'risk_level_id' => $riskLevelLowId,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'probability_level_id' => $probabilityHighId,
+                'consequence_level_id' => $consequenceHighId,
+                'risk_level_id' => $riskLevelHighId,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+        ]);
+
+        $highRiskId = DB::table('risks')->insertGetId([
+            'name' => 'High risk entry',
+            'department_id' => $departmentId,
+            'riskowner_id' => $user->id,
+            'probability_id' => $probabilityHighId,
+            'consequence_id' => $consequenceHighId,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        DB::table('risks')->insert([
+            'name' => 'Low risk entry',
+            'department_id' => $departmentId,
+            'riskowner_id' => $user->id,
+            'probability_id' => $probabilityLowId,
+            'consequence_id' => $consequenceLowId,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $response = $this->getJson('/api/crud/risks?paginate=0&showdraft=1&showapproved=1&sort=-risk_level_ordinal&limit=1&%24select=id,name');
+
+        $response->assertOk();
+        $rows = collect($response->json());
+
+        $this->assertCount(1, $rows);
+        $this->assertSame($highRiskId, (int) $rows->first()['id']);
+    }
+
     private function createUser(string $name, string $email): User
     {
         $id = DB::table('users')->insertGetId([

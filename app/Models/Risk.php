@@ -14,7 +14,9 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Database\Eloquent\Casts\Attribute;
+use Spatie\QueryBuilder\AllowedSort;
 use Spatie\QueryBuilder\QueryBuilder;
+use Spatie\QueryBuilder\Sorts\Sort;
 use Throwable;
 
 class Risk extends Model
@@ -56,11 +58,6 @@ class Risk extends Model
         }
 
         return $this->replaceContextNamePlaceholder($this->attributes['name'] ?? null);
-    }
-
-    public function getNameAttribute(mixed $value): mixed
-    {
-        return $this->replaceContextNamePlaceholder($value);
     }
 
     public function getTranslatedScenariodescriptionAttribute(): ?string
@@ -211,6 +208,30 @@ class Risk extends Model
         return ['tags', 'risk_controls', 'risk_level_id', 'translated_name', 'translated_scenariodescription', 'translated_consequencedescription'];
     }
 
+    public static function crudSorts(): array
+    {
+        return [
+            AllowedSort::custom('risk_level_ordinal', new class implements Sort {
+                public function __invoke(Builder $query, bool $descending, string $property): void
+                {
+                    $direction = $descending ? 'desc' : 'asc';
+
+                    $query->orderByRaw(
+                        "(select rl.ordinal
+                            from risk_level_mappings as rlm
+                            inner join risk_levels as rl on rl.id = rlm.risk_level_id
+                            where rlm.probability_level_id = coalesce(risks.post_probability_id, risks.probability_id)
+                              and rlm.consequence_level_id = coalesce(risks.post_consequence_id, risks.consequence_id)
+                            limit 1) {$direction}"
+                    );
+
+                    // Stable tie-breaker keeps top-10 deterministic.
+                    $query->orderBy('risks.id', $direction);
+                }
+            }),
+        ];
+    }
+
     protected static function booted(): void
     {
         static::saving(function (self $model): void {
@@ -225,20 +246,6 @@ class Risk extends Model
 
     public static function applyCrudIndexFilters(Builder|QueryBuilder $query, Request $request): void
     {
-        // Default behavior from legacy page: show draft risks, hide approved unless explicitly requested.
-        $showDraft = $request->boolean('showdraft', true);
-        $showApproved = $request->boolean('showapproved', false);
-
-        if ($showDraft && ! $showApproved) {
-            $query->whereNull('assessed_at');
-        } elseif ($showApproved && ! $showDraft) {
-            $query->whereNotNull('assessed_at');
-        }
-
-        if ($request->boolean('showmyonly') && $request->user()) {
-            $query->where('riskowner_id', $request->user()->id);
-        }
-
         $tagId = $request->integer('tag_id');
         if ($tagId > 0) {
             $query->whereHas('int_object_tags_as_object_tags', function (Builder $tagQuery) use ($tagId): void {
@@ -289,6 +296,9 @@ class Risk extends Model
                     ->where('rlm.risk_level_id', $riskLevelId);
             });
         }
+
+        if(1 != (int) request()->input('replaced_risks', 0))
+            $query->whereNull('replacedby_id');
     }
 
     public static function getPrettyName($plural = false): string

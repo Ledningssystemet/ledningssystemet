@@ -21,47 +21,6 @@ class MenuCategoryBuilder
         $categories = [];
 
         $categories[] = [
-            'label' => __('My work'),
-            'categoryIcon' => 'how_to_reg',
-            'columns' => [
-                [
-                    'heading' => __('My responsibility'),
-                    'items' => [
-                        [
-                            'key' => 'my-risks',
-                            'label' => __('My risks'),
-                            'icon' => 'warning',
-                            'description' => __('Risks that you are responsible for managing'),
-                        ],
-                        [
-                            'key' => 'my-tasks',
-                            'label' => __('My tasks'),
-                            'icon' => 'checklist',
-                            'description' => __('Activities and control actions assigned to you'),
-                        ],
-                    ],
-                ],
-                [
-                    'heading' => __('Process support'),
-                    'items' => [
-                        [
-                            'key' => 'chemical-register',
-                            'label' => __('Chemical register'),
-                            'icon' => 'science',
-                            'description' => __('An overview of the chemicals we use and how we handle them safely'),
-                        ],
-                        [
-                            'key' => 'documents',
-                            'label' => __('Documents'),
-                            'icon' => 'description',
-                            'description' => __('The documents we use to support our processes, including policies, instructions, and records'),
-                        ],
-                    ],
-                ],
-            ],
-        ];
-
-        $categories[] = [
             'label' => __('Inventory'),
             'categoryIcon' => 'layers',
             'columns' => [
@@ -143,6 +102,23 @@ class MenuCategoryBuilder
                             'label' => __('Information handling plan'),
                             'icon' => 'description',
                             'description' => __('An overview of our information handling, including diary and archiving'),
+                        ],
+                    ],
+                ],
+                [
+                    'heading' => __('Process support'),
+                    'items' => [
+                        [
+                            'key' => 'chemical-register',
+                            'label' => __('Chemical register'),
+                            'icon' => 'science',
+                            'description' => __('An overview of the chemicals we use and how we handle them safely'),
+                        ],
+                        [
+                            'key' => 'documents',
+                            'label' => __('Documents'),
+                            'icon' => 'description',
+                            'description' => __('The documents we use to support our processes, including policies, instructions, and records'),
                         ],
                     ],
                 ],

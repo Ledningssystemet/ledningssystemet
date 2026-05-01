@@ -67,19 +67,12 @@ export default function RequirementSourcesPage({ route }: RequirementSourcesPage
                 'responsible_user_id',
                 'max_sanction_fee',
                 'approved_at',
-                'not_applicable_at',
-                'partner_id',
-                'partner_name',
                 'needsapproval',
                 'applicabilitymissingcount',
             ],
             getItemStatus: (item) => {
                 if (!item.responsible_user_id) {
                     return 'danger';
-                }
-
-                if (item.not_applicable_at) {
-                    return 'info';
                 }
 
                 if (item.needsapproval && currentUserId && item.responsible_user_id === currentUserId) {
@@ -106,7 +99,6 @@ export default function RequirementSourcesPage({ route }: RequirementSourcesPage
                         const needsApproval = item.needsapproval !== undefined ? Boolean(item.needsapproval) : !item.approved_at;
                         return Boolean(
                             currentUserId &&
-                                !item.not_applicable_at &&
                                 needsApproval &&
                                 item.responsible_user_id === currentUserId
                         );
@@ -122,41 +114,10 @@ export default function RequirementSourcesPage({ route }: RequirementSourcesPage
                     },
                 },
                 {
-                    key: 'mark-not-applicable',
-                    label: t('pages.requirement_sources.mark_not_applicable'),
-                    variant: 'outline',
-                    isVisible: (item) => Boolean(item.partner_id && !item.not_applicable_at),
-                    onClick: async (item) => {
-                        if (!window.confirm(t('pages.requirement_sources.mark_not_applicable_confirm'))) {
-                            return;
-                        }
-
-                        await patchRequirementSource(Number(item.id), {
-                            not_applicable_at: new Date().toISOString(),
-                        });
-                    },
-                },
-                {
-                    key: 'mark-applicable',
-                    label: t('pages.requirement_sources.mark_applicable'),
-                    variant: 'outline',
-                    isVisible: (item) => Boolean(item.partner_id && item.not_applicable_at),
-                    onClick: async (item) => {
-                        if (!window.confirm(t('pages.requirement_sources.mark_applicable_confirm'))) {
-                            return;
-                        }
-
-                        await patchRequirementSource(Number(item.id), {
-                            not_applicable_at: null,
-                        });
-                    },
-                },
-                {
                     key: 'soa-export',
                     label: t('pages.requirement_sources.export_soa'),
                     variant: 'outline',
                     refreshOnComplete: false,
-                    isVisible: (item) => !(item.partner_id && item.not_applicable_at),
                     onClick: (item) => {
                         window.open(`/api/v1/ReportCentral/StatementOfApplicability/${item.id}`, '_blank', 'noopener,noreferrer');
                     },
@@ -228,37 +189,8 @@ export default function RequirementSourcesPage({ route }: RequirementSourcesPage
                     category: t('pages.requirement_sources.category_general'),
                 },
                 {
-                    key: 'partner_info',
-                    label: t('pages.requirement_sources.column_partner_info'),
-                    type: 'text',
-                    sortable: false,
-                    editable: false,
-                    renderCell: (_, row) =>
-                        row.partner_id
-                            ? t('pages.requirement_sources.partner_info', {
-                                  partner: String(row.partner_name ?? ''),
-                              })
-                            : '',
-                    renderDetail: (_, row) =>
-                        row.partner_id
-                            ? t('pages.requirement_sources.partner_info', {
-                                  partner: String(row.partner_name ?? ''),
-                              })
-                            : '',
-                    category: t('pages.requirement_sources.category_status'),
-                },
-                {
                     key: 'approved_at',
                     label: t('pages.requirement_sources.column_approved_at'),
-                    type: 'date',
-                    sortable: true,
-                    editable: false,
-                    hiddenInTable: true,
-                    category: t('pages.requirement_sources.category_status'),
-                },
-                {
-                    key: 'not_applicable_at',
-                    label: t('pages.requirement_sources.column_not_applicable_at'),
                     type: 'date',
                     sortable: true,
                     editable: false,
@@ -275,12 +207,9 @@ export default function RequirementSourcesPage({ route }: RequirementSourcesPage
             return null;
         }
 
-        const isReadOnly = Boolean(activeSourceForRequirements.not_applicable_at || activeSourceForRequirements.partner_id);
-
         return buildRequirementSourceRequirementsCrudConfig(t, {
             requirementSourceId: Number(activeSourceForRequirements.id),
             lockRequirementSourceId: true,
-            readOnly: isReadOnly,
         });
     }, [activeSourceForRequirements, t]);
 
