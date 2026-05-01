@@ -17,6 +17,7 @@ use App\Http\Controllers\Api\CustomPropertyCrudController;
 use App\Http\Controllers\Api\DocumentVersionActionController;
 use App\Http\Controllers\Api\GenericCrudController;
 use App\Http\Controllers\Api\LibraryDocumentController;
+use App\Http\Controllers\Api\LibraryDocumentDownloadController;
 use App\Http\Controllers\Api\MenuBadgeController;
 use App\Http\Controllers\Api\ObjectiveArchiveController;
 use App\Http\Controllers\Api\ProcessPublishController;
@@ -66,6 +67,7 @@ Route::middleware('auth:sanctum')->group(function (): void {
 
     // Library Documents - Custom controller for dual-mode support
     Route::post('/crud/library_documents', [LibraryDocumentController::class, 'store'])->name('api.crud.library_documents.store');
+    Route::get('/v1/LibraryDocument/{id}/download', [LibraryDocumentDownloadController::class, 'show'])->name('api.library-documents.download');
 
     // Generic CRUD routes
     Route::get('/crud/{resource}', [GenericCrudController::class, 'index'])->name('api.crud.index');

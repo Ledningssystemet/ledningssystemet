@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasStatus;
 use App\Models\Concerns\HasTags;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -15,6 +16,7 @@ use Spatie\QueryBuilder\QueryBuilder;
 class Agreement extends Model
 {
     use HasFactory;
+    use HasStatus;
     use HasTags;
 
     protected $table = 'agreements';

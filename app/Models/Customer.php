@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Models\Concerns\HasHistory;
 use App\Models\Concerns\HasMessages;
+use App\Models\Concerns\HasStatus;
 use App\Models\Concerns\HasTags;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -18,6 +19,7 @@ class Customer extends Model
     use HasFactory;
     use HasHistory;
     use HasMessages;
+    use HasStatus;
     use HasTags;
 
     protected $table = 'customers';

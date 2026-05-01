@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo, useRef } from 'react';
+import { useEffect, useState, useMemo, useRef, useCallback } from 'react';
 import { MaterialSymbol } from "@/components/ui/material-symbol";
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import AppLayout from '@/layouts/AppLayout';
@@ -46,12 +46,23 @@ export default function DocumentEditorPage({ route }: DocumentEditorPageProps) {
     const [libraryDocument, setLibraryDocument] = useState<LibraryDocument | null>(null);
     const [version, setVersion] = useState<DocumentVersion | null>(null);
     const [content, setContent] = useState<EditorContent>({ blocks: [] });
+    const [editorInitialContent, setEditorInitialContent] = useState<string>(JSON.stringify({ blocks: [] }));
     const [approverId, setApproverId] = useState<number | null>(null);
     const [approverOptions, setApproverOptions] = useState<Array<{ id: number; name: string }>>([]);
 
-    const canEdit = version && !version.finished_at && version.id !== undefined;
-    const canApprove = version && !version.approved_at && version.finished_at && true; // Check user is approver
-    const canFinish = version && !version.finished_at && canEdit;
+    const handleEditorChange = useCallback((newContent: EditorContent) => {
+        setContent(newContent);
+        setIsDirty(true);
+    }, []);
+
+    const canEdit = useMemo(
+        () => Boolean(version && !version.finished_at && version.id !== undefined),
+        [version?.id, version?.finished_at]
+    );
+    const canApprove = useMemo(
+        () => Boolean(version && !version.approved_at && version.finished_at),
+        [version?.id, version?.approved_at, version?.finished_at]
+    );
 
     useEffect(() => {
         const previousTitle = document.title;
@@ -96,7 +107,7 @@ export default function DocumentEditorPage({ route }: DocumentEditorPageProps) {
         const load = async () => {
             setLoading(true);
             setErrorKey(null);
-
+            setEditorInitialContent(JSON.stringify({ blocks: [] }));
             try {
                 // Load document info
                 const docQuery = new URLSearchParams({ $select: 'id,name' });
@@ -133,7 +144,6 @@ export default function DocumentEditorPage({ route }: DocumentEditorPageProps) {
                     const versionData = await versionResponse.json();
                     const versions = versionData.data || [versionData];
                     const latestVersion = versions[0];
-
                     if (latestVersion) {
                         setVersion(latestVersion);
                         setApproverId(latestVersion.approver_id);
@@ -142,9 +152,14 @@ export default function DocumentEditorPage({ route }: DocumentEditorPageProps) {
                             try {
                                 const parsed = JSON.parse(latestVersion.contents);
                                 setContent(parsed);
+                                setEditorInitialContent(latestVersion.contents);
                             } catch {
                                 setContent({ blocks: [] });
+                                setEditorInitialContent(JSON.stringify({ blocks: [] }));
                             }
+                        } else {
+                            setContent({ blocks: [] });
+                            setEditorInitialContent(JSON.stringify({ blocks: [] }));
                         }
                     }
                 }
@@ -153,7 +168,9 @@ export default function DocumentEditorPage({ route }: DocumentEditorPageProps) {
                     setErrorKey('pages.document_editor.load_error');
                 }
             } finally {
-                setLoading(false);
+                if (!controller.signal.aborted) {
+                    setLoading(false);
+                }
             }
         };
 
@@ -422,12 +439,9 @@ export default function DocumentEditorPage({ route }: DocumentEditorPageProps) {
                     <div>
                         <DocumentEditor
                             ref={editorRef}
-                            initialContent={JSON.stringify(content)}
+                            initialContent={editorInitialContent}
                             readOnly={!canEdit}
-                            onChange={(newContent) => {
-                                setContent(newContent);
-                                setIsDirty(true);
-                            }}
+                            onChange={handleEditorChange}
                         />
                     </div>
                 </section>

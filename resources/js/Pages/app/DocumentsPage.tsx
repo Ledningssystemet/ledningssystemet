@@ -150,7 +150,7 @@ export default function DocumentsPage({ route }: DocumentsPageProps) {
                         );
                     }
 
-                    if (!row.filename || row.contentlength === 0) {
+                    if (row.contentlength === 0) {
                         return '—';
                     }
 
@@ -177,7 +177,7 @@ export default function DocumentsPage({ route }: DocumentsPageProps) {
                         );
                     }
 
-                    if (!row.filename || row.contentlength === 0) {
+                    if (row.contentlength === 0) {
                         return '—';
                     }
 
@@ -195,7 +195,7 @@ export default function DocumentsPage({ route }: DocumentsPageProps) {
             {
                 key: 'created_at',
                 label: t('pages.documents.column_created_at'),
-                type: 'text',
+                type: 'datetime',
                 editable: false,
                 sortable: true,
                 hiddenInTable: false,
@@ -204,7 +204,7 @@ export default function DocumentsPage({ route }: DocumentsPageProps) {
             {
                 key: 'updated_at',
                 label: t('pages.documents.column_updated_at'),
-                type: 'text',
+                type: 'datetime',
                 editable: false,
                 sortable: true,
                 hiddenInTable: true,

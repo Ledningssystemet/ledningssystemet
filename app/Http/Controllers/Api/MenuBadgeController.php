@@ -43,7 +43,7 @@ class MenuBadgeController extends Controller
                     ->count();
 
                 if ($count > 0) {
-                    $items['avvikelser'] = [
+                    $items['findings'] = [
                         'count'    => (string) $count,
                         'severity' => 'warning',
                     ];

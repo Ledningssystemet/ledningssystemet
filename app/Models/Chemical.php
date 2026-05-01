@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasStatus;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
@@ -12,6 +13,7 @@ use Illuminate\Support\Facades\Validator;
 class Chemical extends Model
 {
     use HasFactory;
+    use HasStatus;
 
     protected $table = 'chemicals';
 

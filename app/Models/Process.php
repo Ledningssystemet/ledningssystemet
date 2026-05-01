@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasStatus;
 use App\Services\Bpmn\BpmnTextContentValidator;
 use Closure;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -15,6 +16,7 @@ use Illuminate\Support\Facades\Validator;
 class Process extends Model
 {
     use HasFactory;
+    use HasStatus;
 
     protected $table = 'processes';
 

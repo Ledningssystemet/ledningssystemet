@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasStatus;
 use App\Models\Concerns\HasTags;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -14,6 +15,7 @@ use Illuminate\Support\Facades\Validator;
 class Site extends Model
 {
     use HasFactory;
+    use HasStatus;
     use HasTags;
 
     protected $table = 'sites';

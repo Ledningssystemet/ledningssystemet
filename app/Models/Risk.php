@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasStatus;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -19,6 +20,7 @@ use Throwable;
 class Risk extends Model
 {
     use HasFactory;
+    use HasStatus;
 
     protected $table = 'risks';
 

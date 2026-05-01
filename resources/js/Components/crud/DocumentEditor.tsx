@@ -79,8 +79,21 @@ export const DocumentEditor = forwardRef<any, DocumentEditorProps>(function Docu
     const { t } = useTranslations();
     const editorRef = useRef<HTMLDivElement>(null);
     const editorInstanceRef = useRef<EditorJS | null>(null);
+    const initGenerationRef = useRef(0);
+    const onChangeRef = useRef(onChange);
+    const readOnlyRef = useRef(readOnly);
+    const lastAppliedContentRef = useRef<string | null>(null);
+    const isApplyingExternalContentRef = useRef(false);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+
+    useEffect(() => {
+        onChangeRef.current = onChange;
+    }, [onChange]);
+
+    useEffect(() => {
+        readOnlyRef.current = readOnly;
+    }, [readOnly]);
 
     const saveContent = async (): Promise<EditorContent | null> => {
         if (!editorInstanceRef.current || readOnly) {
@@ -89,10 +102,16 @@ export const DocumentEditor = forwardRef<any, DocumentEditorProps>(function Docu
 
         try {
             const content = await editorInstanceRef.current.save();
+            if (!content || !content.blocks) {
+                console.warn('Editor save returned empty content:', content);
+                return { blocks: [] };
+            }
             return content as EditorContent;
         } catch (err) {
             console.error('Error saving content:', err);
-            setError(err instanceof Error ? err.message : t('ui.crud.document_editor.save_failed'));
+            const errorMsg = err instanceof Error ? err.message : t('ui.crud.document_editor.save_failed');
+            console.error('Save error details:', { err, errorMsg });
+            setError(errorMsg);
             return null;
         }
     };
@@ -103,34 +122,26 @@ export const DocumentEditor = forwardRef<any, DocumentEditorProps>(function Docu
 
     useEffect(() => {
         const holder = editorRef.current;
-
         if (!holder) return;
+
+        const generation = ++initGenerationRef.current;
+        let cancelled = false;
 
         const initializeEditor = async () => {
             try {
                 setLoading(true);
                 setError(null);
 
-                let initialData: EditorContent = { blocks: [] };
-
-                if (initialContent) {
-                    try {
-                        const parsed = JSON.parse(initialContent);
-                        initialData = {
-                            blocks: normalizeBlocks(parsed.blocks || []),
-                            version: parsed.version,
-                            time: parsed.time,
-                        };
-                    } catch (parseError) {
-                        console.error('Failed to parse initial content:', parseError);
-                        initialData = { blocks: [] };
-                    }
+                if (editorInstanceRef.current?.destroy) {
+                    editorInstanceRef.current.destroy();
+                    editorInstanceRef.current = null;
                 }
+                holder.innerHTML = '';
 
-                const editorConfig: EditorConfig = {
+                const editor = new EditorJS({
                     holder,
-                    readOnly: readOnly,
-                    data: initialData,
+                    readOnly: false,
+                    data: { blocks: [] },
                     tools: {
                         paragraph: {
                             class: Paragraph as unknown as ToolConstructable,
@@ -153,63 +164,123 @@ export const DocumentEditor = forwardRef<any, DocumentEditorProps>(function Docu
                         },
                     },
                     onChange: async () => {
-                        if (!editorInstanceRef.current || readOnly) return;
-
+                        if (!editorInstanceRef.current || readOnlyRef.current || isApplyingExternalContentRef.current) return;
                         try {
                             const content = await editorInstanceRef.current.save();
-                            onChange?.(content as EditorContent);
+                            onChangeRef.current?.(content as EditorContent);
                         } catch (err) {
                             console.error('Error saving editor content:', err);
                         }
                     },
-                };
+                });
 
-                const editor = new EditorJS(editorConfig);
+                if (cancelled || generation !== initGenerationRef.current) {
+                    if (editor.destroy) {
+                        editor.destroy();
+                    }
+                    return;
+                }
+
                 editorInstanceRef.current = editor;
-
                 await editor.isReady;
+
+                if (cancelled || generation !== initGenerationRef.current || editorInstanceRef.current !== editor) {
+                    if (editor.destroy) {
+                        editor.destroy();
+                    }
+                    if (editorInstanceRef.current === editor) {
+                        editorInstanceRef.current = null;
+                    }
+                    return;
+                }
+
+                await (editor as unknown as {
+                    readOnly?: { toggle?: (state: boolean) => void | Promise<void> };
+                }).readOnly?.toggle?.(readOnlyRef.current);
                 setLoading(false);
             } catch (err) {
                 console.error('Error initializing editor:', err);
-                setError(err instanceof Error ? err.message : t('ui.crud.document_editor.initialize_failed'));
-                setLoading(false);
+                if (!cancelled && generation === initGenerationRef.current) {
+                    setError(err instanceof Error ? err.message : t('ui.crud.document_editor.initialize_failed'));
+                    setLoading(false);
+                }
             }
         };
 
         void initializeEditor();
 
         return () => {
-            if (editorInstanceRef.current && editorInstanceRef.current.destroy) {
+            cancelled = true;
+            initGenerationRef.current += 1;
+            if (editorInstanceRef.current?.destroy) {
                 editorInstanceRef.current.destroy();
                 editorInstanceRef.current = null;
             }
+            lastAppliedContentRef.current = null;
+            isApplyingExternalContentRef.current = false;
+            holder.innerHTML = '';
         };
-    }, [readOnly, onChange, t]);
+    }, []);
 
-    // Update initial content when it changes
     useEffect(() => {
-        if (!editorInstanceRef.current || !initialContent || readOnly) return;
-
         const updateContent = async () => {
+            const editor = editorInstanceRef.current;
+            if (!editor) return;
+
             try {
-                const parsed = JSON.parse(initialContent);
-                const blocks = normalizeBlocks(parsed.blocks || []);
-                await editorInstanceRef.current?.render({ blocks });
+                await editor.isReady;
+                if (editorInstanceRef.current !== editor) {
+                    return;
+                }
+
+                const incomingContent = initialContent ?? JSON.stringify({ blocks: [] });
+                if (lastAppliedContentRef.current === incomingContent) {
+                    return;
+                }
+
+                let blocks: EditorBlock[] = [];
+                try {
+                    const parsed = JSON.parse(incomingContent);
+                    blocks = normalizeBlocks(parsed.blocks || []);
+                } catch {
+                    blocks = [];
+                }
+
+                isApplyingExternalContentRef.current = true;
+
+                await editor.blocks.render({ blocks });
+                lastAppliedContentRef.current = incomingContent;
             } catch (err) {
                 console.error('Error updating editor content:', err);
+            } finally {
+                isApplyingExternalContentRef.current = false;
             }
         };
 
         void updateContent();
-    }, [initialContent, readOnly]);
+    }, [initialContent]);
 
-    if (loading) {
-        return (
-            <div className="flex items-center justify-center py-8">
-                <MaterialSymbol name="progress_activity" className="h-6 w-6 animate-spin text-primary" />
-            </div>
-        );
-    }
+    useEffect(() => {
+        const editor = editorInstanceRef.current as unknown as {
+            isReady?: Promise<void>;
+            readOnly?: { toggle?: (state: boolean) => void | Promise<void> };
+        } | null;
+
+        if (!editor) return;
+
+        const applyReadOnly = async () => {
+            try {
+                if (editor.isReady) {
+                    await editor.isReady;
+                }
+                await editor.readOnly?.toggle?.(readOnly);
+            } catch {
+                // Ignore toggle errors during destroy/re-init races.
+            }
+        };
+
+        void applyReadOnly();
+    }, [readOnly]);
 
     return (
         <div className="space-y-4">
@@ -220,15 +291,23 @@ export const DocumentEditor = forwardRef<any, DocumentEditorProps>(function Docu
                 </div>
             )}
 
-            <div
-                ref={editorRef}
-                className={`rounded-lg border border-border bg-background p-4 ${
-                    readOnly ? 'bg-muted/30' : ''
-                }`}
-                style={{
-                    minHeight: '400px',
-                }}
-            />
+            <div className="relative">
+                <div
+                    ref={editorRef}
+                    className={`rounded-lg border border-border bg-background p-4 ${
+                        readOnly ? 'bg-muted/30' : ''
+                    }`}
+                    style={{
+                        minHeight: '400px',
+                    }}
+                />
+
+                {loading && (
+                    <div className="absolute inset-0 flex items-center justify-center rounded-lg bg-background/70">
+                        <MaterialSymbol name="progress_activity" className="h-6 w-6 animate-spin text-primary" />
+                    </div>
+                )}
+            </div>
         </div>
     );
 });

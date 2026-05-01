@@ -7,7 +7,6 @@ const pageComponents: Record<string, React.LazyExoticComponent<({ route }: { rou
     'my-risks': lazy(() => import('@/pages/app/MyRisksPage')),
     'my-projects': lazy(() => import('@/pages/app/MyProjectsPage')),
     'my-tasks': lazy(() => import('@/pages/app/MyTasksPage')),
-    'my-documents': lazy(() => import('@/pages/app/MyDocumentsPage')),
     'chemical-register': lazy(() => import('@/pages/app/ChemicalRegisterPage')),
     documents: lazy(() => import('@/pages/app/DocumentsPage')),
     'requirement-sources': lazy(() => import('@/pages/app/RequirementSourcesPage')),

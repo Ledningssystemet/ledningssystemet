@@ -69,9 +69,11 @@ class GenericCrudIndexTest extends TestCase
         $response->assertOk();
         $response->assertJsonCount(1);
         $response->assertJsonPath('0.name', 'Alice Filter');
+        $response->assertJsonPath('0.status.level', 'unknown');
+        $response->assertJsonPath('0.status.explanation', '');
 
         $firstRow = $response->json()[0];
-        $this->assertSame(['id', 'name', 'enabled'], array_keys($firstRow));
+        $this->assertSame(['id', 'name', 'enabled', 'status'], array_keys($firstRow));
     }
 
     public function test_it_can_paginate_when_requested(): void
@@ -184,7 +186,9 @@ class GenericCrudIndexTest extends TestCase
         $response->assertOk();
         $response->assertJsonPath('id', $created->id);
         $response->assertJsonPath('email', 'shown.user@example.com');
-        $this->assertSame(['id', 'name', 'email'], array_keys($response->json()));
+        $response->assertJsonPath('status.level', 'unknown');
+        $response->assertJsonPath('status.explanation', '');
+        $this->assertSame(['id', 'name', 'email', 'status'], array_keys($response->json()));
     }
 
     public function test_it_can_update_model_via_generic_endpoint(): void

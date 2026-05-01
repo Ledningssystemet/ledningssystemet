@@ -53,4 +53,12 @@ Route::middleware('guest')->group(function (): void {
         Route::get('workplace/redirect', [OAuthController::class, 'redirect'])->name('redirect');
         Route::get('workplace/callback', [OAuthController::class, 'callback'])->name('callback');
     });
+
+    // Redirect /oauthcallback to the workplace callback with preserved query parameters
+    Route::get('/oauthcallback', function () {
+        // Extract the query parameters from the request and append them to the redirect URL
+        $queryParams = http_build_query(request()->query());
+        $redirectUrl = '/oauth/workplace/callback?'.$queryParams;
+        return redirect()->to($redirectUrl, 301);
+    })->name('oauthcallback');
 });

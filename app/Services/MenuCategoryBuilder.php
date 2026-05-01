@@ -39,12 +39,6 @@ class MenuCategoryBuilder
                             'icon' => 'checklist',
                             'description' => __('Activities and control actions assigned to you'),
                         ],
-                        [
-                            'key' => 'my-documents',
-                            'label' => __('My documents'),
-                            'icon' => 'folder_open',
-                            'description' => __('Documents where you are responsible or publisher'),
-                        ],
                     ],
                 ],
                 [
