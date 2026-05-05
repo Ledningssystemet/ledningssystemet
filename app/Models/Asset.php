@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Models\Concerns\HasStatus;
 use App\Models\Concerns\HasTags;
+use App\Services\Bpmn\BpmnNamePropagationService;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -75,6 +76,14 @@ class Asset extends Model
     {
         static::saving(function (self $model): void {
             Validator::make($model->attributesToArray(), static::validationRules())->validate();
+        });
+
+        static::updated(function (self $model): void {
+            if (! $model->wasChanged('name')) {
+                return;
+            }
+
+            app(BpmnNamePropagationService::class)->syncAssetRename($model, (string) $model->getOriginal('name'));
         });
 
         static::saved(function (self $model): void {

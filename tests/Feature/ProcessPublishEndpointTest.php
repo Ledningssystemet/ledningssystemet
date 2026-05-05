@@ -230,6 +230,212 @@ XML;
         $this->assertNull($saved->publishedbpmn);
     }
 
+    public function test_publish_endpoint_requires_names_for_semantic_bpmn_elements(): void
+    {
+        Gate::before(static fn (): bool => true);
+
+        $this->actingAs($this->createUser('Process Missing Names', 'process.missing-names@example.com'), 'sanctum');
+
+        $prefix = 'Process Missing Names '.Str::lower((string) Str::uuid());
+        $departmentId = DB::table('departments')->insertGetId([
+            'name' => $prefix.' department',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $xml = <<<'XML'
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" id="Definitions_1" targetNamespace="http://bpmn.io/schema/bpmn">
+  <bpmn:process id="Process_1" isExecutable="false">
+    <bpmn:startEvent id="StartEvent_1" />
+    <bpmn:task id="Task_1" />
+    <bpmn:endEvent id="EndEvent_1" />
+    <bpmn:dataObjectReference id="DataObject_1" />
+    <bpmn:dataStoreReference id="DataStore_1" />
+    <bpmn:sequenceFlow id="Flow_1" sourceRef="StartEvent_1" targetRef="Task_1" />
+    <bpmn:sequenceFlow id="Flow_2" sourceRef="Task_1" targetRef="EndEvent_1" />
+    <bpmn:association id="Assoc_1" sourceRef="Task_1" targetRef="DataObject_1" />
+    <bpmn:association id="Assoc_2" sourceRef="DataObject_1" targetRef="DataStore_1" />
+  </bpmn:process>
+</bpmn:definitions>
+XML;
+
+        $processId = DB::table('processes')->insertGetId([
+            'name' => $prefix.' draft',
+            'description' => 'Draft description',
+            'department_id' => $departmentId,
+            'bpmn' => $xml,
+            'isstartprocess' => false,
+            'dataprocessor' => false,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $response = $this->postJson('/api/processes/'.$processId.'/publish', [
+            'bpmn' => $xml,
+        ]);
+
+        $response->assertStatus(422)->assertJsonValidationErrors(['publishedbpmn']);
+
+        $errors = $response->json('errors.publishedbpmn');
+
+        $this->assertContains('pages.process_editor.validation.task_requires_name', $errors);
+        $this->assertContains('pages.process_editor.validation.data_object_requires_name', $errors);
+        $this->assertContains('pages.process_editor.validation.data_store_requires_name', $errors);
+    }
+
+    public function test_publish_endpoint_accepts_data_associations_with_reverse_direction(): void
+    {
+        Gate::before(static fn (): bool => true);
+
+        $this->actingAs($this->createUser('Process Data Association Direction', 'process.data-association-direction@example.com'), 'sanctum');
+
+        $prefix = 'Process Data Association Direction '.Str::lower((string) Str::uuid());
+        $departmentId = DB::table('departments')->insertGetId([
+            'name' => $prefix.' department',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $referencedProcessName = 'ReferencedDirectionProcess'.Str::random(8, 'abcdefghijklmnopqrstuvwxyz');
+
+        DB::table('processes')->insert([
+            'name' => $referencedProcessName,
+            'description' => 'Process used by subProcess link',
+            'department_id' => $departmentId,
+            'isstartprocess' => false,
+            'dataprocessor' => false,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $xml = $this->validBpmnXmlWithReverseDataAssociations($referencedProcessName);
+
+        $processId = DB::table('processes')->insertGetId([
+            'name' => $prefix.' draft',
+            'description' => 'Draft description',
+            'department_id' => $departmentId,
+            'bpmn' => $xml,
+            'publishedbpmn' => null,
+            'isstartprocess' => false,
+            'dataprocessor' => false,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $this->postJson('/api/processes/'.$processId.'/publish', [
+            'bpmn' => $xml,
+        ])->assertOk();
+
+        $saved = DB::table('processes')->where('id', $processId)->first();
+
+        $this->assertNotNull($saved);
+        $this->assertSame($xml, $saved->publishedbpmn);
+    }
+
+    public function test_publish_endpoint_returns_specific_error_for_association_to_unsupported_element(): void
+    {
+        Gate::before(static fn (): bool => true);
+
+        $this->actingAs($this->createUser('Process Unsupported Association', 'process.unsupported-association@example.com'), 'sanctum');
+
+        $prefix = 'Process Unsupported Association '.Str::lower((string) Str::uuid());
+        $departmentId = DB::table('departments')->insertGetId([
+            'name' => $prefix.' department',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $xml = <<<'XML'
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" id="Definitions_1" targetNamespace="http://bpmn.io/schema/bpmn">
+  <bpmn:process id="Process_1" isExecutable="false">
+    <bpmn:startEvent id="StartEvent_1" />
+    <bpmn:task id="Task_1" name="Work" />
+    <bpmn:endEvent id="EndEvent_1" />
+    <bpmn:laneSet id="LaneSet_1">
+      <bpmn:lane id="Lane_1" name="Unsupported Lane" />
+    </bpmn:laneSet>
+
+    <bpmn:sequenceFlow id="Flow_1" sourceRef="StartEvent_1" targetRef="Task_1" />
+    <bpmn:sequenceFlow id="Flow_2" sourceRef="Task_1" targetRef="EndEvent_1" />
+    <bpmn:association id="Assoc_1" sourceRef="Task_1" targetRef="Lane_1" />
+  </bpmn:process>
+</bpmn:definitions>
+XML;
+
+        $processId = DB::table('processes')->insertGetId([
+            'name' => $prefix.' draft',
+            'description' => 'Draft description',
+            'department_id' => $departmentId,
+            'bpmn' => $xml,
+            'isstartprocess' => false,
+            'dataprocessor' => false,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $response = $this->postJson('/api/processes/'.$processId.'/publish', [
+            'bpmn' => $xml,
+        ]);
+
+        $response
+            ->assertStatus(422)
+            ->assertJsonValidationErrors(['publishedbpmn'])
+            ->assertJsonPath('errors.publishedbpmn.0', 'pages.process_editor.validation.invalid_association_target_reference');
+    }
+
+    public function test_publish_endpoint_ignores_association_references_to_bpmn_property(): void
+    {
+        Gate::before(static fn (): bool => true);
+
+        $this->actingAs($this->createUser('Process Property Association', 'process.property-association@example.com'), 'sanctum');
+
+        $prefix = 'Process Property Association '.Str::lower((string) Str::uuid());
+        $departmentId = DB::table('departments')->insertGetId([
+            'name' => $prefix.' department',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $xml = <<<'XML'
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" id="Definitions_1" targetNamespace="http://bpmn.io/schema/bpmn">
+  <bpmn:process id="Process_1" isExecutable="false">
+    <bpmn:property id="Property_1" name="Correlation" />
+    <bpmn:startEvent id="StartEvent_1" />
+    <bpmn:task id="Task_1" name="Work" />
+    <bpmn:endEvent id="EndEvent_1" />
+    <bpmn:sequenceFlow id="Flow_1" sourceRef="StartEvent_1" targetRef="Task_1" />
+    <bpmn:sequenceFlow id="Flow_2" sourceRef="Task_1" targetRef="EndEvent_1" />
+    <bpmn:association id="Assoc_1" sourceRef="Task_1" targetRef="Property_1" />
+  </bpmn:process>
+</bpmn:definitions>
+XML;
+
+        $processId = DB::table('processes')->insertGetId([
+            'name' => $prefix.' draft',
+            'description' => 'Draft description',
+            'department_id' => $departmentId,
+            'bpmn' => $xml,
+            'publishedbpmn' => null,
+            'isstartprocess' => false,
+            'dataprocessor' => false,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $response = $this->postJson('/api/processes/'.$processId.'/publish', [
+            'bpmn' => $xml,
+        ]);
+
+        $response->assertOk();
+
+        $saved = DB::table('processes')->where('id', $processId)->first();
+        $this->assertNotNull($saved);
+        $this->assertSame($xml, $saved->publishedbpmn);
+    }
+
     private function validBpmnXml(string $subProcessName): string
     {
         return str_replace('__SUB_PROCESS_NAME__', $subProcessName, <<<'XML'
@@ -255,6 +461,37 @@ XML;
     <bpmn:association id="Assoc_2" sourceRef="DataObject_1" targetRef="DataStore_1" />
     <bpmn:association id="Assoc_3" sourceRef="Task_2" targetRef="SubProcess_1" />
     <bpmn:association id="Assoc_4" sourceRef="Text_1" targetRef="Task_1" />
+  </bpmn:process>
+</bpmn:definitions>
+XML
+        );
+    }
+
+    private function validBpmnXmlWithReverseDataAssociations(string $subProcessName): string
+    {
+        return str_replace('__SUB_PROCESS_NAME__', $subProcessName, <<<'XML'
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" id="Definitions_1" targetNamespace="http://bpmn.io/schema/bpmn">
+  <bpmn:process id="Process_1" isExecutable="false">
+    <bpmn:startEvent id="StartEvent_1" />
+    <bpmn:task id="Task_1" name="Work" />
+    <bpmn:endEvent id="EndEvent_1" />
+    <bpmn:dataObjectReference id="DataObject_1" name="Order" />
+    <bpmn:dataStoreReference id="DataStore_1" name="Archive" />
+    <bpmn:subProcess id="SubProcess_1" name="__SUB_PROCESS_NAME__" />
+
+    <bpmn:sequenceFlow id="Flow_1" sourceRef="StartEvent_1" targetRef="Task_1" />
+    <bpmn:sequenceFlow id="Flow_2" sourceRef="Task_1" targetRef="EndEvent_1" />
+
+    <bpmn:dataInputAssociation id="Assoc_1">
+      <bpmn:sourceRef>DataObject_1</bpmn:sourceRef>
+      <bpmn:targetRef>Task_1</bpmn:targetRef>
+    </bpmn:dataInputAssociation>
+    <bpmn:dataOutputAssociation id="Assoc_2">
+      <bpmn:sourceRef>DataStore_1</bpmn:sourceRef>
+      <bpmn:targetRef>DataObject_1</bpmn:targetRef>
+    </bpmn:dataOutputAssociation>
+    <bpmn:association id="Assoc_3" sourceRef="Task_1" targetRef="SubProcess_1" />
   </bpmn:process>
 </bpmn:definitions>
 XML

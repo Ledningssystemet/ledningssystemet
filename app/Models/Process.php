@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\Concerns\HasStatus;
+use App\Services\Bpmn\BpmnNamePropagationService;
 use App\Services\Bpmn\BpmnTextContentValidator;
 use Closure;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -20,7 +21,7 @@ class Process extends Model
 
     protected $table = 'processes';
 
-    protected $fillable = ['name', 'description', 'bpmn', 'publishedbpmn', 'svg', 'department_id', 'responsible_user_id', 'isstartprocess', 'legalbasisdescription', 'thirdcountrytransferdescription', 'thirdcountrytransferprotectiondescription', 'securitymeasuredescription', 'dataprocessor', 'data_processor_processing_activities'];
+    protected $fillable = ['name', 'description', 'bpmn', 'svg', 'department_id', 'responsible_user_id', 'isstartprocess', 'legalbasisdescription', 'thirdcountrytransferdescription', 'thirdcountrytransferprotectiondescription', 'securitymeasuredescription', 'dataprocessor', 'data_processor_processing_activities'];
 
     protected function casts(): array
     {
@@ -85,6 +86,14 @@ class Process extends Model
     {
         static::saving(function (self $model): void {
             Validator::make($model->attributesToArray(), static::validationRules())->validate();
+        });
+
+        static::updated(function (self $model): void {
+            if (! $model->wasChanged('name')) {
+                return;
+            }
+
+            app(BpmnNamePropagationService::class)->syncProcessRename($model, (string) $model->getOriginal('name'));
         });
     }
 

@@ -179,7 +179,7 @@ function renderDetailValue(
 
     if (field.type === "select") {
         const options = resolveOptions(field, optionsMap);
-        return options.find((option) => String(option.value) === String(value))?.label ?? String(value);
+        return options.find((option) => valuesAreEquivalent(option.value, value))?.label ?? String(value);
     }
 
     if (field.type === "textarea") {
@@ -195,5 +195,21 @@ function renderDetailValue(
     }
 
     return String(value);
+}
+
+function normalizeComparableValue(value: unknown): string {
+    if (value === true || value === 1 || value === "1" || value === "true") {
+        return "1";
+    }
+
+    if (value === false || value === 0 || value === "0" || value === "false") {
+        return "0";
+    }
+
+    return String(value);
+}
+
+function valuesAreEquivalent(left: unknown, right: unknown): boolean {
+    return normalizeComparableValue(left) === normalizeComparableValue(right);
 }
 

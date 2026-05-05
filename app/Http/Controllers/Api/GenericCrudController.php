@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\GenericCrudIndexRequest;
+use App\Models\Process;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Pagination\AbstractPaginator;
@@ -104,6 +105,7 @@ class GenericCrudController extends Controller
     {
         $modelClass = $this->resolveModelClass($resource);
         Gate::authorize('create', $modelClass);
+        $this->guardProtectedProcessFields($modelClass, $request);
 
         $rules = $this->validationRulesFor($modelClass, false);
         $data = $rules === []
@@ -171,18 +173,22 @@ class GenericCrudController extends Controller
         $model = $modelClass::query()->findOrFail($id);
 
         Gate::authorize('update', $model);
+        $this->guardProtectedProcessFields($modelClass, $request);
 
         $rules = $this->validationRulesFor($modelClass, true);
         $data = $rules === []
             ? $request->only($model->getFillable())
             : $request->validate($rules);
 
-        $model->fill($data);
-        if (method_exists($model, 'getHidden') && $model->getHidden() !== []) {
-            // Keep hidden-but-required attributes available to model-level validation on update.
-            $model->makeVisible($model->getHidden());
-        }
-        $model->save();
+        DB::transaction(function () use ($model, $data): void {
+            $model->fill($data);
+            if (method_exists($model, 'getHidden') && $model->getHidden() !== []) {
+                // Keep hidden-but-required attributes available to model-level validation on update.
+                $model->makeVisible($model->getHidden());
+            }
+
+            $model->save();
+        });
 
         return response()->json($model->fresh());
     }
@@ -950,5 +956,23 @@ class GenericCrudController extends Controller
         }
 
         return array_values(array_unique($aliases));
+    }
+
+    /**
+     * @param class-string<Model> $modelClass
+     */
+    private function guardProtectedProcessFields(string $modelClass, Request $request): void
+    {
+        if ($modelClass !== Process::class) {
+            return;
+        }
+
+        if (! array_key_exists('publishedbpmn', $request->all())) {
+            return;
+        }
+
+        throw ValidationException::withMessages([
+            'publishedbpmn' => ['pages.process_editor.validation.publish_endpoint_required'],
+        ]);
     }
 }

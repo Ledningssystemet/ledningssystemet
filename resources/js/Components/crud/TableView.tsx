@@ -350,7 +350,7 @@ function renderValue(
 
     if (field.type === "select") {
         const opts = resolveOptions(field, optionsMap);
-        const opt = opts.find((o) => String(o.value) === String(value));
+        const opt = opts.find((o) => valuesAreEquivalent(o.value, value));
         return opt?.label ?? String(value);
     }
 
@@ -364,3 +364,20 @@ function renderValue(
 
     return String(value);
 }
+
+function normalizeComparableValue(value: unknown): string {
+    if (value === true || value === 1 || value === "1" || value === "true") {
+        return "1";
+    }
+
+    if (value === false || value === 0 || value === "0" || value === "false") {
+        return "0";
+    }
+
+    return String(value);
+}
+
+function valuesAreEquivalent(left: unknown, right: unknown): boolean {
+    return normalizeComparableValue(left) === normalizeComparableValue(right);
+}
+

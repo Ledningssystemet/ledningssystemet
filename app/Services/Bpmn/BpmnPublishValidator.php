@@ -40,14 +40,16 @@ class BpmnPublishValidator
         }
 
         $typesById = $this->collectElementTypesById($xpath);
-        $namesById = $this->collectElementNamesById($xpath, ['dataObjectReference', 'subProcess']);
+        $namesById = $this->collectElementNamesById($xpath, ['task', 'dataObjectReference', 'dataStoreReference', 'subProcess']);
+        $propertyIds = $this->collectPropertyElementIds($xpath);
 
         $sequenceConnections = $this->collectSequenceConnections($xpath);
-        $associationConnections = $this->collectAssociationConnections($xpath);
+        $associationConnections = $this->collectAssociationConnections($xpath, $propertyIds);
 
         $this->validateAllowedSequenceConnections($typesById, $sequenceConnections);
         $this->validateAllowedAssociationConnections($typesById, $associationConnections);
 
+        $this->validateRequiredNames($typesById, $namesById);
         $this->validateStartEvents($typesById, $sequenceConnections);
         $this->validateEndEvents($typesById, $sequenceConnections);
         $this->validateDataObjectTaskAssociation($typesById, $associationConnections);
@@ -55,6 +57,29 @@ class BpmnPublishValidator
         $this->validateSubProcessNames($typesById, $namesById);
 
         $this->throwIfInvalid();
+    }
+
+    /**
+     * @param array<string, string> $typesById
+     * @param array<string, string> $namesById
+     */
+    private function validateRequiredNames(array $typesById, array $namesById): void
+    {
+        foreach ($typesById as $id => $type) {
+            $name = trim((string) ($namesById[$id] ?? ''));
+
+            if ($type === 'task' && $name === '') {
+                $this->addError('pages.process_editor.validation.task_requires_name');
+            }
+
+            if ($type === 'dataObjectReference' && $name === '') {
+                $this->addError('pages.process_editor.validation.data_object_requires_name');
+            }
+
+            if ($type === 'dataStoreReference' && $name === '') {
+                $this->addError('pages.process_editor.validation.data_store_requires_name');
+            }
+        }
     }
 
     private function loadXml(DOMDocument $dom, string $xml): bool
@@ -175,7 +200,7 @@ class BpmnPublishValidator
     /**
      * @return array<int, array{source: string, target: string}>
      */
-    private function collectAssociationConnections(DOMXPath $xpath): array
+    private function collectAssociationConnections(DOMXPath $xpath, array $propertyIds): array
     {
         $connections = [];
         $edgeTypes = ['association', 'dataInputAssociation', 'dataOutputAssociation'];
@@ -192,12 +217,45 @@ class BpmnPublishValidator
                 }
 
                 foreach ($this->extractConnections($xpath, $node) as $connection) {
+                    if (isset($propertyIds[$connection['source']]) || isset($propertyIds[$connection['target']])) {
+                        // Ignore associations to/from BPMN property elements.
+                        continue;
+                    }
+
                     $connections[] = $connection;
                 }
             }
         }
 
         return $connections;
+    }
+
+    /**
+     * @return array<string, true>
+     */
+    private function collectPropertyElementIds(DOMXPath $xpath): array
+    {
+        $propertyIds = [];
+        $nodes = $xpath->query("//*[local-name()='property']");
+
+        if ($nodes === false) {
+            return $propertyIds;
+        }
+
+        foreach ($nodes as $node) {
+            if (! $node instanceof DOMElement) {
+                continue;
+            }
+
+            $id = trim((string) $node->getAttribute('id'));
+            if ($id === '') {
+                continue;
+            }
+
+            $propertyIds[$id] = true;
+        }
+
+        return $propertyIds;
     }
 
     /**
@@ -287,8 +345,11 @@ class BpmnPublishValidator
     {
         $allowedPairs = [
             'task->dataObjectReference' => true,
+            'dataObjectReference->task' => true,
             'dataObjectReference->dataStoreReference' => true,
+            'dataStoreReference->dataObjectReference' => true,
             'task->subProcess' => true,
+            'subProcess->task' => true,
         ];
 
         foreach ($connections as $connection) {
@@ -296,7 +357,18 @@ class BpmnPublishValidator
             $targetType = $typesById[$connection['target']] ?? null;
 
             if (! is_string($sourceType) || ! is_string($targetType)) {
-                $this->addError('pages.process_editor.validation.invalid_association_reference');
+                if (! is_string($sourceType) && ! is_string($targetType)) {
+
+                    $this->addError('pages.process_editor.validation.invalid_association_source_and_target_reference');
+                    continue;
+                }
+
+                if (! is_string($sourceType)) {
+                    $this->addError('pages.process_editor.validation.invalid_association_source_reference');
+                    continue;
+                }
+
+                $this->addError('pages.process_editor.validation.invalid_association_target_reference');
                 continue;
             }
 
@@ -384,11 +456,14 @@ class BpmnPublishValidator
             $hasTaskAssociation = false;
 
             foreach ($connections as $connection) {
-                if ($connection['target'] !== $id) {
-                    continue;
-                }
+                $sourceType = $typesById[$connection['source']] ?? null;
+                $targetType = $typesById[$connection['target']] ?? null;
 
-                if (($typesById[$connection['source']] ?? null) === 'task') {
+                $isTaskDataObjectPair =
+                    ($connection['target'] === $id && $sourceType === 'task')
+                    || ($connection['source'] === $id && $targetType === 'task');
+
+                if ($isTaskDataObjectPair) {
                     $hasTaskAssociation = true;
                     break;
                 }
@@ -410,15 +485,17 @@ class BpmnPublishValidator
         $dataObjectToStore = [];
 
         foreach ($connections as $connection) {
-            if (($typesById[$connection['source']] ?? null) !== 'dataObjectReference') {
+            $sourceType = $typesById[$connection['source']] ?? null;
+            $targetType = $typesById[$connection['target']] ?? null;
+
+            if ($sourceType === 'dataObjectReference' && $targetType === 'dataStoreReference') {
+                $dataObjectToStore[$connection['source']] = true;
                 continue;
             }
 
-            if (($typesById[$connection['target']] ?? null) !== 'dataStoreReference') {
-                continue;
+            if ($sourceType === 'dataStoreReference' && $targetType === 'dataObjectReference') {
+                $dataObjectToStore[$connection['target']] = true;
             }
-
-            $dataObjectToStore[$connection['source']] = true;
         }
 
         foreach ($typesById as $id => $type) {
@@ -429,11 +506,14 @@ class BpmnPublishValidator
             $hasDataObjectAssociation = false;
 
             foreach ($connections as $connection) {
-                if ($connection['target'] !== $id) {
-                    continue;
-                }
+                $sourceType = $typesById[$connection['source']] ?? null;
+                $targetType = $typesById[$connection['target']] ?? null;
 
-                if (($typesById[$connection['source']] ?? null) === 'dataObjectReference') {
+                $isDataStoreDataObjectPair =
+                    ($connection['target'] === $id && $sourceType === 'dataObjectReference')
+                    || ($connection['source'] === $id && $targetType === 'dataObjectReference');
+
+                if ($isDataStoreDataObjectPair) {
                     $hasDataObjectAssociation = true;
                     break;
                 }

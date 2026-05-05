@@ -38,7 +38,7 @@ class Requirement extends Model
             'applicable' => ['nullable', 'boolean'],
             'name' => ['required', 'string', 'max:100'],
             'reference' => ['required', 'string', 'max:20'],
-            'ordinal' => ['required', 'integer', 'min:0'],
+            'ordinal' => ['nullable', 'integer', 'min:0'],
             'description' => ['nullable', 'string'],
             'governance' => ['nullable', 'string'],
         ];
@@ -61,6 +61,18 @@ class Requirement extends Model
 
     protected static function booted(): void
     {
+        static::creating(function (self $model): void {
+            if ($model->ordinal !== null) {
+                return;
+            }
+
+            $lastOrdinal = static::query()
+                ->where('requirement_source_id', $model->requirement_source_id)
+                ->max('ordinal');
+
+            $model->ordinal = $lastOrdinal !== null ? ((int) $lastOrdinal + 1) : 0;
+        });
+
         static::saving(function (self $model): void {
             Validator::make($model->attributesToArray(), static::validationRules())->validate();
         });

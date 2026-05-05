@@ -114,7 +114,7 @@ class ProcessesCrudEditorContractTest extends TestCase
         $this->assertSame($payload['bpmn'], $saved->bpmn);
     }
 
-    public function test_processes_update_allows_editor_to_publish_bpmn_to_both_fields(): void
+    public function test_processes_update_rejects_direct_changes_to_published_bpmn(): void
     {
         Gate::before(static fn (): bool => true);
 
@@ -148,15 +148,18 @@ class ProcessesCrudEditorContractTest extends TestCase
 
         $response = $this->patchJson('/api/crud/processes/'.$processId, $payload);
 
-        $response->assertOk()->assertJsonFragment($payload);
+        $response
+            ->assertStatus(422)
+            ->assertJsonValidationErrors(['publishedbpmn'])
+            ->assertJsonPath('errors.publishedbpmn.0', 'pages.process_editor.validation.publish_endpoint_required');
 
         $saved = DB::table('processes')->where('id', $processId)->first();
 
         $this->assertNotNull($saved);
-        $this->assertSame($payload['name'], $saved->name);
-        $this->assertSame($payload['description'], $saved->description);
-        $this->assertSame($payload['bpmn'], $saved->bpmn);
-        $this->assertSame($payload['publishedbpmn'], $saved->publishedbpmn);
+        $this->assertSame($prefix.' before', $saved->name);
+        $this->assertSame('Before publish', $saved->description);
+        $this->assertSame('<definitions id="draft-before"></definitions>', $saved->bpmn);
+        $this->assertSame('<definitions id="published-before"></definitions>', $saved->publishedbpmn);
     }
 
     private function createUser(string $name, string $email): User

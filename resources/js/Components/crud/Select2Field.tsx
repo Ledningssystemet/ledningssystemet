@@ -120,6 +120,22 @@ function uniqOptions(options: SelectOption[]): SelectOption[] {
   return Array.from(map.values());
 }
 
+function normalizeComparableValue(value: unknown): string {
+  if (value === true || value === 1 || value === "1" || value === "true") {
+    return "1";
+  }
+
+  if (value === false || value === 0 || value === "0" || value === "false") {
+    return "0";
+  }
+
+  return String(value);
+}
+
+function valuesAreEquivalent(left: unknown, right: unknown): boolean {
+  return normalizeComparableValue(left) === normalizeComparableValue(right);
+}
+
 export const Select2Field = React.forwardRef<any, Select2FieldProps>(function Select2Field(
   {
     options,
@@ -191,11 +207,11 @@ export const Select2Field = React.forwardRef<any, Select2FieldProps>(function Se
   const selectedValue = React.useMemo(() => {
     if (isMulti) {
       const selectedArray = Array.isArray(value) ? value : value ? [value] : [];
-      const selectedSet = new Set(selectedArray.map((v) => String(v)));
+      const selectedSet = new Set(selectedArray.map((v) => normalizeComparableValue(v)));
 
-      const existing = mergedOptions.filter((o) => selectedSet.has(String(o.value)));
+      const existing = mergedOptions.filter((o) => selectedSet.has(normalizeComparableValue(o.value)));
       const missing = selectedArray
-        .filter((v) => !existing.some((o) => String(o.value) === String(v)))
+        .filter((v) => !existing.some((o) => valuesAreEquivalent(o.value, v)))
         .map((v) => ({ value: v, label: String(v) }));
 
       return [...existing, ...missing];
@@ -205,7 +221,7 @@ export const Select2Field = React.forwardRef<any, Select2FieldProps>(function Se
       return null;
     }
 
-    return mergedOptions.find((o) => String(o.value) === String(value)) || { value, label: String(value) };
+    return mergedOptions.find((o) => valuesAreEquivalent(o.value, value)) || { value, label: String(value) };
   }, [isMulti, mergedOptions, value]);
 
   const handleChange = (selected: any) => {

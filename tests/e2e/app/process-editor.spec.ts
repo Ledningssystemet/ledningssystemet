@@ -528,4 +528,41 @@ test.describe('Process editor', () => {
 
         expect(publishPayload.bpmn).toContain('name="Publish Dirty State"');
     });
+
+    test('publish validation errors are shown in dialog without leaving the editor page', async ({ page }) => {
+        await navigateTo(page, '/app/processes');
+        await dismissSessionDialogIfVisible(page);
+
+        const processId = await ensureProcessId(page);
+
+        await navigateTo(page, `/app/processes/${processId}/editor`);
+        await dismissSessionDialogIfVisible(page);
+
+        await expect(page.getByRole('heading', { name: /process editor/i })).toBeVisible();
+
+        await page.route(`**/api/processes/${processId}/publish`, async (route) => {
+            await route.fulfill({
+                status: 422,
+                contentType: 'application/json',
+                body: JSON.stringify({
+                    message: 'The given data was invalid.',
+                    errors: {
+                        publishedbpmn: [
+                            'pages.process_editor.validation.invalid_association_target_reference',
+                            'pages.process_editor.validation.invalid_association_connection',
+                        ],
+                    },
+                }),
+            });
+        });
+
+        await page.getByRole('button', { name: /publish process/i }).click();
+
+        const publishErrorDialog = page.getByRole('dialog', { name: /could not publish process/i });
+
+        await expect(publishErrorDialog).toBeVisible();
+        await expect(publishErrorDialog).toContainText('An association points to an unsupported BPMN element.');
+        await expect(publishErrorDialog).toContainText('The process contains an association with an unsupported connection.');
+        await expect(page).toHaveURL(new RegExp(`/app/processes/${processId}/editor$`));
+    });
 });

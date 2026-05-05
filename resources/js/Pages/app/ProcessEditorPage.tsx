@@ -3,6 +3,7 @@ import { MaterialSymbol } from "@/components/ui/material-symbol";
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import AppLayout from '@/layouts/AppLayout';
 import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import BpmnProcessEditor, { type BpmnProcessEditorHandle } from '@/components/crud/BpmnProcessEditor';
 import { APP_HOME_PATH, APP_PROCESSES_PATH } from '@/app/routes';
 import { useTranslations } from '@/hooks/useTranslations';
@@ -56,13 +57,13 @@ export default function ProcessEditorPage({ route }: ProcessEditorPageProps) {
     const parsedProcessId = useMemo(() => Number(processId), [processId]);
     const [loading, setLoading] = useState(true);
     const [saveMode, setSaveMode] = useState<'save' | 'publish' | null>(null);
-    const [errorKey, setErrorKey] = useState<string | null>(null);
+    const [pageErrorKey, setPageErrorKey] = useState<string | null>(null);
+    const [publishValidationErrorKeys, setPublishValidationErrorKeys] = useState<string[]>([]);
     const [process, setProcess] = useState<ProcessEditorRecord | null>(null);
     const [informationTypeOptions, setInformationTypeOptions] = useState<NamedOption[]>([]);
     const [assetOptions, setAssetOptions] = useState<NamedOption[]>([]);
     const [isDirty, setIsDirty] = useState(false);
     const editorRef = useRef<BpmnProcessEditorHandle | null>(null);
-    const navigateRef = useRef(useNavigate());
 
     // Prevent navigation with unsaved changes
     useDirtyStateNavigation(isDirty && saveMode === null, t('pages.process_editor.unsaved_changes_confirm'));
@@ -74,7 +75,7 @@ export default function ProcessEditorPage({ route }: ProcessEditorPageProps) {
                 return;
             }
         }
-        navigateRef.current(path);
+        navigate(path);
     };
 
 
@@ -88,7 +89,7 @@ export default function ProcessEditorPage({ route }: ProcessEditorPageProps) {
 
     useEffect(() => {
         if (!Number.isFinite(parsedProcessId)) {
-            setErrorKey('pages.process_editor.invalid_process_id');
+            setPageErrorKey('pages.process_editor.invalid_process_id');
             setIsDirty(false);
             setLoading(false);
             return;
@@ -98,7 +99,8 @@ export default function ProcessEditorPage({ route }: ProcessEditorPageProps) {
 
         const load = async () => {
             setLoading(true);
-            setErrorKey(null);
+            setPageErrorKey(null);
+            setPublishValidationErrorKeys([]);
             setIsDirty(false);
 
             try {
@@ -121,7 +123,7 @@ export default function ProcessEditorPage({ route }: ProcessEditorPageProps) {
                 ]);
 
                 if (!processResponse.ok) {
-                    setErrorKey('pages.process_editor.load_error');
+                    setPageErrorKey('pages.process_editor.load_error');
                     setProcess(null);
                     setInformationTypeOptions([]);
                     setAssetOptions([]);
@@ -138,7 +140,7 @@ export default function ProcessEditorPage({ route }: ProcessEditorPageProps) {
                 setAssetOptions(toNamedOptions(assetsPayload));
             } catch (loadError: unknown) {
                 if ((loadError as { name?: string })?.name !== 'AbortError') {
-                    setErrorKey('pages.process_editor.load_error');
+                    setPageErrorKey('pages.process_editor.load_error');
                     setInformationTypeOptions([]);
                     setAssetOptions([]);
                 }
@@ -160,17 +162,18 @@ export default function ProcessEditorPage({ route }: ProcessEditorPageProps) {
         }
 
         if (publish && isDirty) {
-            setErrorKey('pages.process_editor.validation.save_before_publish');
+            setPublishValidationErrorKeys(['pages.process_editor.validation.save_before_publish']);
             return;
         }
 
         setSaveMode(publish ? 'publish' : 'save');
-        setErrorKey(null);
+        setPageErrorKey(null);
+        setPublishValidationErrorKeys([]);
 
         try {
             const currentXml = await editorRef.current?.exportXml();
             if (!currentXml) {
-                setErrorKey('pages.process_editor.bpmn_export_error');
+                setPageErrorKey('pages.process_editor.bpmn_export_error');
                 return;
             }
 
@@ -192,14 +195,24 @@ export default function ProcessEditorPage({ route }: ProcessEditorPageProps) {
                     const validationPayload = (await response.json()) as {
                         errors?: { bpmn?: string[]; publishedbpmn?: string[] };
                     };
-                    const firstError = validationPayload.errors?.publishedbpmn?.[0] ?? validationPayload.errors?.bpmn?.[0];
+
+                    const publishValidationErrors = validationPayload.errors?.publishedbpmn ?? [];
+                    const bpmnValidationErrors = validationPayload.errors?.bpmn ?? [];
+                    const allValidationErrors = [...new Set([...publishValidationErrors, ...bpmnValidationErrors])];
+
+                    if (publish && allValidationErrors.length > 0) {
+                        setPublishValidationErrorKeys(allValidationErrors);
+                        return;
+                    }
+
+                    const firstError = allValidationErrors[0];
                     if (firstError) {
-                        setErrorKey(firstError);
+                        setPageErrorKey(firstError);
                         return;
                     }
                 }
 
-                setErrorKey(publish ? 'pages.process_editor.publish_error' : 'pages.process_editor.save_error');
+                setPageErrorKey(publish ? 'pages.process_editor.publish_error' : 'pages.process_editor.save_error');
                 return;
             }
 
@@ -212,7 +225,7 @@ export default function ProcessEditorPage({ route }: ProcessEditorPageProps) {
                 safeNavigate(APP_PROCESSES_PATH);
             }
         } catch {
-            setErrorKey(publish ? 'pages.process_editor.publish_error' : 'pages.process_editor.save_error');
+            setPageErrorKey(publish ? 'pages.process_editor.publish_error' : 'pages.process_editor.save_error');
         } finally {
             setSaveMode(null);
         }
@@ -246,14 +259,20 @@ export default function ProcessEditorPage({ route }: ProcessEditorPageProps) {
                     </section>
                 )}
 
-                {!loading && errorKey && (
+                {!loading && pageErrorKey && !process && (
                     <section className="rounded-2xl border border-border bg-card p-6 text-sm text-destructive shadow-sm">
-                        {t(errorKey)}
+                        {t(pageErrorKey)}
                     </section>
                 )}
 
-                {!loading && !errorKey && process && (
+                {!loading && process && (
                     <section className="space-y-6 rounded-2xl border border-border bg-card p-6 shadow-sm">
+                        {pageErrorKey && (
+                            <div className="rounded-xl border border-destructive/30 bg-destructive/5 p-3 text-sm text-destructive">
+                                {t(pageErrorKey)}
+                            </div>
+                        )}
+
                         <div className="space-y-2">
                             <BpmnProcessEditor
                                 ref={editorRef}
@@ -351,6 +370,36 @@ export default function ProcessEditorPage({ route }: ProcessEditorPageProps) {
                         )}
                     </section>
                 )}
+
+                <Dialog
+                    open={publishValidationErrorKeys.length > 0}
+                    onOpenChange={(open) => {
+                        if (!open) {
+                            setPublishValidationErrorKeys([]);
+                        }
+                    }}
+                >
+                    <DialogContent className="max-w-2xl" resizable={false}>
+                        <DialogHeader>
+                            <DialogTitle>{t('pages.process_editor.publish_validation_dialog_title')}</DialogTitle>
+                            <DialogDescription>{t('pages.process_editor.publish_validation_dialog_description')}</DialogDescription>
+                        </DialogHeader>
+
+                        <ul className="space-y-2 text-sm text-foreground">
+                            {publishValidationErrorKeys.map((errorKey) => (
+                                <li key={errorKey} className="rounded-md border border-destructive/20 bg-destructive/5 px-3 py-2 text-destructive">
+                                    {t(errorKey)}
+                                </li>
+                            ))}
+                        </ul>
+
+                        <DialogFooter>
+                            <Button type="button" onClick={() => setPublishValidationErrorKeys([])}>
+                                {t('pages.process_editor.publish_validation_dialog_close')}
+                            </Button>
+                        </DialogFooter>
+                    </DialogContent>
+                </Dialog>
             </div>
         </AppLayout>
     );

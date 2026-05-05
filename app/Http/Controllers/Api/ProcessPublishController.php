@@ -4,15 +4,14 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Process;
-use App\Services\Bpmn\BpmnPublishValidator;
+use App\Services\Bpmn\ProcessMapPublisher;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
-use Illuminate\Validation\ValidationException;
 
 class ProcessPublishController extends Controller
 {
-    public function store(Request $request, Process $process, BpmnPublishValidator $validator): JsonResponse
+    public function store(Request $request, Process $process, ProcessMapPublisher $publisher): JsonResponse
     {
         Gate::authorize('update', $process);
 
@@ -20,20 +19,7 @@ class ProcessPublishController extends Controller
             'bpmn' => ['required', 'string'],
         ]);
 
-        $validator->validateForPublish($data['bpmn']);
-
-        if (($process->bpmn ?? null) !== $data['bpmn']) {
-            throw ValidationException::withMessages([
-                'publishedbpmn' => ['pages.process_editor.validation.save_before_publish'],
-            ]);
-        }
-
-
-        $process->fill([
-            'bpmn' => $data['bpmn'],
-            'publishedbpmn' => $data['bpmn'],
-        ]);
-        $process->save();
+        $publisher->publish($process, $data['bpmn']);
 
         return response()->json($process->fresh());
     }

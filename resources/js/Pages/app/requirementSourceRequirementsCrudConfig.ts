@@ -96,7 +96,8 @@ export function buildRequirementSourceRequirementsCrudConfig(
                         return '?';
                     }
 
-                    return Number(value) === 1
+                    const isYes = value === true || value === 1 || value === '1' || value === 'true';
+                    return isYes
                         ? t('pages.requirement_sources.option_yes')
                         : t('pages.requirement_sources.option_no');
                 },
@@ -105,7 +106,8 @@ export function buildRequirementSourceRequirementsCrudConfig(
                         return '?';
                     }
 
-                    return Number(value) === 1
+                    const isYes = value === true || value === 1 || value === '1' || value === 'true';
+                    return isYes
                         ? t('pages.requirement_sources.option_yes')
                         : t('pages.requirement_sources.option_no');
                 },
@@ -140,6 +142,15 @@ export function buildRequirementSourceRequirementsCrudConfig(
                 editable: false,
                 hidden: true,
                 category: t('pages.requirement_sources.requirements.category_links'),
+            },
+            {
+                key: 'ordinal',
+                label: t('pages.requirement_sources.requirements.column_ordinal'),
+                type: 'number',
+                sortable: true,
+                editable: false,
+                hidden: true,
+                hiddenInTable: true,
             },
         ],
     };

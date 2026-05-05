@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\Concerns\HasStatus;
+use App\Services\Bpmn\BpmnNamePropagationService;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -69,6 +70,14 @@ class InformationType extends Model
     {
         static::saving(function (self $model): void {
             Validator::make($model->attributesToArray(), static::validationRules())->validate();
+        });
+
+        static::updated(function (self $model): void {
+            if (! $model->wasChanged('name')) {
+                return;
+            }
+
+            app(BpmnNamePropagationService::class)->syncInformationTypeRename($model, (string) $model->getOriginal('name'));
         });
     }
 
