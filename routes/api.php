@@ -71,6 +71,7 @@ Route::middleware('auth:sanctum')->group(function (): void {
 
     // Generic CRUD routes
     Route::get('/crud/{resource}', [GenericCrudController::class, 'index'])->name('api.crud.index');
+    Route::get('/crud/{resource}/metadata', [GenericCrudController::class, 'metadata'])->name('api.crud.metadata');
     Route::post('/crud/{resource}', [GenericCrudController::class, 'store'])->name('api.crud.store');
     Route::get('/crud/{resource}/{id}', [GenericCrudController::class, 'show'])->name('api.crud.show');
     Route::match(['put', 'patch'], '/crud/{resource}/{id}', [GenericCrudController::class, 'update'])->name('api.crud.update');

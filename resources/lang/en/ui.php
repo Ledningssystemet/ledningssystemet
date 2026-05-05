@@ -86,6 +86,7 @@ return [
 		'edit_dialog' => [
 			'title_create_new' => 'Create new',
 			'uncategorized_label' => 'Other',
+			'custom_properties_tab' => 'Custom properties',
 		],
 		'mass_edit' => [
 			'title' => 'Bulk edit :count items',

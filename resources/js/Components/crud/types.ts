@@ -110,6 +110,25 @@ export interface FilterFieldConfig {
     placeholder?: string;
 }
 
+export interface CustomPropertyFieldMeta {
+    key: string;
+    id: number;
+    name: string;
+    type: string;
+    required: boolean;
+    user_editable: boolean;
+    ordinal: number;
+    resource?: string | null;
+}
+
+export interface CrudMetadataResponse {
+    custom_properties?: CustomPropertyFieldMeta[];
+}
+
+export interface CrudCustomPropertyConfig {
+    enabled?: boolean;
+}
+
 export interface CrudModuleConfig {
     apiUrl: string;
     title?: string;
@@ -166,6 +185,8 @@ export interface CrudModuleConfig {
      * hidden:true, editable:false, filterable:true entries.
      */
     filterFields?: FilterFieldConfig[];
+    /** Auto-load and inject custom property fields from /api/crud/{resource}/metadata. */
+    customProperties?: CrudCustomPropertyConfig;
 }
 
 export type ViewMode = "master-detail" | "table" | "accordion";

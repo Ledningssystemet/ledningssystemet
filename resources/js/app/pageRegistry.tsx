@@ -4,9 +4,6 @@ import type { AppSectionRoute } from '@/app/routes';
 // Lazy load page components – one file per route key
 const pageComponents: Record<string, React.LazyExoticComponent<({ route }: { route: AppSectionRoute }) => JSX.Element>> = {
     'my-profile': lazy(() => import('@/pages/app/MyProfilePage')),
-    'my-risks': lazy(() => import('@/pages/app/MyRisksPage')),
-    'my-projects': lazy(() => import('@/pages/app/MyProjectsPage')),
-    'my-tasks': lazy(() => import('@/pages/app/MyTasksPage')),
     'chemical-register': lazy(() => import('@/pages/app/ChemicalRegisterPage')),
     documents: lazy(() => import('@/pages/app/DocumentsPage')),
     'requirement-sources': lazy(() => import('@/pages/app/RequirementSourcesPage')),

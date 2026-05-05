@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { MaterialSymbol } from "@/components/ui/material-symbol";
-import { CrudModuleConfig, FieldConfig, RowActionConfig, SubTableActionConfig } from "./types";
+import { CrudMetadataResponse, CrudModuleConfig, CustomPropertyFieldMeta, FieldConfig, RowActionConfig, SubTableActionConfig } from "./types";
 import { useCrudModule } from "./useCrudModule";
 import { useCsvExport } from "./useCsvExport";
 import { FilterBar } from "./FilterBar";
@@ -34,13 +34,137 @@ interface CrudModuleProps {
    onEditFormDataChange?: (data: Record<string, any>) => void;
 }
 
+function inferCustomFieldType(type: string): FieldConfig["type"] {
+  const normalized = type.toLowerCase();
+
+  if (normalized === "boolean") {
+    return "boolean";
+  }
+
+  if (normalized === "textarea") {
+    return "textarea";
+  }
+
+  if (["user", "department", "supplier", "customer", "asset", "process"].includes(normalized)) {
+    return "select";
+  }
+
+  return "text";
+}
+
+function toCustomFieldConfig(meta: CustomPropertyFieldMeta, categoryLabel: string): FieldConfig {
+  const type = inferCustomFieldType(meta.type);
+  const resource = typeof meta.resource === "string" ? meta.resource.trim() : "";
+  const optionsUrl = type === "select" && resource !== ""
+    ? `/api/crud/${resource}?paginate=0&%24select=id,name`
+    : undefined;
+
+  return {
+    key: meta.key,
+    label: meta.name,
+    category: categoryLabel,
+    type,
+    sortable: true,
+    filterable: true,
+    editable: meta.user_editable,
+    required: meta.required,
+    optionsUrl,
+    optionValueKey: optionsUrl ? "id" : undefined,
+    optionLabelKey: optionsUrl ? "name" : undefined,
+  };
+}
+
+function areFieldConfigsEqual(a: FieldConfig[], b: FieldConfig[]): boolean {
+  if (a.length !== b.length) {
+    return false;
+  }
+
+  return a.every((field, index) => {
+    const other = b[index];
+    if (!other) {
+      return false;
+    }
+
+    return (
+      field.key === other.key
+      && field.label === other.label
+      && field.category === other.category
+      && field.type === other.type
+      && field.sortable === other.sortable
+      && field.filterable === other.filterable
+      && field.editable === other.editable
+      && field.required === other.required
+      && field.optionsUrl === other.optionsUrl
+      && field.optionValueKey === other.optionValueKey
+      && field.optionLabelKey === other.optionLabelKey
+    );
+  });
+}
+
 export function CrudModule({ config, onEditFormDataChange }: CrudModuleProps) {
-  const { t } = useTranslations();
+  const { t, locale } = useTranslations();
+  const [customFields, setCustomFields] = useState<FieldConfig[]>([]);
+
+  const customCategoryLabel = useMemo(
+    () => t("ui.crud.edit_dialog.custom_properties_tab"),
+    [locale]
+  );
+
+  const metadataUrl = useMemo(() => {
+    const match = config.apiUrl.match(/^\/api\/crud\/([^/?#]+)$/);
+    if (!match) {
+      return null;
+    }
+
+    return `/api/crud/${match[1]}/metadata`;
+  }, [config.apiUrl]);
+
+  const customPropertyEnabled = config.customProperties?.enabled ?? metadataUrl !== null;
+
+  useEffect(() => {
+    if (!customPropertyEnabled || !metadataUrl) {
+      setCustomFields((previous) => (previous.length === 0 ? previous : []));
+      return;
+    }
+
+    const controller = new AbortController();
+
+    const loadCustomFields = async () => {
+      try {
+        const response = await fetch(metadataUrl, {
+          signal: controller.signal,
+          headers: { Accept: "application/json" },
+        });
+
+        if (!response.ok) {
+          setCustomFields((previous) => (previous.length === 0 ? previous : []));
+          return;
+        }
+
+        const payload = (await response.json()) as CrudMetadataResponse;
+        const rows = Array.isArray(payload?.custom_properties) ? payload.custom_properties : [];
+        const sortedRows = [...rows].sort((a, b) => (a.ordinal ?? 0) - (b.ordinal ?? 0));
+        const nextFields = sortedRows.map((meta) => toCustomFieldConfig(meta, customCategoryLabel));
+
+        setCustomFields((previous) => (areFieldConfigsEqual(previous, nextFields) ? previous : nextFields));
+      } catch (error: any) {
+        if (error?.name !== "AbortError") {
+          setCustomFields((previous) => (previous.length === 0 ? previous : []));
+        }
+      }
+    };
+
+    void loadCustomFields();
+
+    return () => {
+      controller.abort();
+    };
+  }, [customPropertyEnabled, metadataUrl, customCategoryLabel]);
 
   // â”€â”€ Merge filterFields into fields (hidden, non-editable, filterable) â”€â”€â”€â”€â”€â”€
   const effectiveConfig = useMemo((): CrudModuleConfig => {
-    if (!config.filterFields?.length) return config;
-    const extraFields: FieldConfig[] = config.filterFields.map((ff) => ({
+    const dynamicFields: FieldConfig[] = customPropertyEnabled ? customFields : [];
+    const extraFields: FieldConfig[] = (config.filterFields ?? []).map((ff) => ({
       key: ff.key,
       label: ff.label,
       type: ff.type,
@@ -53,8 +177,26 @@ export function CrudModule({ config, onEditFormDataChange }: CrudModuleProps) {
       editable: false,
       filterable: true,
     }));
-    return { ...config, fields: [...config.fields, ...extraFields] };
-  }, [config]);
+
+    const mergedFields: FieldConfig[] = [];
+    const seenKeys = new Set<string>();
+
+    [...config.fields, ...dynamicFields, ...extraFields].forEach((field) => {
+      if (seenKeys.has(field.key)) {
+        return;
+      }
+
+      seenKeys.add(field.key);
+      mergedFields.push(field);
+    });
+
+    const customKeys = dynamicFields.map((field) => field.key);
+    const selectFields = config.selectFields
+      ? Array.from(new Set([...config.selectFields, ...customKeys]))
+      : config.selectFields;
+
+    return { ...config, fields: mergedFields, selectFields };
+  }, [config, customFields, customPropertyEnabled]);
 
   // â”€â”€ Sub-table dialog state â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   // Maps actionKey â†’ active item (null = dialog closed)

@@ -4,13 +4,16 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\GenericCrudIndexRequest;
+use App\Models\CustomPropertyObject;
 use App\Models\Process;
+use App\Support\Crud\CustomPropertyAttributeService;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Pagination\AbstractPaginator;
 use Illuminate\Support\Collection;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Schema;
@@ -29,12 +32,18 @@ class GenericCrudController extends Controller
      */
     private array $metadataCache = [];
 
+    public function __construct(
+        private readonly CustomPropertyAttributeService $customPropertyAttributes,
+    ) {
+    }
+
     public function index(GenericCrudIndexRequest $request, string $resource): JsonResponse
     {
         $modelClass = $this->resolveModelClass($resource);
         Gate::authorize('viewAny', $modelClass);
 
         $metadata = $this->metadataFor($modelClass);
+        $customDefinitions = $metadata['custom_definitions'];
 
         $search = trim($request->string('search')->toString());
 
@@ -42,7 +51,7 @@ class GenericCrudController extends Controller
 
         $query = QueryBuilder::for($modelClass::query())
             ->allowedFilters(...$allowedFilters)
-            ->allowedSorts(...$this->allowedSortsFor($modelClass, $metadata['selectable']));
+            ->allowedSorts(...$this->allowedSortsFor($modelClass, $metadata));
 
         ['with' => $with, 'withCount' => $withCount] = $this->parseExtends($request, $modelClass);
 
@@ -50,7 +59,8 @@ class GenericCrudController extends Controller
             $query,
             $search,
             $metadata['searchable'],
-            $metadata['searchable_relations']
+            $metadata['searchable_relations'],
+            $metadata['custom_definitions']
         );
 
         if (method_exists($modelClass, 'applyCrudIndexFilters')) {
@@ -58,10 +68,26 @@ class GenericCrudController extends Controller
         }
 
         $selectedColumns = $this->parseSelectedColumns($request, $metadata['selectable']);
+        $selectedCustomColumns = $this->parseSelectedCustomColumns($request, $metadata['custom_selectable']);
         $selectedAppends = $this->parseSelectedAppends($request, $metadata['appendable']);
         if ($selectedColumns !== []) {
             $selectedColumns = $this->ensurePrimaryKeySelected($modelClass, $selectedColumns);
             $query->select($selectedColumns);
+        }
+
+        if ($customDefinitions !== [] && $this->customPropertyAttributes->supportsCustomProperties($modelClass)) {
+            $customPropertyIds = array_values(array_map(
+                static fn (array $definition): int => (int) $definition['id'],
+                $customDefinitions
+            ));
+
+            $query->with([
+                'int_custom_property_object_as_object' => static function ($relationQuery) use ($customPropertyIds): void {
+                    $relationQuery
+                        ->whereIn('custom_property_id', $customPropertyIds)
+                        ->select(['id', 'custom_property_id', 'object_id', 'object_type', 'value']);
+                },
+            ]);
         }
 
         if ($with !== []) {
@@ -83,8 +109,9 @@ class GenericCrudController extends Controller
             $perPage = max(1, min($maxPerPage, $perPage));
 
             $result = $query->paginate($perPage)->appends($request->query());
+            $this->customPropertyAttributes->hydrateResult($result, $customDefinitions);
             $this->appendSelectedAttributes($result, $selectedAppends);
-            $this->filterResultAttributes($result, $selectedColumns, $selectedAppends, $with, $withCount);
+            $this->filterResultAttributes($result, array_values(array_unique(array_merge($selectedColumns, $selectedCustomColumns))), $selectedAppends, $with, $withCount);
 
             return response()->json($result);
         }
@@ -95,8 +122,9 @@ class GenericCrudController extends Controller
         }
 
         $result = $query->get();
+        $this->customPropertyAttributes->hydrateResult($result, $customDefinitions);
         $this->appendSelectedAttributes($result, $selectedAppends);
-        $this->filterResultAttributes($result, $selectedColumns, $selectedAppends, $with, $withCount);
+        $this->filterResultAttributes($result, array_values(array_unique(array_merge($selectedColumns, $selectedCustomColumns))), $selectedAppends, $with, $withCount);
 
         return response()->json($result);
     }
@@ -107,12 +135,23 @@ class GenericCrudController extends Controller
         Gate::authorize('create', $modelClass);
         $this->guardProtectedProcessFields($modelClass, $request);
 
-        $rules = $this->validationRulesFor($modelClass, false);
-        $data = $rules === []
-            ? $request->only((new $modelClass())->getFillable())
-            : $request->validate($rules);
+        $metadata = $this->metadataFor($modelClass);
+        $customDefinitions = $metadata['custom_definitions'];
+        $customKeys = $metadata['custom_selectable'];
 
-        $model = DB::transaction(function () use ($modelClass, $data): Model {
+        $rules = $this->validationRulesFor($modelClass, false);
+        $customRules = $this->customPropertyAttributes->validationRules($customDefinitions, false);
+
+        if ($rules === [] && $customRules === []) {
+            $data = $request->only((new $modelClass())->getFillable());
+            $customData = [];
+        } else {
+            $validated = $request->validate(array_merge($rules, $customRules));
+            $customData = Arr::only($validated, $customKeys);
+            $data = Arr::except($validated, $customKeys);
+        }
+
+        $model = DB::transaction(function () use ($modelClass, $data, $customData, $customDefinitions): Model {
             $createdModel = new $modelClass();
             $createdModel->fill($data);
             if (method_exists($createdModel, 'getHidden') && $createdModel->getHidden() !== []) {
@@ -121,10 +160,17 @@ class GenericCrudController extends Controller
             }
             $createdModel->save();
 
+            $this->customPropertyAttributes->syncCustomProperties($createdModel, $customData, $customDefinitions);
+
             return $createdModel;
         });
 
-        return response()->json($model->fresh(), Response::HTTP_CREATED);
+        $freshModel = $model->fresh();
+        if ($freshModel instanceof Model) {
+            $this->customPropertyAttributes->hydrateResult($freshModel, $customDefinitions);
+        }
+
+        return response()->json($freshModel, Response::HTTP_CREATED);
     }
 
     public function show(Request $request, string $resource, string $id): JsonResponse
@@ -135,7 +181,9 @@ class GenericCrudController extends Controller
         Gate::authorize('view', $model);
 
         $metadata = $this->metadataFor($modelClass);
+        $customDefinitions = $metadata['custom_definitions'];
         $selectedColumns = $this->parseSelectedColumns($request, $metadata['selectable']);
+        $selectedCustomColumns = $this->parseSelectedCustomColumns($request, $metadata['custom_selectable']);
         $selectedAppends = $this->parseSelectedAppends($request, $metadata['appendable']);
         ['with' => $with, 'withCount' => $withCount] = $this->parseExtends($request, $modelClass);
 
@@ -158,11 +206,27 @@ class GenericCrudController extends Controller
                 $modelQuery->withCount($withCount);
             }
 
+            if ($customDefinitions !== [] && $this->customPropertyAttributes->supportsCustomProperties($modelClass)) {
+                $customPropertyIds = array_values(array_map(
+                    static fn (array $definition): int => (int) $definition['id'],
+                    $customDefinitions
+                ));
+
+                $modelQuery->with([
+                    'int_custom_property_object_as_object' => static function ($relationQuery) use ($customPropertyIds): void {
+                        $relationQuery
+                            ->whereIn('custom_property_id', $customPropertyIds)
+                            ->select(['id', 'custom_property_id', 'object_id', 'object_type', 'value']);
+                    },
+                ]);
+            }
+
             $model = $modelQuery->findOrFail($id);
         }
 
+        $this->customPropertyAttributes->hydrateResult($model, $customDefinitions);
         $this->appendSelectedAttributes($model, $selectedAppends);
-        $this->filterResultAttributes($model, $selectedColumns, $selectedAppends, $with, $withCount);
+        $this->filterResultAttributes($model, array_values(array_unique(array_merge($selectedColumns, $selectedCustomColumns))), $selectedAppends, $with, $withCount);
 
         return response()->json($model);
     }
@@ -175,12 +239,23 @@ class GenericCrudController extends Controller
         Gate::authorize('update', $model);
         $this->guardProtectedProcessFields($modelClass, $request);
 
-        $rules = $this->validationRulesFor($modelClass, true);
-        $data = $rules === []
-            ? $request->only($model->getFillable())
-            : $request->validate($rules);
+        $metadata = $this->metadataFor($modelClass);
+        $customDefinitions = $metadata['custom_definitions'];
+        $customKeys = $metadata['custom_selectable'];
 
-        DB::transaction(function () use ($model, $data): void {
+        $rules = $this->validationRulesFor($modelClass, true);
+        $customRules = $this->customPropertyAttributes->validationRules($customDefinitions, true);
+
+        if ($rules === [] && $customRules === []) {
+            $data = $request->only($model->getFillable());
+            $customData = [];
+        } else {
+            $validated = $request->validate(array_merge($rules, $customRules));
+            $customData = Arr::only($validated, $customKeys);
+            $data = Arr::except($validated, $customKeys);
+        }
+
+        DB::transaction(function () use ($model, $data, $customData, $customDefinitions): void {
             $model->fill($data);
             if (method_exists($model, 'getHidden') && $model->getHidden() !== []) {
                 // Keep hidden-but-required attributes available to model-level validation on update.
@@ -188,9 +263,15 @@ class GenericCrudController extends Controller
             }
 
             $model->save();
+            $this->customPropertyAttributes->syncCustomProperties($model, $customData, $customDefinitions);
         });
 
-        return response()->json($model->fresh());
+        $freshModel = $model->fresh();
+        if ($freshModel instanceof Model) {
+            $this->customPropertyAttributes->hydrateResult($freshModel, $customDefinitions);
+        }
+
+        return response()->json($freshModel);
     }
 
     public function destroy(string $resource, string $id): JsonResponse
@@ -202,6 +283,18 @@ class GenericCrudController extends Controller
         $model->delete();
 
         return response()->json(status: Response::HTTP_NO_CONTENT);
+    }
+
+    public function metadata(string $resource): JsonResponse
+    {
+        $modelClass = $this->resolveModelClass($resource);
+        Gate::authorize('viewAny', $modelClass);
+
+        $metadata = $this->metadataFor($modelClass);
+
+        return response()->json([
+            'custom_properties' => $this->customPropertyAttributes->metadataForModel($modelClass, $metadata['selectable']),
+        ]);
     }
 
     /**
@@ -253,10 +346,16 @@ class GenericCrudController extends Controller
         }
 
         $crudSearch = $this->resolveCrudSearch($model, $describedModel['searchable']);
+        $customDefinitions = $this->customPropertyAttributes->definitionsFor($modelClass, $selectable);
 
         return $this->metadataCache[$modelClass] = [
             'types' => $columnTypes,
             'selectable' => $selectable,
+            'custom_selectable' => array_keys($customDefinitions),
+            'custom_definitions' => $customDefinitions,
+            'custom_filterable' => collect($customDefinitions)
+                ->mapWithKeys(static fn (array $definition, string $key): array => [$key => (string) ($definition['type'] ?? 'string')])
+                ->all(),
             'appendable' => $this->resolveAppendableAttributes($model),
             'filterable' => $filterable,
             'searchable' => $crudSearch['direct'],
@@ -273,6 +372,16 @@ class GenericCrudController extends Controller
         $allowedFilters = [];
 
         foreach ($metadata['selectable'] as $column) {
+            if (! is_string($column) || trim($column) === '') {
+                continue;
+            }
+
+            $allowedFilters[] = AllowedFilter::callback($column, function (mixed $query, mixed $value, string $property) use ($metadata): void {
+                $this->applyFilters($query, [$property => $value], $metadata);
+            });
+        }
+
+        foreach ($metadata['custom_selectable'] as $column) {
             if (! is_string($column) || trim($column) === '') {
                 continue;
             }
@@ -489,7 +598,9 @@ class GenericCrudController extends Controller
         }
 
         $allowedFilters = $metadata['filterable'];
-        $allowedNullableColumns = array_fill_keys($metadata['selectable'] ?? [], true);
+        $allowedCustomFilters = $metadata['custom_filterable'] ?? [];
+        $customDefinitions = $metadata['custom_definitions'] ?? [];
+        $allowedNullableColumns = array_fill_keys(array_merge($metadata['selectable'] ?? [], $metadata['custom_selectable'] ?? []), true);
 
         foreach ($filters as $field => $value) {
             if (! is_string($field) || ! array_key_exists($field, $allowedNullableColumns)) {
@@ -500,13 +611,31 @@ class GenericCrudController extends Controller
 
             $nullFilter = $this->normalizeNullFilterValue($value);
             if ($nullFilter === 'null') {
+                if (isset($customDefinitions[$field])) {
+                    $this->applyCustomPropertyFilter($query, $field, $nullFilter, $customDefinitions);
+
+                    continue;
+                }
+
                 $query->whereNull($field);
 
                 continue;
             }
 
             if ($nullFilter === 'not_null') {
+                if (isset($customDefinitions[$field])) {
+                    $this->applyCustomPropertyFilter($query, $field, $nullFilter, $customDefinitions);
+
+                    continue;
+                }
+
                 $query->whereNotNull($field);
+
+                continue;
+            }
+
+            if (array_key_exists($field, $allowedCustomFilters) && isset($customDefinitions[$field])) {
+                $this->applyCustomPropertyFilter($query, $field, $value, $customDefinitions);
 
                 continue;
             }
@@ -548,14 +677,26 @@ class GenericCrudController extends Controller
     /**
      * @param array<int, string> $searchableColumns
      * @param array<string, array<int, string>> $searchableRelations
+     * @param array<string, array{id: int, type: string, required: bool}> $customDefinitions
      */
-    private function applySearch(mixed $query, string $search, array $searchableColumns, array $searchableRelations = []): void
+    private function applySearch(
+        mixed $query,
+        string $search,
+        array $searchableColumns,
+        array $searchableRelations = [],
+        array $customDefinitions = []
+    ): void
     {
-        if ($search === '' || ($searchableColumns === [] && $searchableRelations === [])) {
+        if ($search === '' || ($searchableColumns === [] && $searchableRelations === [] && $customDefinitions === [])) {
             return;
         }
 
-        $query->where(function ($subQuery) use ($search, $searchableColumns, $searchableRelations): void {
+        $customPropertyIds = array_values(array_filter(array_map(
+            static fn (array $definition): int => (int) ($definition['id'] ?? 0),
+            $customDefinitions
+        )));
+
+        $query->where(function ($subQuery) use ($search, $searchableColumns, $searchableRelations, $customPropertyIds): void {
             foreach ($searchableColumns as $column) {
                 $subQuery->orWhere($column, 'like', "%{$search}%");
             }
@@ -567,6 +708,14 @@ class GenericCrudController extends Controller
                             $nestedQuery->orWhere($column, 'like', "%{$search}%");
                         }
                     });
+                });
+            }
+
+            if ($customPropertyIds !== []) {
+                $subQuery->orWhereHas('int_custom_property_object_as_object', function ($relationQuery) use ($search, $customPropertyIds): void {
+                    $relationQuery
+                        ->whereIn('custom_property_id', $customPropertyIds)
+                        ->where('value', 'like', "%{$search}%");
                 });
             }
         });
@@ -586,6 +735,22 @@ class GenericCrudController extends Controller
         $columns = array_values(array_filter(array_map('trim', explode(',', $raw))));
 
         return array_values(array_unique(array_intersect($columns, $selectableColumns)));
+    }
+
+    /**
+     * @param array<int, string> $customSelectableColumns
+     * @return array<int, string>
+     */
+    private function parseSelectedCustomColumns(Request $request, array $customSelectableColumns): array
+    {
+        $raw = $request->query('$select', $request->query('select', ''));
+        if (! is_string($raw) || trim($raw) === '') {
+            return [];
+        }
+
+        $columns = array_values(array_filter(array_map('trim', explode(',', $raw))));
+
+        return array_values(array_unique(array_intersect($columns, $customSelectableColumns)));
     }
 
     /**
@@ -725,12 +890,38 @@ class GenericCrudController extends Controller
 
     /**
      * @param class-string<Model> $modelClass
-     * @param array<int, string> $defaultSorts
+     * @param array<string, mixed> $metadata
      * @return array<int, string|AllowedSort>
      */
-    private function allowedSortsFor(string $modelClass, array $defaultSorts): array
+    private function allowedSortsFor(string $modelClass, array $metadata): array
     {
-        $allowedSorts = $defaultSorts;
+        $allowedSorts = $metadata['selectable'] ?? [];
+
+        foreach ($metadata['custom_definitions'] ?? [] as $key => $definition) {
+            if (! is_string($key) || trim($key) === '') {
+                continue;
+            }
+
+            $customPropertyId = (int) ($definition['id'] ?? 0);
+            if ($customPropertyId <= 0) {
+                continue;
+            }
+
+            $allowedSorts[] = AllowedSort::callback($key, function (mixed $query, bool $descending) use ($modelClass, $customPropertyId): void {
+                $table = (new $modelClass())->getTable();
+                $primaryKey = (new $modelClass())->getKeyName();
+
+                $query->orderBy(
+                    CustomPropertyObject::query()
+                        ->select('value')
+                        ->whereColumn('custom_property_object.object_id', $table.'.'.$primaryKey)
+                        ->where('custom_property_object.object_type', $modelClass)
+                        ->where('custom_property_object.custom_property_id', $customPropertyId)
+                        ->limit(1),
+                    $descending ? 'desc' : 'asc'
+                );
+            });
+        }
 
         if (! method_exists($modelClass, 'crudSorts')) {
             return $allowedSorts;
@@ -857,6 +1048,74 @@ class GenericCrudController extends Controller
     }
 
     /**
+     * @param array<string, array{id: int, type: string, required: bool}> $customDefinitions
+     */
+    private function applyCustomPropertyFilter(mixed $query, string $field, mixed $value, array $customDefinitions): void
+    {
+        $definition = $customDefinitions[$field] ?? null;
+        if (! is_array($definition)) {
+            return;
+        }
+
+        $customPropertyId = (int) ($definition['id'] ?? 0);
+        if ($customPropertyId <= 0) {
+            return;
+        }
+
+        $nullFilter = is_string($value) ? Str::lower(trim($value)) : null;
+        if ($nullFilter === 'null') {
+            $query->whereDoesntHave('int_custom_property_object_as_object', function ($relationQuery) use ($customPropertyId): void {
+                $relationQuery->where('custom_property_id', $customPropertyId);
+            });
+
+            return;
+        }
+
+        if ($nullFilter === 'not_null') {
+            $query->whereHas('int_custom_property_object_as_object', function ($relationQuery) use ($customPropertyId): void {
+                $relationQuery->where('custom_property_id', $customPropertyId);
+            });
+
+            return;
+        }
+
+        $type = Str::lower((string) ($definition['type'] ?? 'string'));
+        $normalizedValue = $this->normalizeCustomPropertyFilterValue($field, $type, $value);
+
+        $query->whereHas('int_custom_property_object_as_object', function ($relationQuery) use ($customPropertyId, $normalizedValue): void {
+            $relationQuery
+                ->where('custom_property_id', $customPropertyId)
+                ->where('value', (string) $normalizedValue);
+        });
+    }
+
+    private function normalizeCustomPropertyFilterValue(string $field, string $type, mixed $value): string
+    {
+        if ($type === 'boolean') {
+            $normalized = filter_var($value, FILTER_VALIDATE_BOOL, FILTER_NULL_ON_FAILURE);
+            if ($normalized === null) {
+                throw ValidationException::withMessages([
+                    'filter' => [__('api.generic_crud.filter_value_boolean', ['field' => $field])],
+                ]);
+            }
+
+            return $normalized ? '1' : '0';
+        }
+
+        if (in_array($type, ['user', 'department', 'supplier', 'customer', 'asset', 'process'], true)) {
+            if (! is_numeric($value)) {
+                throw ValidationException::withMessages([
+                    'filter' => [__('api.generic_crud.filter_value_numeric', ['field' => $field])],
+                ]);
+            }
+
+            return (string) ((int) $value);
+        }
+
+        return (string) $value;
+    }
+
+    /**
      * Filter result attributes to only include explicitly selected columns and appends.
      * Only applies filtering if $select was explicitly used by the client.
      *
@@ -919,6 +1178,9 @@ class GenericCrudController extends Controller
         if ($allowedAttributes === []) {
             return;
         }
+
+        $defaultAppends = method_exists($model, 'getAppends') ? $model->getAppends() : [];
+        $allowedAttributes = array_values(array_unique(array_merge($allowedAttributes, $defaultAppends)));
 
         // Get all current attributes including eager-loaded relations
         $allAttributes = array_keys($model->toArray());

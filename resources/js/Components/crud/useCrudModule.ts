@@ -209,6 +209,7 @@ function getPerPageFromCookie(fallback: number): number {
 export function useCrudModule(config: CrudModuleConfig) {
   const { t } = useTranslations();
   const fixedFiltersSignature = JSON.stringify(config.fixedFilters || {});
+  const selectFieldsSignature = JSON.stringify(config.selectFields || config.fields.map((field) => field.key));
   const hasOrdinalField = config.fields.some((field) => field.key === "ordinal");
   const ordinalSortDirection = config.ordinalSortDirection ?? "asc";
 
@@ -287,7 +288,7 @@ export function useCrudModule(config: CrudModuleConfig) {
         setState((s) => ({ ...s, loading: false }));
       }
     }
-  }, [config.apiUrl, fixedFiltersSignature, primaryKey, state.search, state.filters, state.sort, state.sortDirection, state.page, state.perPage]);
+  }, [config.apiUrl, fixedFiltersSignature, selectFieldsSignature, primaryKey, state.search, state.filters, state.sort, state.sortDirection, state.page, state.perPage]);
 
   useEffect(() => {
     fetchItems();

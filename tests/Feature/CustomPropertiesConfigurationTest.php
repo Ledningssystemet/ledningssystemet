@@ -97,6 +97,13 @@ class CustomPropertiesConfigurationTest extends TestCase
             'context' => 'App\\Models\\User',
         ]);
 
+        $contexts = collect($contextsResponse->json('data'));
+        $this->assertSame(
+            $contexts->count(),
+            $contexts->pluck('context')->unique()->count(),
+            'Custom property contexts should be unique by context model class.'
+        );
+
         $userContext = 'App\\Models\\User';
         $departmentContext = 'App\\Models\\Department';
 

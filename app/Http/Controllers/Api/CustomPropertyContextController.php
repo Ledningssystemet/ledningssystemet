@@ -27,13 +27,18 @@ class CustomPropertyContextController extends Controller
 
             $label = $this->resolveLabel($modelClass, (string) ($resource['resource'] ?? ''));
 
-            $contexts[] = [
+            if (isset($contexts[$modelClass])) {
+                continue;
+            }
+
+            $contexts[$modelClass] = [
                 'resource' => (string) ($resource['resource'] ?? ''),
                 'context' => $modelClass,
                 'label' => $label,
             ];
         }
 
+        $contexts = array_values($contexts);
         usort($contexts, static fn (array $a, array $b): int => strcasecmp((string) $a['label'], (string) $b['label']));
 
         return response()->json([
