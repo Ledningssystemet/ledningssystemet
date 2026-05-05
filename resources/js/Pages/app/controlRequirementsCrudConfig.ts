@@ -42,7 +42,7 @@ export function buildControlRequirementsCrudConfig(
                 sortable: true,
                 editable: true,
                 required: true,
-                optionsUrl: '/api/crud/requirements?paginate=0&filter[iscontrol]=1&%24select=id,reference,name&sort=reference',
+                optionsUrl: '/api/crud/requirements?paginate=0&%24select=id,reference,name&sort=reference',
                 optionValueKey: 'id',
                 optionLabelKey: 'reference',
                 category: t('pages.controls.requirements.category_general'),

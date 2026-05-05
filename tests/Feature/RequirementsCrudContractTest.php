@@ -66,7 +66,6 @@ class RequirementsCrudContractTest extends TestCase
             Schema::create('requirements', function (Blueprint $table): void {
                 $table->id();
                 $table->unsignedBigInteger('requirement_source_id');
-                $table->boolean('iscontrol')->default(false);
                 $table->boolean('applicable')->nullable();
                 $table->string('name', 100);
                 $table->string('reference', 20);
@@ -130,7 +129,6 @@ class RequirementsCrudContractTest extends TestCase
 
         DB::table('requirements')->insert([
             'requirement_source_id' => $sourceAId,
-            'iscontrol' => false,
             'applicable' => true,
             'name' => 'Existing A',
             'reference' => 'REQ-A-0',
@@ -143,7 +141,6 @@ class RequirementsCrudContractTest extends TestCase
 
         DB::table('requirements')->insert([
             'requirement_source_id' => $sourceBId,
-            'iscontrol' => false,
             'applicable' => true,
             'name' => 'Existing B',
             'reference' => 'REQ-B-0',
@@ -156,7 +153,6 @@ class RequirementsCrudContractTest extends TestCase
 
         $createResponse = $this->postJson('/api/crud/requirements', [
             'requirement_source_id' => $sourceAId,
-            'iscontrol' => false,
             'applicable' => true,
             'name' => 'Created A',
             'reference' => 'REQ-A-1',
@@ -208,7 +204,6 @@ class RequirementsCrudContractTest extends TestCase
 
         $requirementId = DB::table('requirements')->insertGetId([
             'requirement_source_id' => $sourceId,
-            'iscontrol' => false,
             'applicable' => true,
             'name' => 'Requirement Controls',
             'reference' => 'REQ-CONTROLS',

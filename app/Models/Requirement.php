@@ -18,7 +18,7 @@ class Requirement extends Model
 
     protected $table = 'requirements';
 
-    protected $fillable = ['requirement_source_id', 'iscontrol', 'applicable', 'name', 'reference', 'ordinal', 'description', 'governance', 'controls'];
+    protected $fillable = ['requirement_source_id', 'applicable', 'name', 'reference', 'ordinal', 'description', 'governance', 'controls'];
 
     protected $appends = ['controls'];
 
@@ -32,7 +32,6 @@ class Requirement extends Model
     protected function casts(): array
     {
         return [
-            'iscontrol' => 'boolean',
             'applicable' => 'boolean',
             'created_at' => 'datetime',
             'updated_at' => 'datetime',
@@ -43,7 +42,6 @@ class Requirement extends Model
     {
         return [
             'requirement_source_id' => ['required', 'integer', 'min:0', 'exists:requirement_sources,id'],
-            'iscontrol' => ['required', 'boolean'],
             'applicable' => ['nullable', 'boolean'],
             'name' => ['required', 'string', 'max:100'],
             'reference' => ['required', 'string', 'max:20'],
