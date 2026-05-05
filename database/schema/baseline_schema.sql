@@ -1241,7 +1241,6 @@ CREATE TABLE `requirement_sources` (
 CREATE TABLE `requirements` (
                                 `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
                                 `requirement_source_id` bigint(20) unsigned NOT NULL,
-                                `iscontrol` tinyint(1) NOT NULL DEFAULT 0,
                                 `applicable` tinyint(1) DEFAULT NULL,
                                 `name` varchar(100) NOT NULL,
                                 `reference` varchar(20) NOT NULL,

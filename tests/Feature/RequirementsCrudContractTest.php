@@ -77,7 +77,29 @@ class RequirementsCrudContractTest extends TestCase
             });
         }
 
+        if (! Schema::hasTable('controls')) {
+            Schema::create('controls', function (Blueprint $table): void {
+                $table->id();
+                $table->string('name');
+                $table->text('description')->nullable();
+                $table->unsignedBigInteger('responsible_user_id')->nullable();
+                $table->text('statusdescription')->nullable();
+                $table->date('reviewed_at')->nullable();
+                $table->timestamps();
+            });
+        }
+
+        if (! Schema::hasTable('control_requirements')) {
+            Schema::create('control_requirements', function (Blueprint $table): void {
+                $table->id();
+                $table->unsignedBigInteger('control_id');
+                $table->unsignedBigInteger('requirement_id');
+            });
+        }
+
         DB::statement('SET FOREIGN_KEY_CHECKS=0');
+        DB::table('control_requirements')->truncate();
+        DB::table('controls')->truncate();
         DB::table('requirements')->truncate();
         DB::table('requirement_sources')->truncate();
         DB::table('access_group_user')->truncate();
@@ -169,6 +191,80 @@ class RequirementsCrudContractTest extends TestCase
 
         $this->deleteJson('/api/crud/requirements/'.$requirementId)->assertNoContent();
         $this->assertDatabaseMissing('requirements', ['id' => $requirementId]);
+    }
+
+    public function test_requirements_allow_direct_control_association_updates(): void
+    {
+        $admin = $this->createUser('Requirements Admin', 'requirements.controls.admin@example.com');
+        $this->grantClaims($admin, ['requirements.edit']);
+        $this->actingAs($admin->fresh(), 'sanctum');
+
+        $sourceId = DB::table('requirement_sources')->insertGetId([
+            'reference' => 'SRC-CONTROLS',
+            'name' => 'Source Controls',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $requirementId = DB::table('requirements')->insertGetId([
+            'requirement_source_id' => $sourceId,
+            'iscontrol' => false,
+            'applicable' => true,
+            'name' => 'Requirement Controls',
+            'reference' => 'REQ-CONTROLS',
+            'ordinal' => 0,
+            'description' => null,
+            'governance' => null,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $controlAId = DB::table('controls')->insertGetId([
+            'name' => 'Control A',
+            'description' => 'A',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $controlBId = DB::table('controls')->insertGetId([
+            'name' => 'Control B',
+            'description' => 'B',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $this->patchJson('/api/crud/requirements/'.$requirementId, [
+            'controls' => [$controlAId, $controlBId],
+        ])->assertOk();
+
+        $this->assertDatabaseHas('control_requirements', [
+            'requirement_id' => $requirementId,
+            'control_id' => $controlAId,
+        ]);
+        $this->assertDatabaseHas('control_requirements', [
+            'requirement_id' => $requirementId,
+            'control_id' => $controlBId,
+        ]);
+
+        $response = $this->getJson('/api/crud/requirements/'.$requirementId.'?%24select=id,controls');
+        $response->assertOk();
+        $response->assertJsonPath('id', $requirementId);
+
+        $controls = collect($response->json('controls'))->map(static fn (mixed $id): int => (int) $id)->sort()->values()->all();
+        $this->assertSame([$controlAId, $controlBId], $controls);
+
+        $this->patchJson('/api/crud/requirements/'.$requirementId, [
+            'controls' => [$controlBId],
+        ])->assertOk();
+
+        $this->assertDatabaseMissing('control_requirements', [
+            'requirement_id' => $requirementId,
+            'control_id' => $controlAId,
+        ]);
+        $this->assertDatabaseHas('control_requirements', [
+            'requirement_id' => $requirementId,
+            'control_id' => $controlBId,
+        ]);
     }
 
     private function createUser(string $name, string $email): User

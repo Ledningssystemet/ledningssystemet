@@ -22,6 +22,7 @@ interface Select2FieldProps {
   createOptionPayloadKey?: string;
   tags?: boolean;
   withinDialog?: boolean;
+  dropdownParent?: HTMLElement | null;
 }
 
 const customStyles = {
@@ -43,7 +44,9 @@ const customStyles = {
   }),
   menuPortal: (base: any) => ({
     ...base,
-    zIndex: 99999,
+    position: "fixed",
+    pointerEvents: "auto",
+    zIndex: 2147483647,
   }),
   option: (base: any, state: any) => ({
     ...base,
@@ -155,11 +158,13 @@ export const Select2Field = React.forwardRef<any, Select2FieldProps>(function Se
     createOptionPayloadKey = "name",
     tags = false,
     withinDialog = false,
+    dropdownParent = null,
   },
   ref,
 ) {
   const { t } = useTranslations();
   const [remoteOptions, setRemoteOptions] = React.useState<SelectOption[]>([]);
+  const menuPortalTarget = dropdownParent ?? (typeof document !== "undefined" ? document.body : undefined);
 
   React.useEffect(() => {
     if (!optionsUrl) {
@@ -309,7 +314,7 @@ export const Select2Field = React.forwardRef<any, Select2FieldProps>(function Se
       formatCreateLabel={(input: string) => t("ui.crud.select.create_label", { input })}
       isClearable
       closeMenuOnSelect={!isMulti}
-      menuPortalTarget={typeof document !== "undefined" ? document.body : undefined}
+      menuPortalTarget={menuPortalTarget}
       menuPosition="fixed"
       menuPlacement="bottom"
       menuShouldScrollIntoView={false}

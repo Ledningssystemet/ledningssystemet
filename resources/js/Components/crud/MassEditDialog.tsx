@@ -65,10 +65,9 @@ export function MassEditDialog({ open, onOpenChange, fields, count, onSave }: Ma
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange} modal={false}>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
         className="max-w-lg max-h-[85vh] flex flex-col overflow-visible"
-        onInteractOutside={(event) => event.preventDefault()}
         onEscapeKeyDown={(event) => event.preventDefault()}
       >
         <DialogHeader>

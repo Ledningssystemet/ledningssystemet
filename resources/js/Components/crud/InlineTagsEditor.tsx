@@ -80,7 +80,7 @@ export function InlineTagsEditor({item, field, value, onSave}: InlineTagsEditorP
             </div>
 
 
-            <Dialog open={open} onOpenChange={setOpen} modal={false}>
+            <Dialog open={open} onOpenChange={setOpen}>
                 <DialogContent className="max-w-md">
                     <DialogHeader>
                         <DialogTitle>{t("ui.crud.inline_tags_title", {field: field.label})}</DialogTitle>

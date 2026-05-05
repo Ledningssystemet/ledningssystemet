@@ -18,7 +18,16 @@ class Requirement extends Model
 
     protected $table = 'requirements';
 
-    protected $fillable = ['requirement_source_id', 'iscontrol', 'applicable', 'name', 'reference', 'ordinal', 'description', 'governance'];
+    protected $fillable = ['requirement_source_id', 'iscontrol', 'applicable', 'name', 'reference', 'ordinal', 'description', 'governance', 'controls'];
+
+    protected $appends = ['controls'];
+
+    /**
+     * @var array<int, int>
+     */
+    private array $pendingControlIds = [];
+
+    private bool $hasPendingControlUpdate = false;
 
     protected function casts(): array
     {
@@ -41,6 +50,7 @@ class Requirement extends Model
             'ordinal' => ['nullable', 'integer', 'min:0'],
             'description' => ['nullable', 'string'],
             'governance' => ['nullable', 'string'],
+            'controls' => ['sometimes', 'array'],
         ];
     }
 
@@ -57,6 +67,11 @@ class Requirement extends Model
                 // 'relation.path' => ['name'],
             ],
         ];
+    }
+
+    public static function crudAppends(): array
+    {
+        return ['controls'];
     }
 
     protected static function booted(): void
@@ -76,11 +91,54 @@ class Requirement extends Model
         static::saving(function (self $model): void {
             Validator::make($model->attributesToArray(), static::validationRules())->validate();
         });
+
+        static::saved(function (self $model): void {
+            $model->syncPendingControls();
+        });
     }
 
     public static function getPrettyName($plural = false): string
     {
         return $plural ? 'Requirements' : 'Requirement';
+    }
+
+    /**
+     * @return array<int, int>
+     */
+    public function getControlsAttribute(): array
+    {
+        return $this->int_controls()->pluck('controls.id')->map(static fn (mixed $id): int => (int) $id)->all();
+    }
+
+    /**
+     * @param array<int, int|string>|int|string|null $value
+     */
+    public function setControlsAttribute(array|int|string|null $value): void
+    {
+        $rawControlIds = is_array($value)
+            ? $value
+            : ($value === null || $value === '' ? [] : [$value]);
+
+        $this->pendingControlIds = collect($rawControlIds)
+            ->map(static fn (mixed $id): int => (int) $id)
+            ->filter(static fn (int $id): bool => $id > 0)
+            ->unique()
+            ->values()
+            ->all();
+
+        $this->hasPendingControlUpdate = true;
+    }
+
+    private function syncPendingControls(): void
+    {
+        if (! $this->hasPendingControlUpdate) {
+            return;
+        }
+
+        $this->int_controls()->sync($this->pendingControlIds);
+
+        $this->pendingControlIds = [];
+        $this->hasPendingControlUpdate = false;
     }
 
     public function int_requirement_source(): BelongsTo

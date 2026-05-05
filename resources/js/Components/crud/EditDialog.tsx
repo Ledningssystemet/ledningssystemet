@@ -141,11 +141,10 @@ export function EditDialog({
   );
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange} modal={false}>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
         data-testid="crud-edit-dialog"
         className="max-w-lg max-h-[85vh] flex flex-col overflow-visible"
-        onInteractOutside={(event) => event.preventDefault()}
         onEscapeKeyDown={(event) => event.preventDefault()}
       >
         <DialogHeader>

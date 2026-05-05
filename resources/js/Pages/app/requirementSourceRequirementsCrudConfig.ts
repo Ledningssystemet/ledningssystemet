@@ -27,12 +27,10 @@ export function buildRequirementSourceRequirementsCrudConfig(
         createDefaults: lockRequirementSourceId
             ? {
                   requirement_source_id: options.requirementSourceId,
-                  iscontrol: false,
                   applicable: true,
                   ordinal: 0,
               }
             : {
-                  iscontrol: false,
                   applicable: true,
                   ordinal: 0,
               },
@@ -44,8 +42,8 @@ export function buildRequirementSourceRequirementsCrudConfig(
             'description',
             'applicable',
             'governance',
+            'controls',
             'ordinal',
-            'iscontrol',
         ],
         createTitle: t('pages.requirement_sources.requirements.create_title'),
         editTitle: t('pages.requirement_sources.requirements.edit_title'),
@@ -122,6 +120,18 @@ export function buildRequirementSourceRequirementsCrudConfig(
                 category: t('pages.requirement_sources.requirements.category_status'),
             },
             {
+                key: 'controls',
+                label: t('pages.requirement_sources.requirements.column_controls'),
+                type: 'multiselect',
+                sortable: false,
+                editable: true,
+                optionsUrl: '/api/crud/controls?paginate=0&%24select=id,name&sort=name',
+                optionValueKey: 'id',
+                optionLabelKey: 'name',
+                placeholder: t('pages.requirement_sources.requirements.select_controls'),
+                category: t('pages.requirement_sources.requirements.category_links'),
+            },
+            {
                 key: 'requirement_source_id',
                 label: t('pages.requirement_sources.requirements.column_requirement_source'),
                 type: 'select',
@@ -132,15 +142,6 @@ export function buildRequirementSourceRequirementsCrudConfig(
                 optionsUrl: '/api/crud/requirement_sources?paginate=0&%24select=id,reference,name&sort=reference',
                 optionValueKey: 'id',
                 optionLabelKey: 'reference',
-                category: t('pages.requirement_sources.requirements.category_links'),
-            },
-            {
-                key: 'iscontrol',
-                label: t('pages.requirement_sources.requirements.column_is_control'),
-                type: 'boolean',
-                sortable: false,
-                editable: false,
-                hidden: true,
                 category: t('pages.requirement_sources.requirements.category_links'),
             },
             {

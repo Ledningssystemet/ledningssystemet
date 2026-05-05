@@ -31,6 +31,8 @@ return [
         'consequence-levels' => App\Models\ConsequenceLevel::class,
         'controls' => App\Models\Control::class,
         'control_actions' => App\Models\ControlAction::class,
+        'control-requirements' => App\Models\ControlRequirement::class,
+        'control_requirements' => App\Models\ControlRequirement::class,
         'customers' => App\Models\Customer::class,
         'data-categories' => App\Models\DataCategory::class,
         'departments' => App\Models\Department::class,

@@ -12,14 +12,16 @@ const DialogPortal = DialogPrimitive.Portal;
 
 const DialogClose = DialogPrimitive.Close;
 
-const isSelect2PortalTarget = (target: EventTarget | null) => {
-  return target instanceof HTMLElement
-    ? Boolean(
-        target.closest(
-          ".select2__menu-portal, .select2__menu, .select2__menu-list, .select2__option, .select2__control, [id^='react-select-']"
-        )
-      )
-    : false;
+const isAllowedOutsideInteractionTarget = (target: EventTarget | null) => {
+  if (!(target instanceof HTMLElement)) {
+    return false;
+  }
+
+  return Boolean(
+    target.closest(
+      "[data-dialog-allow-outside-interaction='true'], .select2__menu-portal, .select2__menu, .select2__menu-list, .select2__option, .select2__control, [id^='react-select-']"
+    )
+  );
 };
 
 const DialogOverlay = React.forwardRef<
@@ -49,15 +51,20 @@ const DialogContent = React.forwardRef<
     <DialogOverlay />
     <DialogPrimitive.Content
       ref={ref}
+      data-dialog-content="true"
       onPointerDownOutside={(e) => {
+        if (isAllowedOutsideInteractionTarget(e.target)) {
+          onPointerDownOutside?.(e);
+          // Allow native pointer handling for select dropdown options rendered in a portal.
+          return;
+        }
         onPointerDownOutside?.(e);
         // Dialogs should not close when clicking outside.
         e.preventDefault();
       }}
       onInteractOutside={(e) => {
-        if (isSelect2PortalTarget(e.target)) {
+        if (isAllowedOutsideInteractionTarget(e.target)) {
           onInteractOutside?.(e);
-          e.preventDefault();
           return;
         }
         onInteractOutside?.(e);
@@ -65,6 +72,10 @@ const DialogContent = React.forwardRef<
         e.preventDefault();
       }}
       onFocusOutside={(e) => {
+        if (isAllowedOutsideInteractionTarget(e.target)) {
+          onFocusOutside?.(e);
+          return;
+        }
         onFocusOutside?.(e);
         e.preventDefault();
       }}

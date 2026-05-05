@@ -12,7 +12,7 @@ class ControlRequirementPolicy
      */
     public function viewAny(User $user): bool
     {
-        return false;
+        return $user->haveAnyAccessRights(['requirements.read', 'requirements.edit']);
     }
 
     /**
@@ -20,7 +20,7 @@ class ControlRequirementPolicy
      */
     public function view(User $user, ControlRequirement $controlRequirement = new ControlRequirement): bool
     {
-        return false;
+        return $user->haveAnyAccessRights(['requirements.read', 'requirements.edit']);
     }
 
     /**
@@ -28,7 +28,7 @@ class ControlRequirementPolicy
      */
     public function create(User $user): bool
     {
-        return false;
+        return $user->haveAnyAccessRights(['requirements.edit']);
     }
 
     /**
@@ -36,7 +36,7 @@ class ControlRequirementPolicy
      */
     public function update(User $user, ControlRequirement $controlRequirement = new ControlRequirement): bool
     {
-        return false;
+        return $user->haveAnyAccessRights(['requirements.edit']);
     }
 
     /**
@@ -44,6 +44,6 @@ class ControlRequirementPolicy
      */
     public function delete(User $user, ControlRequirement $controlRequirement = new ControlRequirement): bool
     {
-        return false;
+        return $user->can('update', $controlRequirement);
     }
 }

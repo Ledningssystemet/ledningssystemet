@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\Validator;
 
 class ControlRequirement extends Model
@@ -13,6 +14,8 @@ class ControlRequirement extends Model
     use HasFactory;
 
     protected $table = 'control_requirements';
+
+    public $timestamps = false;
 
     protected $fillable = ['control_id', 'requirement_id'];
 
@@ -39,6 +42,18 @@ class ControlRequirement extends Model
     {
         static::saving(function (self $model): void {
             Validator::make($model->attributesToArray(), static::validationRules())->validate();
+
+            $alreadyLinked = static::query()
+                ->where('control_id', $model->control_id)
+                ->where('requirement_id', $model->requirement_id)
+                ->when($model->exists, static fn ($query) => $query->whereKeyNot($model->getKey()))
+                ->exists();
+
+            if ($alreadyLinked) {
+                throw ValidationException::withMessages([
+                    'requirement_id' => [__('validation.unique', ['attribute' => 'requirement'])],
+                ]);
+            }
         });
     }
 
