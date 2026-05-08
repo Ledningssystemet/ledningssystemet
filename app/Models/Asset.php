@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Models\Concerns\HasStatus;
 use App\Models\Concerns\HasTags;
 use App\Services\Bpmn\BpmnNamePropagationService;
+use App\Services\Classification\InheritedClassificationResolver;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -25,7 +26,7 @@ class Asset extends Model
 
     protected $fillable = ['name', 'description', 'responsible_user_id', 'supplier_id', 'confidentiality_class_id', 'integrity_class_id', 'availability_class_id', 'mtd', 'rpo', 'site_id', 'tags'];
 
-    protected $appends = ['tags'];
+    protected $appends = ['tags', 'effective_confidentiality_class_id', 'effective_integrity_class_id', 'effective_availability_class_id'];
 
     /**
      * @var array<int, string>
@@ -88,6 +89,11 @@ class Asset extends Model
 
         static::saved(function (self $model): void {
             $model->syncPendingTags();
+            InheritedClassificationResolver::bumpCacheVersion();
+        });
+
+        static::deleted(static function (): void {
+            InheritedClassificationResolver::bumpCacheVersion();
         });
     }
 
@@ -310,5 +316,23 @@ class Asset extends Model
     public function int_vector_embeddings_as_embeddable(): MorphMany
     {
         return $this->morphMany(VectorEmbedding::class, 'embeddable', 'embeddable_type', 'embeddable_id');
+    }
+
+    public function getEffectiveConfidentialityClassIdAttribute(): ?int
+    {
+        return app(InheritedClassificationResolver::class)
+            ->resolveAsset($this, InheritedClassificationResolver::CONFIDENTIALITY);
+    }
+
+    public function getEffectiveIntegrityClassIdAttribute(): ?int
+    {
+        return app(InheritedClassificationResolver::class)
+            ->resolveAsset($this, InheritedClassificationResolver::INTEGRITY);
+    }
+
+    public function getEffectiveAvailabilityClassIdAttribute(): ?int
+    {
+        return app(InheritedClassificationResolver::class)
+            ->resolveAsset($this, InheritedClassificationResolver::AVAILABILITY);
     }
 }

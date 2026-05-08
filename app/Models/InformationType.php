@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Models\Concerns\HasStatus;
 use App\Services\Bpmn\BpmnNamePropagationService;
+use App\Services\Classification\InheritedClassificationResolver;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -78,6 +79,14 @@ class InformationType extends Model
             }
 
             app(BpmnNamePropagationService::class)->syncInformationTypeRename($model, (string) $model->getOriginal('name'));
+        });
+
+        static::saved(static function (): void {
+            InheritedClassificationResolver::bumpCacheVersion();
+        });
+
+        static::deleted(static function (): void {
+            InheritedClassificationResolver::bumpCacheVersion();
         });
     }
 
@@ -209,5 +218,23 @@ class InformationType extends Model
     public function int_vector_embeddings_as_embeddable(): MorphMany
     {
         return $this->morphMany(VectorEmbedding::class, 'embeddable', 'embeddable_type', 'embeddable_id');
+    }
+
+    public function getEffectiveConfidentialityClassIdAttribute(): ?int
+    {
+        return app(InheritedClassificationResolver::class)
+            ->resolveInformationType($this, InheritedClassificationResolver::CONFIDENTIALITY);
+    }
+
+    public function getEffectiveIntegrityClassIdAttribute(): ?int
+    {
+        return app(InheritedClassificationResolver::class)
+            ->resolveInformationType($this, InheritedClassificationResolver::INTEGRITY);
+    }
+
+    public function getEffectiveAvailabilityClassIdAttribute(): ?int
+    {
+        return app(InheritedClassificationResolver::class)
+            ->resolveInformationType($this, InheritedClassificationResolver::AVAILABILITY);
     }
 }

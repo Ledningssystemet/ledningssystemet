@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Services\Classification\InheritedClassificationResolver;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -55,6 +56,14 @@ class AssetAssetDependancy extends Model
     {
         static::saving(function (self $model): void {
             Validator::make($model->attributesToArray(), static::validationRules())->validate();
+        });
+
+        static::saved(static function (): void {
+            InheritedClassificationResolver::bumpCacheVersion();
+        });
+
+        static::deleted(static function (): void {
+            InheritedClassificationResolver::bumpCacheVersion();
         });
     }
 
