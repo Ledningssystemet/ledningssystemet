@@ -517,6 +517,22 @@ class ProcessMapPublisher
             }
         }
 
+        // dataOutputAssociation is a child of its source task – fall back to the parent id when no sourceRef is present.
+        if ($sources === [] && $edge->localName === 'dataOutputAssociation') {
+            $parentId = trim((string) $edge->parentNode?->getAttribute('id'));
+            if ($parentId !== '') {
+                $sources[] = $parentId;
+            }
+        }
+
+        // dataInputAssociation is a child of its target task – fall back to the parent id when no targetRef is present.
+        if ($targets === [] && $edge->localName === 'dataInputAssociation') {
+            $parentId = trim((string) $edge->parentNode?->getAttribute('id'));
+            if ($parentId !== '') {
+                $targets[] = $parentId;
+            }
+        }
+
         if ($sources === [] || $targets === []) {
             return [];
         }

@@ -4,6 +4,11 @@ import NavigatedViewer from 'bpmn-js/lib/NavigatedViewer';
 import 'bpmn-js/dist/assets/diagram-js.css';
 import '../../../css/bpmn-font-local.css';
 import { cn } from '@/lib/utils';
+import {
+  applyBpmnDiagramVisualStyles,
+  applyBpmnDetailVisibility,
+  fitBpmnViewport,
+} from '@/components/crud/BpmnProcessRenderer';
 
 interface BpmnProcessViewerProps {
   xml: string | null;
@@ -13,49 +18,6 @@ interface BpmnProcessViewerProps {
   fitButtonLabel?: string;
   showDetailsLabel?: string;
   onSubProcessClick?: (name: string) => void;
-}
-
-const DETAIL_ELEMENT_TYPES = new Set([
-  'bpmn:DataObjectReference',
-  'bpmn:DataStoreReference',
-]);
-
-function applyDetailVisibility(viewer: NavigatedViewer, showDetails: boolean): void {
-  const elementRegistry = viewer.get('elementRegistry') as {
-    getAll: () => Array<{ id: string; type: string; source?: { type: string }; target?: { type: string }; labelTarget?: { type: string } }>;
-    getGraphics: (id: string) => SVGElement | undefined;
-  };
-
-  elementRegistry.getAll().forEach((element) => {
-    const { type } = element;
-    let shouldHide = false;
-
-    if (DETAIL_ELEMENT_TYPES.has(type)) {
-      shouldHide = true;
-    } else if (
-      type === 'bpmn:Association' ||
-      type === 'bpmn:DataInputAssociation' ||
-      type === 'bpmn:DataOutputAssociation'
-    ) {
-      if (
-        DETAIL_ELEMENT_TYPES.has(element.source?.type ?? '') ||
-        DETAIL_ELEMENT_TYPES.has(element.target?.type ?? '')
-      ) {
-        shouldHide = true;
-      }
-    } else if (type === 'label') {
-      if (DETAIL_ELEMENT_TYPES.has(element.labelTarget?.type ?? '')) {
-        shouldHide = true;
-      }
-    }
-
-    if (shouldHide) {
-      const gfx = elementRegistry.getGraphics(element.id);
-      if (gfx) {
-        gfx.style.display = showDetails ? '' : 'none';
-      }
-    }
-  });
 }
 
 export default function BpmnProcessViewer({
@@ -83,8 +45,8 @@ export default function BpmnProcessViewer({
   const fitViewport = () => {
     const viewer = viewerRef.current;
     if (!viewer) return;
-    const canvas = viewer.get('canvas') as { zoom: (scale: 'fit-viewport', center: 'auto') => void };
-    canvas.zoom('fit-viewport', 'auto');
+
+    fitBpmnViewport(viewer);
   };
 
   // Create viewer once and register subProcess click handler
@@ -135,7 +97,8 @@ export default function BpmnProcessViewer({
         if (cancelled) return;
 
         fitViewport();
-        applyDetailVisibility(viewer, showDetailsRef.current);
+        applyBpmnDiagramVisualStyles(viewer);
+        applyBpmnDetailVisibility(viewer, showDetailsRef.current);
       } catch {
         if (!cancelled) {
           setRenderError(invalidMessage);
@@ -153,7 +116,7 @@ export default function BpmnProcessViewer({
     showDetailsRef.current = showDetails;
     const viewer = viewerRef.current;
     if (viewer && xml) {
-      applyDetailVisibility(viewer, showDetails);
+      applyBpmnDetailVisibility(viewer, showDetails);
     }
   }, [showDetails, xml]);
 

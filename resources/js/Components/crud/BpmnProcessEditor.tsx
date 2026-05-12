@@ -7,6 +7,10 @@ import '../../../css/bpmn-font-local.css';
 import { cn } from '@/lib/utils';
 import createBpmnEditorRestrictionsModule, { type BpmnEditorLabels } from './BpmnCustomRules';
 import {
+  applyBpmnDiagramVisualStyles,
+  applyBpmnElementVisualStyle,
+} from './BpmnProcessRenderer';
+import {
   applyElementStyleToExtensions,
   buildUpdatedElementStyle,
   type BpmnSidebarElement,
@@ -134,10 +138,6 @@ type BpmnModelingApi = {
   setColor: (elements: BpmnSidebarElement[], colors: { fill?: string; stroke?: string }) => void;
 };
 
-const TASK_BACKGROUND_IMAGE_ATTR = 'data-ledning-task-background-image';
-const NEW_REFERENCE_MARKER_ATTR = 'data-ledning-new-reference-marker';
-const NEW_REFERENCE_MARKER_CLASS = 'ledning-new-reference-marker';
-const MAX_TASK_BACKGROUND_IMAGE_PADDING = 50;
 const BPMN_TEXT_PATTERN = /^[a-zA-Z_ åäöÅÄÖ\-.,]*$/;
 
 function isReferenceShapeType(type: string): type is 'bpmn:DataObjectReference' | 'bpmn:DataStoreReference' {
@@ -336,106 +336,7 @@ const BpmnProcessEditor = forwardRef<BpmnProcessEditorHandle, BpmnProcessEditorP
         return;
       }
 
-      const style = getElementStyle(element) as BpmnElementStyle & { taskBackgroundImagePadding?: number };
-      const elementRegistry = modeler.get('elementRegistry') as BpmnElementRegistryApi;
-      const graphics = elementRegistry.getGraphics(element);
-
-      if (!graphics) {
-        return;
-      }
-
-      const textNodes = graphics.querySelectorAll('text, tspan');
-      const hideText = isTaskElement(element) && Boolean(style.taskBackgroundImage);
-      textNodes.forEach((node) => {
-        if (hideText) {
-          node.setAttribute('display', 'none');
-        } else {
-          node.removeAttribute('display');
-        }
-
-        if (style.textColor && isValidHexColor(style.textColor)) {
-          node.setAttribute('fill', style.textColor);
-        } else {
-          node.removeAttribute('fill');
-        }
-
-        if (typeof style.fontSize === 'number' && Number.isFinite(style.fontSize) && style.fontSize > 0) {
-          node.setAttribute('font-size', `${style.fontSize}`);
-        } else {
-          node.removeAttribute('font-size');
-        }
-      });
-
-      const visual = graphics.querySelector('.djs-visual');
-      const visualChildren = visual ? Array.from(visual.children).filter((child): child is SVGElement => child instanceof SVGElement) : [];
-      const baseShape = isTaskElement(element)
-        ? visualChildren.find((child) => child.tagName.toLowerCase() === 'rect') ?? null
-        : visualChildren.find((child) => ['rect', 'circle', 'ellipse', 'polygon', 'path'].includes(child.tagName.toLowerCase())) ?? null;
-
-      if (!visual || !baseShape) {
-        return;
-      }
-
-      const existingBackgroundImages = visualChildren.filter((child) => child.getAttribute(TASK_BACKGROUND_IMAGE_ATTR) === 'true');
-      existingBackgroundImages.forEach((child) => child.remove());
-
-      const existingNewReferenceMarkers = visualChildren.filter((child) => child.getAttribute(NEW_REFERENCE_MARKER_ATTR) === 'true');
-      existingNewReferenceMarkers.forEach((child) => child.remove());
-
-      if (isTaskElement(element) && style.taskBackgroundImage) {
-        const x = Number(baseShape.getAttribute('x') ?? '0');
-        const y = Number(baseShape.getAttribute('y') ?? '0');
-        const width = Number(baseShape.getAttribute('width') ?? `${element.width ?? 100}`);
-        const height = Number(baseShape.getAttribute('height') ?? `${element.height ?? 80}`);
-        const rawPadding = typeof style.taskBackgroundImagePadding === 'number' && Number.isFinite(style.taskBackgroundImagePadding)
-          ? style.taskBackgroundImagePadding
-          : 5;
-        const padding = Math.max(0, Math.min(rawPadding, MAX_TASK_BACKGROUND_IMAGE_PADDING, Math.floor(Math.min(width, height) / 2)));
-        const innerX = x + padding;
-        const innerY = y + padding;
-        const innerWidth = Math.max(1, width - padding * 2);
-        const innerHeight = Math.max(1, height - padding * 2);
-
-        const image = document.createElementNS('http://www.w3.org/2000/svg', 'image');
-        image.setAttribute(TASK_BACKGROUND_IMAGE_ATTR, 'true');
-        image.setAttribute('href', style.taskBackgroundImage);
-        image.setAttributeNS('http://www.w3.org/1999/xlink', 'xlink:href', style.taskBackgroundImage);
-        image.setAttribute('x', `${innerX}`);
-        image.setAttribute('y', `${innerY}`);
-        image.setAttribute('width', `${innerWidth}`);
-        image.setAttribute('height', `${innerHeight}`);
-        image.setAttribute(
-          'preserveAspectRatio',
-          style.taskBackgroundImageFit === 'contain'
-            ? 'xMidYMid meet'
-            : style.taskBackgroundImageFit === 'stretch'
-              ? 'none'
-              : 'xMidYMid slice',
-        );
-        image.setAttribute('pointer-events', 'none');
-
-        const firstTextNode = visualChildren.find((child) => child.tagName.toLowerCase() === 'text');
-        if (firstTextNode) {
-          visual.insertBefore(image, firstTextNode);
-        } else {
-          visual.appendChild(image);
-        }
-      }
-
-      const isUnsavedReference = isUnsavedReferenceElement(element);
-      if (isUnsavedReference) {
-        const marker = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-        marker.setAttribute(NEW_REFERENCE_MARKER_ATTR, 'true');
-        marker.setAttribute('class', NEW_REFERENCE_MARKER_CLASS);
-        marker.setAttribute('x', '-15');
-        marker.setAttribute('y', '20');
-        marker.setAttribute('font-size', '24');
-        marker.setAttribute('font-weight', '700');
-        marker.setAttribute('fill', '#ff7000');
-        marker.setAttribute('pointer-events', 'none');
-        marker.textContent = '*';
-        visual.appendChild(marker);
-      }
+      applyBpmnElementVisualStyle(modeler, element, { isUnsavedReferenceElement });
     }, [isUnsavedReferenceElement]);
 
 
@@ -630,16 +531,15 @@ const BpmnProcessEditor = forwardRef<BpmnProcessEditorHandle, BpmnProcessEditorP
         setColorValidationError(null);
         setNumberValidationError(null);
         setTextValidationError(null);
-          setIsSelectedReferenceUnsaved(false);
-          pendingReferenceCreationRef.current = null;
+        setIsSelectedReferenceUnsaved(false);
+        pendingReferenceCreationRef.current = null;
 
         try {
           await modeler.importXML(xml && xml.trim() !== '' ? xml : DEFAULT_BPMN_XML);
           if (cancelled) return;
 
-          const elementRegistry = modeler.get('elementRegistry') as BpmnElementRegistryApi;
           runAfterRender(() => {
-            elementRegistry.getAll().forEach((element) => applyElementVisualStyle(element));
+            applyBpmnDiagramVisualStyles(modeler, { isUnsavedReferenceElement });
           });
 
           fitViewport();
@@ -893,7 +793,7 @@ const BpmnProcessEditor = forwardRef<BpmnProcessEditorHandle, BpmnProcessEditorP
       setNumberValidationError(null);
 
       const roundedPadding = Math.round(parsedPadding);
-      const clampedPadding = Math.min(roundedPadding, MAX_TASK_BACKGROUND_IMAGE_PADDING);
+      const clampedPadding = Math.min(roundedPadding, 50);
       const normalizedPadding = `${clampedPadding}`;
       if (normalizedPadding !== paddingValue) {
         setTaskBackgroundImagePaddingValue(normalizedPadding);

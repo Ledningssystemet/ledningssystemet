@@ -79,6 +79,18 @@ class BpmnPublishValidator
             if ($type === 'dataStoreReference' && $name === '') {
                 $this->addError('pages.process_editor.validation.data_store_requires_name');
             }
+
+            // Remove windows-style line breaks from the name.
+            $name = str_replace("\r\n", "\n", $name);
+
+            // Replace newlines with spaces in the name.
+            $name = str_replace("\n", ' ', $name);
+
+            // Remove any extra whitespace from the name.
+            $name = preg_replace('/\s+/', ' ', $name);
+
+            // Trim name
+            $name = trim($name);
         }
     }
 
@@ -293,6 +305,22 @@ class BpmnPublishValidator
             }
         }
 
+        // dataOutputAssociation is a child of its source task – fall back to the parent id when no sourceRef is present.
+        if ($sources === [] && $edge->localName === 'dataOutputAssociation') {
+            $parentId = trim((string) $edge->parentNode?->getAttribute('id'));
+            if ($parentId !== '') {
+                $sources[] = $parentId;
+            }
+        }
+
+        // dataInputAssociation is a child of its target task – fall back to the parent id when no targetRef is present.
+        if ($targets === [] && $edge->localName === 'dataInputAssociation') {
+            $parentId = trim((string) $edge->parentNode?->getAttribute('id'));
+            if ($parentId !== '') {
+                $targets[] = $parentId;
+            }
+        }
+
         if ($sources === [] || $targets === []) {
             return [];
         }
@@ -314,6 +342,13 @@ class BpmnPublishValidator
      */
     private function validateAllowedSequenceConnections(array $typesById, array $connections): void
     {
+        $concernedTypes = [
+            'startEvent',
+            'endEvent',
+            'task',
+            'exclusiveGateway',
+        ];
+
         $allowedPairs = [
             'startEvent->task' => true,
             'task->task' => true,
@@ -325,6 +360,12 @@ class BpmnPublishValidator
         foreach ($connections as $connection) {
             $sourceType = $typesById[$connection['source']] ?? null;
             $targetType = $typesById[$connection['target']] ?? null;
+
+            if (! in_array($sourceType, $concernedTypes, true))
+                continue;
+
+            if (! in_array($targetType, $concernedTypes, true))
+                continue;
 
             if (! is_string($sourceType) || ! is_string($targetType)) {
                 $this->addError('pages.process_editor.validation.invalid_sequence_reference');
