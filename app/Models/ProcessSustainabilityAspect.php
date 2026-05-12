@@ -15,6 +15,43 @@ use Spatie\QueryBuilder\QueryBuilder;
 
 class ProcessSustainabilityAspect extends Model
 {
+
+/* Retrieve status for the entire collection of objects */
+   public static function getItemsStatus($department = null, $user = null, $personalOnly = false)
+   {
+      $retval = [];
+      $table = (new self())->getTable();
+
+      // "without assessment" == status icon "help" == at least one required metric
+      // for the selected sustainability aspect has no selected level for this PSA row.
+      $count = self::query()
+         ->whereExists(function ($q) use ($table) {
+            $q->selectRaw('1')
+               ->from('sustainability_aspect_sustainability_metric as sasm')
+               ->leftJoin('process_sustainability_aspect_sustainability_metric as psasm', function ($join) use ($table) {
+                  $join->on('psasm.sustainability_metric_id', '=', 'sasm.sustainability_metric_id')
+                     ->whereColumn('psasm.process_sustainability_aspect_id', $table . '.id');
+               })
+               ->whereColumn('sasm.sustainability_aspect_id', $table . '.sustainability_aspect_id')
+               ->whereNull('psasm.sustainability_metric_id');
+         })
+         ->count();
+
+      if (!$personalOnly && $count) {
+         $retval[] = [
+            'level' => 'danger',
+            'count' => $count,
+            'text' => ProcessSustainabilityAspect::getPrettyName($count > 1) . ' ' . __("without assessment"),
+            'url' => ((($user != null) && $user->can('index', get_called_class())) ||
+               (($user == null) && (null != auth()->user()) && auth()->user()->can('index', get_called_class())))
+               ? url()->query('/inventory/sustainabilityaspects')
+               : null,
+         ];
+      }
+
+      return $retval;
+   }
+
     use HasFactory;
 
     protected $table = 'process_sustainability_aspects';

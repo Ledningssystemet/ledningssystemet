@@ -12,7 +12,7 @@ class QualificationPolicy
      */
     public function viewAny(User $user): bool
     {
-        return false;
+        return $user->haveAnyAccessRights(['managementtools.edit']);
     }
 
     /**
@@ -20,7 +20,7 @@ class QualificationPolicy
      */
     public function view(User $user, Qualification $qualification = new Qualification): bool
     {
-        return false;
+        return $user->haveAnyAccessRights(['managementtools.edit']);
     }
 
     /**
@@ -28,7 +28,7 @@ class QualificationPolicy
      */
     public function create(User $user): bool
     {
-        return false;
+        return $user->haveAnyAccessRights(['managementtools.edit']);
     }
 
     /**
@@ -36,7 +36,7 @@ class QualificationPolicy
      */
     public function update(User $user, Qualification $qualification = new Qualification): bool
     {
-        return false;
+        return $user->haveAnyAccessRights(['managementtools.edit']);
     }
 
     /**
@@ -44,6 +44,6 @@ class QualificationPolicy
      */
     public function delete(User $user, Qualification $qualification = new Qualification): bool
     {
-        return false;
+        return $this->update($user, $qualification);
     }
 }

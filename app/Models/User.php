@@ -20,6 +20,15 @@ use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable
 {
+
+/* Retrieve status for the entire collection of objects */
+   public static function getItemsStatus($department = null, $user = null, $personalOnly = false)
+   {
+      $retval = [];
+
+      return $retval;
+   }
+
     use HasApiTokens, HasFactory, Notifiable;
     use HasStatus;
 

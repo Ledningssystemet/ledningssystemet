@@ -10,6 +10,18 @@ use Illuminate\Support\Facades\Validator;
 
 class ObjectiveProcessPerformanceMetric extends Model
 {
+
+/* Retrieve status for the entire collection of objects */
+   public static function getItemsStatus($department = null, $user = null, $personalOnly = false)
+   {
+      $retval = [];
+
+      if(null != $department)
+         return [];
+
+      return $retval;
+   }
+
     use HasFactory;
 
     protected $table = 'objective_process_performance_metrics';

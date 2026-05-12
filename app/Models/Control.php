@@ -17,6 +17,30 @@ use Spatie\QueryBuilder\QueryBuilder;
 
 class Control extends Model
 {
+
+/* Retrieve status for the entire collection of objects */
+   public static function getItemsStatus($department = null, $user = null, $personalOnly = false)
+   {
+      $retval = [];
+
+      if(null != $department)
+         return [];
+
+      // Don't report if user cannot perform any changes anyway
+      if((null != $user) && $user->cannot('update', Control::class))
+         return [];
+
+      $count = Control::whereNull('responsible_user_id')->count();
+      if(!$personalOnly && $count)
+         $retval[] = ['level' => 'danger', 'count' => $count, 'text' => Control::getPrettyName($count > 1).' '.__("without assignment"), 'url' => ((($user != null) && $user->can('index',  get_called_class())) || (($user == null) && (null != auth()->user()) && (auth()->user()->can('index', get_called_class())))) ? url()->query('/inventory/controls') : null];
+
+      $count = $user ? Control::where('responsible_user_id', $user->id)->whereNull('statusdescription')->count() : Control::whereNull('statusdescription')->count();
+      if($count > 0)
+         $retval[] = ['level' => 'warning', 'count' => $count, 'text' => Control::getPrettyName($count > 1).' '.__("without status description"), 'url' => ((($user != null) && $user->can('index',  get_called_class())) || (($user == null) && (null != auth()->user()) && (auth()->user()->can('index', get_called_class())))) ? url()->query('/inventory/controls') : null];
+
+      return $retval;
+   }
+
     use HasFactory;
     use HasStatus;
     use HasTags;
@@ -273,15 +297,15 @@ class Control extends Model
 
       if(!$this->responsible_user_id)
          return $this->defaultStatus('danger', __("A responsible user has not been assigned"));
-      
+
       if(!$this->statusdescription)
          return $this->defaultStatus('warning', __("Status description is missing"));
-      
+
       if($this->getPendingActionCountAttribute())
          return $this->defaultStatus('success', __("There are pending actions for this control"));
-      
+
       return $this->defaultStatus('success', '');
-      
+
    }
 
 }

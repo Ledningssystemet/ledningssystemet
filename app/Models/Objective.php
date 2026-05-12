@@ -17,6 +17,30 @@ use Spatie\QueryBuilder\QueryBuilder;
 
 class Objective extends Model
 {
+
+/* Retrieve status for the entire collection of objects */
+   public static function getItemsStatus($department = null, $user = null, $personalOnly = false)
+   {
+      $retval = [];
+
+      if(null != $department)
+         return [];
+
+      // Don't report if user cannot perform any changes anyway
+      if((null != $user) && $user->cannot('update', Objective::class))
+         return [];
+
+      $count = Objective::whereNull('archived_at')->whereNull('responsible_user_id')->count();
+      if(!$personalOnly && $count)
+         $retval[] = ['level' => 'danger', 'count' => $count, 'text' => Objective::getPrettyName($count > 1).' '.__("without assignment"), 'url' => ((($user != null) && $user->can('index',  get_called_class())) || (($user == null) && (null != auth()->user()) && (auth()->user()->can('index', get_called_class())))) ? url()->query('/measure/objectives') : null];
+
+      $count = $user ? Objective::whereNull('archived_at')->where('due', '<', date("Y-m-d"))->where('responsible_user_id', $user->id)->count() : Objective::whereNull('archived_at')->where('due', '<', date("Y-m-d"))->count();
+      if($count > 0)
+         $retval[] = ['level' => 'danger', 'count' => $count, 'text' => Objective::getPrettyName($count > 1).' '.__("overdue"), 'url' => ((($user != null) && $user->can('index',  get_called_class())) || (($user == null) && (null != auth()->user()) && (auth()->user()->can('index', get_called_class())))) ? url()->query('/measure/objectives') : null];
+
+      return $retval;
+   }
+
     use HasFactory;
     use HasStatus;
     use HasTags;
@@ -264,7 +288,7 @@ class Objective extends Model
 
       if(!$this->responsible_user_id)
          return $this->defaultStatus('danger', __("A responsible user has not been assigned"));
-      
+
       if(strtotime($this->due) < time())
          return $this->defaultStatus('danger', __("This objective is overdue"));
 

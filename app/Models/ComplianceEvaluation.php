@@ -14,6 +14,29 @@ use Spatie\QueryBuilder\QueryBuilder;
 
 class ComplianceEvaluation extends Model
 {
+
+/* Retrieve status for the entire collection of objects */
+   public static function getItemsStatus($department = null, $user = null, $personalOnly = false)
+   {
+      $retval = [];
+      
+      if(null != $department)
+         return [];
+            
+      if($personalOnly)
+         return [];
+      
+      // Don't report if user cannot perform any changes anyway
+      if((null != $user) && $user->cannot('update', ComplianceEvaluation::class))
+         return [];
+      
+      $count = ComplianceEvaluation::whereNull('finished')->where('startdate', '<=', date("Y-m-d"))->count();
+      if($count > 0)
+         $retval[] = ['level' => 'warning', 'count' => $count, 'text' => __("Ongoing").' '.strtolower(ComplianceEvaluation::getPrettyName($count > 1)), 'url' => ((($user != null) && $user->can('index',  get_called_class())) || (($user == null) && (null != auth()->user()) && (auth()->user()->can('index', get_called_class())))) ? url()->query('/assessment/evaluations') : null];
+
+      return $retval;
+   }
+
     use HasFactory;
 
     protected $table = 'compliance_evaluations';

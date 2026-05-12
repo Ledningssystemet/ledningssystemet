@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useMemo } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { MaterialSymbol } from "@/components/ui/material-symbol";
 import logo from "@/assets/logo_se.svg";
@@ -7,17 +7,18 @@ import {
     getMenuItemPath,
     isExternalUrl,
 } from "@/app/routes";
-import type { MenuCategoryDto, BadgeDto, BadgeSeverity } from "@/types/menu";
+import type { MenuCategoryDto, MenuBadgeStatus } from "@/types/menu";
 import { useMenuData } from "@/hooks/useMenuData";
 import { useMenuBadges } from "@/hooks/useMenuBadges";
 import { useTranslations } from "@/hooks/useTranslations";
 import { Link, NavLink, useLocation } from "react-router-dom";
 import AppHeader from "@/components/layout/AppHeader";
+import { getCategoryMenuBadgeSeverity } from "@/lib/menuBadgeSeverity";
 
 
 // ─── Badge helpers ───────────────────────────────────────────────────────────
 
-function iconBgClasses(severity?: BadgeSeverity): string {
+function iconBgClasses(severity?: MenuBadgeStatus): string {
     switch (severity) {
         case "warning": return "bg-yellow-400";
         case "danger":  return "bg-orange-500";
@@ -26,7 +27,7 @@ function iconBgClasses(severity?: BadgeSeverity): string {
     }
 }
 
-function categoryBarClasses(severity?: BadgeSeverity): string {
+function categoryBarClasses(severity?: MenuBadgeStatus): string {
     switch (severity) {
         case "warning": return "bg-yellow-400";
         case "danger":  return "bg-orange-500";
@@ -34,6 +35,7 @@ function categoryBarClasses(severity?: BadgeSeverity): string {
         default:        return "bg-gray-300";
     }
 }
+
 
 // ─── Top-level nav styles ─────────────────────────────────────────────────────
 function getTopLevelNavClasses(isActive: boolean) {
@@ -66,48 +68,9 @@ function getMobileItemClasses(isActive: boolean) {
 // ─── Mega-menu dropdown ───────────────────────────────────────────────────────
 interface MegaMenuDropdownProps {
     category: MenuCategoryDto;
-    itemBadges: Record<string, BadgeDto>;
+    itemBadges: Record<string, MenuBadgeStatus>;
     activePath: string;
     onClose: () => void;
-}
-
-function deriveCategoryBadges(
-    categories: MenuCategoryDto[],
-    itemBadges: Record<string, BadgeDto>,
-): Record<string, BadgeDto> {
-    const severityRank: Record<BadgeSeverity, number> = {
-        info: 0,
-        warning: 1,
-        danger: 2,
-    };
-
-    const badges: Record<string, BadgeDto> = {};
-
-    for (const category of categories) {
-        const categoryItems = category.columns.flatMap((column) => column.items);
-        const childBadges = categoryItems
-            .map((item) => itemBadges[item.key])
-            .filter((badge): badge is BadgeDto => Boolean(badge));
-
-        if (childBadges.length === 0) continue;
-
-        const totalCount = childBadges.reduce((sum, badge) => {
-            const parsedCount = Number.parseInt(badge.count, 10);
-            return sum + (Number.isNaN(parsedCount) ? 0 : parsedCount);
-        }, 0);
-
-        const worstSeverity = childBadges.reduce<BadgeSeverity>((worst, badge) => (
-            severityRank[badge.severity] > severityRank[worst] ? badge.severity : worst
-        ), "info");
-
-        badges[category.label] = {
-            // Fallback keeps parent indicator visible even when child counts are non-numeric.
-            count: String(totalCount > 0 ? totalCount : childBadges.length),
-            severity: worstSeverity,
-        };
-    }
-
-    return badges;
 }
 
 function MegaMenuDropdown({ category, itemBadges, activePath, onClose }: MegaMenuDropdownProps) {
@@ -135,7 +98,7 @@ function MegaMenuDropdown({ category, itemBadges, activePath, onClose }: MegaMen
 
                                         const content = (
                                             <>
-                                                <div className={cn("mt-0.5 p-1.5 rounded-md shrink-0", iconBgClasses(badge?.severity))}>
+                                                <div className={cn("mt-0.5 p-1.5 rounded-md shrink-0", iconBgClasses(badge))}>
                                                     <MaterialSymbol name={item.icon} className="h-4 w-4 text-white" />
                                                 </div>
                                                 <div className="flex-1 min-w-0">
@@ -191,13 +154,12 @@ interface MobileMenuProps {
     open: boolean;
     onClose: () => void;
     categories: MenuCategoryDto[];
-    itemBadges: Record<string, BadgeDto>;
-    categoryBadges: Record<string, BadgeDto>;
+    itemBadges: Record<string, MenuBadgeStatus>;
     activePath: string;
     preferredHomePath: string;
 }
 
-function MobileMenu({ open, onClose, categories, itemBadges, categoryBadges, activePath, preferredHomePath }: MobileMenuProps) {
+function MobileMenu({ open, onClose, categories, itemBadges, activePath, preferredHomePath }: MobileMenuProps) {
     const { t } = useTranslations();
     const [expandedCategory, setExpandedCategory] = useState<string | null>(null);
 
@@ -228,7 +190,7 @@ function MobileMenu({ open, onClose, categories, itemBadges, categoryBadges, act
 
                     {categories.map((cat) => {
                         const allItems = cat.columns.flatMap((c) => c.items);
-                        const catBadge = categoryBadges[cat.label];
+                        const categorySeverity = getCategoryMenuBadgeSeverity(cat, itemBadges);
                         return (
                             <div key={cat.label} className="mt-1">
                                 <button type="button"
@@ -236,7 +198,7 @@ function MobileMenu({ open, onClose, categories, itemBadges, categoryBadges, act
                                         expandedCategory === cat.label ? null : cat.label
                                     )}
                                     className="w-full flex items-center gap-2 px-2 py-2.5 rounded-lg hover:bg-muted transition-colors text-sm font-medium text-foreground">
-                                    <span className={cn("w-1 self-stretch rounded-full my-1 shrink-0", categoryBarClasses(catBadge?.severity))} />
+                                    <span className={cn("w-1 self-stretch rounded-full my-1 shrink-0", categoryBarClasses(categorySeverity))} />
                                     <MaterialSymbol name={(cat.categoryIcon ?? "help")} className="h-4 w-4 text-muted-foreground" />
                                     <span className="flex-1 text-left">{cat.label}</span>
                                     <MaterialSymbol name="keyboard_arrow_down" className={cn(
@@ -251,7 +213,7 @@ function MobileMenu({ open, onClose, categories, itemBadges, categoryBadges, act
                                             const badge = itemBadges[item.key];
                                             const content = (
                                                 <>
-                                                    <span className={cn("flex h-7 w-7 shrink-0 items-center justify-center rounded-md", iconBgClasses(badge?.severity))}>
+                                                    <span className={cn("flex h-7 w-7 shrink-0 items-center justify-center rounded-md", iconBgClasses(badge))}>
                                                         <MaterialSymbol name={item.icon} className="h-4 w-4 text-white" />
                                                     </span>
                                                     <span>{item.label}</span>
@@ -297,10 +259,6 @@ export default function MegaNav() {
     const [openMenu, setOpenMenu] = useState<string | null>(null);
     const [mobileOpen, setMobileOpen] = useState(false);
     const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-    const categoryBadges = useMemo(
-        () => deriveCategoryBadges(categories, itemBadges),
-        [categories, itemBadges],
-    );
     const preferredHomePath = APP_HOME_PATH;
 
     const openCategory = categories.find((c) => c.label === openMenu) ?? null;
@@ -355,7 +313,7 @@ export default function MegaNav() {
                             </NavLink>
 
                             {categories.map((cat) => {
-                                const badge = categoryBadges[cat.label];
+                                const categorySeverity = getCategoryMenuBadgeSeverity(cat, itemBadges);
                                 return (
                                     <button
                                         key={cat.label}
@@ -370,7 +328,7 @@ export default function MegaNav() {
                                         onMouseEnter={() => handleMouseEnter(cat.label)}
                                         title={cat.label}
                                     >
-                                        <span className={cn("my-1 w-1 shrink-0 self-stretch rounded-full", categoryBarClasses(badge?.severity))} />
+                                        <span className={cn("my-1 w-1 shrink-0 self-stretch rounded-full", categoryBarClasses(categorySeverity))} />
                                         <MaterialSymbol name={cat.categoryIcon ?? "help"} className="h-4 w-4 flex-shrink-0" />
                                         <span className="hidden xl:inline">{cat.label}</span>
                                         <MaterialSymbol
@@ -407,7 +365,6 @@ export default function MegaNav() {
                 onClose={() => setMobileOpen(false)}
                 categories={categories}
                 itemBadges={itemBadges}
-                categoryBadges={categoryBadges}
                 activePath={location.pathname}
                 preferredHomePath={preferredHomePath}
             />

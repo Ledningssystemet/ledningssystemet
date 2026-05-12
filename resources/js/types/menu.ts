@@ -1,4 +1,5 @@
 export type BadgeSeverity = "info" | "warning" | "danger";
+export type MenuBadgeStatus = BadgeSeverity | "unknown";
 
 export interface MenuItemDto {
     key: string;
@@ -19,17 +20,3 @@ export interface MenuCategoryDto {
     categoryIcon?: string;
     columns: MenuColumnDto[];
 }
-
-
-export interface BadgeDto {
-    count: string;
-    severity: BadgeSeverity;
-}
-
-export interface MenuBadgesResponse {
-    /** Badges keyed by menu item `key` */
-    items: Record<string, BadgeDto>;
-    /** Badges keyed by category `label` */
-    categories: Record<string, BadgeDto>;
-}
-

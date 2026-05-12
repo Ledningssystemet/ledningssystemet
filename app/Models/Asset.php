@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Http\Request;
@@ -18,6 +19,66 @@ use Spatie\QueryBuilder\QueryBuilder;
 
 class Asset extends Model
 {
+
+/* Retrieve status for the entire collection of objects */
+   public static function getItemsStatus($department = null, $user = null, $personalOnly = false)
+   {
+      if (null != $department)
+         return [];
+
+      if ((null != $user) && $user->cannot('update', Asset::class))
+         return [];
+
+      $retval = [];
+      $url = ((($user != null) && $user->can('index', get_called_class())) ||
+         (($user == null) && (null != auth()->user()) && auth()->user()->can('index', get_called_class())))
+         ? url()->query('/inventory/assets')
+         : null;
+
+      $countWithoutAssignment = Asset::whereNull('responsible_user_id')->count();
+      if (!$personalOnly && $countWithoutAssignment)
+         $retval[] = ['level' => 'danger', 'count' => $countWithoutAssignment, 'text' => Asset::getPrettyName($countWithoutAssignment > 1) . ' ' . __("without assignment"), 'url' => $url];
+
+      $table = (new self())->getTable();
+      $missingConfidentialityIds = self::getAssetIdsMissingCalculatedClass('confidentiality');
+      $missingIntegrityIds = self::getAssetIdsMissingCalculatedClass('integrity');
+      $missingAvailabilityIds = self::getAssetIdsMissingCalculatedClass('availability');
+
+      $unclassified = Asset::query()
+         ->when($user, fn (Builder $q) => $q->where('responsible_user_id', $user->id))
+         ->where(function (Builder $q) use ($table, $missingConfidentialityIds, $missingIntegrityIds, $missingAvailabilityIds) {
+            $q->whereExists(function ($sub) use ($table) {
+               $sub->selectRaw('1')
+                  ->from('properties')
+                  ->join('property_tabs', 'property_tabs.id', '=', 'properties.property_tab_id')
+                  ->leftJoin('object_properties as op', function ($join) use ($table) {
+                     $join->on('op.property_id', '=', 'properties.id')
+                        ->where('op.object_properties_type', self::class)
+                        ->whereColumn('op.object_properties_id', $table . '.id');
+                  })
+                  ->where('property_tabs.context', self::class)
+                  ->whereNull('op.id');
+            });
+
+            if (!empty($missingConfidentialityIds)) {
+               $q->orWhereIn($table . '.id', $missingConfidentialityIds);
+            }
+            if (!empty($missingIntegrityIds)) {
+               $q->orWhereIn($table . '.id', $missingIntegrityIds);
+            }
+            if (!empty($missingAvailabilityIds)) {
+               $q->orWhereIn($table . '.id', $missingAvailabilityIds);
+            }
+         })
+         ->count();
+
+
+      if ($unclassified)
+         $retval[] = ['level' => 'warning', 'count' => $unclassified, 'text' => Asset::getPrettyName($unclassified > 1) . ' ' . __("without classification"), 'url' => $url];
+
+      return $retval;
+   }
+
     use HasFactory;
     use HasStatus;
     use HasTags;
@@ -187,6 +248,40 @@ class Asset extends Model
         }
     }
 
+    /**
+     * @return array<int, int>
+     */
+    private static function getAssetIdsMissingCalculatedClass(string $dimension): array
+    {
+        $column = self::classificationColumn($dimension);
+        $resolver = app(InheritedClassificationResolver::class);
+        $missingAssetIds = [];
+
+        self::query()
+            ->select('id')
+            ->whereNull($column)
+            ->orderBy('id')
+            ->chunkById(200, function ($assets) use ($dimension, $resolver, &$missingAssetIds): void {
+                foreach ($assets as $asset) {
+                    if ($resolver->resolveAsset((int) $asset->id, $dimension) === null) {
+                        $missingAssetIds[] = (int) $asset->id;
+                    }
+                }
+            });
+
+        return $missingAssetIds;
+    }
+
+    private static function classificationColumn(string $dimension): string
+    {
+        return match ($dimension) {
+            InheritedClassificationResolver::CONFIDENTIALITY => 'confidentiality_class_id',
+            InheritedClassificationResolver::INTEGRITY => 'integrity_class_id',
+            InheritedClassificationResolver::AVAILABILITY => 'availability_class_id',
+            default => throw new \InvalidArgumentException('Unsupported classification dimension: '.$dimension),
+        };
+    }
+
     private function syncPendingTags(): void
     {
         if (! $this->hasPendingTagsUpdate) {
@@ -268,6 +363,11 @@ class Asset extends Model
         return $this->hasMany(AssetInformationType::class, 'asset_id', 'id');
     }
 
+    public function int_information_types(): BelongsToMany
+    {
+        return $this->belongsToMany(InformationType::class, 'asset_information_type', 'asset_id', 'information_type_id');
+    }
+
     public function int_custom_property_object_as_object(): MorphMany
     {
         return $this->morphMany(CustomPropertyObject::class, 'object', 'object_type', 'object_id');
@@ -336,46 +436,68 @@ class Asset extends Model
             ->resolveAsset($this, InheritedClassificationResolver::AVAILABILITY);
     }
 
+    public function getConfidentialityClassCalculatedIdAttribute(): ?int
+    {
+        return $this->effective_confidentiality_class_id;
+    }
+
+    public function getIntegrityClassCalculatedIdAttribute(): ?int
+    {
+        return $this->effective_integrity_class_id;
+    }
+
+    public function getAvailabilityClassCalculatedIdAttribute(): ?int
+    {
+        return $this->effective_availability_class_id;
+    }
+
+    public function getClassifiedAttribute(): bool
+    {
+        return $this->getConfidentialityClassCalculatedIdAttribute() !== null
+            && $this->getIntegrityClassCalculatedIdAttribute() !== null
+            && $this->getAvailabilityClassCalculatedIdAttribute() !== null;
+    }
+
     protected function resolveStatus(): array
    {
       if (!$this->responsible_user_id)
          return $this->defaultStatus('danger', __("A responsible user has not been assigned"));
 
-      if (!$this->classified ||
-         (null === $this->getConfidentialityClassCalculatedIdAttribute()) ||
-         (null === $this->getIntegrityClassCalculatedIdAttribute()) ||
-         (null === $this->getAvailabilityClassCalculatedIdAttribute()))
+      if ((null === ($confidentiality_class_id = $this->getEffectiveConfidentialityClassIdAttribute())) ||
+         (null === ($integrity_class_id = $this->getEffectiveIntegrityClassIdAttribute())) ||
+         (null === ($availability_class_id = $this->getEffectiveAvailabilityClassIdAttribute())))
          return $this->defaultStatus('warning', __("The asset has not been classified regarding information security"));
 
-
-      // Prefer precomputed flags from index query when available.
-      if ((null != $this->confidentiality_class_id) &&
+      $effectiveConfidentialityOrdinal = ConfidentialityClass::query()->whereKey($confidentiality_class_id)->value('ordinal');
+      if (($effectiveConfidentialityOrdinal !== null) &&
          ((array_key_exists('has_higher_confidentiality_infotype', $this->attributes) &&
                intval($this->attributes['has_higher_confidentiality_infotype']) > 0) ||
             (!array_key_exists('has_higher_confidentiality_infotype', $this->attributes) && $this->int_information_types()
                ->whereNotNull('information_types.confidentiality_class_id')
                ->leftJoin('confidentiality_classes', 'confidentiality_classes.id', '=', 'information_types.confidentiality_class_id')
-               ->where('confidentiality_classes.ordinal', '>', $this->int_confidentiality_class->ordinal)
+               ->where('confidentiality_classes.ordinal', '>', $effectiveConfidentialityOrdinal)
                ->exists())))
          return $this->defaultStatus('success', __("There are associated information types that are classified with a higher level of confidentiality than this asset"));
 
-      if ((null != $this->integrity_class_id) &&
+      $effectiveIntegrityOrdinal = IntegrityClass::query()->whereKey($integrity_class_id)->value('ordinal');
+      if (($effectiveIntegrityOrdinal !== null) &&
          ((array_key_exists('has_higher_integrity_infotype', $this->attributes) &&
                intval($this->attributes['has_higher_integrity_infotype']) > 0) ||
             (!array_key_exists('has_higher_integrity_infotype', $this->attributes) && $this->int_information_types()
                ->whereNotNull('information_types.integrity_class_id')
                ->leftJoin('integrity_classes', 'integrity_classes.id', '=', 'information_types.integrity_class_id')
-               ->where('integrity_classes.ordinal', '>', $this->int_integrity_class->ordinal)
+               ->where('integrity_classes.ordinal', '>', $effectiveIntegrityOrdinal)
                ->exists())))
          return $this->defaultStatus('success', __("There are associated information types that are classified with a higher level of integrity than this asset"));
 
-      if ((null != $this->availability_class_id) &&
+      $effectiveAvailabilityOrdinal = AvailabilityClass::query()->whereKey($availability_class_id)->value('ordinal');
+      if (($effectiveAvailabilityOrdinal !== null) &&
          ((array_key_exists('has_higher_availability_infotype', $this->attributes) &&
                intval($this->attributes['has_higher_availability_infotype']) > 0) ||
             (!array_key_exists('has_higher_availability_infotype', $this->attributes) && $this->int_information_types()
                ->whereNotNull('information_types.availability_class_id')
                ->leftJoin('availability_classes', 'availability_classes.id', '=', 'information_types.availability_class_id')
-               ->where('availability_classes.ordinal', '>', $this->int_availability_class->ordinal)
+               ->where('availability_classes.ordinal', '>', $effectiveAvailabilityOrdinal)
                ->exists())))
          return $this->defaultStatus('success', __("There are associated information types that are classified with a higher level of availability than this asset"));
 

@@ -12,6 +12,15 @@ use Illuminate\Support\Facades\Validator;
 
 class Role extends Model
 {
+
+/* Retrieve status for the entire collection of objects */
+   public static function getItemsStatus($department = null, $user = null, $personalOnly = false)
+   {
+      $retval = [];
+
+      return $retval;
+   }
+
     use HasFactory;
 
     protected $table = 'roles';
@@ -152,7 +161,7 @@ class Role extends Model
    {
       if($this->external_provider_group_id)
          return $this->defaultStatus('success', '');
-      
+
       return $this->defaultStatus('unknown', '');
    }
 

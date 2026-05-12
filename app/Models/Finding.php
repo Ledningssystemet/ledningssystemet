@@ -16,6 +16,33 @@ use Spatie\QueryBuilder\QueryBuilder;
 
 class Finding extends Model
 {
+
+/* Retrieve status for the entire collection of objects */
+   public static function getItemsStatus($department = null, $user = null, $personalOnly = false)
+   {
+      $retval = [];
+
+      // Don't report if user cannot perform any changes anyway
+      if((null != $user) && $user->cannot('update', Finding::class))
+         return [];
+
+      $departments = null;
+      if($department)
+         $departments = [$department->id];
+      else if($user)
+         $departments = $user->int_departments()->pluck('departments.id');
+
+      $count = (null == $departments) ? Finding::whereNull('finished_at')->where('nonconformity', true)->count() : Finding::whereNull('finished_at')->where('nonconformity', true)->whereIn('department_id', $departments)->count();
+      if($count)
+         $retval[] = ['level' => (null == $user) ? 'warning' : 'danger', 'count' => $count, 'text' => __("Non-conformitites").' '.__("pending assessment"), 'url' => ((($user != null) && $user->can('index',  get_called_class())) || (($user == null) && (null != auth()->user()) && (auth()->user()->can('index', get_called_class())))) ? url()->query('/assessment/findings') : null];
+
+      $count = (null == $departments) ? Finding::whereNull('finished_at')->where('nonconformity', false)->count() : Finding::whereNull('finished_at')->where('nonconformity', false)->whereIn('department_id', $departments)->count();
+      if($count)
+         $retval[] = ['level' => (null == $user) ? 'info' : 'warning', 'count' => $count, 'text' => __("Observation").' '.__("pending assessment"), 'url' => ((($user != null) && $user->can('index',  get_called_class())) || (($user == null) && (null != auth()->user()) && (auth()->user()->can('index', get_called_class())))) ? url()->query('/assessment/findings') : null];
+
+      return $retval;
+   }
+
     use HasFactory;
     use HasStatus;
 
@@ -172,10 +199,10 @@ class Finding extends Model
    {
       if($this->finished_at)
          return $this->defaultStatus('success', '');
-      
+
       if($this->nonconformity)
          return $this->defaultStatus('danger', __("This non-conformity has not been assessed"));
-         
+
       return $this->defaultStatus('warning', __("This observation has not been assessed"));
    }
 

@@ -15,6 +15,26 @@ use Spatie\QueryBuilder\QueryBuilder;
 
 class Incident extends Model
 {
+
+/* Retrieve status for the entire collection of objects */
+   public static function getItemsStatus($department = null, $user = null, $personalOnly = false)
+   {
+      $retval = [];
+      
+      if(null != $department)
+         return [];
+      
+      // Don't report if user cannot perform any changes anyway
+      if((null != $user) && $user->cannot('update', Incident::class))
+         return [];
+      
+      $count = $user ? Incident::where('responsible_user_id', $user->id)->whereNull('finished_at')->count() : Incident::whereNull('finished_at')->count();
+      if($count)
+         $retval[] = ['level' => 'warning', 'count' => $count, 'text' => __("Ongoing"). ' ' . strtolower(Incident::getPrettyName($count > 1)), 'url' => ((($user != null) && $user->can('index',  get_called_class())) || (($user == null) && (null != auth()->user()) && (auth()->user()->can('index', get_called_class())))) ? url()->query('/assessment/incidents') : null];
+
+      return $retval;
+   }
+
     use HasFactory;
     use HasStatus;
 

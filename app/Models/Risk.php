@@ -21,6 +21,40 @@ use Throwable;
 
 class Risk extends Model
 {
+
+/* Retrieve status for the entire collection of objects */
+   public static function getItemsStatus($department = null, $user = null, $personalOnly = false)
+   {
+      $retval = [];
+
+      // Don't report if user cannot perform any changes anyway
+      if((null != $user) && $user->cannot('update', Risk::class))
+         return [];
+
+      $count = ((null == $department) ?
+            Risk::whereNull('riskowner_id')->whereNull('assessed_at')->whereNull('replacedby_id')->whereNull('project_id')->count() :
+            Risk::whereNull('riskowner_id')->whereNull('assessed_at')->whereNull('replacedby_id')->where('department_id', $department->id)->whereNull('project_id')->count()
+         );
+      if(!$personalOnly && $count)
+         $retval[] = ['level' => 'danger', 'count' => $count, 'text' => Risk::getPrettyName($count > 1).' '.__("without an assigned risk owner"), 'url' => ((($user != null) && $user->can('index',  get_called_class())) || (($user == null) && (null != auth()->user()) && (auth()->user()->can('index', get_called_class())))) ? url()->query('/assessment/riskregister') : null];
+
+      $count = (null == $user) ?
+         (
+            (null == $department) ?
+               Risk::whereNull('assessed_at')->whereNull('replacedby_id')->whereNull('project_id')->count() :
+               Risk::where('department_id', $department->id)->whereNull('assessed_at')->whereNull('replacedby_id')->whereNull('project_id')->count()
+         ) :
+         (
+            (null == $department) ?
+               Risk::whereNull('assessed_at')->where('riskowner_id', $user->id)->whereNull('replacedby_id')->whereNull('project_id')->count() :
+               Risk::whereNull('assessed_at')->whereNull('replacedby_id')->where('department_id', $department->id)->where('riskowner_id', $user->id)->whereNull('project_id')->count());
+
+      if($count)
+         $retval[] = ['level' => $user ? 'danger' : 'warning', 'count' => $count, 'text' => Risk::getPrettyName($count > 1).' '.__("pending assessment"), 'url' => ((($user != null) && $user->can('index',  get_called_class())) || (($user == null) && (null != auth()->user()) && (auth()->user()->can('index', get_called_class())))) ? url()->query('/assessment/riskregister') : null];
+
+      return $retval;
+   }
+
     use HasFactory;
     use HasStatus;
 
@@ -565,7 +599,7 @@ class Risk extends Model
          return $this->defaultStatus('danger', __("This risk has not been assigned to a riskowner"));
 
       // If part of a risk project, ensure that the assigned risk owner is part of the project
-      if(null != $this->risk_project_id)
+      if(null != $this->project_id)
       {
          $proj = $this->int_risk_project;
          if(null != $proj)
@@ -582,13 +616,13 @@ class Risk extends Model
                return $this->defaultStatus('danger', __("The assigned risk owner is not part of the risk project and will not be able to see or assess this risk"));
          }
       }
-      
+
       if(!$this->assessed_at && (null != request()->user()) && ($this->riskowner_id == request()->user()->id))
          return $this->defaultStatus('danger', __("This risk is pending assessment"));
-         
+
       if(!$this->assessed_at)
          return $this->defaultStatus('warning', __("This risk is pending assessment"));
-      
+
       return $this->defaultStatus('success', '');
    }
 

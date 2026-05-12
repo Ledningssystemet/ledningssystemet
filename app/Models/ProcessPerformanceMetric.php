@@ -16,6 +16,121 @@ use Spatie\QueryBuilder\QueryBuilder;
 
 class ProcessPerformanceMetric extends Model
 {
+
+/* Retrieve status for the entire collection of objects */
+   public static function getItemsStatus($department = null, $user = null, $personalOnly = false)
+   {
+      if (null != $department)
+         return [];
+
+      // Don't report if user cannot perform any changes anyway
+      if ((null != $user) && $user->cannot('update', ProcessPerformanceMetric::class))
+         return [];
+
+      $retval = [];
+      $table = (new self())->getTable();
+
+      $url = ((($user != null) && $user->can('index', get_called_class())) ||
+         (($user == null) && (null != auth()->user()) && auth()->user()->can('index', get_called_class())))
+         ? url()->query('/measure/processperformancemetrics')
+         : null;
+
+      $scope = self::query()
+         ->when($user, fn (Builder $q) => $q->where('responsible_user_id', $user->id));
+
+      $withoutAssignment = self::whereNull('responsible_user_id')->count();
+      if (!$personalOnly && $withoutAssignment) {
+         $retval[] = [
+            'level' => 'danger',
+            'count' => $withoutAssignment,
+            'text' => ProcessPerformanceMetric::getPrettyName($withoutAssignment > 1) . ' ' . __("without assignment"),
+            'url' => $url,
+         ];
+      }
+
+      // Missing/late report:
+      // - no report exists
+      // - OR report interval exists and latest report is overdue
+      $withoutProperReport = (clone $scope)
+         ->where(function (\Illuminate\Database\Eloquent\Builder $q) use ($table) {
+            $q->whereNotExists(function ($sub) use ($table) {
+               $sub->selectRaw('1')
+                  ->from('process_performance_metric_reports as r')
+                  ->whereColumn('r.process_performance_metric_id', $table . '.id');
+            })->orWhere(function (\Illuminate\Database\Eloquent\Builder $late) use ($table) {
+               $late->whereNotNull('increment')
+                  ->whereExists(function ($sub) use ($table) {
+                     $sub->selectRaw('1')
+                        ->from('process_performance_metric_reports as lr')
+                        ->whereColumn('lr.process_performance_metric_id', $table . '.id')
+                        ->whereRaw(
+                           'lr.reporting_date_at = (
+                           SELECT MAX(r2.reporting_date_at)
+                           FROM process_performance_metric_reports r2
+                           WHERE r2.process_performance_metric_id = ' . $table . '.id
+                        )'
+                        )
+                        ->where(function ($interval) use ($table) {
+                           $interval->whereRaw($table . ".increment = '+1 WEEKS' AND DATE_ADD(lr.reporting_date_at, INTERVAL 1 WEEK) < NOW()")
+                              ->orWhereRaw($table . ".increment = '+1 MONTHS' AND DATE_ADD(lr.reporting_date_at, INTERVAL 1 MONTH) < NOW()")
+                              ->orWhereRaw($table . ".increment = '+3 MONTHS' AND DATE_ADD(lr.reporting_date_at, INTERVAL 3 MONTH) < NOW()")
+                              ->orWhereRaw($table . ".increment = '+4 MONTHS' AND DATE_ADD(lr.reporting_date_at, INTERVAL 4 MONTH) < NOW()")
+                              ->orWhereRaw($table . ".increment = '+6 MONTHS' AND DATE_ADD(lr.reporting_date_at, INTERVAL 6 MONTH) < NOW()")
+                              ->orWhereRaw($table . ".increment = '+12 MONTHS' AND DATE_ADD(lr.reporting_date_at, INTERVAL 12 MONTH) < NOW()");
+                        });
+                  });
+            });
+         })
+         ->count();
+
+      if ($withoutProperReport > 0) {
+         $retval[] = [
+            'level' => 'danger',
+            'count' => $withoutProperReport,
+            'text' => ProcessPerformanceMetric::getPrettyName($withoutProperReport > 1) . ' ' . __("without properly reported value"),
+            'url' => $url,
+         ];
+      }
+
+// Alarm threshold breached on latest report
+      $alarmingCount = (clone $scope)
+         ->whereNotNull('alarm_threshold')
+         ->where('quantitative', true)
+         ->whereExists(function ($sub) use ($table) {
+            $sub->selectRaw('1')
+               ->from('process_performance_metric_reports as lr')
+               ->whereColumn('lr.process_performance_metric_id', $table . '.id')
+               ->whereRaw(
+                  'lr.reporting_date_at = (
+               SELECT MAX(r2.reporting_date_at)
+               FROM process_performance_metric_reports r2
+               WHERE r2.process_performance_metric_id = ' . $table . '.id
+            )'
+               )
+               ->where(function ($q) use ($table) {
+                  $q->where(function ($bigger) use ($table) {
+                     $bigger->where($table . '.biggerisbetter', true)
+                        ->whereRaw('(lr.value / POW(10, lr.reportedprecision)) <= ' . $table . '.alarm_threshold');
+                  })->orWhere(function ($smaller) use ($table) {
+                     $smaller->where($table . '.biggerisbetter', false)
+                        ->whereRaw('(lr.value / POW(10, lr.reportedprecision)) >= ' . $table . '.alarm_threshold');
+                  });
+               });
+         })
+         ->count();
+
+      if ($alarmingCount > 0) {
+         $retval[] = [
+            'level' => 'warning',
+            'count' => $alarmingCount,
+            'text' => ProcessPerformanceMetric::getPrettyName($alarmingCount > 1) . ' ' . __("breaching alarm threshold"),
+            'url' => $url,
+         ];
+      }
+
+      return $retval;
+   }
+
     use HasFactory;
     use HasStatus;
 

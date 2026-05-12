@@ -12,6 +12,58 @@ use Illuminate\Support\Facades\Validator;
 
 class RequirementSource extends Model
 {
+
+/* Retrieve status for the entire collection of objects */
+   public static function getItemsStatus($department = null, $user = null, $personalOnly = false)
+   {
+      $retval = [];
+
+      if(null != $department)
+         return [];
+
+      // Don't report if user cannot perform any changes anyway
+      if((null != $user) && $user->cannot('update', RequirementSource::class))
+         return [];
+
+      $count = (null == $department) ? RequirementSource::whereNull('responsible_user_id')->count() : 0;
+      if(!$personalOnly && ($count > 0))
+         $retval[] = ['level' => 'danger', 'count' => $count, 'text' => RequirementSource::getPrettyName($count > 1).' '.__("without assignment"), 'url' => ((($user != null) && $user->can('index',  get_called_class())) || (($user == null) && (null != auth()->user()) && (auth()->user()->can('index', get_called_class())))) ? url()->query('/inventory/requirements') : null];
+
+      $baseQuery = RequirementSource::query();
+
+      if ($user) {
+         $baseQuery->where('responsible_user_id', $user->id);
+      }
+
+      $count = (clone $baseQuery)
+         ->whereHas('int_requirements', function ($q) {
+            $q->whereNull('applicable');
+         })
+         ->count();
+
+      $needsApprovalCount = (clone $baseQuery)
+         ->where(function ($q) {
+            // Motsvarar: approved_at är null OCH det finns minst ett requirement
+            $q->where(function ($q2) {
+               $q2->whereNull('approved_at')
+                  ->whereHas('int_requirements');
+            })
+               // Motsvarar: minst ett requirement uppdaterat efter source-approved_at
+               ->orWhereHas('int_requirements', function ($rq) {
+                  $rq->whereColumn('requirements.updated_at', '>', 'requirement_sources.approved_at');
+               });
+         })
+         ->count();
+
+      if($count > 0)
+         $retval[] = ['level' => $user ? 'danger' : 'warning', 'count' => $count, 'text' => RequirementSource::getPrettyName($count > 1).' '. __("pending applicability determination"), 'url' => ((($user != null) && $user->can('index',  get_called_class())) || (($user == null) && (null != auth()->user()) && (auth()->user()->can('index', get_called_class())))) ? url()->query('/inventory/requirements') : null];
+
+      if($needsApprovalCount > 0)
+         $retval[] = ['level' => 'warning', 'count' => $needsApprovalCount, 'text' => RequirementSource::getPrettyName($needsApprovalCount > 1).' '. __("needs approval"), 'url' => ((($user != null) && $user->can('index',  get_called_class())) || (($user == null) && (null != auth()->user()) && (auth()->user()->can('index', get_called_class())))) ? url()->query('/inventory/requirements') : null];
+
+      return $retval;
+   }
+
     use HasFactory;
     use HasStatus;
 
@@ -133,9 +185,6 @@ class RequirementSource extends Model
 
     protected function resolveStatus(): array
     {
-        if($this->not_applicable_at)
-            return $this->defaultStatus('success', __("This requirement source is set as not applicable"));
-
         if(!$this->responsible_user_id)
             return $this->defaultStatus('danger', __("A responsible user has not been assigned"));
 

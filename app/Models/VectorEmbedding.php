@@ -10,6 +10,12 @@ use Illuminate\Support\Facades\Validator;
 
 class VectorEmbedding extends Model
 {
+
+public static function getItemsStatus($department = null, $user = null, $personalOnly = false)
+   {
+      return [];
+   }
+
     use HasFactory;
 
     protected $table = 'vector_embeddings';

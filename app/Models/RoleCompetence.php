@@ -10,6 +10,18 @@ use Illuminate\Support\Facades\Validator;
 
 class RoleCompetence extends Model
 {
+
+/* Retrieve status for the entire collection of objects */
+   public static function getItemsStatus($department = null, $user = null, $personalOnly = false)
+   {
+      if(\App\Models\SystemConfiguration::get('DISABLE_STAFF', false))
+            return [];
+      
+      $retval = [];
+
+      return $retval;
+   }
+
     use HasFactory;
 
     protected $table = 'role_competence';

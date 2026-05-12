@@ -6,6 +6,7 @@ use App\Models\Concerns\HasStatus;
 use App\Services\Bpmn\BpmnNamePropagationService;
 use App\Services\Bpmn\BpmnTextContentValidator;
 use Closure;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -16,6 +17,107 @@ use Illuminate\Support\Facades\Validator;
 
 class Process extends Model
 {
+
+/* Retrieve status for the entire collection of objects */
+   public static function getItemsStatus($department = null, $user = null, $personalOnly = false)
+   {
+      $retval = [];
+
+      // Don't report if user cannot perform any changes anyway
+      if ((null != $user) && $user->cannot('update', Process::class))
+         return [];
+
+      $retval = [];
+      $processTable = (new self())->getTable();
+      $activityTable = (new ProcessActivity())->getTable();
+
+      $countWithoutAssignment = self::query()
+         ->when($department, fn(Builder $q) => $q->where('department_id', $department->id))
+         ->whereNull('responsible_user_id')
+         ->count();
+
+      $scope = self::query()
+         ->when($department, fn(Builder $q) => $q->where('department_id', $department->id))
+         ->when($user, fn(Builder $q) => $q->where('responsible_user_id', $user->id));
+
+      $uncharted = (clone $scope)
+         ->where(function (Builder $q) {
+            $q->whereNull('publishedbpmn')->orWhere('publishedbpmn', '');
+         })
+         ->count();
+
+      // Process has at least one required property without object_properties row
+      $unclassified = (clone $scope)
+         ->whereExists(function ($q) use ($processTable) {
+            $q->selectRaw('1')
+               ->from('properties')
+               ->join('property_tabs', 'property_tabs.id', '=', 'properties.property_tab_id')
+               ->leftJoin('object_properties as op', function ($join) use ($processTable) {
+                  $join->on('op.property_id', '=', 'properties.id')
+                     ->where('op.object_properties_type', self::class)
+                     ->whereColumn('op.object_properties_id', $processTable . '.id');
+               })
+               ->where('property_tabs.context', self::class)
+               ->whereNull('op.id');
+         })
+         ->count();
+
+      // Process has at least one activity that is not classified
+      $missingActivityClassification = (clone $scope)
+         ->whereHas('int_process_activities', function (Builder $pa) use ($activityTable) {
+            $pa->whereExists(function ($q) use ($activityTable) {
+               $q->selectRaw('1')
+                  ->from('properties')
+                  ->join('property_tabs', 'property_tabs.id', '=', 'properties.property_tab_id')
+                  ->leftJoin('object_properties as op', function ($join) use ($activityTable) {
+                     $join->on('op.property_id', '=', 'properties.id')
+                        ->where('op.object_properties_type', ProcessActivity::class)
+                        ->whereColumn('op.object_properties_id', $activityTable . '.id');
+                  })
+                  ->where('property_tabs.context', ProcessActivity::class)
+                  ->whereNull('op.id');
+            });
+         })
+         ->count();
+
+      // Process has at least one activity missing assignment
+      $missingActivityAssignment = (clone $scope)
+         ->whereHas('int_process_activities', function (Builder $pa) {
+            $pa->whereNull('accountable_role_id')
+               ->orWhere(function (Builder $q) {
+                  $q->whereNull('responsible_role_id')
+                     ->whereDoesntHave('int_suppliers');
+               });
+         })
+         ->count();
+
+      $canIndex = ((($user != null) && $user->can('index', get_called_class())) ||
+         (($user == null) && (null != auth()->user()) && auth()->user()->can('index', get_called_class())));
+      $url = $canIndex ? url()->query('/inventory/processes') : null;
+
+      if (!$personalOnly && $countWithoutAssignment) {
+         $retval[] = ['level' => 'danger', 'count' => $countWithoutAssignment, 'text' => Process::getPrettyName($countWithoutAssignment > 1) . ' ' . __("without assignment"), 'url' => $url];
+      }
+
+      if ($unclassified) {
+         $retval[] = ['level' => $user ? 'danger' : 'warning', 'count' => $unclassified, 'text' => Process::getPrettyName($unclassified > 1) . ' ' . __("without classification"), 'url' => $url];
+      }
+
+      if ($uncharted) {
+         $retval[] = ['level' => $user ? 'danger' : 'warning', 'count' => $uncharted, 'text' => Process::getPrettyName($uncharted > 1) . ' ' . __("without process chart"), 'url' => $url];
+      }
+
+      if ($missingActivityClassification) {
+         $retval[] = ['level' => $user ? 'danger' : 'warning', 'count' => $missingActivityClassification, 'text' => Process::getPrettyName($missingActivityClassification > 1) . ' ' . __("without activities being classified"), 'url' => $url];
+      }
+
+      if ($missingActivityAssignment) {
+         $retval[] = ['level' => $user ? 'danger' : 'warning', 'count' => $missingActivityAssignment, 'text' => Process::getPrettyName($missingActivityAssignment > 1) . ' ' . __("without activities being assigned"), 'url' => $url];
+      }
+
+      return $retval;
+   }
+
     use HasFactory;
     use HasStatus;
 

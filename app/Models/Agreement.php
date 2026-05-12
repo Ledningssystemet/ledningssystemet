@@ -15,6 +15,37 @@ use Spatie\QueryBuilder\QueryBuilder;
 
 class Agreement extends Model
 {
+
+/* Retrieve status for the entire collection of objects */
+   public static function getItemsStatus($department = null, $user = null, $personalOnly = false)
+   {
+      $retval = [];
+      if($department)
+         return [];
+
+      $count = Agreement::whereNull('archived_at')->whereNull('responsible_user_id')->count();
+      if(!$personalOnly && $count)
+         $retval[] = ['level' => 'danger', 'count' => $count, 'text' => Agreement::getPrettyName($count > 1).' '.__("without assignment"), 'url' => ((($user != null) && $user->can('index',  get_called_class())) || (($user == null) && (null != auth()->user()) && (auth()->user()->can('index', get_called_class())))) ? url()->query('/inventory/agreements') : null];
+
+      $count = $user ? Agreement::whereNull('archived_at')->where('responsible_user_id', $user->id)->whereRaw('(startdate IS NULL OR enddate IS NULL)')->count() : Agreement::whereNull('archived_at')->whereNull('startdate')->orWhereNull('enddate')->count();
+      if($count > 0)
+         $retval[] = ['level' => 'danger', 'count' => $count, 'text' => Agreement::getPrettyName($count > 1).' '.__("without provided start- and/or end-dates"), 'url' => ((($user != null) && $user->can('index',  get_called_class())) || (($user == null) && (null != auth()->user()) && (auth()->user()->can('index',  get_called_class())))) ? url()->query('/inventory/agreements') : null];
+      
+      $count = $user ? Agreement::whereNull('archived_at')->where('responsible_user_id', $user->id)->whereNotNull('enddate')->where('enddate', '<', date("Y-m-d"))->count() : Agreement::whereNull('archived_at')->whereNotNull('enddate')->where('enddate', '<', date("Y-m-d"))->count();
+      if($count > 0)
+         $retval[] = ['level' => 'danger', 'count' => $count, 'text' => Agreement::getPrettyName($count > 1).' '.__("that are no longer valid"), 'url' => ((($user != null) && $user->can('index',  get_called_class())) || (($user == null) && (null != auth()->user()) && (auth()->user()->can('index', get_called_class())))) ? url()->query('/inventory/agreements') : null];
+      
+      $count = $user ? Agreement::whereNull('archived_at')->where('responsible_user_id', $user->id)->whereNotNull('enddate')->where('enddate', '>', date("Y-m-d"))->whereNotNull('reminderdate')->where('reminderdate', '<=', 'CURRENT_DATE()')->count() : Agreement::whereNull('archived_at')->whereNotNull('enddate')->where('enddate', '>', date("Y-m-d"))->whereNotNull('reminderdate')->where('reminderdate', '<=', 'CURRENT_DATE()')->count();
+      if($count > 0)
+         $retval[] = ['level' => 'warning', 'count' => $count, 'text' => Agreement::getPrettyName($count > 1).' '.__("that are about to expire"), 'url' => ((($user != null) && $user->can('index',  get_called_class())) || (($user == null) && (null != auth()->user()) && (auth()->user()->can('index', get_called_class())))) ? url()->query('/inventory/agreements') : null];
+      
+      $count = $user ? Agreement::whereNull('archived_at')->where('responsible_user_id', $user->id)->whereNotNull('startdate')->where('startdate', '>', date("Y-m-d"))->count() : Agreement::whereNull('archived_at')->whereNotNull('startdate')->where('startdate', '>', date("Y-m-d"))->count();
+      if($count > 0)
+         $retval[] = ['level' => 'info', 'count' => $count, 'text' => Agreement::getPrettyName($count > 1).' '.__("that has not yet entered into force"), 'url' => ((($user != null) && $user->can('index',  get_called_class())) || (($user == null) && (null != auth()->user()) && (auth()->user()->can('index', get_called_class())))) ? url()->query('/inventory/agreements') : null];
+
+      return $retval;
+   }
+
     use HasFactory;
     use HasStatus;
     use HasTags;

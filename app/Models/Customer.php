@@ -6,6 +6,7 @@ use App\Models\Concerns\HasHistory;
 use App\Models\Concerns\HasMessages;
 use App\Models\Concerns\HasStatus;
 use App\Models\Concerns\HasTags;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -16,6 +17,53 @@ use Illuminate\Support\Facades\Validator;
 
 class Customer extends Model
 {
+
+/* Retrieve status for the entire collection of objects */
+   public static function getItemsStatus($department = null, $user = null, $personalOnly = false)
+   {
+      if ((null != $user) && $user->cannot('update', Customer::class)) {
+         return [];
+      }
+
+      $retval = [];
+      $url = ((($user != null) && $user->can('index', get_called_class())) ||
+         (($user == null) && (null != auth()->user()) && auth()->user()->can('index', get_called_class())))
+         ? url()->query('/inventory/customers')
+         : null;
+
+      $countWithoutAssignment = Customer::whereNull('responsible_user_id')->count();
+      if (!$personalOnly && $countWithoutAssignment) {
+         $retval[] = ['level' => 'danger', 'count' => $countWithoutAssignment, 'text' => Customer::getPrettyName($countWithoutAssignment > 1).' '.__("without assignment"), 'url' => $url];
+      }
+
+      if (null == $department) {
+         $table = (new self())->getTable();
+         $scope = Customer::query()
+            ->when($user, fn (Builder $q) => $q->where('responsible_user_id', $user->id));
+
+         $unclassified = (clone $scope)
+            ->whereExists(function ($q) use ($table) {
+               $q->selectRaw('1')
+                  ->from('properties')
+                  ->join('property_tabs', 'property_tabs.id', '=', 'properties.property_tab_id')
+                  ->leftJoin('object_properties as op', function ($join) use ($table) {
+                     $join->on('op.property_id', '=', 'properties.id')
+                        ->where('op.object_properties_type', self::class)
+                        ->whereColumn('op.object_properties_id', $table.'.id');
+                  })
+                  ->where('property_tabs.context', self::class)
+                  ->whereNull('op.id');
+            })
+            ->count();
+
+         if ($unclassified) {
+            $retval[] = ['level' => 'warning', 'count' => $unclassified, 'text' => Customer::getPrettyName($unclassified > 1).' '.__("without classification"), 'url' => $url];
+         }
+      }
+
+      return $retval;
+   }
+
     use HasFactory;
     use HasHistory;
     use HasMessages;

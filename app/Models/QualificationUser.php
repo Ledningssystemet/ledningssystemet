@@ -10,6 +10,13 @@ use Illuminate\Support\Facades\Validator;
 
 class QualificationUser extends Model
 {
+
+/* Retrieve status for the entire collection of objects */
+   public static function getItemsStatus($department = null, $user = null, $personalOnly = false)
+   {
+      return [];
+   }
+
     use HasFactory;
 
     protected $table = 'qualification_user';

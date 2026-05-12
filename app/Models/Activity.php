@@ -13,6 +13,44 @@ use Illuminate\Support\Facades\Validator;
 
 class Activity extends Model
 {
+
+/* Retrieve status for the entire collection of objects */
+   public static function getItemsStatus($department = null, $user = null, $personalOnly = false)
+   {
+      $retval = [];
+      
+      if(null != $department)
+         return [];
+      
+      $count = Activity::whereNull('responsible_user_id')->count();
+      if(!$personalOnly && (null != auth()->user()) && auth()->user()->haveAnyAccessRights(['managementtools.edit']) && ($count > 0))
+         $retval[] = ['level' => 'danger', 'count' => $count, 'text' => Activity::getPrettyName($count > 1).' '.__("without assignment"), 'url' => ((($user != null) && $user->can('index',  get_called_class())) || (($user == null) && (null != auth()->user()) && (auth()->user()->can('index', get_called_class())))) ? url()->query('/management/activities') : null, 'personal' => false];
+      
+      
+      if($user)
+      {
+         $count = Activity::whereNull('completed_at')->where('responsible_user_id', $user->id)->where('due', '<', date("Y-m-d"))->count();
+         if(0 < $count)
+            $retval[] = ['level' => 'danger', 'count' => $count, 'text' => __("Overdue").' '.strtolower(Activity::getPrettyName($count > 1)), 'url' => ((($user != null) && $user->can('index',  get_called_class())) || (($user == null) && (null != auth()->user()) && (auth()->user()->can('index', get_called_class())))) ? url()->query('/management/activities') : null, 'personal' => true];
+
+         $count = Activity::whereNull('completed_at')->where('responsible_user_id', $user->id)->where('due', '>=', date("Y-m-d"))->count();
+         if(0 < $count)
+            $retval[] = ['level' => 'info', 'count' => $count, 'text' => __("Pending").' '.strtolower(Activity::getPrettyName($count > 1)), 'url' => ((($user != null) && $user->can('index',  get_called_class())) || (($user == null) && (null != auth()->user()) && (auth()->user()->can('index', get_called_class())))) ? url()->query('/management/activities') : null, 'personal' => true];
+      }
+      else
+      {
+         $count = Activity::whereNull('completed_at')->where('due', '<', date("Y-m-d"))->count();
+         if(0 < $count)
+            $retval[] = ['level' => 'warning', 'count' => $count, 'text' => __("Overdue").' '.strtolower(Activity::getPrettyName($count > 1)), 'url' => ((($user != null) && $user->can('index',  get_called_class())) || (($user == null) && (null != auth()->user()) && (auth()->user()->can('index', get_called_class())))) ? url()->query('/management/activities') : null, 'personal' => false];
+
+         $count = Activity::whereNull('completed_at')->where('due', '>=', date("Y-m-d"))->count();
+         if(0 < $count)
+            $retval[] = ['level' => 'info', 'count' => $count, 'text' => __("Pending").' '.strtolower(Activity::getPrettyName($count > 1)), 'url' => ((($user != null) && $user->can('index',  get_called_class())) || (($user == null) && (null != auth()->user()) && (auth()->user()->can('index', get_called_class())))) ? url()->query('/management/activities') : null, 'personal' => false];
+      }
+
+      return $retval;
+   }
+
     use HasFactory;
     use HasStatus;
 

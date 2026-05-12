@@ -12,6 +12,26 @@ use Illuminate\Support\Facades\Validator;
 
 class ControlAction extends Model
 {
+
+/* Retrieve status for the entire collection of objects */
+   public static function getItemsStatus($department = null, $user = null, $personalOnly = false)
+   {
+      $retval = [];
+      
+      if(null != $department)
+         return [];
+      
+      $count = ($user == null) ? ControlAction::whereNull('finished_at')->where('due', '<', date("Y-m-d"))->count() : ControlAction::where('responsible_id', $user->id)->whereNull('finished_at')->where('due', '<', date("Y-m-d"))->count();
+      if($count)
+         $retval[] = ['level' => (null == $user) ? 'warning' : 'danger', 'count' => $count, 'text' => __("Overdue"). ' ' . strtolower(ControlAction::getPrettyName($count > 1)), 'url' => ((($user != null) && $user->can('index',  get_called_class())) || (($user == null) && (null != auth()->user()) && (auth()->user()->can('index', get_called_class())))) ? url()->query('/assessment/controlactions') : null, 'personal' => ($user != null)];
+
+      $count = ($user == null) ? ControlAction::whereNull('finished_at')->where('due', '>=', date("Y-m-d"))->count() : ControlAction::where('responsible_id', $user->id)->whereNull('finished_at')->where('due', '>=', date("Y-m-d"))->count();
+      if($count)
+         $retval[] = ['level' => 'info', 'count' => $count, 'text' => __("Planned"). ' ' . strtolower(ControlAction::getPrettyName($count > 1)), 'url' => ((($user != null) && $user->can('index',  get_called_class())) || (($user == null) && (null != auth()->user()) && (auth()->user()->can('index', get_called_class())))) ? url()->query('/assessment/controlactions') : null, 'personal' => ($user != null)];
+      
+      return $retval;
+   }
+
     use HasFactory;
     use HasStatus;
 

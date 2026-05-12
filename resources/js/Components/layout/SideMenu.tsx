@@ -1,18 +1,19 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { MaterialSymbol } from "@/components/ui/material-symbol";
 import { APP_HOME_PATH, getMenuItemPath, isExternalUrl } from "@/app/routes";
 import { useMenuData } from "@/hooks/useMenuData";
 import { useMenuBadges } from "@/hooks/useMenuBadges";
 import { useTranslations } from "@/hooks/useTranslations";
-import type { BadgeDto, BadgeSeverity, MenuCategoryDto } from "@/types/menu";
+import { getCategoryMenuBadgeSeverity } from "@/lib/menuBadgeSeverity";
+import type { MenuBadgeStatus } from "@/types/menu";
 
 interface SideMenuProps {
     mobileOpen?: boolean;
     onCloseMobile?: () => void;
 }
 
-function iconBgClasses(severity?: BadgeSeverity): string {
+function iconBgClasses(severity?: MenuBadgeStatus): string {
     switch (severity) {
         case "warning":
             return "bg-yellow-400";
@@ -25,7 +26,7 @@ function iconBgClasses(severity?: BadgeSeverity): string {
     }
 }
 
-function categoryBarClasses(severity?: BadgeSeverity): string {
+function categoryBarClasses(severity?: MenuBadgeStatus): string {
     switch (severity) {
         case "warning":
             return "bg-yellow-400";
@@ -44,49 +45,11 @@ function activeLinkClasses(isActive: boolean): string {
         : "bg-[#fbfbfb] border border-transparent text-black hover:text-[#6c757d]";
 }
 
-function deriveCategoryBadges(categories: MenuCategoryDto[], itemBadges: Record<string, BadgeDto>): Record<string, BadgeDto> {
-    const severityRank: Record<BadgeSeverity, number> = {
-        info: 0,
-        warning: 1,
-        danger: 2,
-    };
-
-    const badges: Record<string, BadgeDto> = {};
-
-    for (const category of categories) {
-        const categoryItems = category.columns.flatMap((column) => column.items);
-        const childBadges = categoryItems
-            .map((item) => itemBadges[item.key])
-            .filter((badge): badge is BadgeDto => Boolean(badge));
-
-        if (childBadges.length === 0) {
-            continue;
-        }
-
-        const totalCount = childBadges.reduce((sum, badge) => {
-            const parsedCount = Number.parseInt(badge.count, 10);
-            return sum + (Number.isNaN(parsedCount) ? 0 : parsedCount);
-        }, 0);
-
-        const worstSeverity = childBadges.reduce<BadgeSeverity>((worst, badge) => (
-            severityRank[badge.severity] > severityRank[worst] ? badge.severity : worst
-        ), "info");
-
-        badges[category.label] = {
-            count: String(totalCount > 0 ? totalCount : childBadges.length),
-            severity: worstSeverity,
-        };
-    }
-
-    return badges;
-}
-
 
 function SideMenuContent() {
     const { t } = useTranslations();
     const categories = useMenuData();
     const { itemBadges } = useMenuBadges();
-    const categoryBadges = useMemo(() => deriveCategoryBadges(categories, itemBadges), [categories, itemBadges]);
     const location = useLocation();
     const [expandedCategory, setExpandedCategory] = useState<string | null>(null);
 
@@ -120,7 +83,7 @@ function SideMenuContent() {
                 {categories.map((category) => {
                     const categoryIconName = category.categoryIcon ?? "help";
                     const isExpanded = expandedCategory === category.label;
-                    const badge = categoryBadges[category.label];
+                    const categorySeverity = getCategoryMenuBadgeSeverity(category, itemBadges);
 
                     return (
                         <section key={category.label} className="mt-2">
@@ -129,7 +92,7 @@ function SideMenuContent() {
                                 onClick={() => setExpandedCategory(isExpanded ? null : category.label)}
                                 className="flex h-[45px] w-full items-center rounded-md px-2 text-left text-sm font-medium text-black gap-2"
                             >
-                                <span className={`w-1 self-stretch rounded-full my-2 shrink-0 ${categoryBarClasses(badge?.severity)}`} />
+                                <span className={`w-1 self-stretch rounded-full my-2 shrink-0 ${categoryBarClasses(categorySeverity)}`} />
                                 <MaterialSymbol name={categoryIconName} className="h-4 w-4" />
                                 <span className="flex-1 truncate">{category.label}</span>
                                 <MaterialSymbol name="keyboard_arrow_down" className={`h-4 w-4 transition-transform ${isExpanded ? "rotate-180" : ""}`} />
@@ -154,7 +117,7 @@ function SideMenuContent() {
 
                                                 const content = (
                                                     <>
-                                                        <span className={`mr-3 flex h-7 w-7 shrink-0 items-center justify-center rounded-md ${iconBgClasses(itemBadge?.severity)}`}>
+                                                        <span className={`mr-3 flex h-7 w-7 shrink-0 items-center justify-center rounded-md ${iconBgClasses(itemBadge)}`}>
                                                             <MaterialSymbol name={itemIconName} className="h-4 w-4 text-white" />
                                                         </span>
                                                         <span className="flex-1 truncate">{item.label}</span>

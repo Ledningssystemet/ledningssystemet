@@ -13,11 +13,153 @@ use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Spatie\QueryBuilder\QueryBuilder;
 
 class Supplier extends Model
 {
+
+/* Retrieve status for the entire collection of objects */
+   public static function getItemsStatus($department = null, $user = null, $personalOnly = false)
+   {
+       if(config('ledningssystemet.disable_supplier', false))
+           return [];
+
+      if (null != $department)
+         return [];
+
+      if ((null != $user) && $user->cannot('update', Supplier::class))
+         return [];
+
+      $retval = [];
+      $url = ((($user != null) && $user->can('index', get_called_class())) ||
+         (($user == null) && (null != auth()->user()) && auth()->user()->can('index', get_called_class())))
+         ? url()->query('/inventory/suppliers')
+         : null;
+
+      // Without assignment – no user filter
+      $countWithoutAssignment = Supplier::whereNull('responsible_user_id')->count();
+      if (!$personalOnly && $countWithoutAssignment)
+         $retval[] = ['level' => 'danger', 'count' => $countWithoutAssignment, 'text' => Supplier::getPrettyName($countWithoutAssignment > 1).' '.__("without assignment"), 'url' => $url];
+
+      $table   = (new self())->getTable();
+      $scope   = Supplier::query()->when($user, fn (Builder $q) => $q->where('responsible_user_id', $user->id));
+      $totalCategories = SupplierCategory::count();
+
+      // Unclassified: dataprocessor set but missing property flags (mirrors isClassified() logic)
+      $unclassified = (clone $scope)
+         ->whereNotNull('dataprocessor')
+         ->whereExists(function ($q) use ($table) {
+            $q->selectRaw('1')
+               ->from('properties')
+               ->join('property_tabs', 'property_tabs.id', '=', 'properties.property_tab_id')
+               ->leftJoin('object_properties as op', function ($join) use ($table) {
+                  $join->on('op.property_id', '=', 'properties.id')
+                     ->where('op.object_properties_type', self::class)
+                     ->whereColumn('op.object_properties_id', $table.'.id');
+               })
+               ->where('property_tabs.context', self::class)
+               ->whereNull('op.id');
+         })
+         ->count();
+
+      // Uncategorized: fewer assessed categories than the total
+      $uncategorized = (clone $scope)
+         ->whereRaw(
+            '(SELECT COUNT(*) FROM supplier_supplier_category WHERE supplier_id = '.$table.'.id) != ?',
+            [$totalCategories]
+         )
+         ->count();
+
+      // Fully categorized scope – base for unevaluated/notapproved (mirrors original else-branch)
+      $categorizedScope = (clone $scope)->whereRaw(
+         '(SELECT COUNT(*) FROM supplier_supplier_category WHERE supplier_id = '.$table.'.id) = ?',
+         [$totalCategories]
+      );
+
+      // Unevaluated: categorized but has an applicable requirement with no evaluation row
+      $unevaluated = (clone $categorizedScope)
+         ->whereExists(function ($q) use ($table) {
+            $q->selectRaw('1')
+               ->from('supplier_requirements as sr')
+               ->join('supplier_categories as sc', 'sc.id', '=', 'sr.supplier_category_id')
+               ->join('supplier_supplier_category as ssc', function ($j) use ($table) {
+                  $j->on('ssc.supplier_category_id', '=', 'sc.id')
+                     ->whereColumn('ssc.supplier_id', $table.'.id')
+                     ->where('ssc.applicable', true);
+               })
+               ->leftJoin('supplier_supplier_requirement as ssr', function ($j) use ($table) {
+                  $j->on('ssr.supplier_requirement_id', '=', 'sr.id')
+                     ->whereColumn('ssr.supplier_id', $table.'.id');
+               })
+               ->whereNull('ssr.id');
+         })
+         ->count();
+
+      // Not approved: categorized and has an applicable requirement evaluated as unsatisfactory
+      $notapproved = (clone $categorizedScope)
+         ->whereExists(function ($q) use ($table) {
+            $q->selectRaw('1')
+               ->from('supplier_requirements as sr')
+               ->join('supplier_categories as sc', 'sc.id', '=', 'sr.supplier_category_id')
+               ->join('supplier_supplier_category as ssc', function ($j) use ($table) {
+                  $j->on('ssc.supplier_category_id', '=', 'sc.id')
+                     ->whereColumn('ssc.supplier_id', $table.'.id')
+                     ->where('ssc.applicable', true);
+               })
+               ->join('supplier_supplier_requirement as ssr', function ($j) use ($table) {
+                  $j->on('ssr.supplier_requirement_id', '=', 'sr.id')
+                     ->whereColumn('ssr.supplier_id', $table.'.id');
+               })
+               ->where('ssr.satisfactory', false);
+         })
+         ->count();
+
+      // Overdue: fetch all reassessment candidates in one query, evaluate interval in PHP
+      $overdueRows = DB::table('suppliers as s')
+         ->when($user, fn ($q) => $q->where('s.responsible_user_id', $user->id))
+         ->join('supplier_supplier_category as ssc', function ($j) {
+            $j->on('ssc.supplier_id', '=', 's.id')->where('ssc.applicable', true);
+         })
+         ->join('supplier_categories as sc', 'sc.id', '=', 'ssc.supplier_category_id')
+         ->whereNotNull('sc.reassessment_interval')
+         ->join('supplier_requirements as sr', function ($j) {
+            $j->on('sr.supplier_category_id', '=', 'sc.id')->where('sr.reassessment', true);
+         })
+         ->join('supplier_supplier_requirement as ssr', function ($j) {
+            $j->on('ssr.supplier_requirement_id', '=', 'sr.id')->on('ssr.supplier_id', '=', 's.id');
+         })
+         ->select('s.id as supplier_id', 'ssr.updated_at', 'sc.reassessment_interval')
+         ->get();
+
+      $overdueSupplierIds = [];
+      foreach ($overdueRows as $row) {
+         if (!isset($overdueSupplierIds[$row->supplier_id]) &&
+            strtotime($row->reassessment_interval, strtotime($row->updated_at)) < time()) {
+            $overdueSupplierIds[$row->supplier_id] = true;
+         }
+      }
+      $numoverdue = count($overdueSupplierIds);
+
+      if ($unclassified)
+         $retval[] = ['level' => $user ? 'danger' : 'warning', 'count' => $unclassified, 'text' => Supplier::getPrettyName($unclassified > 1).' '.__("without classification"), 'url' => $url];
+
+      if ($uncategorized)
+         $retval[] = ['level' => $user ? 'danger' : 'warning', 'count' => $uncategorized, 'text' => Supplier::getPrettyName($uncategorized > 1).' '.__("without categorization"), 'url' => $url];
+
+      if ($unevaluated)
+         $retval[] = ['level' => $user ? 'danger' : 'warning', 'count' => $unevaluated, 'text' => Supplier::getPrettyName($unevaluated > 1).' '.__("without evaluation"), 'url' => $url];
+
+      if ($notapproved)
+         $retval[] = ['level' => 'warning', 'count' => $notapproved, 'text' => Supplier::getPrettyName($notapproved > 1).' '.__("with failed requirements"), 'url' => $url];
+
+      if ($numoverdue)
+         $retval[] = ['level' => $user ? 'danger' : 'warning', 'count' => $numoverdue, 'text' => Supplier::getPrettyName($numoverdue > 1).' '.__('needs re-evaluation'), 'url' => $url];
+
+      return $retval;
+   }
+
     use HasFactory;
     use HasStatus;
 

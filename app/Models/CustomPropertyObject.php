@@ -11,6 +11,20 @@ use Illuminate\Support\Facades\Validator;
 
 class CustomPropertyObject extends Model
 {
+
+/**
+    * Retrieve status for the entire collection of objects
+    *
+    * @param  mixed  $department
+    * @param  mixed  $user
+    * @param  bool  $personalOnly
+    * @return array
+    */
+   public static function getItemsStatus($department = null, $user = null, $personalOnly = false)
+   {
+      return [];
+   }
+
     use HasFactory;
 
     protected $table = 'custom_property_object';

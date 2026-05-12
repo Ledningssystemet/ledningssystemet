@@ -13,6 +13,15 @@ use Laravel\Sanctum\PersonalAccessToken as SanctumPersonalAccessToken;
  */
 class PersonalAccessToken extends SanctumPersonalAccessToken
 {
+
+/* Retrieve status for the entire collection of objects */
+   public static function getItemsStatus($department = null, $user = null, $personalOnly = false)
+   {
+      $retval = [];
+
+      return $retval;
+   }
+
     use HasFactory;
 
     protected $fillable = ['name', 'token', 'abilities', 'expires_at'];

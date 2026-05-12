@@ -11,6 +11,15 @@ use Illuminate\Support\Facades\Validator;
 
 class UserNotificationChannel extends Model
 {
+
+/* Retrieve status for the entire collection of objects */
+   public static function getItemsStatus($department = null, $user = null, $personalOnly = false)
+   {
+      $retval = [];
+
+      return $retval;
+   }
+
     use HasFactory;
 
     protected $table = 'user_notification_channels';

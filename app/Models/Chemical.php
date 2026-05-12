@@ -12,6 +12,20 @@ use Illuminate\Support\Facades\Validator;
 
 class Chemical extends Model
 {
+
+/* Retrieve status for the entire collection of objects */
+   public static function getItemsStatus($department = null, $user = null, $personalOnly = false)
+   {
+      $retval = [];
+      $count = Chemical::whereNull('manufacturer')->orWhereNull('description')->orWhereNull('usagedescription')->orWhereNull('storagedescription')->orWhereNull('riskdescription')->count();
+      
+      if(!$personalOnly && $count)
+         $retval[] = ['level' => 'danger', 'count' => $count, 'text' => Chemical::getPrettyName($count > 1).' '.__("without mandatory information"), 'url' => ((($user != null) && $user->can('index',  get_called_class())) || (($user == null) && (null != auth()->user()) && (auth()->user()->can('index', get_called_class())))) ? url()->query('/inventory/chemicalregister') : null];
+    
+
+      return $retval;
+   }
+
     use HasFactory;
     use HasStatus;
 

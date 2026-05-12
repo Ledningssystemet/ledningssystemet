@@ -13,6 +13,15 @@ use Illuminate\Support\Facades\Validator;
 
 class Requirement extends Model
 {
+
+/* Retrieve status for the entire collection of objects */
+   public static function getItemsStatus($department = null, $user = null, $personalOnly = false)
+   {
+      $retval = [];
+
+      return $retval;
+   }
+
     use HasFactory;
     use HasStatus;
 

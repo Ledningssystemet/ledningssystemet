@@ -13,6 +13,15 @@ use Illuminate\Support\Str;
 
 class AccessGroup extends Model
 {
+
+/* Retrieve status for the entire collection of objects */
+   public static function getItemsStatus($department = null, $user = null, $personalOnly = false)
+   {
+      $retval = [];
+
+      return $retval;
+   }
+
     use HasFactory;
 
     protected $table = 'access_groups';

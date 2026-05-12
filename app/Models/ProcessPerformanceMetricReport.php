@@ -13,6 +13,18 @@ use Spatie\QueryBuilder\QueryBuilder;
 
 class ProcessPerformanceMetricReport extends Model
 {
+
+/* Retrieve status for the entire collection of objects */
+   public static function getItemsStatus($department = null, $user = null, $personalOnly = false)
+   {
+      $retval = [];
+
+      if(null != $department)
+         return [];
+
+      return $retval;
+   }
+
     use HasFactory;
 
     protected $table = 'process_performance_metric_reports';

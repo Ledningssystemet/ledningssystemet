@@ -14,6 +14,57 @@ use Illuminate\Support\Facades\Validator;
 
 class Department extends Model
 {
+
+/* Retrieve status for the entire collection of objects */
+   public static function getItemsStatus($department = null, $user = null, $personalOnly = false)
+   {
+      if ($personalOnly)
+         return [];
+
+      if ((null != $user) && $user->cannot('update', Department::class))
+         return [];
+
+      $retval = [];
+      $url = ((($user != null) && $user->can('index', get_called_class())) ||
+         (($user == null) && (null != auth()->user()) && auth()->user()->can('index', get_called_class())))
+         ? url()->query('/systemadmin/departments')
+         : null;
+
+      if (null == $department) {
+         $table = (new self())->getTable();
+
+         // Count departments missing at least one property classification
+         $unclassified = Department::whereExists(function ($q) use ($table) {
+            $q->selectRaw('1')
+               ->from('properties')
+               ->join('property_tabs', 'property_tabs.id', '=', 'properties.property_tab_id')
+               ->leftJoin('object_properties as op', function ($join) use ($table) {
+                  $join->on('op.property_id', '=', 'properties.id')
+                     ->where('op.object_properties_type', self::class)
+                     ->whereColumn('op.object_properties_id', $table.'.id');
+               })
+               ->where('property_tabs.context', self::class)
+               ->whereNull('op.id');
+         })->count();
+
+         // Count departments with no users assigned
+         $missingUsersCount = Department::doesntHave('int_users')->count();
+
+         if ($unclassified)
+            $retval[] = ['level' => 'warning', 'count' => $unclassified, 'text' => Department::getPrettyName($unclassified > 1).' '.__("without classification"), 'url' => $url];
+
+         if ($missingUsersCount)
+            $retval[] = ['level' => 'warning', 'count' => $missingUsersCount, 'text' => Department::getPrettyName($missingUsersCount > 1).' '.__("without any assigned users"), 'url' => $url];
+
+      } else {
+         // Single-department view: isClassified() is already cached, one query at most
+         if (!$department->isClassified())
+            $retval[] = ['level' => 'danger', 'count' => 1, 'text' => Department::getPrettyName().' '.__("without classification"), 'url' => $url];
+      }
+
+      return $retval;
+   }
+
     use HasFactory;
     use HasStatus;
 

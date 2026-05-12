@@ -11,6 +11,18 @@ use Illuminate\Support\Facades\Validator;
 
 class RecipientCategory extends Model
 {
+
+/* Retrieve status for the entire collection of objects */
+   public static function getItemsStatus($department = null, $user = null, $personalOnly = false)
+   {
+      if(\App\Models\SystemConfiguration::get('DISABLE_GDPR', false))
+         return [];
+      
+      $retval = [];
+
+      return $retval;
+   }
+
     use HasFactory;
 
     protected $table = 'recipient_categories';

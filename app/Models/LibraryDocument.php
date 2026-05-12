@@ -13,6 +13,48 @@ use Illuminate\Support\Facades\Validator;
 
 class LibraryDocument extends Model
 {
+
+/* Retrieve status for the entire collection of objects */
+   public static function getItemsStatus($department = null, $user = null, $personalOnly = false)
+   {
+      $retval = [];
+
+      if (null != $department)
+         return [];
+
+      // Don't report if user cannot perform any changes anyway
+      if ((null != $user) && $user->cannot('update', LibraryDocument::class))
+         return [];
+
+      // Unassigned documents
+      $count = LibraryDocument::whereNull('responsible_user_id')->count();
+      if (!$personalOnly && $count)
+         $retval[] = ['level' => 'danger', 'count' => $count, 'text' => LibraryDocument::getPrettyName($count > 1) . ' ' . __("without assignment"), 'url' => ((($user != null) && $user->can('index', get_called_class())) || (($user == null) && (null != auth()->user()) && (auth()->user()->can('index', get_called_class())))) ? url()->query('/management/documentlibrary') : null];
+
+      $pendingpublishing = 0;
+      $pendingapproval = 0;
+      foreach(LibraryDocument::where('contenttype', 'ledningssystemet/document')->when($user, function ($query) use ($user) { return $query->where('responsible_user_id', $user->id); })->get() as $obj)
+      {
+         $lastversion = $obj->int_document_versions()->orderBy('major_version', 'desc')->orderBy('minor_version', 'desc')->first();
+         if(null == $lastversion)
+            $pendingpublishing++;
+         else if($lastversion->finished_at && !$lastversion->approved_at)
+            $pendingapproval++;
+      }
+
+      if ($pendingapproval && !$user)
+         $retval[] = ['level' => 'warning', 'count' => $pendingapproval, 'text' => LibraryDocument::getPrettyName($pendingapproval > 1) . ' ' . __("pending approval"), 'url' => ((($user != null) && $user->can('index', get_called_class())) || (($user == null) && (null != auth()->user()) && (auth()->user()->can('index', get_called_class())))) ? url()->query('/management/documentlibrary') : null];
+      else if($pendingapproval)
+         $retval[] = ['level' => 'warning', 'count' => $pendingapproval, 'text' => LibraryDocument::getPrettyName($pendingapproval > 1) . ' ' . __("pending approval"), 'url' => url()->query('/user/documents'), 'personal' => ($user != null) ];
+
+      if ($pendingpublishing && !$user)
+         $retval[] = ['level' => 'warning', 'count' => $pendingpublishing, 'text' => LibraryDocument::getPrettyName($pendingpublishing > 1) . ' ' . __("pending publishing"), 'url' => ((($user != null) && $user->can('index', get_called_class())) || (($user == null) && (null != auth()->user()) && (auth()->user()->can('index', get_called_class())))) ? url()->query('/management/documentlibrary') : null];
+      else if($pendingpublishing)
+         $retval[] = ['level' => 'warning', 'count' => $pendingpublishing, 'text' => LibraryDocument::getPrettyName($pendingpublishing > 1) . ' ' . __("pending publishing"), 'url' => url()->query('/user/documents'), 'personal' => ($user != null) ];
+
+      return $retval;
+   }
+
     use HasFactory;
     use HasStatus;
 
