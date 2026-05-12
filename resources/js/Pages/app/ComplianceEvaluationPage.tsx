@@ -165,13 +165,6 @@ export default function ComplianceEvaluationPage({ route }: ComplianceEvaluation
                 'id', 'name', 'startdate', 'description', 'participants',
                 'finished', 'archived', 'statistics', 'requirement_sources',
             ],
-            getItemStatus: (item) => {
-                if (item.archived) return 'info';
-                if (item.finished) return null;
-                const stats = item.statistics as Record<string, number> | undefined;
-                if (stats && stats.requirements > 0 && stats.open === 0) return 'warning';
-                return null;
-            },
             rowActions: [
                 {
                     key: 'open-tool',

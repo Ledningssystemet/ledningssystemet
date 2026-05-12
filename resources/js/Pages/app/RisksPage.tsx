@@ -52,11 +52,6 @@ export default function RisksPage({ route }: RisksPageProps) {
                 showdraft: filters.showdraft || undefined,
                 showapproved: filters.showapproved || undefined,
             }),
-            getItemStatus: (item) => {
-                if (!item.riskowner_id || !item.probability_id || !item.consequence_id) return 'danger';
-                if (item.assessed_at) return 'info';
-                return null;
-            },
             subTableActions: [
                 {
                     key: 'actions',

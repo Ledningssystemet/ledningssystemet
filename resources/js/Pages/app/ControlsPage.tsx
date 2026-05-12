@@ -45,13 +45,6 @@ export default function ControlsPage({ route }: ControlsPageProps) {
             show_my_only: filters.show_my_only || undefined,
             hide_without_issues: filters.hide_without_issues || undefined
         }),
-        getItemStatus: (item) => {
-            if (!item.responsible_user_id) {
-                return 'danger';
-            }
-
-            return null;
-        },
         rowActions: [
             {
                 key: 'actions',

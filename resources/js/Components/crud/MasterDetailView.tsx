@@ -1,8 +1,9 @@
-import {FieldConfig, ItemBadgeConfig, ItemStatus, RowActionConfig} from "./types";
+import {FieldConfig, ItemBadgeConfig, RowActionConfig} from "./types";
 import {MaterialSymbol} from "@/components/ui/material-symbol";
 import {Badge} from "@/components/ui/badge";
 import {ScrollArea} from "@/components/ui/scroll-area";
 import {StatusDot} from "./StatusIndicator";
+import {getItemStatus} from "./itemStatus";
 import {ResizablePanelGroup, ResizablePanel, ResizableHandle} from "@/components/ui/resizable";
 import {DragEvent, Fragment, useEffect, useMemo, useRef, useState} from "react";
 import {setupDragPreview} from "./dragPreview";
@@ -24,7 +25,6 @@ interface MasterDetailViewProps {
     rowActions?: RowActionConfig[];
     onRowAction?: (action: RowActionConfig, item: Record<string, any>) => Promise<void>;
     onInlineFieldUpdate?: (item: Record<string, any>, fieldKey: string, value: any) => Promise<void>;
-    getItemStatus?: (item: Record<string, any>) => ItemStatus | null;
     getItemBadge?: (item: Record<string, any>) => ItemBadgeConfig | null;
     deletableKey?: string;
     reorderEnabled?: boolean;
@@ -44,7 +44,6 @@ export function MasterDetailView({
                                      rowActions = [],
                                      onRowAction,
                                      onInlineFieldUpdate,
-                                     getItemStatus,
                                      getItemBadge,
                                      deletableKey,
                                      reorderEnabled = false,
@@ -74,6 +73,7 @@ export function MasterDetailView({
     );
 
     const canReorder = reorderEnabled && Boolean(onReorder) && rowIds.length > 1;
+    const activeStatus = activeItem ? getItemStatus(activeItem) : null;
 
     const getDropPosition = (event: DragEvent<HTMLElement>): DropPosition => {
         const rect = event.currentTarget.getBoundingClientRect();
@@ -127,7 +127,7 @@ export function MasterDetailView({
                         {normalizedItems.map((item) => {
                             const id = item[primaryKey];
                             const isActive = activeItem?.[primaryKey] === id;
-                            const status = getItemStatus?.(item) ?? null;
+                            const status = getItemStatus(item);
 
                             return (
                                 <Fragment key={id}>
@@ -217,7 +217,7 @@ export function MasterDetailView({
                             <div className="p-6">
                                 <div className="flex items-start justify-between mb-6">
                                     <div className="flex items-center gap-2">
-                                        <StatusDot status={getItemStatus?.(activeItem) ?? null} className="h-3 w-3"/>
+                                        <StatusDot status={activeStatus} className="h-3 w-3"/>
                                         <div>
                                             <div className="flex items-center gap-2">
                                                 <h2 className="text-xl font-medium">{activeItem[labelField.key]}</h2>
@@ -227,6 +227,9 @@ export function MasterDetailView({
                                                     </Badge>
                                                 )}
                                             </div>
+                                            {activeStatus?.explanation ? (
+                                                <p className="text-sm text-muted-foreground mt-1">{activeStatus.explanation}</p>
+                                            ) : null}
                                         </div>
                                     </div>
                                 </div>

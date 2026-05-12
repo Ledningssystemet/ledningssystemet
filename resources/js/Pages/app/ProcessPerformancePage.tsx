@@ -112,7 +112,6 @@ export default function ProcessPerformancePage({ route }: ProcessPerformancePage
                 process_id: activeProcessId || undefined,
                 show_my_only: showMyOnly ? '1' : undefined,
             }),
-            getItemStatus: (item) => (!item.responsible_user_id ? 'danger' : null),
             rowActions: [
                 {
                     key: 'reports',

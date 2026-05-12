@@ -2,8 +2,9 @@ import {Checkbox} from "@/components/ui/checkbox";
 import { MaterialSymbol } from "@/components/ui/material-symbol";
 import {Button} from "@/components/ui/button";
 import {Badge} from "@/components/ui/badge";
-import {FieldConfig, ItemBadgeConfig, ItemStatus, RowActionConfig, SelectOption} from "./types";
+import {FieldConfig, ItemBadgeConfig, RowActionConfig, SelectOption} from "./types";
 import {StatusDot} from "./StatusIndicator";
+import {getItemStatus, hasVisibleStatus} from "./itemStatus";
 import {InlineTagsEditor} from "./InlineTagsEditor";
 import {useAllSelectOptions, resolveOptions} from "./optionsCache";
 import {DragEvent, Fragment, useEffect, useMemo, useRef, useState} from "react";
@@ -28,7 +29,6 @@ interface TableViewProps {
     rowActions?: RowActionConfig[];
     onRowAction?: (action: RowActionConfig, item: Record<string, any>) => Promise<void>;
     onInlineFieldUpdate?: (item: Record<string, any>, fieldKey: string, value: any) => Promise<void>;
-    getItemStatus?: (item: Record<string, any>) => ItemStatus | null;
     getItemBadge?: (item: Record<string, any>) => ItemBadgeConfig | null;
     editableKey?: string;
     deletableKey?: string;
@@ -51,7 +51,6 @@ export function TableView({
                               rowActions = [],
                               onRowAction,
                               onInlineFieldUpdate,
-                              getItemStatus,
                               getItemBadge,
                               editableKey,
                               deletableKey,
@@ -84,7 +83,8 @@ export function TableView({
 
     const canReorder = reorderEnabled && Boolean(onReorder) && rowIds.length > 1;
 
-    const columnCount = visibleFields.length + (selectable ? 1 : 0) + (canReorder ? 1 : 0) + (getItemStatus ? 1 : 0) + (showActions ? 1 : 0);
+    const showStatus = hasVisibleStatus(normalizedItems);
+    const columnCount = visibleFields.length + (selectable ? 1 : 0) + (canReorder ? 1 : 0) + (showStatus ? 1 : 0) + (showActions ? 1 : 0);
 
     const getDropPosition = (event: DragEvent<HTMLElement>): DropPosition => {
         const rect = event.currentTarget.getBoundingClientRect();
@@ -143,7 +143,7 @@ export function TableView({
                             </th>
                         )}
                         {canReorder && <th className="p-3 w-10"/>}
-                        {getItemStatus && <th className="p-3 w-8"/>}
+                        {showStatus && <th className="p-3 w-36"/>}
                         {visibleFields.map((field) => (
                             <th
                                 key={field.key}
@@ -160,7 +160,7 @@ export function TableView({
                     {normalizedItems.map((item) => {
                         const id = item[primaryKey];
                         const isSelected = selectedItems.has(id);
-                        const status = getItemStatus?.(item) ?? null;
+                        const status = getItemStatus(item);
                         const visibleRowActions = rowActions.filter((action) => (action.isVisible ? action.isVisible(item) : true));
 
                         return (
@@ -218,9 +218,14 @@ export function TableView({
                       </span>
                                         </td>
                                     )}
-                                    {getItemStatus && (
+                                    {showStatus && (
                                         <td className="p-3">
-                                            <StatusDot status={status}/>
+                                            <div className="flex items-center gap-2">
+                                                <StatusDot status={status}/>
+                                                {status?.explanation ? (
+                                                    <span className="text-xs text-muted-foreground line-clamp-2">{status.explanation}</span>
+                                                ) : null}
+                                            </div>
                                         </td>
                                     )}
                                     {visibleFields.map((field) => (

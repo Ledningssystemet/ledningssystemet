@@ -11,7 +11,8 @@ export type {
   SelectOption,
   ViewMode,
   EditDialogProps,
-  ItemStatus,
+  CrudItemStatus,
+  ItemStatusLevel,
   ItemBadgeConfig,
   RowActionConfig,
 } from "./types";

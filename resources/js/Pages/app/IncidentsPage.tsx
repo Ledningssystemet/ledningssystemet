@@ -35,11 +35,6 @@ export default function IncidentsPage({ route }: IncidentsPageProps) {
             customQueryParams: (filters) => ({
                 show_finished: filters.show_finished || undefined,
             }),
-            getItemStatus: (item) => {
-                if (!item.responsible_user_id) return 'danger';
-                if (item.finished_at) return 'info';
-                return null;
-            },
             rowActions: [
                 {
                     key: 'finish-incident',

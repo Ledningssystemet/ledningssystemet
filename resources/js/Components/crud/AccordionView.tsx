@@ -6,8 +6,9 @@ import {
 } from "@/components/ui/accordion";
 import { MaterialSymbol } from "@/components/ui/material-symbol";
 import {Badge} from "@/components/ui/badge";
-import {FieldConfig, ItemBadgeConfig, ItemStatus, RowActionConfig} from "./types";
+import {FieldConfig, ItemBadgeConfig, RowActionConfig} from "./types";
 import {StatusDot} from "./StatusIndicator";
+import {getItemStatus} from "./itemStatus";
 import {DragEvent, Fragment, useEffect, useMemo, useRef, useState} from "react";
 import {setupDragPreview} from "./dragPreview";
 import {useTranslations} from "@/hooks/useTranslations";
@@ -27,7 +28,6 @@ interface AccordionViewProps {
     rowActions?: RowActionConfig[];
     onRowAction?: (action: RowActionConfig, item: CrudItem) => Promise<void>;
     onInlineFieldUpdate?: (item: CrudItem, fieldKey: string, value: any) => Promise<void>;
-    getItemStatus?: (item: CrudItem) => ItemStatus | null;
     getItemBadge?: (item: CrudItem) => ItemBadgeConfig | null;
     deletableKey?: string;
     reorderEnabled?: boolean;
@@ -45,7 +45,6 @@ export function AccordionView({
                                   rowActions = [],
                                   onRowAction,
                                   onInlineFieldUpdate,
-                                  getItemStatus,
                                   getItemBadge,
                                   deletableKey,
                                   reorderEnabled = false,
@@ -63,6 +62,7 @@ export function AccordionView({
     const detailFields = fields.filter((f) => !f.hidden);
     const [draggedId, setDraggedId] = useState<string | number | null>(null);
     const [dropTarget, setDropTarget] = useState<{ id: string | number; position: DropPosition } | null>(null);
+    const [expandedItems, setExpandedItems] = useState<string[]>([]);
     const dragPreviewCleanupRef = useRef<(() => void) | null>(null);
 
     useEffect(() => {
@@ -131,10 +131,16 @@ export function AccordionView({
                     {t("ui.crud.no_results")}
                 </div>
             ) : (
-                <Accordion type="multiple" className="divide-y">
+                <Accordion
+                    type="multiple"
+                    className="divide-y"
+                    value={expandedItems}
+                    onValueChange={setExpandedItems}
+                >
                     {normalizedItems.map((item: CrudItem) => {
-                        const status = getItemStatus?.(item) ?? null;
+                        const status = getItemStatus(item);
                         const itemId = item[primaryKey] as string | number;
+                        const isExpanded = expandedItems.includes(String(itemId));
                         return (
                             <Fragment key={item[primaryKey]}>
                                 {dropTarget && String(dropTarget.id) === String(itemId) && dropTarget.position === "before" && draggedId !== null && String(draggedId) !== String(itemId) && (
@@ -189,11 +195,15 @@ export function AccordionView({
                                                         </Badge>
                                                     )}
                                                 </div>
-                                                {descField && (
+                                                {descField && !isExpanded && (
                                                     <p className="text-xs text-muted-foreground overflow-hidden max-h-8 font-normal">
                                                         {item[descField.key]}
                                                     </p>
                                                 )}
+                                                {isExpanded && status?.explanation? (
+                                                    <p className="text-sm text-muted-foreground mt-1">{status.explanation}</p>
+                                                ) : null}
+
                                             </div>
                                         </div>
                                     </AccordionTrigger>

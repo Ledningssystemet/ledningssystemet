@@ -402,7 +402,6 @@ export function CrudModule({ config, onEditFormDataChange }: CrudModuleProps) {
           canDelete={canDelete}
           onDelete={canDelete ? confirmDelete : noopDelete}
           onInlineFieldUpdate={handleInlineFieldUpdate}
-          getItemStatus={configWithCombinedActions.getItemStatus}
           getItemBadge={configWithCombinedActions.getItemBadge}
           editableKey={configWithCombinedActions.editableKey}
           deletableKey={configWithCombinedActions.deletableKey}
@@ -425,7 +424,6 @@ export function CrudModule({ config, onEditFormDataChange }: CrudModuleProps) {
           canDelete={canDelete}
           onDelete={canDelete ? confirmDelete : noopDelete}
           onInlineFieldUpdate={handleInlineFieldUpdate}
-          getItemStatus={configWithCombinedActions.getItemStatus}
           getItemBadge={configWithCombinedActions.getItemBadge}
           deletableKey={configWithCombinedActions.deletableKey}
           rowActions={combinedRowActions}
@@ -445,7 +443,6 @@ export function CrudModule({ config, onEditFormDataChange }: CrudModuleProps) {
           canDelete={canDelete}
           onDelete={canDelete ? confirmDelete : noopDelete}
           onInlineFieldUpdate={handleInlineFieldUpdate}
-          getItemStatus={configWithCombinedActions.getItemStatus}
           getItemBadge={configWithCombinedActions.getItemBadge}
           deletableKey={configWithCombinedActions.deletableKey}
           rowActions={combinedRowActions}

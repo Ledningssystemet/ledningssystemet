@@ -49,17 +49,6 @@ export default function ObjectivesPage({ route }: ObjectivesPageProps) {
             show_my_only: filters.show_my_only || undefined,
             show_archived: filters.show_archived || undefined,
         }),
-        getItemStatus: (item) => {
-            if (!item.responsible_user_id) {
-                return 'danger';
-            }
-
-            if (item.archived_at) {
-                return 'info';
-            }
-
-            return null;
-        },
         rowActions: [
             {
                 key: 'archive',

@@ -39,16 +39,6 @@ export default function AssetsPage({ route }: AssetsPageProps) {
                 show_my_only: filters.show_my_only || undefined,
                 hide_without_issues: filters.hide_without_issues || undefined,
             }),
-            getItemStatus: (item) => {
-                if (
-                    !item.responsible_user_id ||
-                    !item.confidentiality_class_id ||
-                    !item.integrity_class_id ||
-                    !item.availability_class_id
-                )
-                    return 'danger';
-                return null;
-            },
             subTableActions: [
                 {
                     key: 'supporting_assets',

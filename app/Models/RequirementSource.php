@@ -130,4 +130,11 @@ class RequirementSource extends Model
     {
         return $this->morphMany(VectorEmbedding::class, 'embeddable', 'embeddable_type', 'embeddable_id');
     }
+
+    protected function resolveStatus(): array
+    {
+            return $this->defaultStatus('warning', 'Valideringen misslyckades.');
+
+        return $this->defaultStatus('success', 'Ser bra ut.');
+    }
 }

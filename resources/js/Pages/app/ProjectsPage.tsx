@@ -47,17 +47,6 @@ export default function ProjectsPage({ route }: ProjectRisksPageProps) {
             show_my_only: filters.show_my_only || undefined,
             show_archived: filters.show_archived || undefined,
         }),
-        getItemStatus: (item) => {
-            if (!item.department_id || !item.responsible_user_id || !item.end_date) {
-                return 'danger';
-            }
-
-            if (item.archived_at) {
-                return 'info';
-            }
-
-            return null;
-        },
         rowActions: [
             {
                 key: 'risks',

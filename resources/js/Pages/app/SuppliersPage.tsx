@@ -42,10 +42,6 @@ export default function SuppliersPage({ route }: SuppliersPageProps) {
                 show_my_only: filters.show_my_only || undefined,
                 hide_without_issues: filters.hide_without_issues || undefined,
             }),
-            getItemStatus: (item) => {
-                if (!item.classified || item.has_category_issues || item.has_evaluation_issues) return 'danger';
-                return null;
-            },
             subTableActions: [
                 {
                     key: 'categories',
@@ -64,7 +60,6 @@ export default function SuppliersPage({ route }: SuppliersPageProps) {
                         defaultSort: 'name',
                         createTitle: t('pages.suppliers.categories.edit_title'),
                         editTitle: t('pages.suppliers.categories.edit_title'),
-                        getItemStatus: (i) => (i.applicable === null ? 'danger' : null),
                         fields: [
                             { key: 'name', label: t('pages.suppliers.categories.column_name'), type: 'text', sortable: true, editable: false, masterLabel: true, category: t('pages.suppliers.categories.category_general') },
                             { key: 'applicable', label: t('pages.suppliers.categories.column_applicable'), type: 'boolean', sortable: false, editable: true, required: true, options: [{ value: '1', label: t('pages.suppliers.option_yes') }, { value: '0', label: t('pages.suppliers.option_no') }], category: t('pages.suppliers.categories.category_general') },
@@ -90,7 +85,6 @@ export default function SuppliersPage({ route }: SuppliersPageProps) {
                         defaultSort: 'name',
                         createTitle: t('pages.suppliers.evaluation.edit_title'),
                         editTitle: t('pages.suppliers.evaluation.edit_title'),
-                        getItemStatus: (i) => (!i.evaluated_at || i.satisfactory === false ? 'danger' : null),
                         fields: [
                             { key: 'name', label: t('pages.suppliers.evaluation.column_name'), type: 'text', sortable: true, editable: false, masterLabel: true, category: t('pages.suppliers.evaluation.category_general') },
                             { key: 'description', label: t('pages.suppliers.evaluation.column_description'), type: 'textarea', editable: false, category: t('pages.suppliers.evaluation.category_general') },

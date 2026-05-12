@@ -51,17 +51,6 @@ export default function AgreementsPage({ route }: AgreementsPageProps) {
             hide_without_issues: filters.hide_without_issues || undefined,
             show_archived: filters.show_archived || undefined,
         }),
-        getItemStatus: (item) => {
-            if (!item.responsible_user_id || !item.startdate || !item.enddate) {
-                return 'danger';
-            }
-
-            if (item.archived_at) {
-                return 'info';
-            }
-
-            return null;
-        },
         rowActions: [
             {
                 key: 'archive',

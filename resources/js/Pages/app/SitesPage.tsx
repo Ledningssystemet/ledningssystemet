@@ -185,13 +185,6 @@ export default function SitesPage({ route }: SitesPageProps) {
                 responsible_user_id: filters.responsible_user_id || undefined,
                 hide_without_issues: filters.hide_without_issues || undefined,
             }),
-            getItemStatus: (item) => {
-                if (!item.classified) {
-                    return 'danger';
-                }
-
-                return null;
-            },
             fields,
         } satisfies CrudModuleConfig;
     }, [externalSyncEnabled, fields, t]);

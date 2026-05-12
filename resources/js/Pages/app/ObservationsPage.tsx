@@ -41,12 +41,6 @@ export default function ObservationsPage({ route }: ObservationsPageProps) {
             show_unhandled: filters.show_unhandled !== false ? '1' : undefined,
             show_handled: filters.show_handled || undefined,
         }),
-        getItemStatus: (item) => {
-            if (!item.finished_at && item.nonconformity && !item.rootcause) {
-                return 'danger';
-            }
-            return null;
-        },
         subTableActions: [
             {
                 key: 'actions',

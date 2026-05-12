@@ -54,7 +54,12 @@ export interface FieldConfig {
     masterDescription?: boolean;
 }
 
-export type ItemStatus = "info" | "warning" | "danger";
+export type ItemStatusLevel = "unknown" | "success" | "warning" | "danger";
+
+export interface CrudItemStatus {
+    level: ItemStatusLevel;
+    explanation: string;
+}
 
 export interface ItemBadgeConfig {
     label: string;
@@ -160,8 +165,6 @@ export interface CrudModuleConfig {
     canDelete?: boolean;
     /** Hide table row selection and mass actions when false. */
     selectable?: boolean;
-    /** Function that returns a status for each item, shown as a colored indicator */
-    getItemStatus?: (item: Record<string, any>) => ItemStatus | null;
     /** Optional badge shown next to item name/label */
     getItemBadge?: (item: Record<string, any>) => ItemBadgeConfig | null;
     /** Key on each item indicating if it can be edited (default: always true) */

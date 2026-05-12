@@ -70,17 +70,6 @@ export default function RequirementSourcesPage({ route }: RequirementSourcesPage
                 'needsapproval',
                 'applicabilitymissingcount',
             ],
-            getItemStatus: (item) => {
-                if (!item.responsible_user_id) {
-                    return 'danger';
-                }
-
-                if (item.needsapproval && currentUserId && item.responsible_user_id === currentUserId) {
-                    return 'warning';
-                }
-
-                return null;
-            },
             rowActions: [
                 {
                     key: 'requirements',
