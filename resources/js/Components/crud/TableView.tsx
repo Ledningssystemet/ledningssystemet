@@ -143,7 +143,7 @@ export function TableView({
                             </th>
                         )}
                         {canReorder && <th className="p-3 w-10"/>}
-                        {showStatus && <th className="p-3 w-36"/>}
+                        {showStatus && <th className="p-3 w-10"/>}
                         {visibleFields.map((field) => (
                             <th
                                 key={field.key}
@@ -222,9 +222,6 @@ export function TableView({
                                         <td className="p-3">
                                             <div className="flex items-center gap-2">
                                                 <StatusDot status={status}/>
-                                                {status?.explanation ? (
-                                                    <span className="text-xs text-muted-foreground line-clamp-2">{status.explanation}</span>
-                                                ) : null}
                                             </div>
                                         </td>
                                     )}
