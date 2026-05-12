@@ -56,10 +56,6 @@ class Department extends Model
          if ($missingUsersCount)
             $retval[] = ['level' => 'warning', 'count' => $missingUsersCount, 'text' => Department::getPrettyName($missingUsersCount > 1).' '.__("without any assigned users"), 'url' => $url];
 
-      } else {
-         // Single-department view: isClassified() is already cached, one query at most
-         if (!$department->isClassified())
-            $retval[] = ['level' => 'danger', 'count' => 1, 'text' => Department::getPrettyName().' '.__("without classification"), 'url' => $url];
       }
 
       return $retval;
@@ -348,13 +344,13 @@ class Department extends Model
    {
       if(!$this->classified)
          return $this->defaultStatus('warning', __("The department has not been classified regarding information security"));
-         
+
       if(!$this->int_users()->exists())
          return $this->defaultStatus('warning', __("The department has no assigned users"));
-      
+
       if($this->external_provider_group_id)
          return $this->defaultStatus('success', '');
-      
+
       return $this->defaultStatus('unknown', '');
    }
 

@@ -500,9 +500,6 @@ class Site extends Model
       if(!$this->responsible_user_id)
          return $this->defaultStatus('danger', __("A responsible user has not been assigned"));
 
-      if(!$this->isClassified())
-         return $this->defaultStatus('warning', __("The site has not been classified regarding information security"));
-
       return $this->defaultStatus('success', '');
    }
 

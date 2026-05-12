@@ -301,7 +301,7 @@ class Control extends Model
       if(!$this->statusdescription)
          return $this->defaultStatus('warning', __("Status description is missing"));
 
-      if($this->getPendingActionCountAttribute())
+      if($this->int_control_actions()->whereNull('finished_at')->exists())
          return $this->defaultStatus('success', __("There are pending actions for this control"));
 
       return $this->defaultStatus('success', '');
