@@ -29,7 +29,7 @@ class ProbabilityLevel extends Model
         return [
             'name' => ['required', 'string', 'max:255'],
             'description' => ['required', 'string'],
-            'ordinal' => ['required', 'integer', 'min:0'],
+            'ordinal' => ['nullable', 'integer', 'min:0'],
         ];
     }
 
@@ -48,6 +48,15 @@ class ProbabilityLevel extends Model
 
     protected static function booted(): void
     {
+        static::creating(function (self $model): void {
+            if ($model->ordinal !== null) {
+                return;
+            }
+
+            static::query()->increment('ordinal');
+            $model->ordinal = 0;
+        });
+
         static::saving(function (self $model): void {
             Validator::make($model->attributesToArray(), static::validationRules())->validate();
         });

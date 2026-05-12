@@ -29,7 +29,7 @@ class RiskLevel extends Model
         return [
             'name' => ['required', 'string', 'max:255'],
             'description' => ['required', 'string'],
-            'ordinal' => ['required', 'integer', 'min:0'],
+            'ordinal' => ['nullable', 'integer', 'min:0'],
             'color' => ['required', 'string', 'max:6'],
             'reassessment_days_withoutplans' => ['required', 'integer', 'min:0'],
             'reassessment_days_withplans' => ['required', 'integer', 'min:0'],
@@ -52,6 +52,15 @@ class RiskLevel extends Model
 
     protected static function booted(): void
     {
+        static::creating(function (self $model): void {
+            if ($model->ordinal !== null) {
+                return;
+            }
+
+            static::query()->increment('ordinal');
+            $model->ordinal = 0;
+        });
+
         static::saving(function (self $model): void {
             Validator::make($model->attributesToArray(), static::validationRules())->validate();
         });

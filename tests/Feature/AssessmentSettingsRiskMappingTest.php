@@ -74,6 +74,30 @@ class AssessmentSettingsRiskMappingTest extends TestCase
         $indexResponse->assertJsonCount(4, 'mappings');
     }
 
+    public function test_probability_level_create_auto_assigns_ordinal_to_lowest_priority_when_missing(): void
+    {
+        $admin = $this->createManagementAdmin('risk.mapping.auto.ordinal@example.com');
+        $this->actingAs($admin->fresh(), 'sanctum');
+
+        $highestPriorityId = $this->insertProbabilityLevel('Highest priority', 2);
+        $middlePriorityId = $this->insertProbabilityLevel('Middle priority', 1);
+
+        $createResponse = $this->postJson('/api/crud/probability-levels', [
+            'name' => 'Newest should be lowest priority',
+            'description' => 'Auto ordinal test',
+        ]);
+
+        $createResponse->assertCreated();
+        $createResponse->assertJsonPath('ordinal', 0);
+        $newId = (int) $createResponse->json('id');
+
+        $listResponse = $this->getJson('/api/crud/probability-levels?paginate=0&sort=-ordinal&%24select=id,name,ordinal');
+        $listResponse->assertOk();
+        $listResponse->assertJsonPath('0.id', $highestPriorityId);
+        $listResponse->assertJsonPath('1.id', $middlePriorityId);
+        $listResponse->assertJsonPath('2.id', $newId);
+    }
+
     private function ensureCoreTables(): void
     {
         if (! Schema::hasTable('users')) {

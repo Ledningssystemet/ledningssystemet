@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { MaterialSymbol } from "@/components/ui/material-symbol";
 import AppLayout from '@/layouts/AppLayout';
 import { PageHeader } from '@/components/layout/PageHeader';
@@ -63,6 +63,7 @@ interface AssessmentSettingsPageProps {
 export default function AssessmentSettingsPage({ route }: AssessmentSettingsPageProps) {
     const { t } = useTranslations();
     const [activeTab, setActiveTab] = useState<AssessmentSettingsTab>(() => getTabFromHash(window.location.hash));
+    const previousTabRef = useRef<AssessmentSettingsTab | null>(null);
     const [riskMatrixLoading, setRiskMatrixLoading] = useState(false);
     const [riskMatrixError, setRiskMatrixError] = useState<string | null>(null);
     const [riskMatrixSuccess, setRiskMatrixSuccess] = useState<string | null>(null);
@@ -456,9 +457,15 @@ export default function AssessmentSettingsPage({ route }: AssessmentSettingsPage
     }, [consequences, hasAllRiskMappings, matrixValues, probabilities, t]);
 
     useEffect(() => {
-        if (activeTab === 'risk_assessment') {
-            void loadRiskMatrix();
+        const previousTab = previousTabRef.current;
+        previousTabRef.current = activeTab;
+
+        // Avoid repeated fetches caused by rerenders while staying on the same tab.
+        if (activeTab !== 'risk_assessment' || previousTab === activeTab) {
+            return;
         }
+
+        void loadRiskMatrix();
     }, [activeTab, loadRiskMatrix]);
 
     const handleTabChange = (tab: string) => {

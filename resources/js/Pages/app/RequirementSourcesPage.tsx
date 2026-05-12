@@ -113,15 +113,6 @@ export default function RequirementSourcesPage({ route }: RequirementSourcesPage
                         });
                     },
                 },
-                {
-                    key: 'soa-export',
-                    label: t('pages.requirement_sources.export_soa'),
-                    variant: 'outline',
-                    refreshOnComplete: false,
-                    onClick: (item) => {
-                        window.open(`/api/v1/ReportCentral/StatementOfApplicability/${item.id}`, '_blank', 'noopener,noreferrer');
-                    },
-                },
             ],
             fields: [
                 {
