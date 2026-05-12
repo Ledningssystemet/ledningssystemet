@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Validator;
 
 class InformationType extends Model
@@ -237,4 +238,64 @@ class InformationType extends Model
         return app(InheritedClassificationResolver::class)
             ->resolveInformationType($this, InheritedClassificationResolver::AVAILABILITY);
     }
+
+    protected function resolveStatus(): array
+   {
+      return Cache::rememberForever('InformationType.resolveStatus.'.$this->id, function () {
+         if (!$this->responsible_user_id) {
+            return $this->defaultStatus('danger', __("A responsible user has not been assigned"));
+         }
+
+         // Billiga kolumnchecks fÃ¶rst, undvik onÃ¶dig klassificeringsfrÃ¥ga
+         if ((null == $this->confidentiality_class_id) ||
+            (null == $this->integrity_class_id) ||
+            (null == $this->availability_class_id) ||
+            !$this->classified) {
+            return $this->defaultStatus('warning', __("The information type has not been classified"));
+         }
+
+         $hasSensitiveData = $this->relationLoaded('int_data_categories')
+            ? $this->getRelation('int_data_categories')->contains(fn ($cat) => (bool) $cat->sensitive)
+            : $this->int_data_categories()->where('sensitive', true)->exists();
+
+         if ($hasSensitiveData) {
+            $processes = [];
+
+            if ($this->relationLoaded('int_process_activities')) {
+               foreach ($this->getRelation('int_process_activities') as $pa) {
+                  $proc = $pa->relationLoaded('int_process') ? $pa->getRelation('int_process') : $pa->int_process;
+                  if ($proc) {
+                     $processes[$proc->id] = $proc;
+                  }
+               }
+            } else {
+               foreach ($this->int_processes() as $proc) {
+                  $processes[$proc->id] = $proc;
+               }
+            }
+
+            foreach ($processes as $proc) {
+               $hasNonSensitiveLegalBasis = $proc->relationLoaded('int_legal_basises')
+                  ? $proc->getRelation('int_legal_basises')->contains(fn ($lb) => !$lb->sensitive)
+                  : $proc->int_legal_basises()->where('sensitive', false)->exists();
+
+               if ($hasNonSensitiveLegalBasis) {
+                  return $this->defaultStatus('warning', __("The information type contains sensitive personal data but is used in a process without a legal basis allowing sensitive personal data"));
+               }
+            }
+         }
+
+         $isUsedInProcess = $this->relationLoaded('int_process_activities')
+            ? $this->getRelation('int_process_activities')->isNotEmpty()
+            : $this->int_process_activities()->exists();
+
+         if (!$isUsedInProcess) {
+            return $this->defaultStatus('warning', __("This information type is not used within any processes and should be removed or assigned to a process"));
+         }
+
+         return $this->defaultStatus('success', '');
+      });
+   }
+
 }
+

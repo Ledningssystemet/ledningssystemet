@@ -133,4 +133,20 @@ class ControlAction extends Model
     {
         return $this->morphMany(VectorEmbedding::class, 'embeddable', 'embeddable_type', 'embeddable_id');
     }
+
+    protected function resolveStatus(): array
+   {
+      if(!$this->finished_at && (strtotime($this->due) > time()))
+         return $this->defaultStatus('success', '');
+      
+      if(!$this->finished_at && (null != request()->user()) && ($this->responsible_id == request()->user()->id))
+         return $this->defaultStatus('danger', __("This action is overdue"));
+         
+      if(!$this->finished_at)
+         return $this->defaultStatus('warning', __("This action is overdue"));
+      
+      return $this->defaultStatus('success', '');
+   }
+
 }
+

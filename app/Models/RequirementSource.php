@@ -133,8 +133,18 @@ class RequirementSource extends Model
 
     protected function resolveStatus(): array
     {
-            return $this->defaultStatus('warning', 'Valideringen misslyckades.');
+        if($this->not_applicable_at)
+            return $this->defaultStatus('success', __("This requirement source is set as not applicable"));
 
-        return $this->defaultStatus('success', 'Ser bra ut.');
+        if(!$this->responsible_user_id)
+            return $this->defaultStatus('danger', __("A responsible user has not been assigned"));
+
+        if(0 < $this->int_requirements()->whereNull('applicable')->count())
+            return $this->defaultStatus('danger', __("There are requirements which has not been assessed regarding applicability"));
+
+        if(($this->approved_at === null) || (strtotime($this->updated_at >strtotime($this->approved_at))))
+            return $this->defaultStatus('warning', __("This requirement source needs approval"));
+
+        return $this->defaultStatus('success', '');
     }
 }

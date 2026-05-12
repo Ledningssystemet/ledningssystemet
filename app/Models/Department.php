@@ -292,4 +292,20 @@ class Department extends Model
 
         $this->pendingUserIds = null;
     }
+
+    protected function resolveStatus(): array
+   {
+      if(!$this->classified)
+         return $this->defaultStatus('warning', __("The department has not been classified regarding information security"));
+         
+      if(!$this->int_users()->exists())
+         return $this->defaultStatus('warning', __("The department has no assigned users"));
+      
+      if($this->external_provider_group_id)
+         return $this->defaultStatus('success', '');
+      
+      return $this->defaultStatus('unknown', '');
+   }
+
 }
+

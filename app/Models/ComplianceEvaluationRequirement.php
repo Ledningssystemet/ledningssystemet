@@ -140,4 +140,21 @@ class ComplianceEvaluationRequirement extends Model
     {
         return $this->morphMany(VectorEmbedding::class, 'embeddable', 'embeddable_type', 'embeddable_id');
     }
+
+    protected function resolveStatus(): array
+   {
+      if($this->getNccountAttribute() > 0 || $this->getObscountAttribute() > 0)
+         return $this->defaultStatus('success', '');
+      
+      if(!$this->evaluated)
+         return $this->defaultStatus('warning', '');
+      
+      if(!$this->applicable)
+         return $this->defaultStatus('warning', '');
+      
+      return $this->defaultStatus('success', '');
+      
+   }
+
 }
+

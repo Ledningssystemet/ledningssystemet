@@ -238,4 +238,33 @@ class Process extends Model
     {
         return $this->morphMany(VectorEmbedding::class, 'embeddable', 'embeddable_type', 'embeddable_id');
     }
+
+    protected function resolveStatus(): array
+   {
+      if (!$this->responsible_user_id)
+         return $this->defaultStatus('danger', __("A responsible user has not been assigned"));
+
+      if (!$this->publishedbpmn)
+         return $this->defaultStatus('danger', __("No process chart has been published"));
+
+      if (!$this->classified)
+         return $this->defaultStatus('danger', __("This process has not been classified"));
+
+
+      if ((0 < $this->getUnclassifiedcountAttribute()) ||
+         (0 < $this->getUndecidedcountAttribute())) {
+         if ((null != auth()->user()) && (auth()->user()->id == $this->responsible_user_id))
+            return $this->defaultStatus('danger', __("There are tasks that needs to be classified and/or assigned responsbility"));
+         else
+            return $this->defaultStatus('warning', __("There are tasks that needs to be classified and/or assigned responsbility"));
+      }
+
+      if ($this->isstartprocess)
+         return $this->defaultStatus('success', '');
+
+      return $this->defaultStatus('success', '');
+
+   }
+
 }
+

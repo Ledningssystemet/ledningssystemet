@@ -251,4 +251,14 @@ class AccessGroup extends Model
 
         $this->pendingUserIds = null;
     }
+
+    protected function resolveStatus(): array
+   {
+      if ($this->external_provider_group_id)
+         return $this->defaultStatus('success', '');
+
+      return $this->defaultStatus('unknown', '');
+   }
+
 }
+

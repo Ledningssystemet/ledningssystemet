@@ -740,4 +740,17 @@ class User extends Authenticatable
             $this->pendingAccessGroupIds = null;
         }
     }
+
+    protected function resolveStatus(): array
+   {
+      if(!$this->enabled)
+         return $this->defaultStatus('warning', __('Deactivated user'));
+
+      if($this->external_id)
+         return $this->defaultStatus('success', __('External user'));
+      
+      return $this->defaultStatus('success', '');
+   }
+
 }
+

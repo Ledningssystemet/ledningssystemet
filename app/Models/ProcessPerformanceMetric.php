@@ -361,4 +361,29 @@ class ProcessPerformanceMetric extends Model
         $this->pendingTags = [];
         $this->hasPendingTagsUpdate = false;
     }
+
+    protected function resolveStatus(): array
+   {
+      if(!$this->responsible_user_id)
+         return $this->defaultStatus('danger', __("A responsible user has not been assigned"));
+
+      $lastreport = $this->int_last_report();
+      if((null == $lastreport) || ((null != $this->report_interval) && (strtotime($this->increment, strtotime($lastreport->reporting_date_at)) < time())))
+         return $this->defaultStatus('danger', __("Reporting is required"));
+
+      // Calculate alarm threshold
+      if((null != $lastreport) && $this->alarm_threshold && $this->quantitative)
+      {
+         if($this->biggerisbetter && ($lastreport->calculatedvalue <= $this->alarm_threshold))
+            return $this->defaultStatus('warning', __("Alarm threshold breached"));
+         else if(!$this->biggerisbetter && ($lastreport->calculatedvalue >= $this->alarm_threshold))
+            return $this->defaultStatus('warning', __("Alarm threshold breached"));
+
+      }
+
+      return $this->defaultStatus('success', '');
+      
+   }
+
 }
+

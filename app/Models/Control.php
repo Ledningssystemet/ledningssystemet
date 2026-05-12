@@ -265,4 +265,24 @@ class Control extends Model
     {
         return $this->morphMany(VectorEmbedding::class, 'embeddable', 'embeddable_type', 'embeddable_id');
     }
+
+    protected function resolveStatus(): array
+   {
+      if($this->not_applicable_at)
+         return $this->defaultStatus('success', __("This control is set as not applicable"));
+
+      if(!$this->responsible_user_id)
+         return $this->defaultStatus('danger', __("A responsible user has not been assigned"));
+      
+      if(!$this->statusdescription)
+         return $this->defaultStatus('warning', __("Status description is missing"));
+      
+      if($this->getPendingActionCountAttribute())
+         return $this->defaultStatus('success', __("There are pending actions for this control"));
+      
+      return $this->defaultStatus('success', '');
+      
+   }
+
 }
+

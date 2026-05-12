@@ -210,4 +210,17 @@ class Customer extends Model
     {
         return $this->morphMany(VectorEmbedding::class, 'embeddable', 'embeddable_type', 'embeddable_id');
     }
+
+    protected function resolveStatus(): array
+   {
+      if (!$this->responsible_user_id)
+         return $this->defaultStatus('danger', __("A responsible user has not been assigned"));
+
+      if (!$this->classified)
+         return $this->defaultStatus('warning', __("The customer has not been classified regarding information security"));
+
+      return $this->defaultStatus('success', '');
+   }
+
 }
+

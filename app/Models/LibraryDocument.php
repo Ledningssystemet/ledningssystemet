@@ -138,4 +138,27 @@ class LibraryDocument extends Model
     {
         return $this->morphMany(VectorEmbedding::class, 'embeddable', 'embeddable_type', 'embeddable_id');
     }
+
+    protected function resolveStatus(): array
+   {
+      if (!$this->partner_id && !$this->responsible_user_id)
+         return $this->defaultStatus('danger', __("A responsible user has not been assigned"));
+
+      // Special case for ledningssystemet documents
+      if("ledningssystemet/document" != $this->contenttype)
+         return $this->defaultStatus('success', '');
+
+      // If there are versions pending approval, then indicate
+      $lastversion = $this->int_document_versions()->orderBy('major_version', 'desc')->orderBy('minor_version', 'desc')->first();
+      if(null != $lastversion && $lastversion->finished_at && !$lastversion->approved_at)
+         return $this->defaultStatus('warning', __("Pending approval"));
+
+      // If no document has been published, then indicate this
+      if(0 >= $this->contentlength)
+         return $this->defaultStatus('warning', __("Document has not been published"));
+
+      return $this->defaultStatus('success', '');
+   }
+
 }
+

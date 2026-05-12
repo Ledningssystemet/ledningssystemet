@@ -335,4 +335,53 @@ class Asset extends Model
         return app(InheritedClassificationResolver::class)
             ->resolveAsset($this, InheritedClassificationResolver::AVAILABILITY);
     }
+
+    protected function resolveStatus(): array
+   {
+      if (!$this->responsible_user_id)
+         return $this->defaultStatus('danger', __("A responsible user has not been assigned"));
+
+      if (!$this->classified ||
+         (null === $this->getConfidentialityClassCalculatedIdAttribute()) ||
+         (null === $this->getIntegrityClassCalculatedIdAttribute()) ||
+         (null === $this->getAvailabilityClassCalculatedIdAttribute()))
+         return $this->defaultStatus('warning', __("The asset has not been classified regarding information security"));
+
+
+      // Prefer precomputed flags from index query when available.
+      if ((null != $this->confidentiality_class_id) &&
+         ((array_key_exists('has_higher_confidentiality_infotype', $this->attributes) &&
+               intval($this->attributes['has_higher_confidentiality_infotype']) > 0) ||
+            (!array_key_exists('has_higher_confidentiality_infotype', $this->attributes) && $this->int_information_types()
+               ->whereNotNull('information_types.confidentiality_class_id')
+               ->leftJoin('confidentiality_classes', 'confidentiality_classes.id', '=', 'information_types.confidentiality_class_id')
+               ->where('confidentiality_classes.ordinal', '>', $this->int_confidentiality_class->ordinal)
+               ->exists())))
+         return $this->defaultStatus('success', __("There are associated information types that are classified with a higher level of confidentiality than this asset"));
+
+      if ((null != $this->integrity_class_id) &&
+         ((array_key_exists('has_higher_integrity_infotype', $this->attributes) &&
+               intval($this->attributes['has_higher_integrity_infotype']) > 0) ||
+            (!array_key_exists('has_higher_integrity_infotype', $this->attributes) && $this->int_information_types()
+               ->whereNotNull('information_types.integrity_class_id')
+               ->leftJoin('integrity_classes', 'integrity_classes.id', '=', 'information_types.integrity_class_id')
+               ->where('integrity_classes.ordinal', '>', $this->int_integrity_class->ordinal)
+               ->exists())))
+         return $this->defaultStatus('success', __("There are associated information types that are classified with a higher level of integrity than this asset"));
+
+      if ((null != $this->availability_class_id) &&
+         ((array_key_exists('has_higher_availability_infotype', $this->attributes) &&
+               intval($this->attributes['has_higher_availability_infotype']) > 0) ||
+            (!array_key_exists('has_higher_availability_infotype', $this->attributes) && $this->int_information_types()
+               ->whereNotNull('information_types.availability_class_id')
+               ->leftJoin('availability_classes', 'availability_classes.id', '=', 'information_types.availability_class_id')
+               ->where('availability_classes.ordinal', '>', $this->int_availability_class->ordinal)
+               ->exists())))
+         return $this->defaultStatus('success', __("There are associated information types that are classified with a higher level of availability than this asset"));
+
+      return $this->defaultStatus('success', '');
+
+   }
+
 }
+

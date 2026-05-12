@@ -143,4 +143,15 @@ class Incident extends Model
     {
         return $this->morphMany(VectorEmbedding::class, 'embeddable', 'embeddable_type', 'embeddable_id');
     }
+
+    protected function resolveStatus(): array
+   {
+      if(!$this->finished_at)
+         return $this->defaultStatus('warning', __("This incident is not yet handled"));
+      
+      return $this->defaultStatus('success', '');
+      
+   }
+
 }
+

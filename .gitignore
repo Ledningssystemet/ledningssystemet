@@ -20,3 +20,4 @@ composer.lock
 playwright-report
 test-results
 .playwright
+importdata

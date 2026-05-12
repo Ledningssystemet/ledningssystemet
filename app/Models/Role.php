@@ -147,4 +147,14 @@ class Role extends Model
     {
         return $this->morphMany(VectorEmbedding::class, 'embeddable', 'embeddable_type', 'embeddable_id');
     }
+
+    protected function resolveStatus(): array
+   {
+      if($this->external_provider_group_id)
+         return $this->defaultStatus('success', '');
+      
+      return $this->defaultStatus('unknown', '');
+   }
+
 }
+

@@ -211,4 +211,31 @@ class Chemical extends Model
     {
         return $this->morphMany(VectorEmbedding::class, 'embeddable', 'embeddable_type', 'embeddable_id');
     }
+
+    protected function resolveStatus(): array
+   {
+      $missing = [];
+      
+      if(null == $this->manufacturer)
+         $missing[] = __("Manufacturer");
+      
+      if(null == $this->description)
+         $missing[] = __("Description");
+         
+      if(null == $this->usagedescription)
+         $missing[] = __("Usage");
+      
+      if(null == $this->storagedescription)
+         $missing[] = __("Storage");
+      
+      if(null == $this->riskdescription)
+         $missing[] = __("Risk description");
+      
+      if(0 < count($missing))
+         return $this->defaultStatus('danger', __("Mandatory information is missing").': '.implode(', ', $missing));
+
+      return $this->defaultStatus('success', '');
+   }
+
 }
+

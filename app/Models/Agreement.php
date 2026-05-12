@@ -245,4 +245,29 @@ class Agreement extends Model
     {
         return $this->morphMany(VectorEmbedding::class, 'embeddable', 'embeddable_type', 'embeddable_id');
     }
+
+    protected function resolveStatus(): array
+   {
+      if($this->archived_at)
+         return $this->defaultStatus('success', __('This agreement is archived'));
+
+      if(!$this->responsible_user_id)
+         return $this->defaultStatus('danger', __("A responsible user has not been assigned"));
+      
+      if(!$this->startdate | !$this->enddate)
+         return $this->defaultStatus('danger', __("The agreement is not provided with startdate and enddate"));
+      
+      if(strtotime($this->enddate) < time())
+         return $this->defaultStatus('danger', __("The agreement is no longer valid"));
+      
+      if($this->reminderdate && (strtotime($this->reminderdate) < time()))
+         return $this->defaultStatus('warning', __("The agreement is about to expire"));
+      
+      if(strtotime($this->startdate) > time())
+         return $this->defaultStatus('warning', __("The agreement has not yet entered into force"));
+      
+      return $this->defaultStatus('success', '');
+   }
+
 }
+

@@ -543,4 +543,19 @@ class ProcessSustainabilityAspect extends Model
 
         $this->pendingSustainabilityMetricLevelsByMetricId = null;
     }
+
+    protected function resolveStatus(): array
+   {
+      $significant = $this->getSignificantAttribute();
+      if(null === $significant)
+         return $this->defaultStatus('danger', __("Aspect has not been assessed"));
+      
+      
+      if($significant)
+         return $this->defaultStatus('success', __("This is a significant aspect"));
+      
+      return $this->defaultStatus('success', '');
+   }
+
 }
+

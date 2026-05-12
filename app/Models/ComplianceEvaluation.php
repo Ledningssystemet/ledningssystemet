@@ -166,4 +166,21 @@ class ComplianceEvaluation extends Model
     {
         return $this->morphMany(VectorEmbedding::class, 'embeddable', 'embeddable_type', 'embeddable_id');
     }
+
+    protected function resolveStatus(): array
+   {
+      if($this->archived)
+         return $this->defaultStatus('success', __('This evaluation is archived'));
+      
+      if($this->finished)
+         return $this->defaultStatus('success', __('This evaluation is finished'));
+
+      if(strtotime($this->startdate.' 00:00:00') <= time())
+         return $this->defaultStatus('warning', __('This evaluation is ongoing'));
+
+      return $this->defaultStatus('success', __('This evaluation is scheduled to start on').' '.date(__('Y-m-d'), strtotime($this->startdate)));
+      
+   }
+
 }
+

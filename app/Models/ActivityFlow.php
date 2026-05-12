@@ -174,4 +174,14 @@ class ActivityFlow extends Model
     {
         return $this->morphMany(VectorEmbedding::class, 'embeddable', 'embeddable_type', 'embeddable_id');
     }
+
+    protected function resolveStatus(): array
+   {
+      if($this->int_activities()->whereNull('completed_at')->exists())
+         return $this->defaultStatus('warning', __("There are activities pending in this flow"));
+
+      return $this->defaultStatus('success', __("All activities are finished"));
+   }
+
 }
+

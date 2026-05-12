@@ -167,4 +167,17 @@ class Finding extends Model
     {
         return $this->morphMany(VectorEmbedding::class, 'embeddable', 'embeddable_type', 'embeddable_id');
     }
+
+    protected function resolveStatus(): array
+   {
+      if($this->finished_at)
+         return $this->defaultStatus('success', '');
+      
+      if($this->nonconformity)
+         return $this->defaultStatus('danger', __("This non-conformity has not been assessed"));
+         
+      return $this->defaultStatus('warning', __("This observation has not been assessed"));
+   }
+
 }
+

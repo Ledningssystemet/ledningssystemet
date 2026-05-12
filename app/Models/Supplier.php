@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Validator;
 use Spatie\QueryBuilder\QueryBuilder;
 
@@ -432,4 +433,52 @@ class Supplier extends Model
     {
         return $this->morphMany(VectorEmbedding::class, 'embeddable', 'embeddable_type', 'embeddable_id');
     }
+
+    protected function resolveStatus(): array
+   {
+      if (!$this->responsible_user_id)
+         return $this->defaultStatus('danger', __("A responsible user has not been assigned"));
+
+      $totalCategories = Cache::rememberForever('SupplierCategory.count', fn() => SupplierCategory::count());
+      $isOwner = null !== auth()->user() && auth()->user()->id == $this->responsible_user_id;
+
+      // Prefer precomputed selectSub value, then loaded relation, then query
+      if (array_key_exists('supplier_category_count_db', $this->attributes)) {
+         $assessmentCount = intval($this->attributes['supplier_category_count_db']);
+      } elseif ($this->relationLoaded('int_supplier_category_assessments')) {
+         $assessmentCount = $this->int_supplier_category_assessments->count();
+      } else {
+         $assessmentCount = $this->int_supplier_category_assessments()->count();
+      }
+
+      if ($assessmentCount != $totalCategories)
+         return ['level' => $isOwner ? 'danger' : 'warning', 'text' => __("The supplier has not been categorized")];
+
+      $hasUnevaluated = array_key_exists('has_unevaluated_requirements_db', $this->attributes)
+         ? intval($this->attributes['has_unevaluated_requirements_db']) > 0
+         : $this->int_supplier_requirements()->whereNull('supplier_supplier_requirement.id')->exists();
+
+      if ($hasUnevaluated)
+         return $this->defaultStatus($isOwner ? 'danger' : 'warning',__("The supplier has not been evaluated"));
+
+      $hasFailed = array_key_exists('has_failed_requirements_db', $this->attributes)
+         ? intval($this->attributes['has_failed_requirements_db']) > 0
+         : $this->int_supplier_requirements()->where('satisfactory', false)->exists();
+
+      if ($hasFailed)
+         return $this->defaultStatus('warning', __("The supplier does not fulfil mandatory requirements"));
+
+      // Overdue check â€“ must stay in PHP due to strtotime() interval format
+      foreach ($this->int_supplier_requirements()->where('supplier_requirements.reassessment', true)->whereNotNull('supplier_categories.reassessment_interval')->select(['supplier_supplier_requirement.updated_at', 'supplier_categories.reassessment_interval'])->get() as $req) {
+         if (strtotime($req->reassessment_interval, strtotime($req->updated_at)) < time())
+            return $this->defaultStatus($isOwner ? 'danger' : 'warning',__("Supplier re-evaluation is overdue"));
+      }
+
+      if (!$this->classified)
+         return $this->defaultStatus('warning', __("The supplier has not been classified"));
+
+      return $this->defaultStatus('success', '');
+   }
+
 }
+

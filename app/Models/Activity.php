@@ -149,4 +149,24 @@ class Activity extends Model
     {
         return $this->morphMany(VectorEmbedding::class, 'embeddable', 'embeddable_type', 'embeddable_id');
     }
+
+    protected function resolveStatus(): array
+   {
+      if($this->completed_at)
+      return $this->defaultStatus('success', '');
+         
+      if(!$this->responsible_user_id)
+         return $this->defaultStatus('danger', __("A responsible user has not been assigned"));
+      
+      if((strtotime($this->due) < time()) && (null != request()->user()) && ($this->responsible_user_id == request()->user()->id))
+         return $this->defaultStatus('danger', __("Activitiy is overdue"));
+         
+      if(strtotime($this->due) < time())
+         return $this->defaultStatus('warning', __("Activitiy is overdue"));
+      
+      return $this->defaultStatus('success', '');
+      
+   }
+
 }
+
