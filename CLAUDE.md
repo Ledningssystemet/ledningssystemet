@@ -1,7 +1,7 @@
-# AI Instruktioner för CRUD Table Module
+# AI Instruktioner för Ledningssystemet
 
 ## Syfte
-Den här filen innehåller instruktioner för AI-agenter som arbetar med CRUD Table-modulen.
+Den här filen innehåller instruktioner för AI-agenter som arbetar med mjukvaran.
 Den säkerställer konsistent kodstandard, struktur och dokumentation.
 
 ## ✅ Regler för Dokumentation
@@ -39,10 +39,6 @@ Den säkerställer konsistent kodstandard, struktur och dokumentation.
    - Länka mellan dokument istället för att upprepa information
    - Kontrollera vad som redan existerar innan du skapar nytt
 
-4. ** Alla strängar skall översättas:**
-   - Alla texter skall använda översättningsfunktionen och skall finnas på engelska under resources/lang/
-   - Strängar som inte behöver pluraliseringsinställningar behöver inte läggas in som referens utan kan läggas in direkt men ska ändå använda översättningsfunktionen
-
 ## ✅ Vad AI Ska Göra
 
 1. **Skapa komponenter i rätt plats:**
@@ -52,81 +48,11 @@ Den säkerställer konsistent kodstandard, struktur och dokumentation.
    resources/js/types/
    ```
 
-2. **Uppdatera befintlig dokumentation:**
-   - Lägg till i `doc/CRUD_TABLE_DOCUMENTATION.md`
-   - Uppdatera `doc/QUICK_REFERENCE.md` med ny syntax
-   - Lägg till exempel i `doc/INTEGRATION_GUIDE.md`
-
-3. **Länka mellan dokumentation:**
-   - Se `doc/QUICK_REFERENCE.md` för snabbstart
-   - Se `doc/INTEGRATION_GUIDE.md` för detaljerade steg
-   - Se `doc/CRUD_TABLE_DOCUMENTATION.md` för full referens
-
-4. **Använd samma kodstil:**
+2**Använd samma kodstil:**
    - React: Functional components med TypeScript
    - Tailwind CSS för styling
    - Lucide React för ikoner
    - Axios för API-anrop
-
-
-## 📝 Dokumentationsstruktur
-
-Varje dokumentationsfile ska ha:
-
-```markdown
-# Titel
-
-Kort introduktion (2-3 rader)
-
-## Innehållsförteckning (om >500 rader)
-
-## Avsnitt 1
-...
-
-## Avsnitt 2
-...
-
-## Troubleshooting
-...
-```
-
-## 🔍 Befintlig Dokumentation
-
-### `doc/QUICK_REFERENCE.md`
-- Snabb referens-kort
-- Använd för enkla exempel
-- Max 300 rader
-
-### `doc/CRUD_TABLE_README.md`
-- Snabbstart (5 min)
-- Features overview
-- Basisk konfiguration
-
-### `doc/INTEGRATION_GUIDE.md`
-- Steg-för-steg integration
-- Code examples (PHP + TSX)
-- Troubleshooting
-
-### `doc/CRUD_TABLE_DOCUMENTATION.md`
-- Fullständig API-referens
-- Alla interfaces
-- Advanced usage
-- Best practices
-
-### `doc/ROUTING_AND_INERTIA_EXAMPLES.md`
-- Inertia.js integration
-- Routing examples
-- Laravel setup
-
-### `doc/IMPLEMENTATION_SUMMARY.md`
-- Overview av implementering
-- Features checklist
-- Nästa steg
-
-### `doc/FILE_OVERVIEW.md`
-- Filstruktur
-- Statistik
-- Quick reference
 
 ## 🛠️ Kodstandard
 
@@ -216,19 +142,6 @@ Man får inte publicera en processkarta som:
 - Har en subProcess med ett namn som inte överensstämmer med en process som finns i systemet
 - Där dataObjectReference inte är associerad med en dataStoreReference. Det får finnas flera dataObjectReference med samma namn, och det räcker att en av dem är associerad med en dataStoreReference.
 
-
-## 🚀 Framtida Utvidgningar
-
-Om CRUD Table ska expanderas, lägg till:
-
-1. **Ny komponent** → `resources/js/Components/crud/`
-2. **Ny hook** → `resources/js/hooks/`
-3. **Ny typ** → `resources/js/types/crud.ts` (uppdatera befintlig)
-4. **Dokumentation** → `doc/CRUD_TABLE_DOCUMENTATION.md` (uppdatera befintlig)
-5. **Exempel** → `doc/INTEGRATION_GUIDE.md` eller `doc/QUICK_REFERENCE.md`
-
-**SKAPA INTE nya dokumentfiler** för varje feature - uppdatera befintliga istället!
-
 ## 📞 Support
 
 Om du är osäker:
@@ -239,5 +152,5 @@ Om du är osäker:
 ---
 
 **Version:** 1.0  
-**Senast uppdaterad:** 2026-04-05  
+**Senast uppdaterad:** 2026-05-28
 **Status:** Active
