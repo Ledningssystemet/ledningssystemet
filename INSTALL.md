@@ -38,7 +38,6 @@ sudo apt autoremove -y
 
 ```bash
 sudo adduser deploy
-sudo usermod -aG sudo deploy
 ```
 
 ### 2.3 Configure SSH hardening
@@ -73,6 +72,7 @@ sudo ufw default allow outgoing
 sudo ufw allow ssh
 sudo ufw allow http
 sudo ufw allow https
+sudo ufw allow from 172.17.0.0/16 to any port 3306 proto tcp
 sudo ufw enable
 ```
 
@@ -199,6 +199,7 @@ server {
         proxy_set_header   X-Real-IP         $remote_addr;
         proxy_set_header   X-Forwarded-For   $proxy_add_x_forwarded_for;
         proxy_set_header   X-Forwarded-Proto $scheme;
+        proxy_set_header   X-Forwarded-Port  $server_port;
         proxy_read_timeout 120s;
     }
 }
@@ -212,12 +213,42 @@ sudo nginx -t && sudo systemctl reload nginx
 ```
 
 ---
+## 6. Install and harden mariadb-server
 
-## 6. Pull and Run the Application
+### 6.1 Install MariaDB and secure it
+```bash
+sudo apt install -y mariadb-server
+sudo systemctl enable --now mariadb
+sudo mariadb-secure-installation
+```
+
+### 6.2 Make sure mariadb-server listens on 172.17.0.0/16
+
+```bash
+sudo nano /etc/mysql/mariadb.conf.d/50-server.cnf
+
+add the following line:
+[mysqld]
+bind-address = 172.17.0.1
+
+sudo systemctl restart mariadb
+```
+
+### 6.3 Create the database and user by running sql query as root
+
+```bash
+echo "CREATE DATABASE ledningssystemet CHARACTER SET utf8mb4 COLLATE utf8mb4_swedish_ci;" | sudo mysql -u root
+echo "CREATE USER 'ledningssystemet'@'%' IDENTIFIED BY 'your-strong-password';" | sudo mysql -u root
+echo "GRANT ALL PRIVILEGES ON ledningssystemet.* TO 'ledningssystemet'@'%';" | sudo mysql -u root
+echo "FLUSH PRIVILEGES;" | sudo mysql -u root
+```
+---
+
+## 7. Pull and Run the Application
 
 The application is published as a Docker image on the GitHub Container Registry (ghcr.io).
 
-### 6.1 Create environment configuration
+### 7.1 Create environment configuration
 
 ```bash
 sudo mkdir -p /opt/ledningssystemet
@@ -234,7 +265,7 @@ APP_DEBUG=false
 APP_URL=https://your-domain.example.com
 
 DB_CONNECTION=mysql
-DB_HOST=127.0.0.1
+DB_HOST=host.docker.internal
 DB_PORT=3306
 DB_DATABASE=ledningssystemet
 DB_USERNAME=ledningssystemet
@@ -248,7 +279,7 @@ REDIS_HOST=127.0.0.1
 REDIS_PORT=6379
 ```
 
-### 6.1 Start the container
+### 7.2 Start the container
 
 ```bash
 docker pull ghcr.io/ledningssystemet/ledningssystemet:latest
@@ -258,6 +289,7 @@ docker run -d \
   --restart unless-stopped \
   -p 127.0.0.1:8080:80 \
   --env-file /opt/ledningssystemet/.env \
+  --add-host=host.docker.internal:host-gateway \
   ghcr.io/ledningssystemet/ledningssystemet:latest
 ```
 
@@ -268,13 +300,19 @@ docker ps
 curl -I http://localhost:8080
 ```
 
+### 7.3 Perform initial database seeding (optional and only possible if not users and access groups exists)
+
+```bash
+docker exec -it ledningssystemet php artisan db:seed --force
+```
+
 ---
 
-## 7. Automatic Daily Updates
+## 8. Automatic Daily Updates
 
 Create an update script that pulls the latest image and restarts the container only when a new version is available.
 
-### 7.1 Create the update script
+### 8.1 Create the update script
 
 ```bash
 sudo nano /opt/ledningssystemet/update.sh
@@ -310,7 +348,8 @@ docker run -d \
   --name "$CONTAINER" \
   --restart unless-stopped \
   -p 127.0.0.1:8080:80 \
-  --env-file "$ENV_FILE" \
+  --env-file /opt/ledningssystemet/.env \
+  --add-host=host.docker.internal:host-gateway \
   "$IMAGE" >> "$LOG" 2>&1
 
 # Remove unused images to free disk space
@@ -325,7 +364,7 @@ Make the script executable:
 sudo chmod +x /opt/ledningssystemet/update.sh
 ```
 
-### 7.2 Schedule with cron
+### 8.2 Schedule with cron
 
 ```bash
 sudo crontab -e
@@ -337,7 +376,7 @@ Add the following line to run the update every night at **03:00**:
 0 3 * * * /opt/ledningssystemet/update.sh
 ```
 
-### 7.3 Verify and test
+### 8.3 Verify and test
 
 Check the log after the first run:
 
@@ -350,18 +389,3 @@ Trigger manually to test:
 ```bash
 sudo /opt/ledningssystemet/update.sh
 ```
-
----
-
-## Summary
-
-| Component | Purpose |
-|-----------|---------|
-| Ubuntu 24.04 LTS (hardened) | Secure base OS |
-| nginx | TLS termination and reverse proxy |
-| Docker | Container runtime for the application |
-| ghcr.io image | Pre-built application package from GitHub |
-| update.sh + cron | Automatic daily updates at 03:00 |
-
-For questions or issues, please open an issue in the [GitHub repository](https://github.com/ledningssystemet/ledningssystemet).
-

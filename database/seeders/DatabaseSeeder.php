@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\AccessGroup;
 use App\Models\User;
+use App\Models\AccessGroupUser;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
@@ -17,20 +18,34 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // User::factory(10)->create();
+        if ((User::query()->count() > 0) || (AccessGroup::query()->count() > 0)) {
+            // Output a message if the database is not empty
+            echo "Database is not empty. Skipping seeding.\n";
+            return;
+        }
 
-        $user = User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
-            'password' => Hash::make('password'),
-            'enabled' => true,
-        ]);
-
+        // Create an access group with all privileges
         $accessGroup = AccessGroup::query()->create([
-            'name' => 'E2E Management Access',
-            'claims' => ['managementtools.edit', 'systemadministrator.edit'],
+            'name' => 'System administrators',
+            'claims' => '["superadmin.edit","systemadministrator.edit"]',
         ]);
 
-        $accessGroup->int_users()->syncWithoutDetaching([$user->id]);
+        // Create a user with the access group
+        $user = User::query()->create([
+            'name' => 'System administrator',
+            'email' => 'admin@example.com',
+            'password' => Hash::make('password'),
+        ]);
+
+        // Create a user/access group pivot entry
+        $userAccessGroup = AccessGroupUser::query()->create([
+            'access_group_id' => $accessGroup->id,
+            'user_id' => $user->id,
+        ]);
+
+        // Print a message to the console
+        echo "To login, visit the application URL and use the following credentials:\n";
+        echo "Username: admin@example.com\n";
+        echo "Password: password\n";
     }
 }

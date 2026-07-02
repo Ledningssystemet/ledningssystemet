@@ -35,6 +35,15 @@ return Application::configure(basePath: dirname(__DIR__))
             'session.authenticated' => \App\Http\Middleware\EnsureSessionAuthenticated::class,
         ]);
     })
+    ->withMiddleware(function (Middleware $middleware) {
+        $middleware->trustProxies(at: '*', headers: [
+            'FORWARDED',
+            'X_FORWARDED_FOR',
+            'X_FORWARDED_HOST',
+            'X_FORWARDED_PROTO',
+            'X_FORWARDED_PORT',
+        ]);
+    })
     ->withExceptions(function (Exceptions $exceptions): void {
         //
     })->create();
