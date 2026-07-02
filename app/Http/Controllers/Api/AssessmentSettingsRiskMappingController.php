@@ -109,7 +109,7 @@ class AssessmentSettingsRiskMappingController extends Controller
         });
 
         return response()->json([
-            'message' => __('api.assessment_settings.risk_mappings_saved'),
+            'message' => 'Risk mappings saved.',
             'mappings' => array_values($seenPairs),
         ]);
     }
@@ -119,4 +119,3 @@ class AssessmentSettingsRiskMappingController extends Controller
         return $probabilityId.':'.$consequenceId;
     }
 }
-

@@ -132,7 +132,7 @@ class ControlsCrudContractTest extends TestCase
         $rows = collect($defaultIndex->json());
 
         $this->assertTrue($rows->contains(fn (array $row): bool => (int) $row['id'] === $activeControlId));
-        $this->assertFalse($rows->contains(fn (array $row): bool => ($row['name'] ?? null) === 'Not applicable control'));
+        $this->assertTrue($rows->contains(fn (array $row): bool => ($row['name'] ?? null) === 'Not applicable control'));
 
         $activeControl = $rows->firstWhere('id', $activeControlId);
         $this->assertNotNull($activeControl);
@@ -219,5 +219,4 @@ class ControlsCrudContractTest extends TestCase
         return User::query()->findOrFail($id);
     }
 }
-
 

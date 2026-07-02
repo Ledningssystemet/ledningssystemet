@@ -62,7 +62,6 @@ class Chemical extends Model
             'sdbfilename' => ['nullable', 'string', 'max:255'],
             'sdbcontenttype' => ['nullable', 'string', 'max:255'],
             'sdbcontentlength' => ['nullable', 'integer', 'min:0'],
-            'sdbfilecontent' => ['nullable', 'string'],
         ];
     }
 
@@ -252,4 +251,3 @@ class Chemical extends Model
    }
 
 }
-

@@ -10,6 +10,7 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
+use Laravel\Socialite\Contracts\User as OAuthUserContract;
 use Laravel\Socialite\Facades\Socialite;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 
@@ -60,15 +61,9 @@ class OAuthController extends Controller
         $oauthUser = Socialite::driver($driver)->user();
 
         try {
-            $user = $this->findUser($provider, $oauthUser->getEmail());
+            $user = $this->findUser($provider, $oauthUser);
         } catch (AccessDeniedHttpException $exception) {
             return to_route('login')->with('oauth_error', $exception->getMessage());
-        }
-
-        if(null == $user)
-        {
-            $request->session()->regenerate();
-            abort(403, __('auth.oauth.permission_denied'));
         }
 
         Auth::login($user, true);
@@ -76,14 +71,34 @@ class OAuthController extends Controller
         return to_route('home')->with('oauth_success', __('auth.oauth.login_success'));
     }
 
-    private function findUser(string $provider, ?string $email): User
+    private function findUser(string $provider, OAuthUserContract $oauthUser): User
     {
+        $email = $oauthUser->getEmail();
+
         if (! $email) {
             throw new AccessDeniedHttpException(__('auth.oauth.missing_email'));
         }
 
-        return User::query()->where('email', Str::lower($email))->first();
+        $normalizedEmail = Str::lower($email);
+        $user = User::query()->where('email', $normalizedEmail)->first();
+
+        if ($user !== null) {
+            return $user;
+        }
+
+        $newUser = new User();
+        $newUser->forceFill([
+            'name' => (string) ($oauthUser->getName() ?: $normalizedEmail),
+            'email' => $normalizedEmail,
+            'password' => Hash::make(Str::random(32)),
+            'enabled' => true,
+            'externalproviderid' => $provider,
+            'external_id' => (string) $oauthUser->getId(),
+            'email_verified_at' => Carbon::now(),
+        ]);
+        $newUser->save();
+
+        return $newUser;
     }
 
 }
-

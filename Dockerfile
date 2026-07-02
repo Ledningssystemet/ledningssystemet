@@ -9,24 +9,25 @@ RUN apt install -y software-properties-common
 RUN add-apt-repository -y ppa:ondrej/php
 RUN apt update
 RUN apt install -y \
-   php8.5\
-   php8.5-cli\
-   php8.5-common\
-   php8.5-fpm\
-   php8.5-mysql\
-   php8.5-zip\
-   php8.5-gd\
-   php8.5-mbstring\
-   php8.5-curl\
-   php8.5-xml\
-   php8.5-bcmath\
-   php8.5-pdo\
-   php8.5-xdebug\
-   php8.5-redis\
-   nginx\
-   curl\
-   redis\
-   cron
+    php8.5\
+    php8.5-cli\
+    php8.5-common\
+    php8.5-fpm\
+    php8.5-mysql\
+    php8.5-zip\
+    php8.5-gd\
+    php8.5-mbstring\
+    php8.5-curl\
+    php8.5-xml\
+    php8.5-bcmath\
+    php8.5-pdo\
+    php8.5-xdebug\
+    php8.5-redis\
+    nginx\
+    curl\
+    redis\
+    graphviz\
+    cron
 
 # Set PHP ini parameters
 RUN sed -i 's/^upload_max_filesize.*/upload_max_filesize = 1G/' /etc/php/8.5/fpm/php.ini
@@ -141,7 +142,7 @@ RUN su -c "cd /var/www/html && composer install" -s /bin/bash www-data
 RUN su -c "cd /var/www/html && echo -n ${RELEASE_TEXT} > RELEASE" -s /bin/bash www-data
 
 # Install Node JS (and NPM)
-RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash && . "$HOME/.nvm/nvm.sh" && nvm install 24 && npm install && npm run build
+RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.5/install.sh | bash && . "$HOME/.nvm/nvm.sh" && nvm install 24 && npm install && npm run build
 
 # Change ownership
 RUN chown -R www-data:www-data /var/www/html/public

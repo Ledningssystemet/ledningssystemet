@@ -268,12 +268,8 @@ class EmployeeProfileController extends Controller
             'information_types' => InformationType::where('responsible_user_id', $user->id)->orderBy('name')->select('id', 'name')->get(),
             'assets'            => Asset::where('responsible_user_id', $user->id)->orderBy('name')->select('id', 'name')->get(),
             'customers'         => Customer::where('responsible_user_id', $user->id)->orderBy('name')->select('id', 'name')->get(),
-            'suppliers'         => Supplier::where('responsible_user_id', $user->id)->orderBy('name')->select('id', 'name')->get()
-                ->where('responsible_user_id', $user->id)
-                ->orderBy('name')
-                ->select('id', 'name')
-                ->get(),
+            'suppliers'         => Supplier::where('responsible_user_id', $user->id)->orderBy('name')->select('id', 'name')->get(),
+            'controls'          => Control::where('responsible_user_id', $user->id)->orderBy('name')->select('id', 'name')->get(),
         ]);
     }
 }
-

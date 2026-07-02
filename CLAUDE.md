@@ -1,64 +1,55 @@
-# AI Instruktioner för Ledningssystemet
+# AI Instructions for Ledningssystemet
 
-## Syfte
-Den här filen innehåller instruktioner för AI-agenter som arbetar med mjukvaran.
-Den säkerställer konsistent kodstandard, struktur och dokumentation.
+## Purpose
+This file defines project-specific instructions for AI agents working in this codebase.
+The goal is consistent architecture, coding style, testing, and documentation quality.
 
-## ✅ Regler för Dokumentation
+## Core Principles
+- Prefer editing existing files over creating new ones.
+- Keep changes focused and minimal.
+- Follow existing naming, structure, and style in the surrounding code.
+- Never invent requirements; if unclear, inspect code and existing docs first.
 
-1. **ALLA dokumentationsfiler** ska lagras i `doc/` katalogen
-   - Aldrig i projektroten (root)
-   - Undantag: README.md om det är projektets huvudmeny
+## Documentation Rules
 
-2. **Dokumentationsnamn:**
-   - Använd UPPERCASE med underscores: `FILE_NAME.md`
-   - Vara deskriptiv: `INTEGRATION_GUIDE.md` inte `guide.md`
-   - Svenska filnamn är OK: `INSTALLATION_GUIDE.md`
+1. **Do not create documentation files automatically**
+   - Unless explicitly requested by the team, do not generate new documentation files.
+   - Documentation files should be created by the team.
+   - If requested by the team, use the existing documentation as a starting point and follow the same structure and language.
 
-3. **Innehåll i dokumentation:**
-   - Använd tydliga rubriker (#, ##, ###)
-   - Inkludera praktiska kodexempel
-   - Länka till relaterad dokumentation
-   - Dokumentera snabbstart tidigt
+## Testing Rules
+1. **Create tests** for new features and bugs before implementing the fix.
+2. Add tests in a new file under `tests/` with a clear, feature-focused name.
+3. Prefer targeted tests first, then run broader suites as needed.
 
-## Regler för testfall
-1. **Skapa testfall** för nya funktioner och buggar innan buggar fixas
-2. **Testa** funktioner och buggar i en ny fil i `tests/` katalogen
+## Do Not
 
-## 🚫 Vad AI INTE Ska Göra
+1. **Do not create example/demo files** unless explicitly requested.
 
-1. **SKAPA INTE exempelfiler** såsom:
-   - Demo-filer eller test-filer utan explicit instruktion
+## Do
 
-2. **SKAPA INTE dokumentation i root:**
-   - Alla .md filer ska gå i `doc/` katalogen
-   - Lägg INTE filer direkt i `/`
-
-3. **UNDVIK redundans:**
-   - Uppdatera befintlig dokumentation istället för att skapa ny
-   - Länka mellan dokument istället för att upprepa information
-   - Kontrollera vad som redan existerar innan du skapar nytt
-
-## ✅ Vad AI Ska Göra
-
-1. **Skapa komponenter i rätt plats:**
+1. **Create frontend code in the correct locations**
    ```
    resources/js/Components/crud/
    resources/js/hooks/
    resources/js/types/
    ```
 
-2**Använd samma kodstil:**
-   - React: Functional components med TypeScript
-   - Tailwind CSS för styling
-   - Lucide React för ikoner
-   - Axios för API-anrop
+2. **Follow project frontend conventions**
+   - React functional components with TypeScript
+   - Tailwind CSS for styling
+   - Lucide React for icons
+   - Axios for API calls
 
-## 🛠️ Kodstandard
+3. **Use correct encoding**
+    - Use Unix line endings (`\n`).
+    - Always output code and text using UTF-8 encoding without BOM. You must fully support and output Swedish characters (å, ä, ö) when translating to other languages.
+    - Always use UTF-8 encoding for all files.
+
+## Coding Standards
 
 ### React Components
 ```tsx
-// ✅ Korrekt
 import React from 'react';
 
 interface Props {
@@ -66,19 +57,19 @@ interface Props {
 }
 
 export function ComponentName({ config }: Props) {
-  // kod
+  // implementation
 }
 ```
 
 ### TypeScript
 ```ts
-// ✅ Korrekt - explicittyper
+// Good: explicit types
 export interface MyInterface {
   field: string;
   value: number;
 }
 
-// ❌ Undvik
+// Avoid
 export interface MyInterface {
   field: any;
 }
@@ -86,71 +77,79 @@ export interface MyInterface {
 
 ### Styling
 ```tsx
-// ✅ Korrekt - Tailwind classes
+// Good: Tailwind utility classes
 className="px-4 py-2 bg-blue-600 rounded-lg"
 
-// ❌ Undvik
+// Avoid: inline style for standard UI styling
 style={{ padding: '16px 8px', backgroundColor: 'blue' }}
 ```
 
-## 📋 Checklista för AI
+## AI Checklist
 
-Innan du skapar något:
+Before creating or changing anything:
 
-- [ ] Existerar detta redan? (sök i `resources/js/`)
-- [ ] Var ska filen placeras? (komponenter → `Components/`, docs → `doc/`)
-- [ ] Är det en dokumentationsfil? (ska det gå i `doc/`?)
-- [ ] Följer det kodstilen? (TypeScript, Tailwind, etc)
-- [ ] Finns relevant dokumentation redan? (länka istället för att upprepa)
+- [ ] Does this already exist? (search in `resources/js/`, `app/`, and `doc/`)
+- [ ] Is the file in the correct location?
+- [ ] Does the change follow TypeScript/Tailwind/React conventions?
+- [ ] Are relevant tests added or updated in `tests/`?
 
-## Information om BPMN-formatet i våra processer
-Vi använder endast ett subset av de olika komponenter som finns i BPMN i våra processer.
-Dessutom har de olika semantisk betydelse i vårt system än i det generella BPMN-formatet.
-Vi har dessutom lite regler som inte finns i BPMN.
-Vi exekverar inte heller BPMN utan använder det bara för att kunna visualisera våra processkartor och för att kunna extrahera information från processerna som används i systemet.
-När vi tolkar information i en processkarta så använder vi namnet på komponenterna för att kunna extrahera information.
+## BPMN Rules Used in This Project
+We use only a subset of BPMN components.
+Their semantics in this system are not identical to generic BPMN semantics.
+We also enforce custom rules that are not part of the BPMN standard.
 
-De komponenter vi använder är:
-- startEvent: Denna används bara som visuell markör för var en process börjar. Den har ingen semantisk betydelse i vårt system.
-- endEvent: Denna används bara som visuell markör för var en process slutar. Den har ingen semantisk betydelse i vårt system.
-- task: Denna används för att representera en arbetsuppgift i processen (modell ProcessActivity). Den har semantisk betydelse i vårt system och representerar en aktivitet som ska utföras.
-- exclusiveGateway: Denna används för att representera en beslutspunkt i processen där endast en av flera möjliga vägar kan väljas. När vi räknar ut vilken arbetsuppgift som följer på en annan så behandlar vi en gateway som att den inte fanns, utan att alla objekt som ingår i gatewayen var sammankopplade med varandra.
-- sequenceFlow: Denna används för att representera flödet mellan de olika komponenterna i processen. Den har semantisk betydelse i vårt system och representerar flödet mellan de olika komponenterna i processen.
-- dataObjectReference: Detta representerar en informationstyp (modell InformationType). När processen publiceras så kommer informationstypen skapas om den inte redan finns.
-- dataStoreReference: Detta representerar en lagringsplats för information, en tillgång (modell Asset). När processen publiceras så kommer tillgången skapas om den inte redan finns.
-- textAnnotation: Denna används bara visuellt för att kunna visa textinformation i processkartan för användare.
-- subProcess: Denna används bara visuellt för att kunna länka till andra processer i processkartan. Den har ingen semantisk betydelse i vårt system men vi håller koll på kopplingen för att kunna uppdatera namn på processer i associerade processkartor. För att kunna använda subProcess så är det namnet som används för att länka till en annan processkarta.
+We do **not** execute BPMN models. We use process maps for:
+- visualization
+- extracting structured information used by the system
 
+When extracting information from a process map, component names are significant.
 
-Vi tillåter bara följande associationer i våra processer, och följer alltså inte BPMN standard:
-- startEvent → task
-- task → task
-- task → exclusiveGateway
-- exclusiveGateway → task
-- task → endEvent
-- task → dataObjectReference
-- dataObjectReference → dataStoreReference
-- task  → subProcess
-- textAnnotations till alla komponenter
+### Supported BPMN Components and Semantics
+- `startEvent`: Visual marker for process start only; no semantic meaning in the system.
+- `endEvent`: Visual marker for process end only; no semantic meaning in the system.
+- `task`: Represents a work task (`ProcessActivity` model); semantically significant.
+- `exclusiveGateway`: Decision point. During "next activity" calculations, gateways are treated as transparent links between connected objects.
+- `sequenceFlow`: Represents flow connections; semantically significant.
+- `dataObjectReference`: Represents an information type (`InformationType` model). Created on publish if missing.
+- `dataStoreReference`: Represents an information storage asset (`Asset` model). Created on publish if missing.
+- `textAnnotation`: Visual text for users only.
+- `subProcess`: Visual link to another process map. Name-based reference is used to link to an existing process.
 
+### Allowed Associations
+Only the following associations are allowed:
+- `startEvent -> task`
+- `task -> task`
+- `task -> exclusiveGateway`
+- `exclusiveGateway -> task`
+- `task -> endEvent`
+- `task -> dataObjectReference`
+- `dataObjectReference -> dataStoreReference`
+- `task -> subProcess`
+- `textAnnotation` to all components
 
-Man får inte publicera en processkarta som:
-- Har en startEvent som inte har en task som efterföljare
-- Har en endEvent som inte har en associerad task
-- Har dataObjectReference som inte har en associerad task
-- Har dataStoreReference som inte har en associerad dataObjectReference
-- Har en subProcess med ett namn som inte överensstämmer med en process som finns i systemet
-- Där dataObjectReference inte är associerad med en dataStoreReference. Det får finnas flera dataObjectReference med samma namn, och det räcker att en av dem är associerad med en dataStoreReference.
+### Publish Validation Rules
+A process map must not be published if it:
+- has a `startEvent` without a following `task`
+- has an `endEvent` without an associated `task`
+- has a `dataObjectReference` without an associated `task`
+- has a `dataStoreReference` without an associated `dataObjectReference`
+- has a `subProcess` whose name does not match an existing process in the system
+- has `dataObjectReference` entries not associated with any `dataStoreReference`
 
-## 📞 Support
+Note: Multiple `dataObjectReference` nodes may share the same name. It is sufficient that at least one of them is associated with a `dataStoreReference`.
 
-Om du är osäker:
-1. Kontrollera befintlig dokumentation i `doc/`
-2. Länka istället för att upprepa
-3. Lägg till i befintlig fil istället för ny fil
+## Workflow Guidance for AI Agents
+- Start by inspecting existing implementation and tests.
+- Propose the smallest viable change that satisfies the requirement.
+- Update tests and docs together with code changes.
+- Keep commits scoped to one concern when possible.
+- If unsure, prefer asking for clarification over making assumptions.
+
+## Support
+If you are uncertain about how to proceed, please ask for clarification from the team before making changes. Always prefer linking to existing resources and documentation rather than creating new ones.
 
 ---
 
-**Version:** 1.0  
-**Senast uppdaterad:** 2026-05-28
+**Version:** 1.2  
+**Last updated:** 2026-06-12 
 **Status:** Active

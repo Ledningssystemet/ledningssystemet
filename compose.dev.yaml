@@ -1,0 +1,27 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        RELEASE_TEXT: localdev
+    ports:
+      - "8000:80"
+      - "5173:5173"
+    volumes:
+      - .env:/var/www/html/.env
+    develop:
+      watch:
+        - action: sync
+          path: ./
+          target: /var/www/html
+          ignore:
+            - node_modules/
+            - vendor/
+            - storage/
+            - .git
+        - action: rebuild
+          path: package.json
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+

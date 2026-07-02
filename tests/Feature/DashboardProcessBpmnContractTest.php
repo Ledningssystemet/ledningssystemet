@@ -78,7 +78,7 @@ class DashboardProcessBpmnContractTest extends TestCase
 
         $this->assertCount(2, $rows);
         $this->assertEqualsCanonicalizing(
-            ['id', 'name', 'isstartprocess', 'publishedbpmn'],
+            ['id', 'name', 'isstartprocess', 'publishedbpmn', 'status'],
             array_keys($rows[0])
         );
 
@@ -106,4 +106,3 @@ class DashboardProcessBpmnContractTest extends TestCase
         return User::query()->findOrFail($id);
     }
 }
-

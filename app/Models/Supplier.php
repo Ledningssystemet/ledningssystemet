@@ -521,6 +521,11 @@ class Supplier extends Model
         return $this->hasMany(SupplierSupplierRequirement::class, 'supplier_id', 'id');
     }
 
+    public function int_supplier_category_assessments(): HasMany
+    {
+        return $this->int_supplier_supplier_category();
+    }
+
     public function int_process_activities(): BelongsToMany
     {
         return $this->belongsToMany(ProcessActivity::class, 'process_activity_supplier', 'supplier_id', 'process_activity_id');
@@ -623,4 +628,3 @@ class Supplier extends Model
    }
 
 }
-

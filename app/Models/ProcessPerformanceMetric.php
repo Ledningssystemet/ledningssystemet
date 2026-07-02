@@ -370,6 +370,14 @@ class ProcessPerformanceMetric extends Model
         return $this->hasMany(ProcessPerformanceMetricReport::class, 'process_performance_metric_id', 'id');
     }
 
+    public function int_last_report(): ?ProcessPerformanceMetricReport
+    {
+        return $this->int_process_performance_metric_reports()
+            ->orderByDesc('reporting_date_at')
+            ->orderByDesc('id')
+            ->first();
+    }
+
     public function int_process_process_performance_metric(): HasMany
     {
         return $this->hasMany(ProcessProcessPerformanceMetric::class, 'process_performance_metric_id', 'id');
@@ -501,4 +509,3 @@ class ProcessPerformanceMetric extends Model
    }
 
 }
-

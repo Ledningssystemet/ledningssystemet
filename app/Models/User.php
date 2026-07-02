@@ -752,14 +752,28 @@ class User extends Authenticatable
 
     protected function resolveStatus(): array
    {
-      if(!$this->enabled)
-         return $this->defaultStatus('warning', __('Deactivated user'));
+     $enabled = $this->enabled;
+     $externalId = $this->external_id;
 
-      if($this->external_id)
-         return $this->defaultStatus('success', __('External user'));
-      
-      return $this->defaultStatus('success', '');
+     if ((! array_key_exists('enabled', $this->attributes) || ! array_key_exists('external_id', $this->attributes)) && $this->exists) {
+        $fresh = static::query()->select(['enabled', 'external_id'])->find($this->getKey());
+        if ($fresh !== null) {
+           $enabled = $fresh->enabled;
+           $externalId = $fresh->external_id;
+        }
+     }
+
+     if ($enabled === null) {
+        return $this->defaultStatus();
+     }
+
+     if (! $enabled)
+        return $this->defaultStatus('warning', __('Deactivated user'));
+
+     if ($externalId)
+        return $this->defaultStatus('success', __('External user'));
+
+     return $this->defaultStatus();
    }
 
 }
-

@@ -1,8 +1,8 @@
 {
     "$schema": "https://getcomposer.org/schema.json",
-    "name": "laravel/laravel",
+    "name": "ledningssystemet/ledningssystemet",
     "type": "project",
-    "description": "The skeleton application for the Laravel framework.",
+    "description": "Ledningssystemet.se",
     "keywords": [
         "laravel",
         "framework"
@@ -22,11 +22,11 @@
     "require-dev": {
         "fakerphp/faker": "^1.23",
         "fruitcake/laravel-debugbar": "^4.2",
-        "laravel/pail": "^1.2.5",
+        "laravel/pail": "^1.2",
         "laravel/pint": "^1.27",
         "mockery/mockery": "^1.6",
         "nunomaduro/collision": "^8.6",
-        "phpunit/phpunit": "^12.5.12"
+        "phpunit/phpunit": "^12.5"
     },
     "autoload": {
         "psr-4": {
@@ -41,25 +41,6 @@
         }
     },
     "scripts": {
-        "setup": [
-            "composer install",
-            "@php -r \"file_exists('.env') || copy('.env.example', '.env');\"",
-            "@php artisan key:generate",
-            "@php artisan migrate --force",
-            "npm install --ignore-scripts",
-            "npm run build"
-        ],
-        "dev": [
-            "Composer\\Config::disableProcessTimeout",
-            "npx concurrently -c \"#93c5fd,#c4b5fd,#fdba74\" \"php artisan serve --host=0.0.0.0 --port=8000\" \"php artisan queue:listen --tries=1\" \"npm run dev\" --names='server,queue,vite'"
-        ],
-        "test": [
-            "@php artisan config:clear --ansi",
-            "@php artisan test"
-        ],
-        "policy-map:generate": [
-            "@php scripts/generate_policy_permission_model_mapping.php"
-        ],
         "post-autoload-dump": [
             "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
             "@php artisan package:discover --ansi"

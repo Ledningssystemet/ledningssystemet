@@ -147,7 +147,7 @@ class AssetStatusTest extends TestCase
     {
         DB::table('assets')->insert([
             'name' => 'Unclassified asset',
-            'responsible_user_id' => 1,
+            'responsible_user_id' => null,
             'created_at' => now(),
             'updated_at' => now(),
         ]);
@@ -161,13 +161,22 @@ class AssetStatusTest extends TestCase
 
     public function test_status_uses_inherited_effective_classifications(): void
     {
+        $responsibleUserId = DB::table('users')->insertGetId([
+            'name' => 'Asset Responsible',
+            'email' => 'asset.responsible.'.uniqid('', true).'@example.com',
+            'password' => 'secret',
+            'enabled' => true,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
         $confidentialityClassId = $this->insertClass('confidentiality_classes', 'Confidential', 3);
         $integrityClassId = $this->insertClass('integrity_classes', 'Correct', 2);
         $availabilityClassId = $this->insertClass('availability_classes', 'Available', 4);
 
         $assetId = DB::table('assets')->insertGetId([
             'name' => 'Inherited asset',
-            'responsible_user_id' => 1,
+            'responsible_user_id' => $responsibleUserId,
             'created_at' => now(),
             'updated_at' => now(),
         ]);
@@ -181,10 +190,25 @@ class AssetStatusTest extends TestCase
             'updated_at' => now(),
         ]);
 
+        $departmentId = DB::table('departments')->insertGetId([
+            'name' => 'Inherited Department '.uniqid('', true),
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $processId = DB::table('processes')->insertGetId([
+            'name' => 'Inherited Process '.uniqid('', true),
+            'department_id' => $departmentId,
+            'isstartprocess' => false,
+            'dataprocessor' => false,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
         DB::table('asset_information_type')->insert([
             'asset_id' => $assetId,
             'information_type_id' => $informationTypeId,
-            'process_id' => 1,
+            'process_id' => $processId,
         ]);
 
         $asset = Asset::query()->findOrFail($assetId);
@@ -207,4 +231,3 @@ class AssetStatusTest extends TestCase
         ]);
     }
 }
-

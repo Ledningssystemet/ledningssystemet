@@ -17,6 +17,10 @@ trait HasStatus
      */
     public function getStatusAttribute(): array
     {
+        if (! $this->exists) {
+            return $this->defaultStatus();
+        }
+
         return $this->normalizeStatus($this->resolveStatus());
     }
 
@@ -60,4 +64,3 @@ trait HasStatus
         ];
     }
 }
-

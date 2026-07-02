@@ -94,6 +94,11 @@ class Risk extends Model
         return $this->replaceContextNamePlaceholder($this->attributes['name'] ?? null);
     }
 
+    public function getNameAttribute(?string $value): ?string
+    {
+        return $this->replaceContextNamePlaceholder($value);
+    }
+
     public function getTranslatedScenariodescriptionAttribute(): ?string
     {
         return $this->replaceContextNamePlaceholder($this->attributes['scenariodescription'] ?? null);
@@ -280,6 +285,21 @@ class Risk extends Model
 
     public static function applyCrudIndexFilters(Builder|QueryBuilder $query, Request $request): void
     {
+        $showDraft = (int) $request->input('showdraft', 1) === 1;
+        $showApproved = (int) $request->input('showapproved', 0) === 1;
+
+        if ($showDraft && ! $showApproved) {
+            $query->whereNull('assessed_at');
+        } elseif (! $showDraft && $showApproved) {
+            $query->whereNotNull('assessed_at');
+        } elseif (! $showDraft && ! $showApproved) {
+            $query->whereRaw('1 = 0');
+        }
+
+        if ((int) $request->input('showmyonly', 0) === 1 && $request->user()) {
+            $query->where('riskowner_id', $request->user()->id);
+        }
+
         $tagId = $request->integer('tag_id');
         if ($tagId > 0) {
             $query->whereHas('int_object_tags_as_object_tags', function (Builder $tagQuery) use ($tagId): void {
@@ -627,4 +647,3 @@ class Risk extends Model
    }
 
 }
-

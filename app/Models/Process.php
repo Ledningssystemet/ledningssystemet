@@ -123,7 +123,7 @@ class Process extends Model
 
     protected $table = 'processes';
 
-    protected $fillable = ['name', 'description', 'bpmn', 'svg', 'department_id', 'responsible_user_id', 'isstartprocess', 'legalbasisdescription', 'thirdcountrytransferdescription', 'thirdcountrytransferprotectiondescription', 'securitymeasuredescription', 'dataprocessor', 'data_processor_processing_activities'];
+    protected $fillable = ['name', 'description', 'bpmn', 'publishedbpmn', 'svg', 'department_id', 'responsible_user_id', 'isstartprocess', 'legalbasisdescription', 'thirdcountrytransferdescription', 'thirdcountrytransferprotectiondescription', 'securitymeasuredescription', 'dataprocessor', 'data_processor_processing_activities'];
 
     protected function casts(): array
     {
@@ -369,4 +369,3 @@ class Process extends Model
    }
 
 }
-

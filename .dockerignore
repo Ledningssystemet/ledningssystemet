@@ -20,6 +20,5 @@ playwright.config.ts
 playwright-report
 .*
 tsconfig.json
-tailwind.config.js
 test-results
 doc
