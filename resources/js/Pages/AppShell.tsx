@@ -1,0 +1,101 @@
+import { useMemo, Suspense } from 'react';
+import { BrowserRouter, Route, Routes } from 'react-router-dom';
+import {
+    APP_HOME_PATH,
+    APP_MY_PROFILE_PATH,
+    APP_PROCESS_EDITOR_PATH,
+    APP_DOCUMENT_EDITOR_PATH,
+    APP_COMPLIANCE_EVALUATION_EVALUATE_PATH,
+    buildMenuRoutes,
+} from '@/app/routes';
+import { resolveAppRouteElement } from '@/app/pageRegistry';
+import { useMenuData } from '@/hooks/useMenuData';
+import { getPluginRoutes } from '@/plugins/runtime';
+import { useTranslations } from '@/hooks/useTranslations';
+import AppNotFoundPage from './AppNotFoundPage';
+import UserDashboard from './UserDashboard';
+
+function PageLoader() {
+    const { t } = useTranslations();
+
+    return (
+        <div className="flex items-center justify-center min-h-screen">
+            <div className="text-center">
+                <div className="h-8 w-8 animate-spin rounded-full border-4 border-muted border-t-primary mx-auto mb-4"></div>
+                <p className="text-sm text-muted-foreground">{t('ui.common.loading')}</p>
+            </div>
+        </div>
+    );
+}
+
+export default function AppShell() {
+    const categories = useMenuData();
+    const menuRoutes = useMemo(() => buildMenuRoutes(categories), [categories]);
+    const pluginRoutes = useMemo(() => getPluginRoutes(), []);
+
+    const utilityRoutes = [
+        { key: 'my-profile', path: APP_MY_PROFILE_PATH },
+        { key: 'process-editor', path: APP_PROCESS_EDITOR_PATH },
+        { key: 'document-editor', path: APP_DOCUMENT_EDITOR_PATH },
+        { key: 'compliance-evaluation-evaluate', path: APP_COMPLIANCE_EVALUATION_EVALUATE_PATH },
+    ];
+
+
+    return (
+        <BrowserRouter basename="/app">
+            <Suspense fallback={<PageLoader />}>
+                <Routes>
+                    <Route path={APP_HOME_PATH} element={<UserDashboard />} />
+                    {utilityRoutes.map((route) => {
+                        const element = resolveAppRouteElement({
+                            key: route.key,
+                            path: route.path,
+                            label: route.key.charAt(0).toUpperCase() + route.key.slice(1),
+                        });
+                        return (
+                            <Route
+                                key={route.key}
+                                path={route.path}
+                                element={
+                                    <Suspense fallback={<PageLoader />}>
+                                        {element ?? <AppNotFoundPage />}
+                                    </Suspense>
+                                }
+                            />
+                        );
+                    })}
+                    {menuRoutes.map((route) => {
+                        const element = resolveAppRouteElement(route);
+                        return (
+                            <Route
+                                key={route.path}
+                                path={route.path}
+                                element={
+                                    <Suspense fallback={<PageLoader />}>
+                                        {element ?? <AppNotFoundPage />}
+                                    </Suspense>
+                                }
+                            />
+                        );
+                    })}
+                    {pluginRoutes.map((route) => {
+                        const PluginPage = route.component;
+
+                        return (
+                            <Route
+                                key={`plugin:${route.key}:${route.path}`}
+                                path={route.path}
+                                element={
+                                    <Suspense fallback={<PageLoader />}>
+                                        <PluginPage route={route} />
+                                    </Suspense>
+                                }
+                            />
+                        );
+                    })}
+                    <Route path="*" element={<AppNotFoundPage />} />
+                </Routes>
+            </Suspense>
+        </BrowserRouter>
+    );
+}

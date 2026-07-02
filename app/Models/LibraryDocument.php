@@ -1,0 +1,206 @@
+<?php
+
+namespace App\Models;
+
+use App\Models\Concerns\HasStatus;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Illuminate\Support\Facades\Validator;
+
+class LibraryDocument extends Model
+{
+
+/* Retrieve status for the entire collection of objects */
+   public static function getItemsStatus($department = null, $user = null, $personalOnly = false)
+   {
+      $retval = [];
+
+      if (null != $department)
+         return [];
+
+      // Don't report if user cannot perform any changes anyway
+      if ((null != $user) && $user->cannot('update', LibraryDocument::class))
+         return [];
+
+      // Unassigned documents
+      $count = LibraryDocument::whereNull('responsible_user_id')->count();
+      if (!$personalOnly && $count)
+         $retval[] = ['level' => 'danger', 'count' => $count, 'text' => LibraryDocument::getPrettyName($count > 1) . ' ' . __("without assignment"), 'url' => ((($user != null) && $user->can('index', get_called_class())) || (($user == null) && (null != auth()->user()) && (auth()->user()->can('index', get_called_class())))) ? url()->query('/management/documentlibrary') : null];
+
+      $pendingpublishing = 0;
+      $pendingapproval = 0;
+      foreach(LibraryDocument::where('contenttype', 'ledningssystemet/document')->when($user, function ($query) use ($user) { return $query->where('responsible_user_id', $user->id); })->get() as $obj)
+      {
+         $lastversion = $obj->int_document_versions()->orderBy('major_version', 'desc')->orderBy('minor_version', 'desc')->first();
+         if(null == $lastversion)
+            $pendingpublishing++;
+         else if($lastversion->finished_at && !$lastversion->approved_at)
+            $pendingapproval++;
+      }
+
+      if ($pendingapproval && !$user)
+         $retval[] = ['level' => 'warning', 'count' => $pendingapproval, 'text' => LibraryDocument::getPrettyName($pendingapproval > 1) . ' ' . __("pending approval"), 'url' => ((($user != null) && $user->can('index', get_called_class())) || (($user == null) && (null != auth()->user()) && (auth()->user()->can('index', get_called_class())))) ? url()->query('/management/documentlibrary') : null];
+      else if($pendingapproval)
+         $retval[] = ['level' => 'warning', 'count' => $pendingapproval, 'text' => LibraryDocument::getPrettyName($pendingapproval > 1) . ' ' . __("pending approval"), 'url' => url()->query('/user/documents'), 'personal' => ($user != null) ];
+
+      if ($pendingpublishing && !$user)
+         $retval[] = ['level' => 'warning', 'count' => $pendingpublishing, 'text' => LibraryDocument::getPrettyName($pendingpublishing > 1) . ' ' . __("pending publishing"), 'url' => ((($user != null) && $user->can('index', get_called_class())) || (($user == null) && (null != auth()->user()) && (auth()->user()->can('index', get_called_class())))) ? url()->query('/management/documentlibrary') : null];
+      else if($pendingpublishing)
+         $retval[] = ['level' => 'warning', 'count' => $pendingpublishing, 'text' => LibraryDocument::getPrettyName($pendingpublishing > 1) . ' ' . __("pending publishing"), 'url' => url()->query('/user/documents'), 'personal' => ($user != null) ];
+
+      return $retval;
+   }
+
+    use HasFactory;
+    use HasStatus;
+
+    protected $table = 'library_documents';
+
+    protected $fillable = ['name', 'filename', 'description', 'contenttype', 'contentlength', 'filecontent', 'responsible_user_id'];
+
+    protected function casts(): array
+    {
+        return [
+            'created_at' => 'datetime',
+            'updated_at' => 'datetime',
+        ];
+    }
+
+    public static function validationRules(): array
+    {
+        return [
+            'name' => ['required', 'string', 'max:255'],
+            'filename' => ['required', 'string', 'max:255'],
+            'description' => ['nullable', 'string'],
+            'contenttype' => ['required', 'string', 'max:255'],
+            'contentlength' => ['required', 'integer', 'min:0'],
+            'filecontent' => ['nullable', 'string'],
+            'responsible_user_id' => ['nullable', 'integer', 'min:0', 'exists:users,id'],
+        ];
+    }
+
+    public static function crudSearch(): array
+    {
+        return [
+            'direct' => [
+                'name',
+                'filename',
+                'description',
+                'contenttype',
+            ],
+            'relations' => [
+                // 'relation.path' => ['name'],
+            ],
+        ];
+    }
+
+    protected static function booted(): void
+    {
+        static::saving(function (self $model): void {
+            Validator::make($model->attributesToArray(), static::validationRules())->validate();
+        });
+    }
+
+    public static function getPrettyName($plural = false): string
+    {
+        return $plural ? 'Library Documents' : 'Library Document';
+    }
+
+    public function int_responsible_user(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'responsible_user_id');
+    }
+
+    public function int_document_versions(): HasMany
+    {
+        return $this->hasMany(DocumentVersion::class, 'library_document_id', 'id');
+    }
+
+    public function int_library_document_processes(): HasMany
+    {
+        return $this->hasMany(LibraryDocumentProcess::class, 'library_document_id', 'id');
+    }
+
+    public function int_processes(): BelongsToMany
+    {
+        return $this->belongsToMany(Process::class, 'library_document_processes', 'library_document_id', 'process_id')
+            ->withTimestamps();
+    }
+
+    public function int_custom_property_object_as_object(): MorphMany
+    {
+        return $this->morphMany(CustomPropertyObject::class, 'object', 'object_type', 'object_id');
+    }
+
+    public function int_files_as_object(): MorphMany
+    {
+        return $this->morphMany(File::class, 'object', 'object_type', 'object_id');
+    }
+
+    public function int_findings_as_context(): MorphMany
+    {
+        return $this->morphMany(Finding::class, 'context', 'context_type', 'context_id');
+    }
+
+    public function int_object_histories_as_object(): MorphMany
+    {
+        return $this->morphMany(ObjectHistory::class, 'object', 'object_type', 'object_id');
+    }
+
+    public function int_object_messages_as_object(): MorphMany
+    {
+        return $this->morphMany(ObjectMessage::class, 'object', 'object_type', 'object_id');
+    }
+
+    public function int_object_properties_as_object_properties(): MorphMany
+    {
+        return $this->morphMany(ObjectProperty::class, 'object_properties', 'object_properties_type', 'object_properties_id');
+    }
+
+    public function int_object_tags_as_object_tags(): MorphMany
+    {
+        return $this->morphMany(ObjectTag::class, 'object_tags', 'object_tags_type', 'object_tags_id');
+    }
+
+    public function int_personal_access_tokens_as_tokenable(): MorphMany
+    {
+        return $this->morphMany(PersonalAccessToken::class, 'tokenable', 'tokenable_type', 'tokenable_id');
+    }
+
+    public function int_risks_as_context(): MorphMany
+    {
+        return $this->morphMany(Risk::class, 'context', 'context_type', 'context_id');
+    }
+
+    public function int_vector_embeddings_as_embeddable(): MorphMany
+    {
+        return $this->morphMany(VectorEmbedding::class, 'embeddable', 'embeddable_type', 'embeddable_id');
+    }
+
+    protected function resolveStatus(): array
+   {
+      if (!$this->partner_id && !$this->responsible_user_id)
+         return $this->defaultStatus('danger', __("A responsible user has not been assigned"));
+
+      // Special case for ledningssystemet documents
+      if("ledningssystemet/document" != $this->contenttype)
+         return $this->defaultStatus('success', '');
+
+      // If there are versions pending approval, then indicate
+      $lastversion = $this->int_document_versions()->orderBy('major_version', 'desc')->orderBy('minor_version', 'desc')->first();
+      if(null != $lastversion && $lastversion->finished_at && !$lastversion->approved_at)
+         return $this->defaultStatus('warning', __("Pending approval"));
+
+      // If no document has been published, then indicate this
+      if(0 >= $this->contentlength)
+         return $this->defaultStatus('warning', __("Document has not been published"));
+
+      return $this->defaultStatus('success', '');
+   }
+
+}
+

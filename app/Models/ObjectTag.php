@@ -1,0 +1,104 @@
+<?php
+
+namespace App\Models;
+
+use App\Models\Concerns\HasHistory;
+use App\Models\Concerns\HasMessages;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Illuminate\Database\Eloquent\Relations\MorphTo;
+use Illuminate\Support\Facades\Validator;
+
+class ObjectTag extends Model
+{
+    use HasFactory;
+    use HasHistory;
+    use HasMessages;
+
+    protected $table = 'object_tags';
+
+    public $timestamps = false;
+
+    protected $fillable = ['tag_id', 'object_tags_id', 'object_tags_type'];
+
+    public static function validationRules(): array
+    {
+        return [
+            'tag_id' => ['required', 'integer', 'min:0', 'exists:tags,id'],
+            'object_tags_id' => ['required', 'integer', 'min:0'],
+            'object_tags_type' => ['required', 'string', 'max:255'],
+        ];
+    }
+
+    public static function crudSearch(): array
+    {
+        return [
+            'direct' => [
+                'object_tags_type',
+            ],
+            'relations' => [
+                // 'relation.path' => ['name'],
+            ],
+        ];
+    }
+
+    protected static function booted(): void
+    {
+        static::saving(function (self $model): void {
+            Validator::make($model->attributesToArray(), static::validationRules())->validate();
+        });
+    }
+
+    public static function getPrettyName($plural = false): string
+    {
+        return $plural ? 'Object Tags' : 'Object Tag';
+    }
+
+    public function int_tag(): BelongsTo
+    {
+        return $this->belongsTo(Tag::class, 'tag_id');
+    }
+
+    public function int_object_tags(): MorphTo
+    {
+        return $this->morphTo('object_tags', 'object_tags_type', 'object_tags_id');
+    }
+
+    public function int_custom_property_object_as_object(): MorphMany
+    {
+        return $this->morphMany(CustomPropertyObject::class, 'object', 'object_type', 'object_id');
+    }
+
+    public function int_files_as_object(): MorphMany
+    {
+        return $this->morphMany(File::class, 'object', 'object_type', 'object_id');
+    }
+
+    public function int_findings_as_context(): MorphMany
+    {
+        return $this->morphMany(Finding::class, 'context', 'context_type', 'context_id');
+    }
+
+
+    public function int_object_properties_as_object_properties(): MorphMany
+    {
+        return $this->morphMany(ObjectProperty::class, 'object_properties', 'object_properties_type', 'object_properties_id');
+    }
+
+    public function int_personal_access_tokens_as_tokenable(): MorphMany
+    {
+        return $this->morphMany(PersonalAccessToken::class, 'tokenable', 'tokenable_type', 'tokenable_id');
+    }
+
+    public function int_risks_as_context(): MorphMany
+    {
+        return $this->morphMany(Risk::class, 'context', 'context_type', 'context_id');
+    }
+
+    public function int_vector_embeddings_as_embeddable(): MorphMany
+    {
+        return $this->morphMany(VectorEmbedding::class, 'embeddable', 'embeddable_type', 'embeddable_id');
+    }
+}

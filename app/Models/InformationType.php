@@ -1,0 +1,352 @@
+<?php
+
+namespace App\Models;
+
+use App\Models\Concerns\HasStatus;
+use App\Services\Bpmn\BpmnNamePropagationService;
+use App\Services\Classification\InheritedClassificationResolver;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Validator;
+
+class InformationType extends Model
+{
+
+/* Retrieve status for the entire collection of objects */
+   public static function getItemsStatus($department = null, $user = null, $personalOnly = false)
+   {
+      if (null != $department)
+         return [];
+
+      if ((null != $user) && $user->cannot('update', InformationType::class))
+         return [];
+
+      $retval = [];
+      $url = ((($user != null) && $user->can('index', get_called_class())) ||
+         (($user == null) && (null != auth()->user()) && auth()->user()->can('index', get_called_class())))
+         ? url()->query('/inventory/informationtypes')
+         : null;
+
+      $countWithoutAssignment = InformationType::whereNull('responsible_user_id')->count();
+      if (!$personalOnly && $countWithoutAssignment)
+         $retval[] = ['level' => 'danger', 'count' => $countWithoutAssignment, 'text' => InformationType::getPrettyName($countWithoutAssignment > 1).' '.__("without assignment"), 'url' => $url];
+
+      $table = (new self())->getTable();
+
+      // Count information types missing CIA-classification (direct columns OR property flags)
+      $unclassified = InformationType::query()
+         ->when($user, fn (Builder $q) => $q->where('responsible_user_id', $user->id))
+         ->where(function (Builder $q) use ($table) {
+            $q->whereNull('confidentiality_class_id')
+               ->orWhereNull('integrity_class_id')
+               ->orWhereNull('availability_class_id')
+               ->orWhereExists(function ($sub) use ($table) {
+                  $sub->selectRaw('1')
+                     ->from('properties')
+                     ->join('property_tabs', 'property_tabs.id', '=', 'properties.property_tab_id')
+                     ->leftJoin('object_properties as op', function ($join) use ($table) {
+                        $join->on('op.property_id', '=', 'properties.id')
+                           ->where('op.object_properties_type', self::class)
+                           ->whereColumn('op.object_properties_id', $table.'.id');
+                     })
+                     ->where('property_tabs.context', self::class)
+                     ->whereNull('op.id');
+               });
+         })
+         ->count();
+
+      if ($unclassified)
+         $retval[] = ['level' => 'danger', 'count' => $unclassified, 'text' => InformationType::getPrettyName($unclassified > 1).' '.__("without classification"), 'url' => $url];
+
+      return $retval;
+   }
+
+    use HasFactory;
+    use HasStatus;
+
+    protected $table = 'information_types';
+
+    protected $fillable = ['name', 'description', 'responsible_user_id', 'confidentiality_class_id', 'integrity_class_id', 'availability_class_id', 'retention', 'piidescription', 'confidentiality_ground_id', 'diary_id', 'archivingdescription', 'archiveshippingtime', 'archivemedia', 'sortinginformation'];
+
+    protected function casts(): array
+    {
+        return [
+            'created_at' => 'datetime',
+            'updated_at' => 'datetime',
+        ];
+    }
+
+    public static function validationRules(): array
+    {
+        return [
+            'name' => ['required', 'string', 'max:255'],
+            'description' => ['nullable', 'string'],
+            'responsible_user_id' => ['nullable', 'integer', 'min:0', 'exists:users,id'],
+            'confidentiality_class_id' => ['nullable', 'integer', 'min:0', 'exists:confidentiality_classes,id'],
+            'integrity_class_id' => ['nullable', 'integer', 'min:0', 'exists:integrity_classes,id'],
+            'availability_class_id' => ['nullable', 'integer', 'min:0', 'exists:availability_classes,id'],
+            'retention' => ['nullable', 'integer', 'min:0'],
+            'piidescription' => ['nullable', 'string'],
+            'confidentiality_ground_id' => ['nullable', 'integer', 'min:0', 'exists:confidentiality_grounds,id'],
+            'diary_id' => ['nullable', 'integer', 'min:0', 'exists:diaries,id'],
+            'archivingdescription' => ['nullable', 'string'],
+            'archiveshippingtime' => ['nullable', 'integer', 'min:0'],
+            'archivemedia' => ['nullable', 'string', 'max:255'],
+            'sortinginformation' => ['nullable', 'string', 'max:255'],
+        ];
+    }
+
+    public static function crudSearch(): array
+    {
+        return [
+            'direct' => [
+                'name',
+                'description',
+                'piidescription',
+                'archivingdescription',
+                'archivemedia',
+                'sortinginformation',
+            ],
+            'relations' => [
+                // 'relation.path' => ['name'],
+            ],
+        ];
+    }
+
+    protected static function booted(): void
+    {
+        static::saving(function (self $model): void {
+            Validator::make($model->attributesToArray(), static::validationRules())->validate();
+        });
+
+        static::updated(function (self $model): void {
+            if (! $model->wasChanged('name')) {
+                return;
+            }
+
+            app(BpmnNamePropagationService::class)->syncInformationTypeRename($model, (string) $model->getOriginal('name'));
+        });
+
+        static::saved(static function (): void {
+            InheritedClassificationResolver::bumpCacheVersion();
+        });
+
+        static::deleted(static function (): void {
+            InheritedClassificationResolver::bumpCacheVersion();
+        });
+    }
+
+    public static function getPrettyName($plural = false): string
+    {
+        return $plural ? 'Information Types' : 'Information Type';
+    }
+
+    public function int_availability_class(): BelongsTo
+    {
+        return $this->belongsTo(AvailabilityClass::class, 'availability_class_id');
+    }
+
+    public function int_confidentiality_class(): BelongsTo
+    {
+        return $this->belongsTo(ConfidentialityClass::class, 'confidentiality_class_id');
+    }
+
+    public function int_integrity_class(): BelongsTo
+    {
+        return $this->belongsTo(IntegrityClass::class, 'integrity_class_id');
+    }
+
+    public function int_responsible_user(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'responsible_user_id');
+    }
+
+    public function int_confidentiality_ground(): BelongsTo
+    {
+        return $this->belongsTo(ConfidentialityGround::class, 'confidentiality_ground_id');
+    }
+
+    public function int_diary(): BelongsTo
+    {
+        return $this->belongsTo(Diary::class, 'diary_id');
+    }
+
+    public function int_asset_information_type(): HasMany
+    {
+        return $this->hasMany(AssetInformationType::class, 'information_type_id', 'id');
+    }
+
+    public function int_data_category_information_type(): HasMany
+    {
+        return $this->hasMany(DataCategoryInformationType::class, 'information_type_id', 'id');
+    }
+
+    public function int_information_type_process_activity(): HasMany
+    {
+        return $this->hasMany(InformationTypeProcessActivity::class, 'information_type_id', 'id');
+    }
+
+    public function int_information_type_recipient_category(): HasMany
+    {
+        return $this->hasMany(InformationTypeRecipientCategory::class, 'information_type_id', 'id');
+    }
+
+    public function int_information_type_subject_category(): HasMany
+    {
+        return $this->hasMany(InformationTypeSubjectCategory::class, 'information_type_id', 'id');
+    }
+
+    public function int_data_categories(): BelongsToMany
+    {
+        return $this->belongsToMany(DataCategory::class, 'data_category_information_type', 'information_type_id', 'data_category_id');
+    }
+
+    public function int_process_activities(): BelongsToMany
+    {
+        return $this->belongsToMany(ProcessActivity::class, 'information_type_process_activity', 'information_type_id', 'process_activity_id');
+    }
+
+    public function int_recipient_categories(): BelongsToMany
+    {
+        return $this->belongsToMany(RecipientCategory::class, 'information_type_recipient_category', 'information_type_id', 'recipient_category_id');
+    }
+
+    public function int_subject_categories(): BelongsToMany
+    {
+        return $this->belongsToMany(SubjectCategory::class, 'information_type_subject_category', 'information_type_id', 'subject_category_id');
+    }
+
+    public function int_custom_property_object_as_object(): MorphMany
+    {
+        return $this->morphMany(CustomPropertyObject::class, 'object', 'object_type', 'object_id');
+    }
+
+    public function int_files_as_object(): MorphMany
+    {
+        return $this->morphMany(File::class, 'object', 'object_type', 'object_id');
+    }
+
+    public function int_findings_as_context(): MorphMany
+    {
+        return $this->morphMany(Finding::class, 'context', 'context_type', 'context_id');
+    }
+
+    public function int_object_histories_as_object(): MorphMany
+    {
+        return $this->morphMany(ObjectHistory::class, 'object', 'object_type', 'object_id');
+    }
+
+    public function int_object_messages_as_object(): MorphMany
+    {
+        return $this->morphMany(ObjectMessage::class, 'object', 'object_type', 'object_id');
+    }
+
+    public function int_object_properties_as_object_properties(): MorphMany
+    {
+        return $this->morphMany(ObjectProperty::class, 'object_properties', 'object_properties_type', 'object_properties_id');
+    }
+
+    public function int_object_tags_as_object_tags(): MorphMany
+    {
+        return $this->morphMany(ObjectTag::class, 'object_tags', 'object_tags_type', 'object_tags_id');
+    }
+
+    public function int_personal_access_tokens_as_tokenable(): MorphMany
+    {
+        return $this->morphMany(PersonalAccessToken::class, 'tokenable', 'tokenable_type', 'tokenable_id');
+    }
+
+    public function int_risks_as_context(): MorphMany
+    {
+        return $this->morphMany(Risk::class, 'context', 'context_type', 'context_id');
+    }
+
+    public function int_vector_embeddings_as_embeddable(): MorphMany
+    {
+        return $this->morphMany(VectorEmbedding::class, 'embeddable', 'embeddable_type', 'embeddable_id');
+    }
+
+    public function getEffectiveConfidentialityClassIdAttribute(): ?int
+    {
+        return app(InheritedClassificationResolver::class)
+            ->resolveInformationType($this, InheritedClassificationResolver::CONFIDENTIALITY);
+    }
+
+    public function getEffectiveIntegrityClassIdAttribute(): ?int
+    {
+        return app(InheritedClassificationResolver::class)
+            ->resolveInformationType($this, InheritedClassificationResolver::INTEGRITY);
+    }
+
+    public function getEffectiveAvailabilityClassIdAttribute(): ?int
+    {
+        return app(InheritedClassificationResolver::class)
+            ->resolveInformationType($this, InheritedClassificationResolver::AVAILABILITY);
+    }
+
+    protected function resolveStatus(): array
+   {
+      return Cache::rememberForever('InformationType.resolveStatus.'.$this->id, function () {
+         if (!$this->responsible_user_id) {
+            return $this->defaultStatus('danger', __("A responsible user has not been assigned"));
+         }
+
+         // Billiga kolumnchecks fÃ¶rst, undvik onÃ¶dig klassificeringsfrÃ¥ga
+         if ((null == $this->confidentiality_class_id) ||
+            (null == $this->integrity_class_id) ||
+            (null == $this->availability_class_id) ||
+            !$this->classified) {
+            return $this->defaultStatus('warning', __("The information type has not been classified"));
+         }
+
+         $hasSensitiveData = $this->relationLoaded('int_data_categories')
+            ? $this->getRelation('int_data_categories')->contains(fn ($cat) => (bool) $cat->sensitive)
+            : $this->int_data_categories()->where('sensitive', true)->exists();
+
+         if ($hasSensitiveData) {
+            $processes = [];
+
+            if ($this->relationLoaded('int_process_activities')) {
+               foreach ($this->getRelation('int_process_activities') as $pa) {
+                  $proc = $pa->relationLoaded('int_process') ? $pa->getRelation('int_process') : $pa->int_process;
+                  if ($proc) {
+                     $processes[$proc->id] = $proc;
+                  }
+               }
+            } else {
+               foreach ($this->int_processes() as $proc) {
+                  $processes[$proc->id] = $proc;
+               }
+            }
+
+            foreach ($processes as $proc) {
+               $hasNonSensitiveLegalBasis = $proc->relationLoaded('int_legal_basises')
+                  ? $proc->getRelation('int_legal_basises')->contains(fn ($lb) => !$lb->sensitive)
+                  : $proc->int_legal_basises()->where('sensitive', false)->exists();
+
+               if ($hasNonSensitiveLegalBasis) {
+                  return $this->defaultStatus('warning', __("The information type contains sensitive personal data but is used in a process without a legal basis allowing sensitive personal data"));
+               }
+            }
+         }
+
+         $isUsedInProcess = $this->relationLoaded('int_process_activities')
+            ? $this->getRelation('int_process_activities')->isNotEmpty()
+            : $this->int_process_activities()->exists();
+
+         if (!$isUsedInProcess) {
+            return $this->defaultStatus('warning', __("This information type is not used within any processes and should be removed or assigned to a process"));
+         }
+
+         return $this->defaultStatus('success', '');
+      });
+   }
+
+}
+

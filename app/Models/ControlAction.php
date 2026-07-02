@@ -1,0 +1,172 @@
+<?php
+
+namespace App\Models;
+
+use App\Models\Concerns\HasStatus;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Illuminate\Support\Facades\Validator;
+
+class ControlAction extends Model
+{
+
+/* Retrieve status for the entire collection of objects */
+   public static function getItemsStatus($department = null, $user = null, $personalOnly = false)
+   {
+      $retval = [];
+      
+      if(null != $department)
+         return [];
+      
+      $count = ($user == null) ? ControlAction::whereNull('finished_at')->where('due', '<', date("Y-m-d"))->count() : ControlAction::where('responsible_id', $user->id)->whereNull('finished_at')->where('due', '<', date("Y-m-d"))->count();
+      if($count)
+         $retval[] = ['level' => (null == $user) ? 'warning' : 'danger', 'count' => $count, 'text' => __("Overdue"). ' ' . strtolower(ControlAction::getPrettyName($count > 1)), 'url' => ((($user != null) && $user->can('index',  get_called_class())) || (($user == null) && (null != auth()->user()) && (auth()->user()->can('index', get_called_class())))) ? url()->query('/assessment/controlactions') : null, 'personal' => ($user != null)];
+
+      $count = ($user == null) ? ControlAction::whereNull('finished_at')->where('due', '>=', date("Y-m-d"))->count() : ControlAction::where('responsible_id', $user->id)->whereNull('finished_at')->where('due', '>=', date("Y-m-d"))->count();
+      if($count)
+         $retval[] = ['level' => 'info', 'count' => $count, 'text' => __("Planned"). ' ' . strtolower(ControlAction::getPrettyName($count > 1)), 'url' => ((($user != null) && $user->can('index',  get_called_class())) || (($user == null) && (null != auth()->user()) && (auth()->user()->can('index', get_called_class())))) ? url()->query('/assessment/controlactions') : null, 'personal' => ($user != null)];
+      
+      return $retval;
+   }
+
+    use HasFactory;
+    use HasStatus;
+
+    protected $table = 'control_actions';
+
+    protected $fillable = ['name', 'description', 'control_id', 'responsible_id', 'due', 'finished_at', 'originaldue', 'estimated_cost'];
+
+    protected function casts(): array
+    {
+        return [
+            'due' => 'date',
+            'finished_at' => 'datetime',
+            'created_at' => 'datetime',
+            'updated_at' => 'datetime',
+            'originaldue' => 'date',
+        ];
+    }
+
+    public static function validationRules(): array
+    {
+        return [
+            'name' => ['required', 'string', 'max:255'],
+            'description' => ['required', 'string'],
+            'control_id' => ['required', 'integer', 'min:0', 'exists:controls,id'],
+            'responsible_id' => ['nullable', 'integer', 'min:0', 'exists:users,id'],
+            'due' => ['nullable', 'date'],
+            'finished_at' => ['nullable', 'date'],
+            'originaldue' => ['nullable', 'date'],
+            'estimated_cost' => ['nullable', 'integer', 'min:0'],
+        ];
+    }
+
+    public static function crudSearch(): array
+    {
+        return [
+            'direct' => [
+                'name',
+                'description',
+            ],
+            'relations' => [
+                // 'relation.path' => ['name'],
+            ],
+        ];
+    }
+
+    protected static function booted(): void
+    {
+        static::saving(function (self $model): void {
+            Validator::make($model->attributesToArray(), static::validationRules())->validate();
+        });
+    }
+
+    public static function getPrettyName($plural = false): string
+    {
+        return $plural ? 'Control Actions' : 'Control Action';
+    }
+
+    public function int_control(): BelongsTo
+    {
+        return $this->belongsTo(Control::class, 'control_id');
+    }
+
+    public function int_responsible(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'responsible_id');
+    }
+
+    public function int_control_action_mappings(): HasMany
+    {
+        return $this->hasMany(ControlActionMapping::class, 'control_action_id', 'id');
+    }
+
+    public function int_custom_property_object_as_object(): MorphMany
+    {
+        return $this->morphMany(CustomPropertyObject::class, 'object', 'object_type', 'object_id');
+    }
+
+    public function int_files_as_object(): MorphMany
+    {
+        return $this->morphMany(File::class, 'object', 'object_type', 'object_id');
+    }
+
+    public function int_findings_as_context(): MorphMany
+    {
+        return $this->morphMany(Finding::class, 'context', 'context_type', 'context_id');
+    }
+
+    public function int_object_histories_as_object(): MorphMany
+    {
+        return $this->morphMany(ObjectHistory::class, 'object', 'object_type', 'object_id');
+    }
+
+    public function int_object_messages_as_object(): MorphMany
+    {
+        return $this->morphMany(ObjectMessage::class, 'object', 'object_type', 'object_id');
+    }
+
+    public function int_object_properties_as_object_properties(): MorphMany
+    {
+        return $this->morphMany(ObjectProperty::class, 'object_properties', 'object_properties_type', 'object_properties_id');
+    }
+
+    public function int_object_tags_as_object_tags(): MorphMany
+    {
+        return $this->morphMany(ObjectTag::class, 'object_tags', 'object_tags_type', 'object_tags_id');
+    }
+
+    public function int_personal_access_tokens_as_tokenable(): MorphMany
+    {
+        return $this->morphMany(PersonalAccessToken::class, 'tokenable', 'tokenable_type', 'tokenable_id');
+    }
+
+    public function int_risks_as_context(): MorphMany
+    {
+        return $this->morphMany(Risk::class, 'context', 'context_type', 'context_id');
+    }
+
+    public function int_vector_embeddings_as_embeddable(): MorphMany
+    {
+        return $this->morphMany(VectorEmbedding::class, 'embeddable', 'embeddable_type', 'embeddable_id');
+    }
+
+    protected function resolveStatus(): array
+   {
+      if(!$this->finished_at && (strtotime($this->due) > time()))
+         return $this->defaultStatus('success', '');
+      
+      if(!$this->finished_at && (null != request()->user()) && ($this->responsible_id == request()->user()->id))
+         return $this->defaultStatus('danger', __("This action is overdue"));
+         
+      if(!$this->finished_at)
+         return $this->defaultStatus('warning', __("This action is overdue"));
+      
+      return $this->defaultStatus('success', '');
+   }
+
+}
+

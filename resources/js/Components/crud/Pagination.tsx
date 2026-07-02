@@ -1,0 +1,76 @@
+import { Button } from "@/Components/ui/button";
+import { MaterialSymbol } from "@/Components/ui/material-symbol";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/Components/ui/select";
+import { useTranslations } from "@/hooks/useTranslations";
+
+const PER_PAGE_OPTIONS = [10, 25, 50, 100, 250];
+
+interface PaginationProps {
+  page: number;
+  totalPages: number;
+  total: number;
+  perPage: number;
+  onPageChange: (page: number) => void;
+  onPerPageChange: (perPage: number) => void;
+}
+
+export function CrudPagination({ page, totalPages, total, perPage, onPageChange, onPerPageChange }: PaginationProps) {
+    const { t } = useTranslations();
+    if (total === 0) return null;
+
+    return (
+    <div className="flex items-center justify-between px-1 pt-3">
+      <div className="flex items-center gap-3">
+        <span className="text-sm text-muted-foreground">
+          {t("ui.crud.pagination.total_items", { count: total })}
+        </span>
+        <Select
+          value={String(perPage)}
+          onValueChange={(v) => onPerPageChange(Number(v))}
+        >
+          <SelectTrigger className="w-[180px] h-8 text-xs">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {PER_PAGE_OPTIONS.map((n) => (
+              <SelectItem key={n} value={String(n)}>
+                  {t("ui.crud.pagination.pagesize", { count: n })}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+      {totalPages > 1 && (
+        <div className="flex items-center gap-1">
+          <Button
+            variant="outline"
+            size="icon"
+            className="h-8 w-8"
+            disabled={page <= 1}
+            onClick={() => onPageChange(page - 1)}
+          >
+            <MaterialSymbol name="keyboard_arrow_left" className="h-4 w-4" />
+          </Button>
+          <span className="text-sm px-3 text-muted-foreground">
+            {page} / {totalPages}
+          </span>
+          <Button
+            variant="outline"
+            size="icon"
+            className="h-8 w-8"
+            disabled={page >= totalPages}
+            onClick={() => onPageChange(page + 1)}
+          >
+            <MaterialSymbol name="keyboard_arrow_right" className="h-4 w-4" />
+          </Button>
+        </div>
+      )}
+    </div>
+  );
+}

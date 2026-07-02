@@ -1,0 +1,138 @@
+@import '../../node_modules/@fontsource/quicksand/400.css';
+@import '../../node_modules/@fontsource/quicksand/500.css';
+@import '../../node_modules/@fontsource/quicksand/600.css';
+@import '../../node_modules/@fontsource/quicksand/700.css';
+@import '../../node_modules/@fontsource/inter/300.css';
+@import '../../node_modules/@fontsource/inter/400.css';
+@import '../../node_modules/@fontsource/inter/500.css';
+@import '../../node_modules/@fontsource/inter/600.css';
+@import '../../node_modules/@fontsource/inter/700.css';
+@import '../../node_modules/@material-symbols/font-400/outlined.css';
+@import 'tailwindcss';
+@config '../../tailwind.config.js';
+
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../storage/framework/views/*.php';
+@source '../**/*.blade.php';
+@source '../**/*.js';
+@source '../**/*.jsx';
+@source '../**/*.tsx';
+
+@theme {
+    --font-sans: 'Quicksand', 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
+        'Segoe UI Symbol', 'Noto Color Emoji';
+}
+
+:root {
+    --background: 210 20% 98%;
+    --foreground: 213 32% 16%;
+    --card: 0 0% 100%;
+    --card-foreground: 213 32% 16%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 213 32% 16%;
+    --primary: 213 65% 34%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 205 75% 47%;
+    --secondary-foreground: 0 0% 100%;
+    --muted: 210 18% 95%;
+    --muted-foreground: 215 16% 47%;
+    --accent: 197 82% 49%;
+    --accent-foreground: 0 0% 100%;
+    --success: 160 60% 40%;
+    --success-foreground: 0 0% 100%;
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 100%;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214 20% 90%;
+    --input: 214 20% 90%;
+    --ring: 213 65% 34%;
+    --radius: 0.5rem;
+    --crud-toolbar-bg: 0 0% 100%;
+    --crud-row-hover: 217 91% 97%;
+    --crud-row-selected: 217 91% 94%;
+    --crud-master-bg: 0 0% 100%;
+    --crud-detail-bg: 220 20% 98%;
+    --crud-badge: 217 91% 50%;
+    --crud-badge-foreground: 0 0% 100%;
+}
+
+.dark {
+    --background: 213 32% 8%;
+    --foreground: 210 20% 90%;
+    --card: 213 30% 12%;
+    --card-foreground: 210 20% 90%;
+    --popover: 213 30% 12%;
+    --popover-foreground: 210 20% 90%;
+    --primary: 205 75% 47%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 213 40% 24%;
+    --secondary-foreground: 210 20% 90%;
+    --muted: 213 30% 16%;
+    --muted-foreground: 215 16% 60%;
+    --accent: 197 82% 49%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 62% 30%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 213 30% 20%;
+    --input: 213 30% 20%;
+    --ring: 205 75% 47%;
+}
+
+* { border-color: hsl(var(--border)); }
+body {
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
+    font-family: var(--font-body);
+}
+h1, h2, h3, h4, h5, h6 { font-family: var(--font-heading); }
+
+.topbar-gradient {
+    background: linear-gradient(90deg, hsl(213, 45%, 18%) 0%, hsl(213, 50%, 22%) 100%);
+}
+
+.card-shine { position: relative; overflow: hidden; }
+.card-shine::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, hsl(213,65%,34%), hsl(205,75%,47%), hsl(197,82%,49%));
+    border-radius: var(--radius) var(--radius) 0 0;
+}
+
+.wave-decoration { position: relative; }
+.wave-decoration::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, transparent, hsl(205,75%,47%) 30%, hsl(197,82%,49%) 70%, transparent);
+    opacity: 0.3;
+}
+
+.bpmn-viewer .bjs-powered-by {
+    display: none !important;
+}
+
+/* Hide built-in drilldown arrow/button for collapsed sub processes. */
+.bpmn-viewer .bjs-drilldown,
+.bpmn-viewer .djs-overlay-drilldown {
+    display: none !important;
+    pointer-events: none !important;
+}
+
+/* Add to @layer components */
+@layer components {
+    .crud-toolbar {
+        @apply flex items-center gap-3 p-3 rounded-lg border;
+        background: hsl(var(--crud-toolbar-bg));
+    }
+    .crud-row-hover { transition: background-color 0.15s ease; }
+    .crud-row-hover:hover { background: hsl(var(--crud-row-hover)); }
+    .crud-row-selected { background: hsl(var(--crud-row-selected)) !important; }
+    [data-crud-dragging="true"] {
+        opacity: 0.45;
+        filter: saturate(0.75);
+    }
+}

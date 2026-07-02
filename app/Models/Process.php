@@ -1,0 +1,371 @@
+<?php
+
+namespace App\Models;
+
+use App\Models\Concerns\HasStatus;
+use App\Services\Bpmn\BpmnNamePropagationService;
+use App\Services\Bpmn\BpmnTextContentValidator;
+use Closure;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Illuminate\Support\Facades\Validator;
+
+class Process extends Model
+{
+
+/* Retrieve status for the entire collection of objects */
+   public static function getItemsStatus($department = null, $user = null, $personalOnly = false)
+   {
+      $retval = [];
+
+      // Don't report if user cannot perform any changes anyway
+      if ((null != $user) && $user->cannot('update', Process::class))
+         return [];
+
+      $retval = [];
+      $processTable = (new self())->getTable();
+      $activityTable = (new ProcessActivity())->getTable();
+
+      $countWithoutAssignment = self::query()
+         ->when($department, fn(Builder $q) => $q->where('department_id', $department->id))
+         ->whereNull('responsible_user_id')
+         ->count();
+
+      $scope = self::query()
+         ->when($department, fn(Builder $q) => $q->where('department_id', $department->id))
+         ->when($user, fn(Builder $q) => $q->where('responsible_user_id', $user->id));
+
+      $uncharted = (clone $scope)
+         ->where(function (Builder $q) {
+            $q->whereNull('publishedbpmn')->orWhere('publishedbpmn', '');
+         })
+         ->count();
+
+      // Process has at least one required property without object_properties row
+      $unclassified = (clone $scope)
+         ->whereExists(function ($q) use ($processTable) {
+            $q->selectRaw('1')
+               ->from('properties')
+               ->join('property_tabs', 'property_tabs.id', '=', 'properties.property_tab_id')
+               ->leftJoin('object_properties as op', function ($join) use ($processTable) {
+                  $join->on('op.property_id', '=', 'properties.id')
+                     ->where('op.object_properties_type', self::class)
+                     ->whereColumn('op.object_properties_id', $processTable . '.id');
+               })
+               ->where('property_tabs.context', self::class)
+               ->whereNull('op.id');
+         })
+         ->count();
+
+      // Process has at least one activity that is not classified
+      $missingActivityClassification = (clone $scope)
+         ->whereHas('int_process_activities', function (Builder $pa) use ($activityTable) {
+            $pa->whereExists(function ($q) use ($activityTable) {
+               $q->selectRaw('1')
+                  ->from('properties')
+                  ->join('property_tabs', 'property_tabs.id', '=', 'properties.property_tab_id')
+                  ->leftJoin('object_properties as op', function ($join) use ($activityTable) {
+                     $join->on('op.property_id', '=', 'properties.id')
+                        ->where('op.object_properties_type', ProcessActivity::class)
+                        ->whereColumn('op.object_properties_id', $activityTable . '.id');
+                  })
+                  ->where('property_tabs.context', ProcessActivity::class)
+                  ->whereNull('op.id');
+            });
+         })
+         ->count();
+
+      // Process has at least one activity missing assignment
+      $missingActivityAssignment = (clone $scope)
+         ->whereHas('int_process_activities', function (Builder $pa) {
+            $pa->whereNull('accountable_role_id')
+               ->orWhere(function (Builder $q) {
+                  $q->whereNull('responsible_role_id')
+                     ->whereDoesntHave('int_suppliers');
+               });
+         })
+         ->count();
+
+      $canIndex = ((($user != null) && $user->can('index', get_called_class())) ||
+         (($user == null) && (null != auth()->user()) && auth()->user()->can('index', get_called_class())));
+      $url = $canIndex ? url()->query('/inventory/processes') : null;
+
+      if (!$personalOnly && $countWithoutAssignment) {
+         $retval[] = ['level' => 'danger', 'count' => $countWithoutAssignment, 'text' => Process::getPrettyName($countWithoutAssignment > 1) . ' ' . __("without assignment"), 'url' => $url];
+      }
+
+      if ($unclassified) {
+         $retval[] = ['level' => $user ? 'danger' : 'warning', 'count' => $unclassified, 'text' => Process::getPrettyName($unclassified > 1) . ' ' . __("without classification"), 'url' => $url];
+      }
+
+      if ($uncharted) {
+         $retval[] = ['level' => $user ? 'danger' : 'warning', 'count' => $uncharted, 'text' => Process::getPrettyName($uncharted > 1) . ' ' . __("without process chart"), 'url' => $url];
+      }
+
+      if ($missingActivityClassification) {
+         $retval[] = ['level' => $user ? 'danger' : 'warning', 'count' => $missingActivityClassification, 'text' => Process::getPrettyName($missingActivityClassification > 1) . ' ' . __("without activities being classified"), 'url' => $url];
+      }
+
+      if ($missingActivityAssignment) {
+         $retval[] = ['level' => $user ? 'danger' : 'warning', 'count' => $missingActivityAssignment, 'text' => Process::getPrettyName($missingActivityAssignment > 1) . ' ' . __("without activities being assigned"), 'url' => $url];
+      }
+
+      return $retval;
+   }
+
+    use HasFactory;
+    use HasStatus;
+
+    protected $table = 'processes';
+
+    protected $fillable = ['name', 'description', 'bpmn', 'publishedbpmn', 'svg', 'department_id', 'responsible_user_id', 'isstartprocess', 'legalbasisdescription', 'thirdcountrytransferdescription', 'thirdcountrytransferprotectiondescription', 'securitymeasuredescription', 'dataprocessor', 'data_processor_processing_activities'];
+
+    protected function casts(): array
+    {
+        return [
+            'isstartprocess' => 'boolean',
+            'created_at' => 'datetime',
+            'updated_at' => 'datetime',
+            'dataprocessor' => 'boolean',
+        ];
+    }
+
+    public static function validationRules(): array
+    {
+        return [
+            'name' => ['required', 'string', 'max:255'],
+            'description' => ['nullable', 'string'],
+            'bpmn' => ['nullable', 'string', static function (string $attribute, mixed $value, Closure $fail): void {
+                if (! is_string($value) || trim($value) === '') {
+                    return;
+                }
+
+                if (app(BpmnTextContentValidator::class)->hasInvalidTextInXml($value)) {
+                    $fail(BpmnTextContentValidator::ERROR_KEY);
+                }
+            }],
+            'publishedbpmn' => ['nullable', 'string', static function (string $attribute, mixed $value, Closure $fail): void {
+                if (! is_string($value) || trim($value) === '') {
+                    return;
+                }
+
+                if (app(BpmnTextContentValidator::class)->hasInvalidTextInXml($value)) {
+                    $fail(BpmnTextContentValidator::ERROR_KEY);
+                }
+            }],
+            'svg' => ['nullable', 'string'],
+            'department_id' => ['required', 'integer', 'min:0', 'exists:departments,id'],
+            'responsible_user_id' => ['nullable', 'integer', 'min:0', 'exists:users,id'],
+            'isstartprocess' => ['required', 'boolean'],
+            'legalbasisdescription' => ['nullable', 'string'],
+            'thirdcountrytransferdescription' => ['nullable', 'string'],
+            'thirdcountrytransferprotectiondescription' => ['nullable', 'string'],
+            'securitymeasuredescription' => ['nullable', 'string'],
+            'dataprocessor' => ['required', 'boolean'],
+            'data_processor_processing_activities' => ['nullable', 'string'],
+        ];
+    }
+
+    public static function crudSearch(): array
+    {
+        return [
+            'direct' => [
+                'name',
+                'description',
+            ],
+            'relations' => [
+                // 'relation.path' => ['name'],
+            ],
+        ];
+    }
+
+    protected static function booted(): void
+    {
+        static::saving(function (self $model): void {
+            Validator::make($model->attributesToArray(), static::validationRules())->validate();
+        });
+
+        static::updated(function (self $model): void {
+            if (! $model->wasChanged('name')) {
+                return;
+            }
+
+            app(BpmnNamePropagationService::class)->syncProcessRename($model, (string) $model->getOriginal('name'));
+        });
+    }
+
+    public static function getPrettyName($plural = false): string
+    {
+        return $plural ? 'Processes' : 'Process';
+    }
+
+    public function int_department(): BelongsTo
+    {
+        return $this->belongsTo(Department::class, 'department_id');
+    }
+
+    public function int_responsible_user(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'responsible_user_id');
+    }
+
+    public function int_asset_information_type(): HasMany
+    {
+        return $this->hasMany(AssetInformationType::class, 'process_id', 'id');
+    }
+
+    public function int_customer_process(): HasMany
+    {
+        return $this->hasMany(CustomerProcess::class, 'process_id', 'id');
+    }
+
+    public function int_legal_basis_process(): HasMany
+    {
+        return $this->hasMany(LegalBasisProcess::class, 'process_id', 'id');
+    }
+
+    public function int_library_document_processes(): HasMany
+    {
+        return $this->hasMany(LibraryDocumentProcess::class, 'process_id', 'id');
+    }
+
+    public function int_process_activities(): HasMany
+    {
+        return $this->hasMany(ProcessActivity::class, 'process_id', 'id');
+    }
+
+    public function int_process_hrefs(): HasMany
+    {
+        return $this->hasMany(ProcessHref::class, 'process_id', 'id');
+    }
+
+    public function int_process_links_by_linked_process(): HasMany
+    {
+        return $this->hasMany(ProcessLink::class, 'linked_process_id', 'id');
+    }
+
+    public function int_process_links_by_process(): HasMany
+    {
+        return $this->hasMany(ProcessLink::class, 'process_id', 'id');
+    }
+
+    public function int_process_process_performance_metric(): HasMany
+    {
+        return $this->hasMany(ProcessProcessPerformanceMetric::class, 'process_id', 'id');
+    }
+
+    public function int_process_sustainability_aspects(): HasMany
+    {
+        return $this->hasMany(ProcessSustainabilityAspect::class, 'process_id', 'id');
+    }
+
+    public function int_customers(): BelongsToMany
+    {
+        return $this->belongsToMany(Customer::class, 'customer_process', 'process_id', 'customer_id');
+    }
+
+    public function int_legal_bases(): BelongsToMany
+    {
+        return $this->belongsToMany(LegalBasis::class, 'legal_basis_process', 'process_id', 'legal_basis_id');
+    }
+
+    public function int_library_documents(): BelongsToMany
+    {
+        return $this->belongsToMany(LibraryDocument::class, 'library_document_processes', 'process_id', 'library_document_id')
+            ->withTimestamps();
+    }
+
+    public function int_processes(): BelongsToMany
+    {
+        return $this->belongsToMany(Process::class, 'process_links', 'linked_process_id', 'process_id');
+    }
+
+    public function int_process_performance_metrics(): BelongsToMany
+    {
+        return $this->belongsToMany(ProcessPerformanceMetric::class, 'process_process_performance_metric', 'process_id', 'process_performance_metric_id')
+            ->withTimestamps();
+    }
+
+    public function int_custom_property_object_as_object(): MorphMany
+    {
+        return $this->morphMany(CustomPropertyObject::class, 'object', 'object_type', 'object_id');
+    }
+
+    public function int_files_as_object(): MorphMany
+    {
+        return $this->morphMany(File::class, 'object', 'object_type', 'object_id');
+    }
+
+    public function int_findings_as_context(): MorphMany
+    {
+        return $this->morphMany(Finding::class, 'context', 'context_type', 'context_id');
+    }
+
+    public function int_object_histories_as_object(): MorphMany
+    {
+        return $this->morphMany(ObjectHistory::class, 'object', 'object_type', 'object_id');
+    }
+
+    public function int_object_messages_as_object(): MorphMany
+    {
+        return $this->morphMany(ObjectMessage::class, 'object', 'object_type', 'object_id');
+    }
+
+    public function int_object_properties_as_object_properties(): MorphMany
+    {
+        return $this->morphMany(ObjectProperty::class, 'object_properties', 'object_properties_type', 'object_properties_id');
+    }
+
+    public function int_object_tags_as_object_tags(): MorphMany
+    {
+        return $this->morphMany(ObjectTag::class, 'object_tags', 'object_tags_type', 'object_tags_id');
+    }
+
+    public function int_personal_access_tokens_as_tokenable(): MorphMany
+    {
+        return $this->morphMany(PersonalAccessToken::class, 'tokenable', 'tokenable_type', 'tokenable_id');
+    }
+
+    public function int_risks_as_context(): MorphMany
+    {
+        return $this->morphMany(Risk::class, 'context', 'context_type', 'context_id');
+    }
+
+    public function int_vector_embeddings_as_embeddable(): MorphMany
+    {
+        return $this->morphMany(VectorEmbedding::class, 'embeddable', 'embeddable_type', 'embeddable_id');
+    }
+
+    protected function resolveStatus(): array
+   {
+      if (!$this->responsible_user_id)
+         return $this->defaultStatus('danger', __("A responsible user has not been assigned"));
+
+      if (!$this->publishedbpmn)
+         return $this->defaultStatus('danger', __("No process chart has been published"));
+
+      if (!$this->classified)
+         return $this->defaultStatus('danger', __("This process has not been classified"));
+
+
+      if ((0 < $this->getUnclassifiedcountAttribute()) ||
+         (0 < $this->getUndecidedcountAttribute())) {
+         if ((null != auth()->user()) && (auth()->user()->id == $this->responsible_user_id))
+            return $this->defaultStatus('danger', __("There are tasks that needs to be classified and/or assigned responsbility"));
+         else
+            return $this->defaultStatus('warning', __("There are tasks that needs to be classified and/or assigned responsbility"));
+      }
+
+      if ($this->isstartprocess)
+         return $this->defaultStatus('success', '');
+
+      return $this->defaultStatus('success', '');
+
+   }
+
+}

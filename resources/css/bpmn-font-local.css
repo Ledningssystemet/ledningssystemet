@@ -1,0 +1,28 @@
+@import '../../node_modules/bpmn-js/dist/assets/bpmn-font/css/bpmn-codes.css';
+
+@font-face {
+    font-family: 'bpmn';
+    src: url('../../node_modules/bpmn-js/dist/assets/bpmn-font/font/bpmn.woff2') format('woff2'),
+         url('../../node_modules/bpmn-js/dist/assets/bpmn-font/font/bpmn.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+}
+
+[class^="bpmn-icon-"]:before,
+[class*=" bpmn-icon-"]:before {
+    font-family: 'bpmn';
+    font-style: normal;
+    font-weight: normal;
+    speak: never;
+    display: inline-block;
+    text-decoration: inherit;
+    width: 1em;
+    text-align: center;
+    font-variant: normal;
+    text-transform: none;
+    line-height: 1em;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+
