@@ -19,6 +19,7 @@ ledningssystemet.json
 playwright.config.ts
 playwright-report
 .*
+!.env.example
 tsconfig.json
 test-results
 doc

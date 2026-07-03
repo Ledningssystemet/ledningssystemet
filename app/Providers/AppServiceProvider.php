@@ -7,6 +7,7 @@ use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Cache;
+use Inertia\Inertia;
 use Laravel\Sanctum\Sanctum;
 
 class AppServiceProvider extends ServiceProvider
@@ -18,6 +19,16 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        Inertia::share([
+            'locale' => fn (): string => app()->getLocale(),
+            'translations' => fn (): array => [
+                'auth' => trans('auth'),
+                'ui' => trans('ui'),
+                'pages' => trans('pages'),
+                'menu' => trans('menu'),
+            ],
+        ]);
+
         // Tell Sanctum to use the project's own PersonalAccessToken model
         // so that extra relations and helpers are available on token instances.
         Sanctum::usePersonalAccessTokenModel(PersonalAccessToken::class);

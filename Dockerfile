@@ -80,6 +80,8 @@ RUN chmod 755 /healthcheck.sh
 # Create startup script
 RUN echo "\
     /usr/bin/env > /var/www/html/containerenv\n\
+    if [ ! -f /var/www/html/.env ] && [ -f /var/www/html/.env.example ]; then cp /var/www/html/.env.example /var/www/html/.env && chown www-data:www-data /var/www/html/.env; fi\n\
+    if [ -f /var/www/html/.env ] && ! grep -q '^APP_KEY=base64:' /var/www/html/.env; then su -c \"cd /var/www/html && php artisan key:generate --force --no-interaction\" -s /bin/bash www-data; fi\n\
     echo \"Starting services...\"\n\
     if [[ -z \${ENABLE_XDEBUG} ]]; then phpdismod xdebug; fi\n\
     service php8.5-fpm start\n\

@@ -263,34 +263,77 @@ APP_ENV=production
 APP_KEY=                        # Generate with: docker run --rm ghcr.io/ledningssystemet/ledningssystemet php artisan key:generate --show
 APP_DEBUG=false
 APP_URL=https://your-domain.example.com
-
+APP_LOCALE=en
+APP_FALLBACK_LOCALE=en
+APP_MAINTENANCE_DRIVER=file
 DB_CONNECTION=mysql
 DB_HOST=host.docker.internal
 DB_PORT=3306
 DB_DATABASE=ledningssystemet
 DB_USERNAME=ledningssystemet
 DB_PASSWORD=your-strong-password
-
+BCRYPT_ROUNDS=12
 CACHE_DRIVER=redis
 SESSION_DRIVER=redis
-QUEUE_CONNECTION=redis
-
+LOG_CHANNEL=stack
+LOG_STACK=single
+LOG_DEPRECATIONS_CHANNEL=null
+LOG_LEVEL=debug
+SESSION_ENCRYPT=false
+SESSION_PATH=/
+SESSION_DOMAIN=null
+BROADCAST_CONNECTION=log
+FILESYSTEM_DISK=local
+QUEUE_CONNECTION=database
+CACHE_STORE=redis
+DEBUGBAR_ENABLED=false
+REDIS_CLIENT=phpredis
+REDIS_PASSWORD=null
 REDIS_HOST=127.0.0.1
 REDIS_PORT=6379
+MAIL_MAILER=smtp
+MAIL_SCHEME=null
+MAIL_HOST=<smtp hostname>
+MAIL_PORT=<smtp port>
+MAIL_ENCRYPTION=null
+MAIL_USERNAME=null
+MAIL_PASSWORD=null
+MAIL_FROM_ADDRESS="hello@example.com"
+MAIL_FROM_NAME="${APP_NAME}"
+AUTH_LOGIN_MODE=hybrid
+AUTH_OAUTH_ENABLED=true
+AUTH_OAUTH_PROVIDER=microsoft
+AUTH_OAUTH_CLIENT_ID=null
+AUTH_OAUTH_CLIENT_SECRET=null
+AUTH_OAUTH_REDIRECT_URI="${APP_URL}/oauthcallback"
+AUTH_OAUTH_TENANT_ID=null
 ```
 
 ### 7.2 Start the container
 
+Create the docker-compose.yaml file:
 ```bash
-docker pull ghcr.io/ledningssystemet/ledningssystemet:latest
+sudo nano /opt/ledningssystemet/docker-compose.yaml
+```
 
-docker run -d \
-  --name ledningssystemet \
-  --restart unless-stopped \
-  -p 127.0.0.1:8080:80 \
-  --env-file /opt/ledningssystemet/.env \
-  --add-host=host.docker.internal:host-gateway \
-  ghcr.io/ledningssystemet/ledningssystemet:latest
+Paste the following:
+```yaml
+services:
+    app:
+        image: ghcr.io/ledningssystemet/ledningssystemet:latest
+        container_name: ledningssystemet
+        restart: unless-stopped
+        ports:
+            - "127.0.0.1:8000:80"
+        volumes:
+            - /opt/ledningssystemet/.env:/var/www/html/.env
+        extra_hosts:
+            - "host.docker.internal:host-gateway"
+```
+
+```bash
+cd /opt/ledningssystemet
+sudo docker compose up -d
 ```
 
 Verify the container is running:
