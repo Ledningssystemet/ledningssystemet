@@ -2,6 +2,8 @@
 
 use Illuminate\Support\Str;
 
+$sessionDomain = env('SESSION_DOMAIN');
+
 return [
 
     /*
@@ -156,7 +158,9 @@ return [
     |
     */
 
-    'domain' => env('SESSION_DOMAIN'),
+    'domain' => in_array($sessionDomain, [null, '', 'localhost', '127.0.0.1', '::1'], true)
+        ? null
+        : $sessionDomain,
 
     /*
     |--------------------------------------------------------------------------

@@ -1,6 +1,9 @@
 <?php
 
-use Laravel\Sanctum\Sanctum;
+$appUrl = env('APP_URL');
+$appUrlHost = $appUrl !== null && $appUrl !== '' ? parse_url($appUrl, PHP_URL_HOST) : null;
+$appUrlPort = $appUrl !== null && $appUrl !== '' ? parse_url($appUrl, PHP_URL_PORT) : null;
+$currentAppStatefulDomain = $appUrlHost !== null ? $appUrlHost.($appUrlPort !== null ? ':'.$appUrlPort : '') : null;
 
 return [
 
@@ -15,12 +18,21 @@ return [
     |
     */
 
-    'stateful' => explode(',', env('SANCTUM_STATEFUL_DOMAINS', sprintf(
-        '%s%s',
-        'localhost,localhost:3000,127.0.0.1,127.0.0.1:8000,::1',
-        Sanctum::currentApplicationUrlWithPort(),
-        // Sanctum::currentRequestHost(),
-    ))),
+    'stateful' => explode(',', env('SANCTUM_STATEFUL_DOMAINS', implode(',', array_filter([
+        'localhost',
+        'localhost:8000',
+        'localhost:8080',
+        'localhost:5173',
+        '127.0.0.1',
+        '127.0.0.1:8000',
+        '127.0.0.1:8080',
+        '127.0.0.1:5173',
+        '::1',
+        '::1:8000',
+        '::1:8080',
+        '::1:5173',
+        $currentAppStatefulDomain,
+    ])))),
 
     /*
     |--------------------------------------------------------------------------
@@ -76,7 +88,6 @@ return [
     */
 
     'middleware' => [
-        'authenticate_session' => Laravel\Sanctum\Http\Middleware\AuthenticateSession::class,
         'encrypt_cookies' => Illuminate\Cookie\Middleware\EncryptCookies::class,
         'validate_csrf_token' => Illuminate\Foundation\Http\Middleware\ValidateCsrfToken::class,
     ],

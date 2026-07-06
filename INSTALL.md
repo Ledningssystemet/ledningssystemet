@@ -193,7 +193,7 @@ server {
     client_max_body_size 128M;
 
     location / {
-        proxy_pass         http://127.0.0.1:8080;
+        proxy_pass         http://127.0.0.1:8000;
         proxy_http_version 1.1;
         proxy_set_header   Host              $host;
         proxy_set_header   X-Real-IP         $remote_addr;
@@ -340,7 +340,7 @@ Verify the container is running:
 
 ```bash
 docker ps
-curl -I http://localhost:8080
+curl -I http://localhost:8000
 ```
 
 ### 7.3 Perform initial database seeding (optional and only possible if not users and access groups exists)
@@ -365,40 +365,11 @@ Paste the following:
 
 ```bash
 #!/usr/bin/env bash
-set -euo pipefail
 
-IMAGE="ghcr.io/ledningssystemet/ledningssystemet:latest"
-CONTAINER="ledningssystemet"
-ENV_FILE="/opt/ledningssystemet/.env"
-LOG="/var/log/ledningssystemet-update.log"
-
-echo "$(date '+%Y-%m-%d %H:%M:%S') — Checking for updates..." >> "$LOG"
-
-PULL_OUTPUT=$(docker pull "$IMAGE" 2>&1)
-echo "$PULL_OUTPUT" >> "$LOG"
-
-if echo "$PULL_OUTPUT" | grep -q "Status: Image is up to date"; then
-    echo "$(date '+%Y-%m-%d %H:%M:%S') — Already up to date. No restart needed." >> "$LOG"
-    exit 0
-fi
-
-echo "$(date '+%Y-%m-%d %H:%M:%S') — New image found. Restarting container..." >> "$LOG"
-
-docker stop "$CONTAINER"  >> "$LOG" 2>&1 || true
-docker rm   "$CONTAINER"  >> "$LOG" 2>&1 || true
-
-docker run -d \
-  --name "$CONTAINER" \
-  --restart unless-stopped \
-  -p 127.0.0.1:8080:80 \
-  --env-file /opt/ledningssystemet/.env \
-  --add-host=host.docker.internal:host-gateway \
-  "$IMAGE" >> "$LOG" 2>&1
-
-# Remove unused images to free disk space
-docker image prune -f >> "$LOG" 2>&1
-
-echo "$(date '+%Y-%m-%d %H:%M:%S') — Update complete." >> "$LOG"
+cd /opt/ledningssystemet
+sudo docker compose pull
+sudo docker compose up -d
+sudo docker system prune -a -f
 ```
 
 Make the script executable:

@@ -13,6 +13,7 @@ class SessionStatusController extends Controller
      */
     public function show(Request $request): JsonResponse
     {
+
         return response()->json([
             'authenticated' => $request->user() !== null,
             'timestamp' => now()->toIso8601String(),

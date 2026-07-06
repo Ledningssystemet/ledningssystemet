@@ -10,6 +10,8 @@ import {
 
 window.axios = axios;
 window.axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
+window.axios.defaults.withCredentials = true;
+window.axios.defaults.withXSRFToken = true;
 
 const SESSION_EXPIRED_EVENT = 'session:expired';
 
@@ -43,9 +45,13 @@ const nativeFetch = typeof window.fetch === 'function' ? window.fetch.bind(windo
 if (nativeFetch) {
     window.fetch = async (input, init) => {
         const request = await applyFetchBeforeInterceptors({ input, init });
+        const requestInit = {
+            ...request.init,
+            credentials: request.init?.credentials ?? 'include',
+        };
 
         try {
-            const response = await nativeFetch(request.input, request.init);
+            const response = await nativeFetch(request.input, requestInit);
             const transformedResponse = await applyFetchAfterInterceptors(response, request);
 
             notifyIfSessionExpired(transformedResponse.status);
@@ -63,4 +69,3 @@ if (nativeFetch) {
         }
     };
 }
-

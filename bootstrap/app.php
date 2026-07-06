@@ -26,7 +26,7 @@ return Application::configure(basePath: dirname(__DIR__))
         // existing PHP session cookie, while external clients can still
         // use a Bearer token (Personal Access Token).
         $middleware->api(prepend: [
-            \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
+            \App\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
         ]);
 
         $middleware->api(append: [
@@ -47,6 +47,9 @@ return Application::configure(basePath: dirname(__DIR__))
                 Request::HEADER_X_FORWARDED_PORT |
                 Request::HEADER_X_FORWARDED_HOST
         );
+    })
+    ->withMiddleware(function (Middleware $middleware): void {
+        $middleware->statefulApi();
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //
