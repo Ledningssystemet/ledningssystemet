@@ -2,30 +2,6 @@
 
 Detta projekt innehåller plattformen Ledningssystemet.se, ett stödsystem för ett modernt ledningssystem: ett generellt, modulärt och flexibelt verktyg för att bygga, dokumentera och förvalta verksamheters systematik för ständig förbättring, i enlighet med standardkrav och lagkrav.
 
-## Kör med Docker Compose
-
-Projektet innehåller en grundfil för Compose i `compose.yaml`, en utvecklingsöverskrivning i `compose.override.yaml` och en produktionsöverskrivning i `compose.prod.yaml`.
-
-### Utveckling
-
-`compose.override.yaml` läses automatiskt av Docker Compose.
-
-```bash
-docker compose up --build
-```
-
-Appen blir då tillgänglig på `http://localhost:8080` och Vite på `http://localhost:5173`.
-
-### Produktion
-
-```bash
-docker compose -f compose.yaml -f compose.prod.yaml up -d --build
-```
-
-Anpassa gärna `.env` eller exportera egna miljövariabler innan du kör produktionsprofilen.
-
-## 🎯 Vad är Ledningssystemet.se?
-
 ## 🌍 Varför släpps systemet fritt och öppet?
 
 Ledningssystemet Sverige AB väljer att släppa programvaran helt öppen därför att **verksamheter bör lägga sina resurser på sin kärnverksamhet**, inte på onödigt komplexa eller dyra verktyg för förbättringsarbete.
