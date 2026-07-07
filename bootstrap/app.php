@@ -21,14 +21,6 @@ return Application::configure(basePath: dirname(__DIR__))
             \App\Http\Middleware\RunPluginRequestPipeline::class,
         ]);
 
-        // Prepend Sanctum's stateful-domain middleware to the API group.
-        // This allows the Inertia SPA to authenticate API routes via the
-        // existing PHP session cookie, while external clients can still
-        // use a Bearer token (Personal Access Token).
-        $middleware->api(prepend: [
-            \App\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
-        ]);
-
         $middleware->api(append: [
             \App\Http\Middleware\RunPluginRequestPipeline::class,
         ]);
@@ -36,8 +28,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'session.authenticated' => \App\Http\Middleware\EnsureSessionAuthenticated::class,
         ]);
-    })
-    ->withMiddleware(function (Middleware $middleware) {
+
         $middleware->trustProxies(
             at: '*',
             headers:
@@ -47,8 +38,7 @@ return Application::configure(basePath: dirname(__DIR__))
                 Request::HEADER_X_FORWARDED_PORT |
                 Request::HEADER_X_FORWARDED_HOST
         );
-    })
-    ->withMiddleware(function (Middleware $middleware): void {
+
         $middleware->statefulApi();
     })
     ->withExceptions(function (Exceptions $exceptions): void {
