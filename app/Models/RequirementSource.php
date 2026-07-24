@@ -8,7 +8,9 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\ValidationException;
 
 class RequirementSource extends Model
 {
@@ -41,17 +43,26 @@ class RequirementSource extends Model
          })
          ->count();
 
+      $maxAgeDays = max(0, (int) config('ledningssystemet.requirement_source_approval_max_age_days', 365));
+      $staleBefore = $maxAgeDays > 0 ? now()->subDays($maxAgeDays) : null;
+
       $needsApprovalCount = (clone $baseQuery)
-         ->where(function ($q) {
-            // Motsvarar: approved_at är null OCH det finns minst ett requirement
-            $q->where(function ($q2) {
-               $q2->whereNull('approved_at')
-                  ->whereHas('int_requirements');
-            })
-               // Motsvarar: minst ett requirement uppdaterat efter source-approved_at
+         ->where(function ($q) use ($staleBefore) {
+            $q->whereNull('approved_at')
+               ->orWhereColumn('requirement_sources.updated_at', '>', 'requirement_sources.approved_at')
                ->orWhereHas('int_requirements', function ($rq) {
-                  $rq->whereColumn('requirements.updated_at', '>', 'requirement_sources.approved_at');
+                   $rq->where(function ($rq2): void {
+                       $rq2->whereColumn('requirements.updated_at', '>', 'requirement_sources.approved_at')
+                           ->orWhereColumn('requirements.created_at', '>', 'requirement_sources.approved_at');
+                   });
                });
+
+            if ($staleBefore !== null) {
+               $q->orWhere(function ($staleQuery) use ($staleBefore): void {
+                   $staleQuery->whereNotNull('requirement_sources.approved_at')
+                       ->where('requirement_sources.approved_at', '<', $staleBefore);
+               });
+            }
          })
          ->count();
 
@@ -70,6 +81,7 @@ class RequirementSource extends Model
     protected $table = 'requirement_sources';
 
     protected $fillable = ['name', 'reference', 'description', 'responsible_user_id', 'approved_at', 'max_sanction_fee'];
+    protected $appends = ['needsapproval', 'applicabilitymissingcount', 'approval_reason_types'];
 
     protected function casts(): array
     {
@@ -109,6 +121,15 @@ class RequirementSource extends Model
     protected static function booted(): void
     {
         static::saving(function (self $model): void {
+            if ($model->isDirty('approved_at') && $model->approved_at !== null) {
+                $user = auth()->user();
+                if ($user === null || (int) $model->responsible_user_id !== (int) $user->id) {
+                    throw ValidationException::withMessages([
+                        'approved_at' => [__('Only the responsible user can approve this requirement source.')],
+                    ]);
+                }
+            }
+
             Validator::make($model->attributesToArray(), static::validationRules())->validate();
         });
     }
@@ -191,9 +212,107 @@ class RequirementSource extends Model
         if(0 < $this->int_requirements()->whereNull('applicable')->count())
             return $this->defaultStatus('danger', __("There are requirements which has not been assessed regarding applicability"));
 
-        if(($this->approved_at === null) || (strtotime($this->updated_at >strtotime($this->approved_at))))
-            return $this->defaultStatus('warning', __("This requirement source needs approval"));
+        if($this->needsApproval())
+            return $this->defaultStatus('warning', $this->approvalReasonDescription());
 
         return $this->defaultStatus('success', '');
+    }
+
+    public function getNeedsapprovalAttribute(): bool
+    {
+        return $this->needsApproval();
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    public function getApprovalReasonTypesAttribute(): array
+    {
+        [$approvedAt, $updatedAt] = $this->resolveApprovalTimestamps();
+        $reasonTypes = [];
+
+        if ($approvedAt === null) {
+            return ['source_updated'];
+        }
+
+        $maxAgeDays = max(0, (int) config('ledningssystemet.requirement_source_approval_max_age_days', 365));
+        if ($maxAgeDays > 0 && $approvedAt->copy()->addDays($maxAgeDays)->isPast()) {
+            $reasonTypes[] = 'stale_approval';
+        }
+
+        if ($updatedAt !== null && $updatedAt->gt($approvedAt)) {
+            $reasonTypes[] = 'source_updated';
+        }
+
+        $requirementsChanged = $this->int_requirements()
+            ->where(function ($query) use ($approvedAt): void {
+                $query->where('requirements.updated_at', '>', $approvedAt)
+                    ->orWhere('requirements.created_at', '>', $approvedAt);
+            })
+            ->exists();
+
+        if ($requirementsChanged) {
+            $reasonTypes[] = 'requirements_changed';
+        }
+
+        return array_values(array_unique($reasonTypes));
+    }
+
+    public function getApplicabilitymissingcountAttribute(): int
+    {
+        return $this->int_requirements()->whereNull('applicable')->count();
+    }
+
+    public function needsApproval(): bool
+    {
+        return $this->approval_reason_types !== [];
+    }
+
+    /**
+     * @return array{0: Carbon|null, 1: Carbon|null}
+     */
+    private function resolveApprovalTimestamps(): array
+    {
+        $attributes = $this->getAttributes();
+        $approvedAt = $this->approved_at;
+        $updatedAt = $this->updated_at;
+
+        if ((! array_key_exists('approved_at', $attributes) || ! array_key_exists('updated_at', $attributes)) && $this->exists) {
+            $fresh = self::query()
+                ->select(['id', 'approved_at', 'updated_at'])
+                ->find($this->getKey());
+
+            if ($fresh instanceof self) {
+                $approvedAt = $fresh->approved_at;
+                $updatedAt = $fresh->updated_at;
+            }
+        }
+
+        return [$approvedAt, $updatedAt];
+    }
+
+    private function approvalReasonDescription(): string
+    {
+        $reasons = [];
+
+        foreach ($this->approval_reason_types as $reasonType) {
+            if ($reasonType === 'stale_approval') {
+                $reasons[] = __('pages.requirement_sources.reason_stale_approval', [
+                    'days' => max(0, (int) config('ledningssystemet.requirement_source_approval_max_age_days', 365)),
+                ]);
+                continue;
+            }
+
+            if ($reasonType === 'requirements_changed') {
+                $reasons[] = __('pages.requirement_sources.reason_requirements_changed');
+                continue;
+            }
+
+            if ($reasonType === 'source_updated') {
+                $reasons[] = __('pages.requirement_sources.reason_source_updated');
+            }
+        }
+
+        return implode(' ', $reasons);
     }
 }

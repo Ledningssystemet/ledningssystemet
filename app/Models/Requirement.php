@@ -78,7 +78,7 @@ class Requirement extends Model
 
     public static function crudAppends(): array
     {
-        return ['controls'];
+        return ['controls', 'changed_since_source_approval', 'changed_since_source_approval_type'];
     }
 
     protected static function booted(): void
@@ -151,6 +151,60 @@ class Requirement extends Model
     public function int_requirement_source(): BelongsTo
     {
         return $this->belongsTo(RequirementSource::class, 'requirement_source_id');
+    }
+
+    public function getChangedSinceSourceApprovalAttribute(): bool
+    {
+        return $this->getChangedSinceSourceApprovalTypeAttribute() !== 'unchanged';
+    }
+
+    public function getChangedSinceSourceApprovalTypeAttribute(): string
+    {
+        $attributes = $this->getAttributes();
+        $requirementSourceId = $this->requirement_source_id;
+        $createdAt = $this->created_at;
+        $updatedAt = $this->updated_at;
+
+        if ((! array_key_exists('requirement_source_id', $attributes) || ! array_key_exists('created_at', $attributes) || ! array_key_exists('updated_at', $attributes)) && $this->exists) {
+            $fresh = self::query()
+                ->select(['id', 'requirement_source_id', 'created_at', 'updated_at'])
+                ->find($this->getKey());
+
+            if ($fresh instanceof self) {
+                $requirementSourceId = $fresh->requirement_source_id;
+                $createdAt = $fresh->created_at;
+                $updatedAt = $fresh->updated_at;
+            }
+        }
+
+        $source = $this->relationLoaded('int_requirement_source')
+            ? $this->getRelation('int_requirement_source')
+            : RequirementSource::query()
+                ->select(['id', 'approved_at'])
+                ->find($requirementSourceId);
+
+        if (! $source instanceof RequirementSource || $source->approved_at === null) {
+            return 'added';
+        }
+
+        if ($createdAt !== null && $createdAt->gt($source->approved_at)) {
+            return 'added';
+        }
+
+        if ($updatedAt !== null && $updatedAt->gt($source->approved_at)) {
+            return 'changed';
+        }
+
+        return 'unchanged';
+    }
+
+    protected function resolveStatus(): array
+    {
+        if ($this->getChangedSinceSourceApprovalAttribute()) {
+            return $this->defaultStatus('warning', __('This requirement has changed since latest approval'));
+        }
+
+        return $this->defaultStatus('success', '');
     }
 
     public function int_compliance_evaluation_requirement(): HasMany

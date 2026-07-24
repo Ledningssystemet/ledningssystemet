@@ -87,7 +87,7 @@ RUN echo "\
     service php8.5-fpm start\n\
     service redis-server start\n\
     nginx -g \"daemon off;\" &\n\
-    /healthcheck.sh &\n\
+    if [ \"\${RELEASE_TEXT}\" != \"localdev\" ]; then\n/healthcheck.sh &\nfi\n\
     su -c \"cd /var/www/html && php artisan migrate --force\" -s /bin/bash www-data\n\
     if [ \"\${RELEASE_TEXT}\" != \"localdev\" ]; then su -c \"cd /var/www/html && php artisan route:cache\" -s /bin/bash www-data; fi\n\
     if [ \"\${RELEASE_TEXT}\" != \"localdev\" ]; then su -c \"cd /var/www/html && php artisan view:cache\" -s /bin/bash www-data; fi\n\

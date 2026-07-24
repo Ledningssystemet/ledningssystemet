@@ -7,6 +7,16 @@ import { CrudModule } from '@/Components/crud';
 import type { CrudModuleConfig } from '@/Components/crud';
 import { Button } from '@/Components/ui/button';
 import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from '@/Components/ui/alert-dialog';
+import {
     Dialog,
     DialogContent,
     DialogDescription,
@@ -35,6 +45,32 @@ export default function RequirementSourcesPage({ route }: RequirementSourcesPage
     const page = usePage<SharedProps>();
     const currentUserId = page.props.auth?.user?.id ?? null;
     const [activeSourceForRequirements, setActiveSourceForRequirements] = useState<Record<string, any> | null>(null);
+    const [approveDialogSource, setApproveDialogSource] = useState<Record<string, any> | null>(null);
+    const [isApproving, setIsApproving] = useState(false);
+    const [crudRefreshToken, setCrudRefreshToken] = useState(0);
+    const approvalReasonText = (item: Record<string, any>): string => {
+        const reasonTypes = Array.isArray(item.approval_reason_types) ? item.approval_reason_types : [];
+
+        const reasonLabels = reasonTypes
+            .map((reasonType) => {
+                if (reasonType === 'stale_approval') {
+                    return t('pages.requirement_sources.reason_stale_approval_short');
+                }
+
+                if (reasonType === 'requirements_changed') {
+                    return t('pages.requirement_sources.reason_requirements_changed');
+                }
+
+                if (reasonType === 'source_updated') {
+                    return t('pages.requirement_sources.reason_source_updated');
+                }
+
+                return '';
+            })
+            .filter((reason): reason is string => reason.length > 0);
+
+        return reasonLabels.join(' ');
+    };
 
     const patchRequirementSource = async (id: number, updates: Record<string, any>): Promise<void> => {
         const response = await fetch(`/api/crud/requirement_sources/${id}`, {
@@ -67,7 +103,9 @@ export default function RequirementSourcesPage({ route }: RequirementSourcesPage
                 'responsible_user_id',
                 'max_sanction_fee',
                 'approved_at',
+                'status',
                 'needsapproval',
+                'approval_reason_types',
                 'applicabilitymissingcount',
             ],
             rowActions: [
@@ -84,6 +122,7 @@ export default function RequirementSourcesPage({ route }: RequirementSourcesPage
                     key: 'approve',
                     label: t('pages.requirement_sources.approve_action'),
                     variant: 'outline',
+                    refreshOnComplete: false,
                     isVisible: (item) => {
                         const needsApproval = item.needsapproval !== undefined ? Boolean(item.needsapproval) : !item.approved_at;
                         return Boolean(
@@ -92,14 +131,8 @@ export default function RequirementSourcesPage({ route }: RequirementSourcesPage
                                 item.responsible_user_id === currentUserId
                         );
                     },
-                    onClick: async (item) => {
-                        if (!window.confirm(t('pages.requirement_sources.approve_confirm'))) {
-                            return;
-                        }
-
-                        await patchRequirementSource(Number(item.id), {
-                            approved_at: new Date().toISOString(),
-                        });
+                    onClick: (item) => {
+                        setApproveDialogSource(item);
                     },
                 },
             ],
@@ -169,6 +202,38 @@ export default function RequirementSourcesPage({ route }: RequirementSourcesPage
                     category: t('pages.requirement_sources.category_general'),
                 },
                 {
+                    key: 'approval_status',
+                    label: t('pages.requirement_sources.column_approval_status'),
+                    type: 'text',
+                    sortable: false,
+                    editable: false,
+                    renderCell: (_value, row) =>
+                        Boolean(row.needsapproval)
+                            ? t('pages.requirement_sources.status_not_approved')
+                            : t('pages.requirement_sources.status_approved'),
+                    renderDetail: (_value, row) =>
+                        Boolean(row.needsapproval)
+                            ? t('pages.requirement_sources.status_not_approved')
+                            : t('pages.requirement_sources.status_approved'),
+                    category: t('pages.requirement_sources.category_status'),
+                },
+                {
+                    key: 'approval_reason',
+                    label: t('pages.requirement_sources.column_approval_reason'),
+                    type: 'text',
+                    sortable: false,
+                    editable: false,
+                    renderCell: (_value, row) =>
+                        Boolean(row.needsapproval)
+                            ? approvalReasonText(row)
+                            : '',
+                    renderDetail: (_value, row) =>
+                        Boolean(row.needsapproval)
+                            ? approvalReasonText(row)
+                            : '',
+                    category: t('pages.requirement_sources.category_status'),
+                },
+                {
                     key: 'approved_at',
                     label: t('pages.requirement_sources.column_approved_at'),
                     type: 'date',
@@ -204,9 +269,44 @@ export default function RequirementSourcesPage({ route }: RequirementSourcesPage
                 />
 
                 <section className="rounded-2xl border border-border bg-card p-6 shadow-sm">
-                    <CrudModule config={config} />
+                    <CrudModule key={`requirement-sources-${crudRefreshToken}`} config={config} />
                 </section>
             </div>
+
+            <AlertDialog open={Boolean(approveDialogSource)} onOpenChange={(open) => !open && setApproveDialogSource(null)}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>{t('pages.requirement_sources.approve_action')}</AlertDialogTitle>
+                        <AlertDialogDescription>{t('pages.requirement_sources.approve_confirm')}</AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel disabled={isApproving}>{t('ui.crud.action_cancel')}</AlertDialogCancel>
+                        <AlertDialogAction
+                            disabled={isApproving}
+                            onClick={async (event) => {
+                                event.preventDefault();
+                                if (!approveDialogSource?.id) {
+                                    setApproveDialogSource(null);
+                                    return;
+                                }
+
+                                setIsApproving(true);
+                                try {
+                                    await patchRequirementSource(Number(approveDialogSource.id), {
+                                        approved_at: new Date().toISOString(),
+                                    });
+                                    setApproveDialogSource(null);
+                                    setCrudRefreshToken((current) => current + 1);
+                                } finally {
+                                    setIsApproving(false);
+                                }
+                            }}
+                        >
+                            {t('pages.requirement_sources.approve_action')}
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
 
             {requirementsConfig && (
                 <Dialog

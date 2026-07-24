@@ -44,6 +44,9 @@ export function buildRequirementSourceRequirementsCrudConfig(
             'governance',
             'controls',
             'ordinal',
+            'status',
+            'changed_since_source_approval',
+            'changed_since_source_approval_type',
         ],
         createTitle: t('pages.requirement_sources.requirements.create_title'),
         editTitle: t('pages.requirement_sources.requirements.edit_title'),
@@ -112,6 +115,26 @@ export function buildRequirementSourceRequirementsCrudConfig(
                 category: t('pages.requirement_sources.requirements.category_status'),
             },
             {
+                key: 'changed_since_source_approval',
+                label: t('pages.requirement_sources.requirements.column_changed_since_approval'),
+                type: 'text',
+                sortable: false,
+                editable: false,
+                renderCell: (_value, row) =>
+                    row.changed_since_source_approval_type === 'added'
+                        ? t('pages.requirement_sources.requirements.changed_since_approval_added')
+                        : row.changed_since_source_approval_type === 'changed'
+                            ? t('pages.requirement_sources.requirements.changed_since_approval_changed')
+                            : t('pages.requirement_sources.requirements.changed_since_approval_unchanged'),
+                renderDetail: (_value, row) =>
+                    row.changed_since_source_approval_type === 'added'
+                        ? t('pages.requirement_sources.requirements.changed_since_approval_added')
+                        : row.changed_since_source_approval_type === 'changed'
+                            ? t('pages.requirement_sources.requirements.changed_since_approval_changed')
+                            : t('pages.requirement_sources.requirements.changed_since_approval_unchanged'),
+                category: t('pages.requirement_sources.requirements.category_status'),
+            },
+            {
                 key: 'governance',
                 label: t('pages.requirement_sources.requirements.column_governance'),
                 type: 'textarea',
@@ -156,4 +179,3 @@ export function buildRequirementSourceRequirementsCrudConfig(
         ],
     };
 }
-
