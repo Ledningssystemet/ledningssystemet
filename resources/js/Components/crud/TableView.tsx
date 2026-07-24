@@ -325,6 +325,20 @@ function renderValue(
 ) {
     if (value == null) return <span className="text-muted-foreground">-</span>;
 
+    if (field.type === "color" && typeof value === "string") {
+        const normalized = normalizeColor(value);
+        if (normalized === null) {
+            return String(value);
+        }
+
+        return (
+            <span className="inline-flex items-center gap-2">
+                <span className="h-4 w-4 rounded-sm border border-border" style={{backgroundColor: normalized}}/>
+                <span>{normalized}</span>
+            </span>
+        );
+    }
+
     if (field.type === "boolean") {
         return (
             <span
@@ -367,6 +381,16 @@ function renderValue(
     return String(value);
 }
 
+function normalizeColor(value: string): string | null {
+    const trimmed = value.trim();
+    const withoutHash = trimmed.startsWith("#") ? trimmed.slice(1) : trimmed;
+    if (!/^[0-9a-fA-F]{6}$/.test(withoutHash)) {
+        return null;
+    }
+
+    return `#${withoutHash.toLowerCase()}`;
+}
+
 function normalizeComparableValue(value: unknown): string {
     if (value === true || value === 1 || value === "1" || value === "true") {
         return "1";
@@ -382,4 +406,3 @@ function normalizeComparableValue(value: unknown): string {
 function valuesAreEquivalent(left: unknown, right: unknown): boolean {
     return normalizeComparableValue(left) === normalizeComparableValue(right);
 }
-

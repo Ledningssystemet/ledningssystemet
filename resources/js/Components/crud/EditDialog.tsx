@@ -17,6 +17,19 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/Components/ui/tabs";
 import { EditDialogProps, FieldConfig } from "./types";
 import { useTranslations } from "@/hooks/useTranslations";
 
+function normalizeColorForInput(value: any): string {
+  if (typeof value !== "string") return "#000000";
+  const trimmed = value.trim();
+  if (trimmed === "") return "#000000";
+  const withoutHash = trimmed.startsWith("#") ? trimmed.slice(1) : trimmed;
+  return /^[0-9a-fA-F]{6}$/.test(withoutHash) ? `#${withoutHash}` : "#000000";
+}
+
+function normalizeColorForStorage(value: string): string {
+  const withoutHash = value.trim().replace(/^#/, "");
+  return /^[0-9a-fA-F]{6}$/.test(withoutHash) ? withoutHash.toLowerCase() : "";
+}
+
 export function EditDialog({
    open,
    onOpenChange,
@@ -41,6 +54,18 @@ export function EditDialog({
         for (const field of fields) {
           if (field.type === "boolean" && initialData[field.key] === undefined) {
             initialData[field.key] = false;
+         }
+
+         if (field.type === "color") {
+           const normalizedColor = normalizeColorForStorage(
+             typeof initialData[field.key] === "string" ? initialData[field.key] : "",
+           );
+
+           if (normalizedColor !== "") {
+             initialData[field.key] = normalizedColor;
+           } else if (initialData[field.key] === undefined || initialData[field.key] === null || initialData[field.key] === "") {
+             initialData[field.key] = "000000";
+           }
          }
        }
 
@@ -207,14 +232,6 @@ function renderFieldInput(
   setValue: (key: string, value: any) => void,
   t: (key: string, replacements?: Record<string, string | number>) => string,
 ) {
-  const normalizeColorForInput = (value: any): string => {
-    if (typeof value !== "string") return "#000000";
-    const trimmed = value.trim();
-    if (trimmed === "") return "#000000";
-    const withoutHash = trimmed.startsWith("#") ? trimmed.slice(1) : trimmed;
-    return /^[0-9a-fA-F]{6}$/.test(withoutHash) ? `#${withoutHash}` : "#000000";
-  };
-
   switch (field.type) {
     case "textarea":
       return (
@@ -240,13 +257,25 @@ function renderFieldInput(
       );
     case "color":
       return (
-        <Input
-          id={field.key}
-          name={field.key}
-          type="color"
-          value={normalizeColorForInput(val)}
-          onChange={(e) => setValue(field.key, e.target.value.replace(/^#/, ""))}
-        />
+        <div className="flex items-center gap-2">
+          <input
+            id={field.key}
+            name={field.key}
+            type="color"
+            value={normalizeColorForInput(val)}
+            className="h-10 w-14 cursor-pointer rounded-md border border-input bg-background p-1"
+            onChange={(e) => setValue(field.key, normalizeColorForStorage(e.target.value))}
+          />
+          <Input
+            id={`${field.key}-hex`}
+            name={`${field.key}-hex`}
+            type="text"
+            value={normalizeColorForStorage(typeof val === "string" ? val : "")}
+            onChange={(e) => setValue(field.key, normalizeColorForStorage(e.target.value))}
+            placeholder="RRGGBB"
+            maxLength={6}
+          />
+        </div>
       );
     case "date":
       return (
