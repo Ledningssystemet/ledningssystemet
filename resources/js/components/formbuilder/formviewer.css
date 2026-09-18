@@ -1,0 +1,222 @@
+.formview-shell {
+    background: #f3f5f7;
+    color: #1e2a36;
+    padding: 24px 0;
+}
+
+.formview-card {
+    max-width: 1120px;
+    margin: 0 auto;
+    background: #ffffff;
+    border: 1px solid #dde3ea;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(15, 23, 42, 0.04);
+    overflow: hidden;
+}
+
+.formview-header {
+    padding: 20px 28px 18px;
+    border-bottom: 1px solid #ebeff3;
+}
+
+.formview-title {
+    margin: 0;
+    font-size: 2.1rem;
+    line-height: 1.2;
+    font-weight: 700;
+    color: #1c2430;
+}
+
+.formview-chapter-nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 18px 28px 0;
+    border-bottom: 1px solid #ebeff3;
+    background: #fff;
+}
+
+.formview-chip {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 40px;
+    padding: 0 16px;
+    border-radius: 8px 8px 0 0 !important;
+    font-size: 0.95rem;
+    font-weight: 600;
+    background: #f2f6fb;
+    border: 1px solid #dfe7f1;
+    color: #2a3749;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.formview-chip:hover {
+    border-color: #bfd5ea;
+    background: #edf4fb;
+}
+
+.nav-tabs .formview-chip {
+    border: 1px solid #dfe7f1;
+    border-bottom: 1px solid transparent;
+    background: #f2f6fb;
+    color: #2a3749;
+    margin-bottom: -1px;
+}
+
+.nav-tabs .formview-chip.active {
+    background: linear-gradient(180deg, #1f9ae8 0%, #0e8bdc 100%);
+    border-color: #0d82d4;
+    color: #fff;
+    box-shadow: inset 0 -1px 0 rgba(0, 0, 0, 0.08);
+}
+
+.formview-body {
+    padding: 22px 28px 28px;
+    background: #fff;
+}
+
+.formview-section {
+    border: 1px solid #e6ebf1;
+    border-radius: 12px;
+    background: #fff;
+    padding: 20px 20px 0;
+    margin-bottom: 26px;
+}
+
+.formview-section:last-child {
+    margin-bottom: 0;
+}
+
+.formview-section h2 {
+    margin: 0 0 20px;
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #212b36;
+}
+
+.formview-field {
+    margin-bottom: 18px;
+    position: relative;
+}
+
+.formview-field label,
+.formview-field .form-label {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 0.96rem;
+    line-height: 1.4;
+    font-weight: 600;
+    color: #1f2d3d;
+}
+
+.formview-field label .text-danger {
+    color: #d93025;
+    margin-left: 4px;
+}
+
+.formview-field .form-text,
+.formview-field .text-muted {
+    color: #5d6b7a !important;
+    font-size: 0.82rem;
+    margin-bottom: 8px;
+    display: block;
+}
+
+.formview-field .form-text {
+    margin-top: 1em;
+    white-space: pre-wrap;
+}
+
+.formview-field input.form-control,
+.formview-field textarea.form-control,
+.formview-field select.form-select {
+    width: 100%;
+    min-height: 42px;
+    border: 1px solid #cfd8e3;
+    border-radius: 7px;
+    background: #fff;
+    color: #1d2b3a;
+    padding: 10px 12px;
+    font-size: 1rem;
+    box-shadow: none;
+}
+
+.formview-field textarea.form-control {
+    min-height: 96px;
+    resize: vertical;
+}
+
+.formview-field .form-check {
+    display: flex;
+    align-items: center;
+    min-height: 32px;
+    margin-bottom: 10px;
+}
+
+.formview-field .form-check-input {
+    margin-top: 0;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    border: 2px solid #8aa4bf;
+    background-color: #fff;
+    appearance: none;
+    box-shadow: none;
+    position: relative;
+}
+
+.formview-field .form-check-input:checked {
+    background-color: #0d8bdc;
+    border-color: #0d8bdc;
+}
+
+.formview-field .form-check-label {
+    margin-left: 10px;
+    font-weight: 500;
+    color: #293645;
+    cursor: default;
+}
+
+.formview-file-list {
+    margin-top: 12px;
+    padding-top: 2px;
+}
+
+.formview-file-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.92rem;
+    color: #2a4158;
+    margin-bottom: 8px;
+}
+
+.formview-file-item a {
+    color: #1f5e93;
+    text-decoration: none;
+}
+
+.formview-file-item a:hover {
+    text-decoration: underline;
+}
+
+.updatedby {
+    font-size: 0.85rem;
+    color: #5d6b7a;
+    font-style: italic;
+}
+
+@media (max-width: 768px) {
+    .formview-header,
+    .formview-body,
+    .formview-chapter-nav {
+        padding-left: 16px;
+        padding-right: 16px;
+    }
+
+    .formview-title {
+        font-size: 1.7rem;
+    }
+}

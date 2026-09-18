@@ -1,0 +1,12 @@
+.codex-editor {
+   border: 1px solid var(--bs-gray-400);
+   border-radius: 8px;
+   padding: 10px;
+   width: 800px;
+   min-height: 1130px;
+}
+
+.ce-block__content,
+.ce-toolbar__content {
+   max-width: unset;
+}
