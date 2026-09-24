@@ -363,7 +363,7 @@ static::creating(function ($model) {
    public function risklevel()
    {
       $risklevel = null;
-      foreach($this->int_roles()->rightJoin('risk_levels', 'roles.risk_level_id', '=', 'risk_levels.id')->select('risk_levels.id', 'risk_levels.ordinal')->get() as $obj)
+      foreach($this->int_access_groups()->rightJoin('risk_levels', 'access_groups.risk_level_id', '=', 'risk_levels.id')->select('risk_levels.id', 'risk_levels.ordinal')->get() as $obj)
       {
          if((null == $risklevel) ||
             ($risklevel->ordinal < $obj->ordinal))
