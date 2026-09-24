@@ -1,0 +1,556 @@
+@php if(Auth::user()->cannot('index', \App\Models\Activity::class)) abort(403); @endphp
+@extends('layouts.master')
+
+@section('container')
+
+<script>
+$(function(){
+   $('#tableContainer').jtable({
+      title: '&nbsp;',
+      paging: true,
+      searchfield: true,
+      tableId: 'activitiestable',
+      bootstrap: true,
+      accordion: true,
+      messages: {
+         addNewRecord: '{{ __('Add new activity') }}',
+      },
+      filter: {
+         responsible_user_id: {
+            type: 'select',
+            text: '{{ __("Responsible user") }}',
+            default: 0,
+            options: [
+               { value: 0, text: '{{ __('Show all') }}' },
+                  @foreach(\App\Models\User::leftJoin('activities', 'activities.responsible_user_id', '=', 'users.id')->whereNotNull('activities.id')->select('users.*')->distinct()->orderBy('users.name')->get()->each->setAppends([]) as $obj)
+               { value: {{ $obj->id }}, text: <?php echo(json_encode($obj->name)); ?> },
+               @endforeach
+            ]
+         },
+         showcompleted: {
+            type: 'checkbox',
+            value: '1',
+            checked: false,
+            text: '{{ __('Show completed activities') }}',
+         },
+         hidechecked: {
+            type: 'checkbox',
+            value: '1',
+            checked: false,
+            text: '{{ __('Hide items without issues') }}',
+         },
+      },
+      actions: {
+@if(Auth::user()->can('index', \App\Models\Activity::class))         
+         listAction: '/api/v1/items/Activity',
+@endif      
+@if(Auth::user()->can('create', \App\Models\Activity::class))         
+         createAction: '/api/v1/items/Activity',
+@endif      
+@if(Auth::user()->can('update', \App\Models\Activity::class))         
+         updateAction: '/api/v1/items/Activity',
+@endif      
+@if(Auth::user()->can('delete', \App\Models\Activity::class))         
+         deleteAction: '/api/v1/items/Activity',
+@endif      
+      },
+      fields: {
+         id: {
+            key: true,
+            list: false,
+            create: false,
+            edit: false,
+         },
+         name: {
+            title: '{{ __('Name') }}',
+            create: true,
+            edit: true,
+            list: true,
+            listClass: 'd-inline-block col-10',
+            required: true,
+            maxlength: 255,
+            header: true,
+            display: function(data){
+               let retval = $('<span />')
+                  .css({'display': 'flex', 'align-items': 'center'})
+                  .append($('<span />')
+                     .text(data.record.name));
+
+               if(data.record.activity_flow_id) {
+                  retval
+                     .append($('<span />')
+                        .addClass('badge pill rounded-pill bg-primary')
+                        .css( { 'margin-left': '1rem', 'font-size': '0.8rem', 'font-weight': 600 })
+                        .text(data.record.activity_flow_name));
+               }
+
+               return retval;
+            }
+         },
+         responsible_user_id: {
+            title: '{{ __('Responsible user') }}',
+            create: true,
+            edit: true,
+            list: true,
+
+            required: true,
+            listClass: 'd-inline-block col-4',
+            defaultValue: {{ auth()->user()->id  }},
+            options: [
+@foreach(App\Models\User::where('enabled', true)->get()->each->setAppends([]) as $obj)
+               { Value: {{$obj->id}}, DisplayText: @php echo(json_encode($obj->name)); @endphp },
+@endforeach
+            ]
+         },
+         due: {
+            title: '{{ __('Due') }}',
+            type: 'date',
+            width: '10%',
+            defaultValue: '{{ date("Y-m-d", strtotime("+3 MONTHS")) }}',
+            list: true,
+            edit: true,
+            create: true,
+            required: true,
+            listClass: 'd-inline-block col-4',
+         },
+         activity_flow_name: {
+            title: '{{ __('Activity flow') }}',
+            list: true,
+            edit: false,
+            create: false,
+            listClass: 'd-inline-block col-4',
+         },
+         hr0: {
+            list: true,
+            edit: false,
+            create: false,
+            display: function(data){
+               return $('<hr />'); 
+            }
+         },
+         description: {
+            title: '{{ __('Description') }}',
+            type: 'textarea',
+            create: true,
+            edit: true,
+            list: true,
+            required: true,
+         },
+         hr1: {
+            list: true,
+            edit: false,
+            create: false,
+            display: function(data){
+               return $('<hr />'); 
+            }
+         },
+         intervalnum: {
+            title: '{{ __('Interval') }}',
+            type: 'number',
+            width: '10%',
+            min: 1,
+            max: 999,
+            defaultValue: 1,
+            step: 1,
+            list: true,
+            edit: true,
+            create: true,
+            display: function(data){
+               if(data.record.intervaltype)
+               {
+                  return $('<span />')
+                     .text('{{ __("Every") }} '+data.record.intervalnum+' '+data.record.intervaltypetext);
+               }
+               else
+                  return $('<span />')
+                     .text('{{ __("Not recurring") }}');
+            }
+         },
+         intervaltype: {
+            title: '{{ __('Interval type') }}',
+            width: '10%',
+            list: false,
+            edit: true,
+            create: true,
+            options: [
+               { Value: null, DisplayText: '{{__("No recurring actitivity") }}' },
+               { Value: 'DAYS', DisplayText: '{{ __("Days") }}' },
+               { Value: 'MONTHS', DisplayText: '{{ __("Months") }}' },
+               { Value: 'YEARS', DisplayText: '{{ __("Years") }}' },
+            ]
+         },
+         hr2: {
+            list: true,
+            edit: false,
+            create: false,
+            display: function(data){
+               return $('<hr />'); 
+            }
+         },
+         commands: {
+            sorting: false,
+            edit: false,
+            create: false,
+            footer: true,
+            display: function(data){
+               if(!data.record.completed_at)
+               {
+                  return $('<button />')
+                     .addClass('btn btn-outline-primary btn-sm completedbutton')
+                     .text('{{ __('Completed') }}')
+                     .prepend($('<span />')
+                        .addClass('material-symbols-rounded')
+                        .text('check'))
+                     .click(function(){ userFinishActivity(data.record.id, function(){
+                        $('#tableContainer').jtable('reload');
+                     }); });
+               }
+               else
+               {
+                  return $('<span />');
+               }
+            }
+         },   
+         showHistory: showHistoryField('Activity', $('#tableContainer')),          
+         showMessages: showMessagesField('Activity', $('#tableContainer')),  
+      },
+      formCreated: function(event, data){
+      },
+      recordsLoaded: function(event, data){
+         if(data.serverResponse.data)
+         {
+            data.serverResponse.data.forEach((obj) => {
+               
+               if(!obj.responsible_user_id)
+               {
+                  $(event.target).find('[data-record-key="'+obj.id+'"] .jtable-field-text[data-jtable-fieldname="responsible_user_id"] .jtable-field-label').addClass('text-danger');
+                  $(event.target).find('[data-record-key="'+obj.id+'"] .jtable-edit-command .material-symbols-rounded').addClass('text-danger');
+                  $(event.target).find('[data-record-key="'+obj.id+'"] .jtable-delete-command').remove();
+                  $(event.target).find('[data-record-key="'+obj.id+'"] .completedbutton').closest('.jtable-cell-content').remove();
+               }
+               
+               if(obj.responsible_user_id && (obj.responsible_user_id != {{ auth()->user()->id }}))
+               {
+                  $(event.target).find('[data-record-key="'+obj.id+'"] .completedbutton').closest('.jtable-cell-content').remove();
+               }
+               
+               if(obj.activity_flow_id)
+               {
+                  $(event.target).find('[data-record-key="'+obj.id+'"] .jtable-delete-command').remove();
+               }
+            });
+         }
+         else
+         {
+            if(!data.serverResponse.responsible_user_id)
+            {
+               $(event.target).find('[data-record-key="'+data.serverResponse.id+'"] .jtable-field-text[data-jtable-fieldname="responsible_user_id"] .jtable-field-label').addClass('text-danger');
+               $(event.target).find('[data-record-key="'+data.serverResponse.id+'"] .jtable-edit-command .material-symbols-rounded').addClass('text-danger');
+               $(event.target).find('[data-record-key="'+data.serverResponse.id+'"] .jtable-delete-command').remove();
+               $(event.target).find('[data-record-key="'+data.serverResponse.id+'"] .completedbutton').closest('.jtable-cell-content').remove();
+            }
+
+            if(data.serverResponse.responsible_user_id && (data.serverResponse.responsible_user_id != {{ auth()->user()->id }}))
+            {
+               $(event.target).find('[data-record-key="'+data.serverResponse.id+'"] .completedbutton').closest('.jtable-cell-content').remove();
+            }
+            
+            if(data.serverResponse.activity_flow_id)
+            {
+               $(event.target).find('[data-record-key="'+data.serverResponse.id+'"] .jtable-delete-command').remove();
+            }
+         }
+         loadOverview();
+      },
+      recordUpdated: function(event, data) {
+         loadOverview();
+      },
+      recordDeleted: function(event, data) {
+         loadOverview();
+      }
+   });
+   $('#tableContainer').jtable('load');
+});
+
+
+function loadOverview()
+{
+   var container = $('#overviewContainer');
+   container.empty();
+   
+   // Load all activities
+   var activities = ajaxGet('/api/v1/items/Activity', function(data){
+      const MONTHS = [
+         '{{ __("January") }}',
+         '{{ __("February") }}',
+         '{{ __("March") }}',
+         '{{ __("April") }}',
+         '{{ __("May") }}',
+         '{{ __("June") }}',
+         '{{ __("July") }}',
+         '{{ __("August") }}',
+         '{{ __("September") }}',
+         '{{ __("October") }}',
+         '{{ __("November") }}',
+         '{{ __("December") }}',
+      ];
+      
+      var activities = [];
+      Object.values(data.data).forEach((obj) => {
+         if(obj.due)
+         {
+            var periodicity = null;
+            switch(obj.intervaltype)
+            {
+               case 'DAYS':
+                  periodicity = '{{ __("Every") }} '+obj.intervalnum+' {{ __("day(s)") }}';
+                  break;
+               case 'MONTHS':
+                  periodicity = '{{ __("Every") }} '+obj.intervalnum+' {{ __("month(s)") }}';
+                  break;
+               case 'YEARS':
+                  periodicity = '{{ __("Every") }} '+obj.intervalnum+' {{ __("year(s)") }}';
+                  break;
+            }
+            activities.push({
+               name: obj.name,
+               description: obj.description,
+               due: new Date(obj.due+' 23:59:59'),
+               periodicity: periodicity,
+               intervaltype: obj.intervaltype,
+               intervalnum: obj.intervalnum,
+               responsible: obj.responsible_user_id
+            });
+         }
+      });
+      
+      var currentDate = new Date('@php echo(date("Y-m-01 00:00:00")); @endphp');
+      var targetDate = new Date('@php echo(date("Y-m-01 00:00:00")); @endphp');
+      targetDate.setMonth(targetDate.getMonth()+36);
+
+      while(currentDate <= targetDate)
+      {
+         var month = currentDate.getMonth();
+         var year = currentDate.getFullYear();
+
+         var monthcontainer = $('<div />')
+               .addClass('activity-overview-month')
+            .append($('<div />')
+               .addClass('activity-overview-header')
+               .text(MONTHS[month]+' '+year)
+            );
+            
+         var found = false;
+         for (var j = 0; j < activities.length; j++)
+         {
+            while((null != activities[j].intervaltype) && (activities[j].due < currentDate))
+            {
+               if('DAYS' == activities[j].intervaltype)
+                  activities[j].due.setDate(activities[j].due.getDate() + activities[j].intervalnum);
+               else if('MONTHS' == activities[j].intervaltype)
+                  activities[j].due.setMonth(activities[j].due.getMonth() + activities[j].intervalnum);
+               else if('YEARS' == activities[j].intervaltype)
+                  activities[j].due.setYear(activities[j].due.getFullYear() + activities[j].intervalnum);
+            }
+
+            if((year == activities[j].due.getFullYear()) &&
+               (month == (activities[j].due.getMonth())))
+            {
+               var responsible = null;
+               switch(activities[j].responsible)
+               {
+@foreach(\App\Models\User::where('enabled', true)->get()->each->setAppends([]) as $obj)
+                  case {{ $obj->id }}:
+                     responsible = @php echo(json_encode($obj->name)); @endphp;
+                     break;
+@endforeach                 
+                  default:
+                     responsible = '{{ __("None") }}';
+                     break;
+               }
+               
+               
+               if(found)
+                  monthcontainer.append('<hr />');
+               
+               monthcontainer.append($('<div />')
+                  .addClass('activity-item')
+                  .append($('<span />')
+                     .addClass('activity-date')
+                     .text(activities[j].due.toISOString().substring(0,10)))
+                  .append($('<span />')
+                     .addClass('activity-name')
+                     .text(activities[j].name))
+                  .append($('<span />')
+                     .addClass('activity-responsible')
+                     .text(responsible ? '{{ __("Responsible") }}: ' + responsible : ''))
+                  .append($('<span />')
+                     .addClass('activity-periodicity')
+                     .text(activities[j].periodicity ? ', '+activities[j].periodicity.toLowerCase() : ''))
+                  .append($('<span />')
+                     .addClass('activity-description')
+                     .text(activities[j].description))
+                  );
+                  
+               // Calculate next period
+               if('DAYS' == activities[j].intervaltype)
+                  activities[j].due.setDate(activities[j].due.getDate() + activities[j].intervalnum);
+               else if('MONTHS' == activities[j].intervaltype)
+                  activities[j].due.setMonth(activities[j].due.getMonth() + activities[j].intervalnum);
+               else if('YEARS' == activities[j].intervaltype)
+                  activities[j].due.setYear(activities[j].due.getFullYear() + activities[j].intervalnum);
+                  
+               found = true;
+            }
+         }
+        
+        if(found)
+           monthcontainer.appendTo(container);
+        
+         currentDate.setMonth(currentDate.getMonth()+1);
+      }
+   });
+   
+   $('#activityflowtable').jtable({
+      title: '{{ __("Activity flows") }}',
+      paging: true,
+      sorting: false,
+      defaultSorting: 'name ASC',
+      searchfield: true,
+      tableId: 'activityflowstable',
+      bootstrap: true,
+      accordion: true,
+      filter: {
+         hidecompleted: {
+            type: 'checkbox',
+            value: '1',
+            checked: true,
+            text: '{{ __('Hide completed') }}',
+         },
+      },
+      actions: {
+         listAction: '/api/v1/items/ActivityFlow',
+         deleteAction: '/api/v1/items/ActivityFlow',
+      },
+      fields: {
+         id: {
+            key: true,
+            list: false,
+            create: false,
+            edit: false,
+         },
+         name: {
+            title: '{{ __('Name') }}',
+            create: true,
+            edit: true,
+            list: true,
+            header: true,
+         },
+         activity_flow_template_id: {
+            title: '{{ __('Activity flow template') }}',
+            list: true,
+            listClass: 'd-inline-block col col-12 col-md-4',
+            options: [
+@foreach(\App\Models\ActivityFlowTemplate::orderBy('name')->get()->each->setAppends([]) as $obj)
+               { Value: {{ $obj->id }}, DisplayText: @php echo(json_encode($obj->name)); @endphp },
+@endforeach            
+            ]
+         },
+         responsible_user_id: {
+            title: '{{ __('Responsible user') }}',
+            list: true,
+            listClass: 'd-inline-block col col-12 col-md-4',
+            options: [
+@foreach(\App\Models\User::where('enabled', true)->orderBy('name')->get()->each->setAppends([]) as $obj)
+               { Value: {{ $obj->id }}, DisplayText: @php echo(json_encode($obj->name)); @endphp },
+@endforeach            
+            ]
+         },
+         started_at: {
+            title: '{{ __('Started') }}',
+            list: true,
+            listClass: 'd-inline-block col col-12 col-md-4',
+         },
+         hr0: {
+            title: '',
+            list: true,
+            display: function(data){
+               return $('<hr />');
+            }
+         },
+         description: {
+            title: '{{ __('Notes') }}',
+         },
+         hr1: {
+            title: '',
+            list: true,
+            display: function(data){
+               return $('<hr />');
+            }
+         },
+         activities: {
+            title: '{{ __('Activities') }}',
+            list: true,
+            display: function(data) {
+               var retval = $('<div />');
+               
+               Object.values(data.record.activities).forEach((obj) => {
+                  retval.append($('<div />')
+                     .addClass('activityflowitem')
+                     .addClass(obj.status)
+                     .text(obj.name+', '+translateString('responsible user')+': '+obj.responsible + '('+(obj.completed_at ? translateString('Finished') : obj.due)+')'));
+               });
+               
+               return retval;
+            }
+         },
+         hr2: {
+            title: '',
+            list: true,
+            display: function(data){
+               return $('<hr />');
+            }
+         },
+      },
+      recordsLoaded: function(event, data){
+      },
+   });
+   $('#activityflowtable').jtable('load');         
+}
+</script>
+<ul class="nav nav-tabs" id="pageTabs" role="tablist" style="margin-bottom: 20px;">
+  <li class="nav-item" role="presentation">
+    <button class="nav-link active" id="activitytab" data-bs-toggle="tab" data-bs-target="#activitytabcontent" type="button" role="tab" aria-controls="activitytab" aria-selected="true">{{ __("Activities") }}</button>
+  </li>
+  <li class="nav-item" role="presentation">
+    <button class="nav-link" id="overviewtab" data-bs-toggle="tab" data-bs-target="#overviewtabcontent" type="button" role="tab" aria-controls="overviewtab" aria-selected="true">{{ __("Activity overview") }}</button>
+  </li>
+  <li class="nav-item" role="presentation">
+    <button class="nav-link" id="activityflowtab" data-bs-toggle="tab" data-bs-target="#activityflowtabcontents" type="button" role="tab" aria-controls="activityflowtab" aria-selected="true">{{ __("Activity flows") }}</button>
+  </li>
+</ul>
+<div class="tab-content" id="tabContents">
+  <div class="tab-pane fade show active" id="activitytabcontent" role="tabpanel" aria-labelledby="activitytab">
+      <div id="tableContainer"></div>
+  </div>
+  <div class="tab-pane fade show" id="overviewtabcontent" role="tabpanel" aria-labelledby="overviewtab">
+      <h3>{{ __("Overview of activities for the next") }} 36 {{ __("months") }}</h3>
+      <div id="overviewContainer"></div>
+  </div>
+  <div class="tab-pane fade show" id="activityflowtabcontents" role="tabpanel" aria-labelledby="activityflowtab">
+@if(\App\Models\ActivityFlowTemplate::exists())
+   <div class="dropdown">
+     <button class="btn btn-sm btn-outline-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+     {{ __("Start new flow") }}
+     </button>
+     <ul class="dropdown-menu" style="border-radius: 5px;">
+@foreach(\App\Models\ActivityFlowTemplate::orderBy('name')->get()->each->setAppends([]) as $obj)
+       <li><a class="dropdown-item" href="/management/activityflow?activity_flow_template_id={{ $obj->id }}">{{ $obj->name }}</a></li>
+@endforeach
+     </ul>
+   </div>  
+@endif
+      <div id="activityflowtable" style="margin-top: 20px;"></div>
+  </div>
+</div>
+@endsection

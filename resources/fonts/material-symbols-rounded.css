@@ -1,0 +1,21 @@
+@font-face {
+  font-family: "Material Symbols Rounded";
+  font-style: normal;
+  src: url("./material-symbols-rounded.woff2") format("woff2"), url("./material-symbols-rounded.ttf") format("ttf");
+  font-display: block;
+}
+
+.material-symbols-rounded {
+  font-family: 'Material Symbols Rounded';
+  font-weight: 300;
+  font-style: normal;
+  font-size: 24px;  /* Preferred icon size */
+  display: inline-block;
+  line-height: 1;
+  text-transform: none;
+  letter-spacing: normal;
+  word-wrap: normal;
+  white-space: nowrap;
+  direction: ltr;
+  float: left;
+}
