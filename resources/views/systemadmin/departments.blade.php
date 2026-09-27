@@ -116,7 +116,7 @@ $(function(){
                return getDepartmentParentSelectOptions(data.record ? data.record.id : null);
             }
          },
-@if(!config('ledningssystemet.graph_departments_assignusers') && ("" != config('ledningssystemet.graph_groupsync_path', '')))
+@if(!config('ledningssystemet.graph_departments_assignusers') && config('ledningssystemet.graph_sync_enabled', false))
          external_provider_group_id: {
             title: '{{ config("ledningssystemet.graph_provider_name", __("External provider"))." ".__("group") }}',
             create: true,
@@ -132,7 +132,7 @@ $(function(){
             ]
          },
 @endif
-@if(!config('ledningssystemet.graph_departments_assignusers') && ("" != config('ledningssystemet.graph_groupsync_path', '')))
+@if(!config('ledningssystemet.graph_departments_assignusers') && config('ledningssystemet.graph_sync_enabled', false))
          hr0: {
             list: true,
             edit: false,
@@ -147,7 +147,7 @@ $(function(){
             edit: true,
             list: true,
             multiple: true,
-@if("" != config('ledningssystemet.graph_groupsync_path', ''))
+@if(config('ledningssystemet.graph_sync_enabled', false))
             tooltip: '{{ __("This will be overwritten by the next synchronization with external provider if a group is selected above") }}',
 @endif
             options: [

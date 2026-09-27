@@ -2,8 +2,8 @@
 
 namespace Ledningssystemet\Ledningssystemet;
 
-use App\Console\Commands\graphsync;
-use App\Console\Commands\riskreassess;
+use App\Console\Commands\GraphSync;
+use App\Console\Commands\riskReassess;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Contracts\Foundation\CachesConfiguration;
 use Illuminate\Support\ServiceProvider;
@@ -83,8 +83,8 @@ class LedningssystemetServiceProvider extends ServiceProvider
          // Composer. Register the artisan commands and the schedule explicitly
          // here instead, so they work both standalone and as a dependency.
          $this->commands([
-            graphsync::class,
-            riskreassess::class,
+            GraphSync::class,
+            riskReassess::class,
          ]);
 
          $this->app->booted(function (): void {

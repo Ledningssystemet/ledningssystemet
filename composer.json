@@ -15,6 +15,7 @@
         "laravel/sanctum": "^4.0",
         "laravel/socialite": "^5.30",
         "laravel/tinker": "^3.0",
+        "microsoft/microsoft-graph": "^3.7",
         "phpoffice/phpspreadsheet": "^2.1",
         "phpoffice/phpword": "^1.2",
         "pragmarx/google2fa": "^9.0",
@@ -75,7 +76,9 @@
         "preferred-install": "dist",
         "sort-packages": true,
         "allow-plugins": {
-            "pestphp/pest-plugin": true
+            "pestphp/pest-plugin": true,
+            "php-http/discovery": true,
+            "tbachert/spi": true
         }
     },
     "minimum-stability": "dev",

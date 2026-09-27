@@ -15,13 +15,20 @@ class StatusOverview extends Mailable
     use Queueable, SerializesModels;
     
     protected $rcptUser;
+    protected $sections;
+    protected $dueItems;
 
     /**
      * Create a new message instance.
+     *
+     * @param array<string, array> $sections Status issues grouped by section header
+     * @param array<int, array{level: string, text: string}> $dueItems Overdue or near due items
      */
-    public function __construct(User $user)
+    public function __construct(User $user, array $sections = [], array $dueItems = [])
     {
        $this->rcptUser = $user;
+       $this->sections = $sections;
+       $this->dueItems = $dueItems;
     }
 
     /**
@@ -42,7 +49,11 @@ class StatusOverview extends Mailable
         return new Content(
             view: 'mail.statusoverview',
             text: 'mail.statusoverview-text',
-            with: ['user' => $this->rcptUser],
+            with: [
+                'user' => $this->rcptUser,
+                'sections' => $this->sections,
+                'dueItems' => $this->dueItems,
+            ],
         );
     }
 

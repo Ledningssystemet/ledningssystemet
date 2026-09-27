@@ -11,7 +11,7 @@
     "scripts": {
         "dev:app": "php artisan serve --port=8000",
         "dev:frontend": "vite",
-        "dev": "concurrently \"npm run dev:app\" \"npm run dev:frontend\"",
+        "dev": "concurrently \"npm run dev:app\" \"npm run dev:frontend\"  \"php artisan queue:work --queue=high,default,low\"",
         "build": "vite build  --emptyOutDir"
     },
     "devDependencies": {

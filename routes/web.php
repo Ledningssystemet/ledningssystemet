@@ -241,11 +241,6 @@ Route::group(['namespace' => 'App\Http\Controllers'], function()
       Route::get('/systemadmin/customproperties', function() { return view('systemadmin.customproperties'); }); // Custom properties settings
 
       /**
-      * Mail preview routes
-      */
-      Route::get('/mail/statusoverview', function() { return new App\Mail\StatusOverview(auth()->user()); }); // Status mail
-      
-      /**
       * i18n
       */
       Route::get('/i18n/javascript', function() { 

@@ -46,22 +46,11 @@ return [
 
    // Microsoft Graph synchronization settings
    'graph_provider_name' => env('GRAPH_PROVIDER_NAME', 'External provider'),
-   'graph_usersync_path' => env('GRAPH_USERSYNC_PATH', ''),
-   'graph_groupsync_path' => env('GRAPH_GROUPSYNC_PATH', ''),
-   'graph_groupusers_path' => env('GRAPH_GROUPUSERS_PATH', ''),
-   'graph_management_path' => env('GRAPH_MANAGEMENT_PATH'),
-   'graph_usersync_namefield' => env('GRAPH_USERSYNC_NAMEFIELD', 'displayName'),
-   'graph_usersync_titlefield' => env('GRAPH_USERSYNC_TITLEFIELD', 'jobTitle'),
-   'graph_usersync_enabledfield' => env('GRAPH_USERSYNC_ENABLEDFIELD', 'accountEnabled'),
-   'graph_usersync_emailfield' => env('GRAPH_USERSYNC_EMAILFIELD', 'userPrincipalName'),
-   'graph_departments_assignusers' => env('GRAPH_DEPARTMENTS_ASSIGNUSERS', false),
-   'graph_departments_name_delimiter' => env('GRAPH_DEPARTMENTS_NAME_DELIMITER', '-'),
-   'graph_ignore_departments' => env('GRAPH_IGNORE_DEPARTMENTS', ''),
-   'graph_departments_pattern_level1' => env('GRAPH_DEPARTMENTS_PATTERN_LEVEL1', ''),
-   'graph_departments_pattern_level2' => env('GRAPH_DEPARTMENTS_PATTERN_LEVEL2', ''),
-   'graph_departments_pattern_level3' => env('GRAPH_DEPARTMENTS_PATTERN_LEVEL3', ''),
-   'graph_departments_pattern_level4' => env('GRAPH_DEPARTMENTS_PATTERN_LEVEL4', ''),
-   'graph_departments_pattern_level5' => env('GRAPH_DEPARTMENTS_PATTERN_LEVEL5', ''),
+   'graph_sync_enabled' => env('GRAPH_SYNC_ENABLED', false),
+   'graph_sync_external_users' => env('GRAPH_SYNC_EXTERNAL_USERS', false),
+   'graph_usersync_filter' => env('GRAPH_USERSYNC_FILTER', ''),
+   'graph_management_sync' => env('GRAPH_MANAGEMENT_SYNC', false),
+   'graph_groupsync_filter' => env('GRAPH_GROUPSYNC_FILTER', ''),
 
    // OpenAI / AI assistant settings
    'openai_endpoint' => env('OPENAI_ENDPOINT'),

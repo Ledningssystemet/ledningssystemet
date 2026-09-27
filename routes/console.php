@@ -14,3 +14,9 @@ use Illuminate\Support\Facades\Artisan;
 |
 */
 
+// Graph sync
+
+Schedule::command('ledningssystemet:graphsync')->hourly()->withoutOverlapping();
+
+// Perform risk re-assessment
+Schedule::command('ledningssystemet:risksreassess')->dailyAt('05:00');

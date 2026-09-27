@@ -96,7 +96,7 @@ $(function(){
 @endforeach
             ],
          },
-@if("" != config('ledningssystemet.graph_groupsync_path', ''))
+@if(config('ledningssystemet.graph_sync_enabled', false))
          external_provider_group_id: {
             title: '{{ config("ledningssystemet.graph_provider_name", __("External provider"))." ".__("group") }}',
             create: true,
@@ -127,7 +127,7 @@ $(function(){
             list: true,
             multiple: true,
             listClass: 'd-inline-block col-12 col-md-4',
-@if("" != config('ledningssystemet.graph_groupsync_path', ''))
+@if(config('ledningssystemet.graph_sync_enabled', false))
             tooltip: '{{ __("This will be overwritten by the next synchronization with external provider if a group is selected above") }}',
 @endif
             options: [
