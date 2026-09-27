@@ -3,7 +3,8 @@
 namespace Ledningssystemet\Ledningssystemet;
 
 use App\Console\Commands\GraphSync;
-use App\Console\Commands\riskReassess;
+use App\Console\Commands\RiskReassess;
+use App\Console\Commands\MailSendstatus;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Contracts\Foundation\CachesConfiguration;
 use Illuminate\Support\ServiceProvider;
@@ -84,17 +85,21 @@ class LedningssystemetServiceProvider extends ServiceProvider
          // here instead, so they work both standalone and as a dependency.
          $this->commands([
             GraphSync::class,
-            riskReassess::class,
+            RiskReassess::class,
+			MailSendstatus::class,
          ]);
 
          $this->app->booted(function (): void {
             $schedule = $this->app->make(Schedule::class);
 
-            // Graph sync
-            $schedule->command('ledningssystemet:graphsync')->hourly()->withoutOverlapping();
+			// Graph sync
+			$schedule->command('ledningssystemet:graphsync')->hourly()->withoutOverlapping();
 
-            // Perform risk re-assessment
-            $schedule->command('ledningssystemet:risksreassess')->dailyAt('05:00');
+			// Perform risk re-assessment
+			$schedule->command('ledningssystemet:risksreassess')->dailyAt('05:00');
+
+			// Daily status email
+			$schedule->command('ledningssystemet:sendstatusmail')->dailyAt('06:00');
          });
       }
    }

@@ -15,8 +15,10 @@ use Illuminate\Support\Facades\Artisan;
 */
 
 // Graph sync
-
 Schedule::command('ledningssystemet:graphsync')->hourly()->withoutOverlapping();
 
 // Perform risk re-assessment
 Schedule::command('ledningssystemet:risksreassess')->dailyAt('05:00');
+
+// Daily status email
+Schedule::command('ledningssystemet:sendstatusmail')->dailyAt('06:00');
