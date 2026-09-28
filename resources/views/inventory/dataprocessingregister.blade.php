@@ -162,7 +162,7 @@ $(function(){
             default: 0,
             options: [
                { value: 0, text: '{{ __('Show all') }}' },
-@foreach(\App\Models\Department::orderBy('name')->get()->each->setAppends([]) as $obj)
+@foreach(\Ledningssystemet\Ledningssystemet\Models\Department::orderBy('name')->get()->each->setAppends([]) as $obj)
                { value: {{ $obj->id }}, text: <?php echo(json_encode($obj->name)); ?> },
 @endforeach               
             ]
@@ -476,7 +476,7 @@ $(function(){
             default: 0,
             options: [
                { value: 0, text: '{{ __('Show all customers') }}' },
-@foreach(\App\Models\Customer::orderBy('name')->get() as $obj)
+@foreach(\Ledningssystemet\Ledningssystemet\Models\Customer::orderBy('name')->get() as $obj)
 @if($obj->int_processes->count())
                { value: {{ $obj->id }}, text: <?php echo(json_encode($obj->name)); ?> },
 @endif
@@ -562,7 +562,7 @@ $(function(){
             default: 0,
             options: [
                { value: 0, text: '{{ __('Show all processes') }}' },
-@foreach(\App\Models\Process::where('dataprocessor', 1)->orderBy('name')->get()->each->setAppends([]) as $obj)
+@foreach(\Ledningssystemet\Ledningssystemet\Models\Process::where('dataprocessor', 1)->orderBy('name')->get()->each->setAppends([]) as $obj)
                { value: {{ $obj->id }}, text: <?php echo(json_encode($obj->name)); ?> },
 @endforeach               
             ]

@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Notifications;
+namespace Ledningssystemet\Ledningssystemet\Notifications;
 
-use App\Models\User;
+use Ledningssystemet\Ledningssystemet\Models\User;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;

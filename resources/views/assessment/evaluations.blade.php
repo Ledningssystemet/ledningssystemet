@@ -1,4 +1,4 @@
-@php if(Auth::user()->cannot('index', \App\Models\ComplianceEvaluation::class)) abort(403); @endphp
+@php if(Auth::user()->cannot('index', \Ledningssystemet\Ledningssystemet\Models\ComplianceEvaluation::class)) abort(403); @endphp
 @extends('layouts.master')
 
 @section('container')
@@ -46,16 +46,16 @@ $(function(){
          },
       },
       actions: {
-@if(Auth::user()->can('index', 'App\\Models\\ComplianceEvaluation'))
+@if(Auth::user()->can('index', 'Ledningssystemet\Ledningssystemet\\Models\\ComplianceEvaluation'))
          listAction: '/api/v1/items/ComplianceEvaluation',
 @endif
-@if(Auth::user()->can('create', 'App\\Models\\ComplianceEvaluation'))
+@if(Auth::user()->can('create', 'Ledningssystemet\Ledningssystemet\\Models\\ComplianceEvaluation'))
          createAction: '/api/v1/items/ComplianceEvaluation',
 @endif
-@if(Auth::user()->can('create', 'App\\Models\\ComplianceEvaluation'))
+@if(Auth::user()->can('create', 'Ledningssystemet\Ledningssystemet\\Models\\ComplianceEvaluation'))
          updateAction: '/api/v1/items/ComplianceEvaluation',
 @endif
-@if(Auth::user()->can('create', 'App\\Models\\ComplianceEvaluation'))
+@if(Auth::user()->can('create', 'Ledningssystemet\Ledningssystemet\\Models\\ComplianceEvaluation'))
          deleteAction: '/api/v1/items/ComplianceEvaluation',
 @endif
       },
@@ -273,7 +273,7 @@ $(function(){
             display: function(data){
                var retval = $('<div />');
                
-@if(Auth::user()->can('create', 'App\\Models\\ComplianceEvaluation'))
+@if(Auth::user()->can('create', 'Ledningssystemet\Ledningssystemet\\Models\\ComplianceEvaluation'))
                if(data.record.finished && !data.record.archived)
                {
                   retval.append($('<button />')
@@ -314,7 +314,7 @@ $(function(){
                            .css({'display': 'block', 'font-style': 'italic', 'margin-bottom': '10px'})
                         );
                         
-@foreach(\App\Models\RequirementSource::orderBy('reference')->whereNull('not_applicable_at')->select(['id', 'reference', 'name'])->get()->each->setAppends([]) as $rs)
+@foreach(\Ledningssystemet\Ledningssystemet\Models\RequirementSource::orderBy('reference')->whereNull('not_applicable_at')->select(['id', 'reference', 'name'])->get()->each->setAppends([]) as $rs)
                         dialogMessage.append($('<div />')
                            .addClass('form-check')
                            .append($('<input type="checkbox" name="{{ $rs->id }}" id="cl-{{ $rs->id }}" />')

@@ -19,10 +19,6 @@ See our training videos for more examples: https://support.ledningssystemet.se/k
 
 See [INSTALL.md](INSTALL.md) for installation instructions.
 
-## Technology
-
-The application is built with Laravel, PHP, Vite, and JavaScript.
-
 ## License
 
 Ledningssystemet is licensed under the [GNU Affero General Public License v3.0 or later](https://www.gnu.org/licenses/agpl-3.0.html). If you modify and run the software as a network service, you must make the corresponding source code available to its users under the same license.

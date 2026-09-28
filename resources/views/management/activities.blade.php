@@ -1,4 +1,4 @@
-@php if(Auth::user()->cannot('index', \App\Models\Activity::class)) abort(403); @endphp
+@php if(Auth::user()->cannot('index', \Ledningssystemet\Ledningssystemet\Models\Activity::class)) abort(403); @endphp
 @extends('layouts.master')
 
 @section('container')
@@ -22,7 +22,7 @@ $(function(){
             default: 0,
             options: [
                { value: 0, text: '{{ __('Show all') }}' },
-                  @foreach(\App\Models\User::leftJoin('activities', 'activities.responsible_user_id', '=', 'users.id')->whereNotNull('activities.id')->select('users.*')->distinct()->orderBy('users.name')->get()->each->setAppends([]) as $obj)
+                  @foreach(\Ledningssystemet\Ledningssystemet\Models\User::leftJoin('activities', 'activities.responsible_user_id', '=', 'users.id')->whereNotNull('activities.id')->select('users.*')->distinct()->orderBy('users.name')->get()->each->setAppends([]) as $obj)
                { value: {{ $obj->id }}, text: <?php echo(json_encode($obj->name)); ?> },
                @endforeach
             ]
@@ -41,16 +41,16 @@ $(function(){
          },
       },
       actions: {
-@if(Auth::user()->can('index', \App\Models\Activity::class))         
+@if(Auth::user()->can('index', \Ledningssystemet\Ledningssystemet\Models\Activity::class))
          listAction: '/api/v1/items/Activity',
 @endif      
-@if(Auth::user()->can('create', \App\Models\Activity::class))         
+@if(Auth::user()->can('create', \Ledningssystemet\Ledningssystemet\Models\Activity::class))
          createAction: '/api/v1/items/Activity',
 @endif      
-@if(Auth::user()->can('update', \App\Models\Activity::class))         
+@if(Auth::user()->can('update', \Ledningssystemet\Ledningssystemet\Models\Activity::class))
          updateAction: '/api/v1/items/Activity',
 @endif      
-@if(Auth::user()->can('delete', \App\Models\Activity::class))         
+@if(Auth::user()->can('delete', \Ledningssystemet\Ledningssystemet\Models\Activity::class))
          deleteAction: '/api/v1/items/Activity',
 @endif      
       },
@@ -97,7 +97,7 @@ $(function(){
             listClass: 'd-inline-block col-4',
             defaultValue: {{ auth()->user()->id  }},
             options: [
-@foreach(App\Models\User::where('enabled', true)->get()->each->setAppends([]) as $obj)
+@foreach(Ledningssystemet\Ledningssystemet\Models\User::where('enabled', true)->get()->each->setAppends([]) as $obj)
                { Value: {{$obj->id}}, DisplayText: @php echo(json_encode($obj->name)); @endphp },
 @endforeach
             ]
@@ -359,7 +359,7 @@ function loadOverview()
                var responsible = null;
                switch(activities[j].responsible)
                {
-@foreach(\App\Models\User::where('enabled', true)->get()->each->setAppends([]) as $obj)
+@foreach(\Ledningssystemet\Ledningssystemet\Models\User::where('enabled', true)->get()->each->setAppends([]) as $obj)
                   case {{ $obj->id }}:
                      responsible = @php echo(json_encode($obj->name)); @endphp;
                      break;
@@ -451,7 +451,7 @@ function loadOverview()
             list: true,
             listClass: 'd-inline-block col col-12 col-md-4',
             options: [
-@foreach(\App\Models\ActivityFlowTemplate::orderBy('name')->get()->each->setAppends([]) as $obj)
+@foreach(\Ledningssystemet\Ledningssystemet\Models\ActivityFlowTemplate::orderBy('name')->get()->each->setAppends([]) as $obj)
                { Value: {{ $obj->id }}, DisplayText: @php echo(json_encode($obj->name)); @endphp },
 @endforeach            
             ]
@@ -461,7 +461,7 @@ function loadOverview()
             list: true,
             listClass: 'd-inline-block col col-12 col-md-4',
             options: [
-@foreach(\App\Models\User::where('enabled', true)->orderBy('name')->get()->each->setAppends([]) as $obj)
+@foreach(\Ledningssystemet\Ledningssystemet\Models\User::where('enabled', true)->orderBy('name')->get()->each->setAppends([]) as $obj)
                { Value: {{ $obj->id }}, DisplayText: @php echo(json_encode($obj->name)); @endphp },
 @endforeach            
             ]
@@ -538,13 +538,13 @@ function loadOverview()
       <div id="overviewContainer"></div>
   </div>
   <div class="tab-pane fade show" id="activityflowtabcontents" role="tabpanel" aria-labelledby="activityflowtab">
-@if(\App\Models\ActivityFlowTemplate::exists())
+@if(\Ledningssystemet\Ledningssystemet\Models\ActivityFlowTemplate::exists())
    <div class="dropdown">
      <button class="btn btn-sm btn-outline-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
      {{ __("Start new flow") }}
      </button>
      <ul class="dropdown-menu" style="border-radius: 5px;">
-@foreach(\App\Models\ActivityFlowTemplate::orderBy('name')->get()->each->setAppends([]) as $obj)
+@foreach(\Ledningssystemet\Ledningssystemet\Models\ActivityFlowTemplate::orderBy('name')->get()->each->setAppends([]) as $obj)
        <li><a class="dropdown-item" href="/management/activityflow?activity_flow_template_id={{ $obj->id }}">{{ $obj->name }}</a></li>
 @endforeach
      </ul>

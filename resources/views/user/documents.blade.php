@@ -1,4 +1,4 @@
-@php if(Auth::user()->cannot('index', \App\Models\LibraryDocument::class)) abort(403); @endphp
+@php if(Auth::user()->cannot('index', \Ledningssystemet\Ledningssystemet\Models\LibraryDocument::class)) abort(403); @endphp
 @extends('layouts.master')
 @section('container')
 <style>
@@ -16,7 +16,7 @@ $(function(){
       bootstrap: true,
       accordion: true,
       actions: {
-@if(Auth::user()->can('index', \App\Models\LibraryDocument::class))
+@if(Auth::user()->can('index', \Ledningssystemet\Ledningssystemet\Models\LibraryDocument::class))
          listAction: '/api/v1/items/LibraryDocument?responsible_user_id={{ auth()->user()->id }}',
 @endif
          updateAction: '/api/v1/items/LibraryDocument',
@@ -66,12 +66,11 @@ $(function(){
             title: '{{ __('Processes') }}',
             type: 'select',
             list: true,
+            create: true,
             edit: true,
-            create: false,
-
             multiple: true,
             options: [
-@foreach(\App\Models\Process::orderBy('name')->get()->each->setAppends([]) as $obj)
+@foreach(\Ledningssystemet\Ledningssystemet\Models\Process::orderBy('name')->get()->each->setAppends([]) as $obj)
                { Value: {{ $obj->id }}, DisplayText: '{{ $obj->name }}' },
 @endforeach               
             ]
@@ -146,7 +145,7 @@ $(function(){
    });
    $('#tableContainer').jtable('load');
 
-@if(auth()->user()->can('publishdocument', \App\Models\DocumentVersion::class))
+@if(auth()->user()->can('publishdocument', \Ledningssystemet\Ledningssystemet\Models\DocumentVersion::class))
    $('#documentVersionTableContainer').jtable({
       title: '{{ __("Document versions pending approval") }}',
       tableId: 'documentversionstable',
@@ -183,7 +182,7 @@ $(function(){
             defaultValue: {{ auth()->user()->id }},
             options: [
                { Value: null, DisplayText: '{{ __("None assigned") }}' },
-                  @foreach(App\Models\User::orderBy('name')->get()->each->setAppends([]) as $obj)
+                  @foreach(Ledningssystemet\Ledningssystemet\Models\User::orderBy('name')->get()->each->setAppends([]) as $obj)
                { Value: {{$obj ->id}}, DisplayText: @php echo(json_encode($obj->name)); @endphp  },
                @endforeach
             ],
@@ -221,7 +220,7 @@ $(function(){
 });
 </script>
 <div id="tableContainer"></div>
-@if(auth()->user()->can('publishdocument', \App\Models\DocumentVersion::class))
+@if(auth()->user()->can('publishdocument', \Ledningssystemet\Ledningssystemet\Models\DocumentVersion::class))
 <div id="documentVersionTableContainer"></div>
 @endif
 @endsection

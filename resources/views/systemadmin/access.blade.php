@@ -1,4 +1,4 @@
-@php if(Auth::user()->cannot('index', \App\Models\AccessGroup::class)) abort(403); @endphp
+@php if(Auth::user()->cannot('index', \Ledningssystemet\Ledningssystemet\Models\AccessGroup::class)) abort(403); @endphp
 @extends('layouts.master')
 @section('container')
 
@@ -15,16 +15,16 @@ $(function(){
          addNewRecord: '{{ __('Create access group') }}',
       },
       actions: {
-@if(Auth::user()->can('index', 'App\\Models\\AccessGroup'))
+@if(Auth::user()->can('index', 'Ledningssystemet\Ledningssystemet\\Models\\AccessGroup'))
          listAction: '/api/v1/items/AccessGroup',
 @endif
-@if(Auth::user()->can('create', 'App\\Models\\AccessGroup'))
+@if(Auth::user()->can('create', 'Ledningssystemet\Ledningssystemet\\Models\\AccessGroup'))
          createAction: '/api/v1/items/AccessGroup',
 @endif
-@if(Auth::user()->can('update', 'App\\Models\\AccessGroup'))
+@if(Auth::user()->can('update', 'Ledningssystemet\Ledningssystemet\\Models\\AccessGroup'))
          updateAction: '/api/v1/items/AccessGroup',
 @endif         
-@if(Auth::user()->can('delete', 'App\\Models\\AccessGroup'))
+@if(Auth::user()->can('delete', 'Ledningssystemet\Ledningssystemet\\Models\\AccessGroup'))
          deleteAction: '/api/v1/items/AccessGroup',
 @endif         
       },
@@ -79,7 +79,7 @@ $(function(){
             tooltip: 'This will be overwritten by the next synchronization with external provider if a group is selected above',
 @endif
             options: [
-@foreach(App\Models\User::orderBy('name')->get()->each->setAppends([]) as $obj)
+@foreach(Ledningssystemet\Ledningssystemet\Models\User::orderBy('name')->get()->each->setAppends([]) as $obj)
                { Value: {{ $obj->id }}, DisplayText: @php echo(json_encode($obj->name)); @endphp },
 @endforeach
             ]
@@ -100,7 +100,7 @@ $(function(){
             defaultValue: null,
             options: [
                { Value: null, DisplayText: '{{ __("None") }}' },
-@foreach(App\Models\RiskLevel::orderBy('ordinal')->get()->each->setAppends([]) as $obj)
+@foreach(Ledningssystemet\Ledningssystemet\Models\RiskLevel::orderBy('ordinal')->get()->each->setAppends([]) as $obj)
                { Value: {{$obj ->id}}, DisplayText: '{{ $obj->name }}' },
 @endforeach
             ]
@@ -122,7 +122,7 @@ $(function(){
             options: [
 @php   
    $permissions = DB::table('permissions')
-      ->where('guard_name', App\Models\AccessGroup::SHARED_GUARD)
+      ->where('guard_name', Ledningssystemet\Ledningssystemet\Models\AccessGroup::SHARED_GUARD)
       ->orderBy('name')
       ->pluck('name', 'id')
       ->toArray();

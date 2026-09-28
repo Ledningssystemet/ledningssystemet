@@ -1,4 +1,4 @@
-@php if(Auth::user()->cannot('index', \App\Models\Asset::class)) abort(403); @endphp
+@php if(Auth::user()->cannot('index', \Ledningssystemet\Ledningssystemet\Models\Asset::class)) abort(403); @endphp
 @extends('layouts.master')
 
 @section('container')
@@ -44,7 +44,7 @@
                addNewRecord: '{{ __('Create asset') }}',
             },
             filter: {
-               @php $tags = \App\Models\Asset::allUsedTags(); @endphp
+               @php $tags = \Ledningssystemet\Ledningssystemet\Models\Asset::allUsedTags(); @endphp
                   @if(0 < count($tags))
                tag_id: {
                   type: 'select',
@@ -65,20 +65,20 @@
                   default: 0,
                   options: [
                      {value: 0, text: '{{ __('Show all') }}'},
-                        @foreach(App\Models\Process::orderBy('name')->get()->each->setAppends([]) as $obj)
+                        @foreach(Ledningssystemet\Ledningssystemet\Models\Process::orderBy('name')->get()->each->setAppends([]) as $obj)
                      {
                         value: {{ $obj->id }}, text: @php echo(json_encode($obj->name)); @endphp },
                      @endforeach
                   ]
                },
-               @if(\App\Models\Site::count() > 0)
+               @if(\Ledningssystemet\Ledningssystemet\Models\Site::count() > 0)
                site_id: {
                   type: 'select',
                   text: '{{ __("Site") }}',
                   default: 0,
                   options: [
                      {value: 0, text: '{{ __('Show all') }}'},
-                        @foreach(\App\Models\Site::orderBy('name')->get()->each->setAppends([]) as $obj)
+                        @foreach(\Ledningssystemet\Ledningssystemet\Models\Site::orderBy('name')->get()->each->setAppends([]) as $obj)
                      {
                         value: {{ $obj->id }}, text: <?php echo(json_encode($obj->name)); ?> },
                      @endforeach
@@ -91,7 +91,7 @@
                   default: 0,
                   options: [
                      {value: 0, text: '{{ __('Show all') }}'},
-                        @foreach(App\Models\ConfidentialityClass::orderBy('ordinal', 'desc')->get()->each->setAppends([]) as $obj)
+                        @foreach(Ledningssystemet\Ledningssystemet\Models\ConfidentialityClass::orderBy('ordinal', 'desc')->get()->each->setAppends([]) as $obj)
                      {
                         value: {{ $obj->id }}, text: @php echo(json_encode($obj->name)); @endphp },
                      @endforeach
@@ -103,7 +103,7 @@
                   default: 0,
                   options: [
                      {value: 0, text: '{{ __('Show all') }}'},
-                        @foreach(App\Models\IntegrityClass::orderBy('ordinal', 'desc')->get()->each->setAppends([]) as $obj)
+                        @foreach(Ledningssystemet\Ledningssystemet\Models\IntegrityClass::orderBy('ordinal', 'desc')->get()->each->setAppends([]) as $obj)
                      {
                         value: {{ $obj->id }}, text: @php echo(json_encode($obj->name)); @endphp },
                      @endforeach
@@ -115,7 +115,7 @@
                   default: 0,
                   options: [
                      {value: 0, text: '{{ __('Show all') }}'},
-                        @foreach(App\Models\AvailabilityClass::orderBy('ordinal', 'desc')->get()->each->setAppends([]) as $obj)
+                        @foreach(Ledningssystemet\Ledningssystemet\Models\AvailabilityClass::orderBy('ordinal', 'desc')->get()->each->setAppends([]) as $obj)
                      {
                         value: {{ $obj->id }}, text: @php echo(json_encode($obj->name)); @endphp },
                      @endforeach
@@ -127,7 +127,7 @@
                   default: 0,
                   options: [
                      {value: 0, text: '{{ __('Show all') }}'},
-                        @foreach(\App\Models\User::leftJoin('assets', 'assets.responsible_user_id', '=', 'users.id')->whereNotNull('assets.id')->select('users.*')->distinct()->orderBy('users.name')->get()->each->setAppends([]) as $obj)
+                        @foreach(\Ledningssystemet\Ledningssystemet\Models\User::leftJoin('assets', 'assets.responsible_user_id', '=', 'users.id')->whereNotNull('assets.id')->select('users.*')->distinct()->orderBy('users.name')->get()->each->setAppends([]) as $obj)
                      {
                         value: {{ $obj->id }}, text: <?php echo(json_encode($obj->name)); ?> },
                      @endforeach
@@ -145,19 +145,19 @@
                   checked: false,
                   text: '{{ __('Hide items without issues') }}',
                },
-               @include('components.customproperty', ['classname' => 'App\Models\Asset', 'showFilter' => true])
+               @include('components.customproperty', ['classname' => 'Ledningssystemet\Ledningssystemet\Models\Asset', 'showFilter' => true])
             },
             actions: {
-               @if(Auth::user()->can('index', 'App\\Models\\Asset'))
+               @if(Auth::user()->can('index', 'Ledningssystemet\Ledningssystemet\\Models\\Asset'))
                listAction: '/api/v1/items/Asset',
                @endif
-                  @if(Auth::user()->can('create', 'App\\Models\\Asset'))
+                  @if(Auth::user()->can('create', 'Ledningssystemet\Ledningssystemet\\Models\\Asset'))
                createAction: '/api/v1/items/Asset',
                @endif
-                  @if(Auth::user()->can('update', 'App\\Models\\Asset'))
+                  @if(Auth::user()->can('update', 'Ledningssystemet\Ledningssystemet\\Models\\Asset'))
                updateAction: '/api/v1/items/Asset',
                @endif
-                  @if(Auth::user()->can('delete', 'App\\Models\\Asset'))
+                  @if(Auth::user()->can('delete', 'Ledningssystemet\Ledningssystemet\\Models\\Asset'))
                deleteAction: '/api/v1/items/Asset',
                @endif
             },
@@ -187,7 +187,7 @@
                   defaultValue: {{ auth()->user()->id }},
                   options: [
                      {Value: null, DisplayText: '{{ __("None assigned") }}'},
-                        @foreach(App\Models\User::orderBy('name')->get()->each->setAppends([]) as $obj)
+                        @foreach(Ledningssystemet\Ledningssystemet\Models\User::orderBy('name')->get()->each->setAppends([]) as $obj)
                      {
                         Value: {{$obj ->id}}, DisplayText: @php echo(json_encode($obj->name)); @endphp  },
                      @endforeach
@@ -202,7 +202,7 @@
                   defaultValue: null,
                   options: [
                      {Value: null, DisplayText: '{{ __("None") }}'},
-                        @foreach(\App\Models\Site::orderBy('name')->get()->each->setAppends([]) as $obj)
+                        @foreach(\Ledningssystemet\Ledningssystemet\Models\Site::orderBy('name')->get()->each->setAppends([]) as $obj)
                      {
                         Value: {{$obj->id}}, DisplayText: '{{ $obj->name }}'
                      },
@@ -217,7 +217,7 @@
                   listClass: 'd-inline-block col-12 col-md-4',
                   options: [
                      {Value: null, DisplayText: '{{ __("Not classified") }}'},
-                        @foreach(App\Models\ConfidentialityClass::orderBy('name')->get()->each->setAppends([]) as $obj)
+                        @foreach(Ledningssystemet\Ledningssystemet\Models\ConfidentialityClass::orderBy('name')->get()->each->setAppends([]) as $obj)
                      {
                         Value: {{$obj ->id}}, DisplayText: @php echo(json_encode($obj->name)); @endphp  },
                      @endforeach
@@ -231,7 +231,7 @@
                   listClass: 'd-inline-block col-12 col-md-4',
                   options: [
                      {Value: null, DisplayText: '{{ __("Not classified") }}'},
-                        @foreach(App\Models\IntegrityClass::orderBy('name')->get()->each->setAppends([]) as $obj)
+                        @foreach(Ledningssystemet\Ledningssystemet\Models\IntegrityClass::orderBy('name')->get()->each->setAppends([]) as $obj)
                      {
                         Value: {{$obj ->id}}, DisplayText: @php echo(json_encode($obj->name)); @endphp  },
                      @endforeach
@@ -245,7 +245,7 @@
                   listClass: 'd-inline-block col-12 col-md-4',
                   options: [
                      {Value: null, DisplayText: '{{ __("Not classified") }}'},
-                        @foreach(App\Models\AvailabilityClass::orderBy('name')->get()->each->setAppends([]) as $obj)
+                        @foreach(Ledningssystemet\Ledningssystemet\Models\AvailabilityClass::orderBy('name')->get()->each->setAppends([]) as $obj)
                      {
                         Value: {{$obj ->id}}, DisplayText: @php echo(json_encode($obj->name)); @endphp  },
                      @endforeach
@@ -259,7 +259,7 @@
                   listClass: 'd-inline-block col-12 col-md-4',
                   options: [
                      {Value: null, DisplayText: '{{ __("Inherit") }}'},
-                        @foreach(App\Models\ConfidentialityClass::orderBy('ordinal', 'desc')->get()->each->setAppends([]) as $obj)
+                        @foreach(Ledningssystemet\Ledningssystemet\Models\ConfidentialityClass::orderBy('ordinal', 'desc')->get()->each->setAppends([]) as $obj)
                      {
                         Value: {{$obj->id}}, DisplayText: @php echo(json_encode($obj->name)); @endphp },
                      @endforeach
@@ -273,7 +273,7 @@
                   listClass: 'd-inline-block col-12 col-md-4',
                   options: [
                      {Value: null, DisplayText: '{{ __("Inherit") }}'},
-                        @foreach(App\Models\IntegrityClass::orderBy('ordinal', 'desc')->get()->each->setAppends([]) as $obj)
+                        @foreach(Ledningssystemet\Ledningssystemet\Models\IntegrityClass::orderBy('ordinal', 'desc')->get()->each->setAppends([]) as $obj)
                      {
                         Value: {{$obj->id}}, DisplayText: @php echo(json_encode($obj->name)); @endphp },
                      @endforeach
@@ -287,7 +287,7 @@
                   listClass: 'd-inline-block col-12 col-md-4',
                   options: [
                      {Value: null, DisplayText: '{{ __("Inherit") }}'},
-                        @foreach(App\Models\AvailabilityClass::orderBy('ordinal', 'desc')->get()->each->setAppends([]) as $obj)
+                        @foreach(Ledningssystemet\Ledningssystemet\Models\AvailabilityClass::orderBy('ordinal', 'desc')->get()->each->setAppends([]) as $obj)
                      {
                         Value: {{$obj->id}}, DisplayText: @php echo(json_encode($obj->name)); @endphp },
                      @endforeach
@@ -340,7 +340,7 @@
                   multiple: true,
                   listClass: 'informationtypes d-inline-block col-12 col-md-6',
                   options: [
-                        @foreach(\App\Models\InformationType::orderBy('name')->get()->each->setAppends([]) as $informationType)
+                        @foreach(\Ledningssystemet\Ledningssystemet\Models\InformationType::orderBy('name')->get()->each->setAppends([]) as $informationType)
                      {
                         Value: {{ $informationType->id }},
                         DisplayText: @php echo(json_encode($informationType->name)); @endphp },
@@ -396,7 +396,7 @@
                   listClass: 'suppliers d-inline-block col-12 col-md-6',
                   options: [
                      {Value: null, DisplayText: '{{ __('None') }}'},
-                        @foreach(\App\Models\Supplier::orderBy('name')->get()->each->setAppends([]) as $supplier)
+                        @foreach(\Ledningssystemet\Ledningssystemet\Models\Supplier::orderBy('name')->get()->each->setAppends([]) as $supplier)
                      {
                         Value: {{ $supplier->id }}, DisplayText: @php echo(json_encode($supplier->name)); @endphp },
                      @endforeach
@@ -422,7 +422,7 @@
                      return retobj;
                   }
                },
-               @include('components.customproperty', ['classname' => 'App\Models\Asset'])
+               @include('components.customproperty', ['classname' => 'Ledningssystemet\Ledningssystemet\Models\Asset'])
                hr3: {
                   list: true,
                   edit: false,
@@ -460,12 +460,12 @@
 
                showHistory: showHistoryField('Asset', $('#tableContainer')),
                showMessages: showMessagesField('Asset', $('#tableContainer')),
-               @if(Gate::allows('index', 'App\\Models\\Risk'))
+               @if(Gate::allows('index', 'Ledningssystemet\Ledningssystemet\\Models\\Risk'))
                showRisks: showRisks('Asset', $('#tableContainer'), @if(auth()->user()->can('useai')) true
                @else false @endif,
-               @if(auth()->user()->can('delete', 'App\\Models\\Risk')) true @else false @endif ),
+               @if(auth()->user()->can('delete', 'Ledningssystemet\Ledningssystemet\\Models\\Risk')) true @else false @endif ),
                @endif
-                  @if(Gate::allows('index', 'App\\Models\\Finding'))
+                  @if(Gate::allows('index', 'Ledningssystemet\Ledningssystemet\\Models\\Finding'))
                showFindings: showFindings('Asset', $('#tableContainer')),
                @endif
                supportingassets: {
@@ -497,7 +497,7 @@
                               paging: false,
                               actions: {
                                  listAction: '/api/v1/items/Asset/' + sourcedata.record.id + '/dependantsList',
-                                 @if(Gate::allows('update', 'App\\Models\\Asset'))
+                                 @if(Gate::allows('update', 'Ledningssystemet\Ledningssystemet\\Models\\Asset'))
                                  createAction: '/api/v1/items/Asset/' + sourcedata.record.id + '/dependantsUpdate',
                                  @endif
                               },
@@ -518,7 +518,7 @@
                                     edit: true,
                                     required: true,
                                     options: {
-                                    @foreach(\App\Models\Asset::orderBy('name')->get()->each->setAppends([]) as $obj)
+                                    @foreach(\Ledningssystemet\Ledningssystemet\Models\Asset::orderBy('name')->get()->each->setAppends([]) as $obj)
                                     @php echo($obj->id . ': ' . json_encode($obj->name)); @endphp,
                                     @endforeach
                                  }
@@ -558,7 +558,7 @@
                                     1: '{{ __("Yes") }}',
                                  }
                               },
-                              @if(Gate::allows('update', 'App\\Models\\Asset'))
+                              @if(Gate::allows('update', 'Ledningssystemet\Ledningssystemet\\Models\\Asset'))
                               deleteRow: {
                                  title: '',
                                  width: '1%',

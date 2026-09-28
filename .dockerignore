@@ -6,6 +6,7 @@
 /storage/framework/views/*
 /storage/logs/*
 /public/build/*
+/public/hot
 node_modules
 tests
 docker
@@ -16,4 +17,4 @@ docker
 composer.lock
 phpunit.xml
 jsconfig.json
-ledningssystemet.json
+docker-env

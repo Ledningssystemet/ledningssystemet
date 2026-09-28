@@ -639,7 +639,7 @@ $(function(){
             multiple: true,
             tooltip: '{{ __("Note: if you have created a new sustainability metric the page must be reloaded before it is availabile for selection here") }}',
             options: [
-@foreach(\App\Models\SustainabilityMetric::orderBy('name')->get()->each->setAppends([]) as $obj)
+@foreach(\Ledningssystemet\Ledningssystemet\Models\SustainabilityMetric::orderBy('name')->get()->each->setAppends([]) as $obj)
                { Value: {{ $obj->id }}, DisplayText: @php echo(json_encode($obj->name)); @endphp },
 @endforeach            
             
@@ -915,7 +915,7 @@ $(function(){
                               title: '',
                               list: true,
                               edit: true,
-                              create: false,
+                              create: true,
                               display: function(){
                                  return $('<hr />')
                               },
@@ -963,7 +963,7 @@ $(function(){
                               title: '',
                               list: true,
                               edit: true,
-                              create: false,
+                              create: true,
                               display: function(){
                                  return $('<hr />')
                               },

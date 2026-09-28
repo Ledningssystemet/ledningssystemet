@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Models;
+namespace Ledningssystemet\Ledningssystemet\Models;
 
-use App\Traits\HasCustomProperties;
+use Ledningssystemet\Ledningssystemet\Traits\HasCustomProperties;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\HasOne;
@@ -17,7 +17,7 @@ use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
-use App\Traits\HasNotifications;
+use Ledningssystemet\Ledningssystemet\Traits\HasNotifications;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 
 class Incident extends Model
@@ -203,7 +203,7 @@ class Incident extends Model
    {
       return [
          'name' => ['required'],
-         'responsible_user_id' => 'nullable|exists:App\Models\User,id',
+         'responsible_user_id' => 'nullable|exists:Ledningssystemet\Ledningssystemet\Models\User,id',
       ];
    }
    

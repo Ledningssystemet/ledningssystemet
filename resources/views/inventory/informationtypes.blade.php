@@ -1,4 +1,4 @@
-@php if(Auth::user()->cannot('index', \App\Models\InformationType::class)) abort(403); @endphp
+@php if(Auth::user()->cannot('index', \Ledningssystemet\Ledningssystemet\Models\InformationType::class)) abort(403); @endphp
 @extends('layouts.master')
 
 @section('container')
@@ -68,7 +68,7 @@
                addNewRecord: '{{ __('Create information type') }}',
             },
             filter: {
-               @php $tags = \App\Models\InformationType::allUsedTags(); @endphp
+               @php $tags = \Ledningssystemet\Ledningssystemet\Models\InformationType::allUsedTags(); @endphp
                   @if(0 < count($tags))
                tag_id: {
                   type: 'select',
@@ -89,7 +89,7 @@
                   default: 0,
                   options: [
                      {value: 0, text: '{{ __('Show all') }}'},
-                        @foreach(App\Models\Process::orderBy('name')->get()->each->setAppends([]) as $obj)
+                        @foreach(Ledningssystemet\Ledningssystemet\Models\Process::orderBy('name')->get()->each->setAppends([]) as $obj)
                      {
                         value: {{ $obj->id }}, text: @php echo(json_encode($obj->name)); @endphp },
                      @endforeach
@@ -101,7 +101,7 @@
                   default: 0,
                   options: [
                      {value: 0, text: '{{ __('Show all') }}'},
-                        @foreach(App\Models\ConfidentialityClass::orderBy('ordinal', 'desc')->get()->each->setAppends([]) as $obj)
+                        @foreach(Ledningssystemet\Ledningssystemet\Models\ConfidentialityClass::orderBy('ordinal', 'desc')->get()->each->setAppends([]) as $obj)
                      {
                         value: {{ $obj->id }}, text: @php echo(json_encode($obj->name)); @endphp },
                      @endforeach
@@ -113,7 +113,7 @@
                   default: 0,
                   options: [
                      {value: 0, text: '{{ __('Show all') }}'},
-                        @foreach(App\Models\IntegrityClass::orderBy('ordinal', 'desc')->get()->each->setAppends([]) as $obj)
+                        @foreach(Ledningssystemet\Ledningssystemet\Models\IntegrityClass::orderBy('ordinal', 'desc')->get()->each->setAppends([]) as $obj)
                      {
                         value: {{ $obj->id }}, text: @php echo(json_encode($obj->name)); @endphp },
                      @endforeach
@@ -125,7 +125,7 @@
                   default: 0,
                   options: [
                      {value: 0, text: '{{ __('Show all') }}'},
-                        @foreach(App\Models\AvailabilityClass::orderBy('ordinal', 'desc')->get()->each->setAppends([]) as $obj)
+                        @foreach(Ledningssystemet\Ledningssystemet\Models\AvailabilityClass::orderBy('ordinal', 'desc')->get()->each->setAppends([]) as $obj)
                      {
                         value: {{ $obj->id }}, text: @php echo(json_encode($obj->name)); @endphp },
                      @endforeach
@@ -137,7 +137,7 @@
                   default: 0,
                   options: [
                      {value: 0, text: '{{ __('Show all') }}'},
-                        @foreach(\App\Models\User::leftJoin('information_types', 'information_types.responsible_user_id', '=', 'users.id')->whereNotNull('information_types.id')->select('users.*')->distinct()->orderBy('users.name')->get()->each->setAppends([]) as $obj)
+                        @foreach(\Ledningssystemet\Ledningssystemet\Models\User::leftJoin('information_types', 'information_types.responsible_user_id', '=', 'users.id')->whereNotNull('information_types.id')->select('users.*')->distinct()->orderBy('users.name')->get()->each->setAppends([]) as $obj)
                      {
                         value: {{ $obj->id }}, text: <?php echo(json_encode($obj->name)); ?> },
                      @endforeach
@@ -155,19 +155,19 @@
                   checked: false,
                   text: '{{ __('Hide items without issues') }}',
                },
-               @include('components.customproperty', ['classname' => 'App\Models\InformationType', 'showFilter' => true])
+               @include('components.customproperty', ['classname' => 'Ledningssystemet\Ledningssystemet\Models\InformationType', 'showFilter' => true])
             },
             actions: {
-               @if(request()->user()->can('index', \App\Models\InformationType::class))
+               @if(request()->user()->can('index', \Ledningssystemet\Ledningssystemet\Models\InformationType::class))
                listAction: '/api/v1/items/InformationType',
                @endif
-                  @if(request()->user()->can('create', \App\Models\InformationType::class))
+                  @if(request()->user()->can('create', \Ledningssystemet\Ledningssystemet\Models\InformationType::class))
                createAction: '/api/v1/items/InformationType',
                @endif
-                  @if(request()->user()->can('update', \App\Models\InformationType::class))
+                  @if(request()->user()->can('update', \Ledningssystemet\Ledningssystemet\Models\InformationType::class))
                updateAction: '/api/v1/items/InformationType',
                @endif
-                  @if(request()->user()->can('delete', \App\Models\InformationType::class))
+                  @if(request()->user()->can('delete', \Ledningssystemet\Ledningssystemet\Models\InformationType::class))
                deleteAction: '/api/v1/items/InformationType',
                @endif
             },
@@ -196,7 +196,7 @@
                   defaultValue: {{ auth()->user()->id }},
                   options: [
                      {Value: null, DisplayText: '{{ __("None assigned") }}'},
-                        @foreach(App\Models\User::orderBy('name')->get()->each->setAppends([]) as $obj)
+                        @foreach(Ledningssystemet\Ledningssystemet\Models\User::orderBy('name')->get()->each->setAppends([]) as $obj)
                      {
                         Value: {{$obj ->id}}, DisplayText: @php echo(json_encode($obj->name)); @endphp  },
                      @endforeach
@@ -210,7 +210,7 @@
                   listClass: 'd-inline-block col-12 col-md-4',
                   options: [
                      {Value: null, DisplayText: '{{ __("Not classified") }}'},
-                        @foreach(App\Models\ConfidentialityClass::orderBy('ordinal', 'desc')->get()->each->setAppends([]) as $obj)
+                        @foreach(Ledningssystemet\Ledningssystemet\Models\ConfidentialityClass::orderBy('ordinal', 'desc')->get()->each->setAppends([]) as $obj)
                      {
                         Value: {{$obj ->id}}, DisplayText: @php echo(json_encode($obj->name)); @endphp  },
                      @endforeach
@@ -224,7 +224,7 @@
                   listClass: 'd-inline-block col-12 col-md-4',
                   options: [
                      {Value: null, DisplayText: '{{ __("Not classified") }}'},
-                        @foreach(App\Models\IntegrityClass::orderBy('ordinal', 'desc')->get()->each->setAppends([]) as $obj)
+                        @foreach(Ledningssystemet\Ledningssystemet\Models\IntegrityClass::orderBy('ordinal', 'desc')->get()->each->setAppends([]) as $obj)
                      {
                         Value: {{$obj ->id}}, DisplayText: @php echo(json_encode($obj->name)); @endphp  },
                      @endforeach
@@ -238,7 +238,7 @@
                   listClass: 'd-inline-block col-12 col-md-4',
                   options: [
                      {Value: null, DisplayText: '{{ __("Not classified") }}'},
-                        @foreach(App\Models\AvailabilityClass::orderBy('ordinal', 'desc')->get()->each->setAppends([]) as $obj)
+                        @foreach(Ledningssystemet\Ledningssystemet\Models\AvailabilityClass::orderBy('ordinal', 'desc')->get()->each->setAppends([]) as $obj)
                      {
                         Value: {{$obj ->id}}, DisplayText: @php echo(json_encode($obj->name)); @endphp  },
                      @endforeach
@@ -301,7 +301,7 @@
                   create: true,
                   multiple: true,
                   options: [
-                        @foreach(App\Models\SubjectCategory::orderBy('name')->get()->each->setAppends([]) as $obj)
+                        @foreach(Ledningssystemet\Ledningssystemet\Models\SubjectCategory::orderBy('name')->get()->each->setAppends([]) as $obj)
                      {
                         Value: {{ $obj->id }}, DisplayText: @php echo(json_encode($obj->name)); @endphp },
                      @endforeach
@@ -314,7 +314,7 @@
                   create: true,
                   multiple: true,
                   options: [
-                        @foreach(App\Models\DataCategory::orderBy('name')->get()->each->setAppends([]) as $obj)
+                        @foreach(Ledningssystemet\Ledningssystemet\Models\DataCategory::orderBy('name')->get()->each->setAppends([]) as $obj)
                      {
                         Value: {{ $obj->id }}, DisplayText: @php echo(json_encode($obj->name)); @endphp },
                      @endforeach
@@ -327,7 +327,7 @@
                   create: true,
                   multiple: true,
                   options: [
-                        @foreach(App\Models\RecipientCategory::orderBy('name')->get()->each->setAppends([]) as $obj)
+                        @foreach(Ledningssystemet\Ledningssystemet\Models\RecipientCategory::orderBy('name')->get()->each->setAppends([]) as $obj)
                      {
                         Value: {{ $obj->id }}, DisplayText: @php echo(json_encode($obj->name)); @endphp },
                      @endforeach
@@ -352,11 +352,11 @@
                assets: {
                   title: '{{ __('Assets') }}',
                   list: true,
-                  edit: true,
                   create: false,
+                  edit: false,
                   multiple: true,
                   options: [
-                        @foreach(App\Models\Asset::orderBy('name')->get()->each->setAppends([]) as $obj)
+                        @foreach(Ledningssystemet\Ledningssystemet\Models\Asset::orderBy('name')->get()->each->setAppends([]) as $obj)
                      {
                         Value: {{ $obj->id }}, DisplayText: @php echo(json_encode($obj->name)); @endphp },
                      @endforeach
@@ -390,7 +390,7 @@
                   listClass: 'd-inline-block col-12 col-md-3',
                   options: [
                      {Value: null, DisplayText: '{{ __("None") }}'},
-                        @foreach(App\Models\ConfidentialityGround::orderBy('name')->get()->each->setAppends([]) as $obj)
+                        @foreach(Ledningssystemet\Ledningssystemet\Models\ConfidentialityGround::orderBy('name')->get()->each->setAppends([]) as $obj)
                      {
                         Value: {{$obj->id}}, DisplayText: @php echo(json_encode($obj->name)); @endphp  },
                      @endforeach
@@ -404,7 +404,7 @@
                   listClass: 'd-inline-block col-12 col-md-3',
                   options: [
                      {Value: null, DisplayText: '{{ __("Not recorded") }}'},
-                        @foreach(App\Models\Diary::orderBy('name')->get()->each->setAppends([]) as $obj)
+                        @foreach(Ledningssystemet\Ledningssystemet\Models\Diary::orderBy('name')->get()->each->setAppends([]) as $obj)
                      {
                         Value: {{$obj->id}}, DisplayText: @php echo(json_encode($obj->name)); @endphp  },
                      @endforeach
@@ -441,7 +441,7 @@
                   listClass: 'd-inline-block col-12 col-md-3',
                },
                @endif
-                  @include('components.customproperty', ['classname' => 'App\Models\InformationType'])
+                  @include('components.customproperty', ['classname' => 'Ledningssystemet\Ledningssystemet\Models\InformationType'])
                hr4: {
                   list: true,
                   edit: false,
@@ -452,7 +452,7 @@
                },
                showHistory: showHistoryField('InformationType', $('#tableContainer')),
                showMessages: showMessagesField('InformationType', $('#tableContainer')),
-               @if(request()->user()->can('index', \App\Models\Risk::class))
+               @if(request()->user()->can('index', \Ledningssystemet\Ledningssystemet\Models\Risk::class))
                showRisks: showRisks('InformationType', $('#tableContainer')),
                @endif
             },

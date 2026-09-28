@@ -1,4 +1,4 @@
-@php if(Auth::user()->cannot('index', \App\Models\Role::class)) abort(403); @endphp
+@php if(Auth::user()->cannot('index', \Ledningssystemet\Ledningssystemet\Models\Role::class)) abort(403); @endphp
 @extends('layouts.master')
 
 @section('container')
@@ -16,16 +16,16 @@ $(function(){
          addNewRecord: '{{ __('Create role') }}',
       },
       actions: {
-@if(Auth::user()->can('index', \App\Models\Role::class))         
+@if(Auth::user()->can('index', \Ledningssystemet\Ledningssystemet\Models\Role::class))
          listAction: '/api/v1/items/Role',
 @endif
-@if(Auth::user()->can('create', \App\Models\Role::class))         
+@if(Auth::user()->can('create', \Ledningssystemet\Ledningssystemet\Models\Role::class))
          createAction: '/api/v1/items/Role',
 @endif
-@if(Auth::user()->can('update', \App\Models\Role::class))         
+@if(Auth::user()->can('update', \Ledningssystemet\Ledningssystemet\Models\Role::class))
          updateAction: '/api/v1/items/Role',
 @endif
-@if(Auth::user()->can('delete', \App\Models\Role::class))         
+@if(Auth::user()->can('delete', \Ledningssystemet\Ledningssystemet\Models\Role::class))
          deleteAction: '/api/v1/items/Role',
 @endif
       },
@@ -72,7 +72,7 @@ $(function(){
 @endif
          role_users: {
             title: '{{ __('Users') }}',
-            create: false,
+            create: true,
             edit: true,
             list: true,
             multiple: true,
@@ -80,7 +80,7 @@ $(function(){
             tooltip: 'This will be overwritten by the next synchronization with external provider if a group is selected above',
 @endif
             options: [
-@foreach(App\Models\User::orderBy('name')->get()->each->setAppends([]) as $obj)
+@foreach(Ledningssystemet\Ledningssystemet\Models\User::orderBy('name')->get()->each->setAppends([]) as $obj)
                { Value: {{ $obj->id }}, DisplayText: @php echo(json_encode($obj->name)); @endphp },
 @endforeach
             ]

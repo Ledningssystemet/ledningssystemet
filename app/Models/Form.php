@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Models;
+namespace Ledningssystemet\Ledningssystemet\Models;
 
-use App\Http\Controllers\FormController;
+use Ledningssystemet\Ledningssystemet\Http\Controllers\FormController;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -12,7 +12,7 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
-use App\Traits\HasMessages;
+use Ledningssystemet\Ledningssystemet\Traits\HasMessages;
 
 class Form extends Model
 {
@@ -41,7 +41,10 @@ class Form extends Model
          Validator::make($model->toArray(), $model->getValidationRules())->validate();
 
          // Validate context
-         $expectedContextClass = (null != $model->int_form_template->context) ? 'App\\Models\\'.ucfirst($model->int_form_template->context) : null;
+         $expectedContextClass = null != $model->int_form_template->context ? __NAMESPACE__.'\\'.ucfirst($model->int_form_template->context) : null;
+         if ($expectedContextClass && !is_subclass_of($expectedContextClass, Model::class)) {
+            $expectedContextClass = null;
+         }
          if(null != request()->input('context_id') && (null == $expectedContextClass))
             abort(400, __("The context of this form is not valid"));
          else if((null != $expectedContextClass) && !$expectedContextClass::where('id', $model->context_id)->exists())
@@ -125,7 +128,14 @@ class Form extends Model
    public function getContextObjectNameAttribute()
    {
       if($this->context_type)
-         return $this->context_type::findOrFail($this->context_id)->name ?? null;
+      {
+         $contextType = $this->context_type;
+         $contextClass = is_string($contextType) ? (str_contains($contextType, '\\') ? $contextType : __NAMESPACE__.'\\'.$contextType) : null;
+         if (!is_string($contextClass) || !str_starts_with($contextClass, __NAMESPACE__.'\\') || !is_subclass_of($contextClass, Model::class)) {
+            $contextClass = null;
+         }
+         return $contextClass ? $contextClass::findOrFail($this->context_id)->name ?? null : null;
+      }
       return null;
    }
 
@@ -249,7 +259,12 @@ class Form extends Model
                   ->orWhere('description', 'LIKE', '%'.request()->input('search').'%');
          })
          ->when((null != request()->input('context_type', null)), function (Builder $query) {
-            $query->where((new (__CLASS__))->getTable().'.context_type', 'App\\Models\\'.str_replace('App\\Models\\', '', request()->input('context_type')));
+            $contextType = request()->input('context_type');
+            $contextClass = is_string($contextType) ? (str_contains($contextType, '\\') ? $contextType : __NAMESPACE__.'\\'.$contextType) : null;
+            if (!is_string($contextClass) || !str_starts_with($contextClass, __NAMESPACE__.'\\') || !is_subclass_of($contextClass, Model::class)) {
+               $contextClass = null;
+            }
+            $query->whereIn((new (__CLASS__))->getTable().'.context_type', [$contextClass ?? request()->input('context_type')]);
          })
          ->when((null != request()->input('context_id', null)), function (Builder $query) {
             $query->where((new (__CLASS__))->getTable().'.context_id', request()->input('context_id'));
@@ -304,7 +319,12 @@ class Form extends Model
 
    public function int_context_object()
    {
-      return $this->context_type::findOrFail($this->context_id);
+      $contextType = $this->context_type;
+      $contextClass = is_string($contextType) ? (str_contains($contextType, '\\') ? $contextType : __NAMESPACE__.'\\'.$contextType) : null;
+      if (!is_string($contextClass) || !str_starts_with($contextClass, __NAMESPACE__.'\\') || !is_subclass_of($contextClass, Model::class)) {
+         $contextClass = null;
+      }
+      return $contextClass ? $contextClass::findOrFail($this->context_id) : null;
    }
 
    private function getRenderableFormItems()

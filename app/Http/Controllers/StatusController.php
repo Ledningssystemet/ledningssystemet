@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace Ledningssystemet\Ledningssystemet\Http\Controllers;
 
-use App\Http\Controllers\Controller;
+use Ledningssystemet\Ledningssystemet\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 
@@ -23,7 +23,11 @@ class StatusController extends Controller
                continue;
 
             $modelname = substr($filename, 0, strlen($filename) - 4);
-            $classname = 'App\\Models\\' . $modelname;
+            $classname = is_subclass_of('Ledningssystemet\\Ledningssystemet\\Models\\'.$modelname, \Illuminate\Database\Eloquent\Model::class) ? 'Ledningssystemet\\Ledningssystemet\\Models\\'.$modelname : null;
+
+            if (! $classname) {
+               continue;
+            }
 
             // Ensure method exists
             if (!method_exists($classname, 'getItemsStatus'))
@@ -63,4 +67,3 @@ class StatusController extends Controller
       });
    }
 }
-

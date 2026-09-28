@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Models;
+namespace Ledningssystemet\Ledningssystemet\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
@@ -41,15 +41,20 @@ class Relation extends Model
       static::saving(function ($model) {
          if($model->id == null) {
             // Set model connection
-            $classname = 'App\\Models\\' . $model->relation_type;
-            if (!class_exists($classname))
+            $relationType = $model->relation_type;
+            $classname = is_string($relationType) ? (str_contains($relationType, '\\') ? $relationType : __NAMESPACE__.'\\'.$relationType) : null;
+            if (!is_string($classname) || !str_starts_with($classname, __NAMESPACE__.'\\') || !is_subclass_of($classname, Model::class))
                abort(404);
 
             $model->relation_type = $classname;
             $model->relation_id = request()->input('relation_id', 0);
          }
 
-         $obj = $model->relation_type::find($model->relation_id);
+         $relationClass = $model->relation_type;
+         if (!is_string($relationClass) || !str_starts_with($relationClass, __NAMESPACE__.'\\') || !is_subclass_of($relationClass, Model::class)) {
+            $relationClass = null;
+         }
+         $obj = $relationClass ? $relationClass::find($model->relation_id) : null;
          if(null == $obj)
             abort(400, __("The relation object could not be found"));
 
@@ -123,8 +128,9 @@ class Relation extends Model
     */
    public static function index(User $user)
    {
-      $classname = '\\App\\Models\\'.request()->input('relation_type', '');
-      if(!class_exists($classname))
+      $relationType = request()->input('relation_type', '');
+      $classname = is_string($relationType) ? (str_contains($relationType, '\\') ? $relationType : __NAMESPACE__.'\\'.$relationType) : null;
+      if (!is_string($classname) || !str_starts_with($classname, __NAMESPACE__.'\\') || !is_subclass_of($classname, Model::class))
          abort(404);
       
       $obj = $classname::findOrFail(request()->input('relation_id', 0));

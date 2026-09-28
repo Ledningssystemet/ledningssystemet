@@ -165,17 +165,17 @@
       switch(element.type)
       {
          case 'bpmn:DataObjectReference':
- @foreach(App\Models\InformationType::orderBy('name')->get()->each->setAppends([]) as $obj)
+ @foreach(Ledningssystemet\Ledningssystemet\Models\InformationType::orderBy('name')->get()->each->setAppends([]) as $obj)
             data.push({id: '{{ $obj->name }}', text: '{{ $obj->name }}', selected: false});
  @endforeach
             break;
          case 'bpmn:DataStoreReference':
- @foreach(App\Models\Asset::orderBy('name')->get()->each->setAppends([]) as $obj)
+ @foreach(Ledningssystemet\Ledningssystemet\Models\Asset::orderBy('name')->get()->each->setAppends([]) as $obj)
             data.push({id: '{{ $obj->name }}', text: '{{ $obj->name }}', selected: false});
  @endforeach
             break;
          case 'bpmn:SubProcess':
- @foreach(App\Models\Process::where('id', '<>', $process->id)->orderBy('name')->get()->each->setAppends([]) as $obj)
+ @foreach(Ledningssystemet\Ledningssystemet\Models\Process::where('id', '<>', $process->id)->orderBy('name')->get()->each->setAppends([]) as $obj)
             data.push({id: '{{ $obj->name }}', text: '{{ $obj->name }}', selected: false});
  @endforeach
                tags = false;

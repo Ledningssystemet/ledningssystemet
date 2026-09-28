@@ -1,4 +1,4 @@
-@php if(Auth::user()->cannot('index', \App\Models\Tag::class)) abort(403); @endphp
+@php if(Auth::user()->cannot('index', \Ledningssystemet\Ledningssystemet\Models\Tag::class)) abort(403); @endphp
 @extends('layouts.master')
 
 @section('container')
@@ -18,16 +18,16 @@ $(function(){
          addNewRecord: '{{ __('Create tag') }}',
       },
       actions: {
-@if(Auth::user()->can('index', \App\Models\Tag::class))         
+@if(Auth::user()->can('index', \Ledningssystemet\Ledningssystemet\Models\Tag::class))
          listAction: '/api/v1/items/Tag',
 @endif
-@if(Auth::user()->can('index', \App\Models\Tag::class))         
+@if(Auth::user()->can('index', \Ledningssystemet\Ledningssystemet\Models\Tag::class))
          createAction: '/api/v1/items/Tag',
 @endif
-@if(Auth::user()->can('index', \App\Models\Tag::class))         
+@if(Auth::user()->can('index', \Ledningssystemet\Ledningssystemet\Models\Tag::class))
          updateAction: '/api/v1/items/Tag',
 @endif
-@if(Auth::user()->can('index', \App\Models\Tag::class))         
+@if(Auth::user()->can('index', \Ledningssystemet\Ledningssystemet\Models\Tag::class))
          deleteAction: '/api/v1/items/Tag',
 @endif
       },

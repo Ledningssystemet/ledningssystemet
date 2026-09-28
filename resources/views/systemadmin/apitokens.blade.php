@@ -1,4 +1,4 @@
-@php if(Auth::user()->cannot('index', \App\Models\PersonalAccessToken::class)) abort(403); @endphp
+@php if(Auth::user()->cannot('index', \Ledningssystemet\Ledningssystemet\Models\PersonalAccessToken::class)) abort(403); @endphp
 @extends('layouts.master')
 
 @section('container')
@@ -15,10 +15,10 @@ $(function(){
          search: '{{ __('Search by name') }}',
       },
       actions: {
-@if(Auth::user()->can('index', \App\Models\PersonalAccessToken::class))
+@if(Auth::user()->can('index', \Ledningssystemet\Ledningssystemet\Models\PersonalAccessToken::class))
          listAction: '/api/v1/items/PersonalAccessToken',
 @endif
-@if(Auth::user()->can('create', \App\Models\PersonalAccessToken::class))
+@if(Auth::user()->can('create', \Ledningssystemet\Ledningssystemet\Models\PersonalAccessToken::class))
          createAction: function(data){
             var name = data.get('name');
             var user_id = data.get('user_id');
@@ -36,10 +36,10 @@ $(function(){
             return [];
          },
 @endif
-@if(Auth::user()->can('update', \App\Models\PersonalAccessToken::class))
+@if(Auth::user()->can('update', \Ledningssystemet\Ledningssystemet\Models\PersonalAccessToken::class))
          updateAction: '/api/v1/items/PersonalAccessToken',
 @endif
-@if(Auth::user()->can('delete', \App\Models\PersonalAccessToken::class))
+@if(Auth::user()->can('delete', \Ledningssystemet\Ledningssystemet\Models\PersonalAccessToken::class))
          deleteAction: '/api/v1/items/PersonalAccessToken',
 @endif
       },
@@ -68,7 +68,7 @@ $(function(){
             required: true,
             width: '50%',
             options: [
-@foreach(\App\Models\User::orderBy('name')->get()->each->setAppends([]) as $obj)
+@foreach(\Ledningssystemet\Ledningssystemet\Models\User::orderBy('name')->get()->each->setAppends([]) as $obj)
                { Value: {{ $obj->id }}, DisplayText: @php echo(json_encode($obj->name)); @endphp },
 @endforeach               
             ]

@@ -21,3 +21,4 @@ composer.lock
 /package-lock.json
 /.junie/
 sql-ca.pem
+/docker-env

@@ -1,12 +1,12 @@
 <?php
 
-namespace App\Models;
+namespace Ledningssystemet\Ledningssystemet\Models;
 
-use App\Models\Concerns\DefersRelationAttributeSync;
-use App\Traits\HasCustomProperties;
-use App\Traits\HasMessages;
-use App\Traits\HasNotifications;
-use App\Traits\HasTags;
+use Ledningssystemet\Ledningssystemet\Models\Concerns\DefersRelationAttributeSync;
+use Ledningssystemet\Ledningssystemet\Traits\HasCustomProperties;
+use Ledningssystemet\Ledningssystemet\Traits\HasMessages;
+use Ledningssystemet\Ledningssystemet\Traits\HasNotifications;
+use Ledningssystemet\Ledningssystemet\Traits\HasTags;
 use Graphp\Graph\Graph;
 use Graphp\GraphViz\GraphViz;
 use Illuminate\Database\Eloquent\Builder;
@@ -563,12 +563,12 @@ class Asset extends Model
             ],
             'mtd' => 'nullable|numeric|min:0',
             'rpo' => 'nullable|numeric|min:0',
-            'responsible_user_id' => 'nullable|exists:App\Models\User,id',
-            'supplier_id' => 'nullable|exists:App\Models\Supplier,id',
-            'confidentiality_class_id' => 'nullable|exists:App\Models\ConfidentialityClass,id',
-            'integrity_class_id' => 'nullable|exists:App\Models\IntegrityClass,id',
-            'availability_class_id' => 'nullable|exists:App\Models\AvailabilityClass,id',
-            'site_id' => 'nullable|exists:App\Models\Site,id',
+            'responsible_user_id' => 'nullable|exists:Ledningssystemet\Ledningssystemet\Models\User,id',
+            'supplier_id' => 'nullable|exists:Ledningssystemet\Ledningssystemet\Models\Supplier,id',
+            'confidentiality_class_id' => 'nullable|exists:Ledningssystemet\Ledningssystemet\Models\ConfidentialityClass,id',
+            'integrity_class_id' => 'nullable|exists:Ledningssystemet\Ledningssystemet\Models\IntegrityClass,id',
+            'availability_class_id' => 'nullable|exists:Ledningssystemet\Ledningssystemet\Models\AvailabilityClass,id',
+            'site_id' => 'nullable|exists:Ledningssystemet\Ledningssystemet\Models\Site,id',
         ];
     }
 

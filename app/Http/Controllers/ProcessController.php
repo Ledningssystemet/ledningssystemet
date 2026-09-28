@@ -1,15 +1,15 @@
 <?php
-namespace App\Http\Controllers;
+namespace Ledningssystemet\Ledningssystemet\Http\Controllers;
 
-use App\Http\Controllers\Controller;
+use Ledningssystemet\Ledningssystemet\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Exception;
 use SimpleXMLElement;
 use Illuminate\Support\Facades\DB;
-use App\Models\Process;
-use App\Models\ProcessActivity;
-use App\Models\InformationType;
-use App\Models\Asset;
+use Ledningssystemet\Ledningssystemet\Models\Process;
+use Ledningssystemet\Ledningssystemet\Models\ProcessActivity;
+use Ledningssystemet\Ledningssystemet\Models\InformationType;
+use Ledningssystemet\Ledningssystemet\Models\Asset;
 use Illuminate\Validation\ValidationException;
 
 class ProcessController extends Controller
@@ -98,7 +98,7 @@ class ProcessController extends Controller
    public function loadxml(Request $request)
    {
       // Fetch process
-      $process = \App\Models\Process::findOrFail($request->id);
+      $process = \Ledningssystemet\Ledningssystemet\Models\Process::findOrFail($request->id);
       
       // If there is no bpmn-file, use an empty one
       $bpmn = $process->bpmn;
@@ -113,16 +113,16 @@ class ProcessController extends Controller
       $retval['informationtypes'] = [];
       $retval['assets'] = [];
       
-      foreach(\App\Models\Process::where('id', '<>', $process->id)->get() as $obj)
+      foreach(\Ledningssystemet\Ledningssystemet\Models\Process::where('id', '<>', $process->id)->get() as $obj)
          $retval['processes'][] = array('id' => $obj->id, 'bpmnid' => null, 'name' => $obj->name);
          
       foreach($process->int_process_activities as $obj)
          $retval['activities'][] = array('id' => $obj->id, 'bpmnid' => $obj->bpmnId, 'name' => $obj->name);
       
-      foreach(\App\Models\InformationType::get() as $obj)
+      foreach(\Ledningssystemet\Ledningssystemet\Models\InformationType::get() as $obj)
          $retval['informationtypes'][] = array('id' => $obj->id, 'bpmnid' => null, 'name' => $obj->name);
          
-      foreach(\App\Models\Asset::get() as $obj)
+      foreach(\Ledningssystemet\Ledningssystemet\Models\Asset::get() as $obj)
          $retval['assets'][] = array('id' => $obj->id, 'bpmnid' => null, 'name' => $obj->name);
 
       return $retval;

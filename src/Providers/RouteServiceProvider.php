@@ -5,8 +5,16 @@ namespace Ledningssystemet\Ledningssystemet\Providers;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Foundation\Support\Providers\RouteServiceProvider as ServiceProvider;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Router;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Route;
+use Ledningssystemet\Ledningssystemet\Http\Middleware\Authenticate;
+use Ledningssystemet\Ledningssystemet\Http\Middleware\AuthProxy;
+use Ledningssystemet\Ledningssystemet\Http\Middleware\JsonOnly;
+use Ledningssystemet\Ledningssystemet\Http\Middleware\OnlyEnabledUsers;
+use Ledningssystemet\Ledningssystemet\Http\Middleware\RedirectIfAuthenticated;
+use Ledningssystemet\Ledningssystemet\Http\Middleware\RequireMfaEnforcement;
+use Ledningssystemet\Ledningssystemet\Http\Middleware\ValidateSignature;
 
 class RouteServiceProvider extends ServiceProvider
 {
@@ -24,8 +32,9 @@ class RouteServiceProvider extends ServiceProvider
      *
      * @return void
      */
-    public function boot()
+    public function boot(): void
     {
+        $this->registerMiddlewareAliases();
         $this->configureRateLimiting();
 
         $this->routes(function () {
@@ -34,13 +43,33 @@ class RouteServiceProvider extends ServiceProvider
             // (e.g. by the proprietary customer application), base_path()
             // resolves to the *host* application's root, which does not
             // have these route files.
-            Route::middleware('api')
+            Route::middleware(['api', 'jsononly', 'auth:sanctum', 'usersenabled'])
                 ->prefix('api')
                 ->group(__DIR__ . '/../../routes/api.php');
 
-            Route::middleware('web')
+            Route::middleware(['web', 'usersenabled'])
                 ->group(__DIR__ . '/../../routes/web.php');
         });
+    }
+
+    /**
+     * Register middleware used by the package routes in both standalone and host applications.
+     */
+    protected function registerMiddlewareAliases(): void
+    {
+        $router = $this->app->make(Router::class);
+
+        foreach ([
+            'auth' => Authenticate::class,
+            'authproxy' => AuthProxy::class,
+            'guest' => RedirectIfAuthenticated::class,
+            'jsononly' => JsonOnly::class,
+            'mfa.enforced' => RequireMfaEnforcement::class,
+            'signed' => ValidateSignature::class,
+            'usersenabled' => OnlyEnabledUsers::class,
+        ] as $name => $middleware) {
+            $router->aliasMiddleware($name, $middleware);
+        }
     }
 
     /**
@@ -48,7 +77,7 @@ class RouteServiceProvider extends ServiceProvider
      *
      * @return void
      */
-    protected function configureRateLimiting()
+    protected function configureRateLimiting(): void
     {
         RateLimiter::for('api', function (Request $request) {
             return Limit::perMinute(300)->by($request->user()?->id ?: $request->ip());

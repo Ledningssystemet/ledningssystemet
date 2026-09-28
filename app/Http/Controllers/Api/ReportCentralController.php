@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Http\Controllers\Api;
+namespace Ledningssystemet\Ledningssystemet\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
+use Ledningssystemet\Ledningssystemet\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Eloquent\Builder;
@@ -154,9 +154,9 @@ class ReportCentralController extends Controller
      */
     public static function StatementOfApplicability($id)
     {
-       Gate::authorize('index', new \App\Models\RequirementSource);
+       Gate::authorize('index', new \Ledningssystemet\Ledningssystemet\Models\RequirementSource);
 
-       $obj = \App\Models\RequirementSource::findOrFail($id);
+       $obj = \Ledningssystemet\Ledningssystemet\Models\RequirementSource::findOrFail($id);
 
        $data = array_merge([
           'company' => [['name' => config('ledningssystemet.company_name', ''), 'uid' => config('ledningssystemet.company_uid', '')]],
@@ -237,7 +237,7 @@ class ReportCentralController extends Controller
      */
     public static function InformationTypes($id)
     {
-      Gate::authorize('index', new \App\Models\InformationType);
+      Gate::authorize('index', new \Ledningssystemet\Ledningssystemet\Models\InformationType);
       
       $data = [
          'company' => [['name' => config('ledningssystemet.company_name', ''), 'uid' => config('ledningssystemet.company_uid', '')]],
@@ -247,7 +247,7 @@ class ReportCentralController extends Controller
       ];
       
       // Create data object
-      foreach(\App\Models\InformationType::orderBy('name')->get() as $obj)
+      foreach(\Ledningssystemet\Ledningssystemet\Models\InformationType::orderBy('name')->get() as $obj)
       {
          $objdata = $obj->toArray();
          
@@ -262,10 +262,10 @@ class ReportCentralController extends Controller
          $objdata['processes'] = implode("\r\n", $procs);
          $objdata['assets'] = implode("\r\n", $assets);
          $objdata['retention'] = $objdata['retention'] ? $objdata['retention'].' '.__("months") : "";
-         $objdata['responsible'] = $obj->responsible_user_id ? \App\Models\User::findOrFail($obj->responsible_user_id)->name : "";
-         $objdata['confidentiality'] = $obj->confidentiality_class_id ?  \App\Models\ConfidentialityClass::findOrFail($obj->confidentiality_class_id)->name : "";
-         $objdata['integrity'] = $obj->integrity_class_id ?  \App\Models\IntegrityClass::findOrFail($obj->integrity_class_id)->name : "";
-         $objdata['availability'] = $obj->availability_class_id ? \App\Models\AvailabilityClass::findOrFail($obj->availability_class_id)->name : "";
+         $objdata['responsible'] = $obj->responsible_user_id ? \Ledningssystemet\Ledningssystemet\Models\User::findOrFail($obj->responsible_user_id)->name : "";
+         $objdata['confidentiality'] = $obj->confidentiality_class_id ?  \Ledningssystemet\Ledningssystemet\Models\ConfidentialityClass::findOrFail($obj->confidentiality_class_id)->name : "";
+         $objdata['integrity'] = $obj->integrity_class_id ?  \Ledningssystemet\Ledningssystemet\Models\IntegrityClass::findOrFail($obj->integrity_class_id)->name : "";
+         $objdata['availability'] = $obj->availability_class_id ? \Ledningssystemet\Ledningssystemet\Models\AvailabilityClass::findOrFail($obj->availability_class_id)->name : "";
 
          $data['informationtypes'][] = $objdata;
       }
@@ -279,7 +279,7 @@ class ReportCentralController extends Controller
      */
     public static function Assets($id)
     {
-      Gate::authorize('index', new \App\Models\Asset);
+      Gate::authorize('index', new \Ledningssystemet\Ledningssystemet\Models\Asset);
       
       $data = [
          'company' => [['name' => config('ledningssystemet.company_name', ''), 'uid' => config('ledningssystemet.company_uid', '')]],
@@ -289,7 +289,7 @@ class ReportCentralController extends Controller
       ];
       
       // Create data object
-      foreach(\App\Models\Asset::orderBy('name')->get() as $obj)
+      foreach(\Ledningssystemet\Ledningssystemet\Models\Asset::orderBy('name')->get() as $obj)
       {
          $objdata = $obj->toArray();
          
@@ -308,7 +308,7 @@ class ReportCentralController extends Controller
 		 $objdata['processes'] = implode("\r\n", $procs);
          
          $objdata['informationtypes'] = implode("\r\n", $obj->int_information_types()->distinct()->orderBy('name')->pluck('name')->toArray());
-         $objdata['responsible'] = $obj->responsible_user_id ? \App\Models\User::findOrFail($obj->responsible_user_id)->name : "";
+         $objdata['responsible'] = $obj->responsible_user_id ? \Ledningssystemet\Ledningssystemet\Models\User::findOrFail($obj->responsible_user_id)->name : "";
          $objdata['confidentiality'] = $clevel ?  $clevel->name : "";
          $objdata['integrity'] = $ilevel ?  $ilevel->name : "";
          $objdata['availability'] = $alevel ?  $alevel->name : "";
@@ -334,7 +334,7 @@ class ReportCentralController extends Controller
      */
     public static function Suppliers($id)
     {
-      Gate::authorize('view', new \App\Models\Supplier);
+      Gate::authorize('view', new \Ledningssystemet\Ledningssystemet\Models\Supplier);
       
       $data = [
          'company' => [['name' => config('ledningssystemet.company_name', ''), 'uid' => config('ledningssystemet.company_uid', '')]],
@@ -344,7 +344,7 @@ class ReportCentralController extends Controller
       ];
       
       // Create data object
-      foreach(\App\Models\Supplier::orderBy('name')->get() as $obj)
+      foreach(\Ledningssystemet\Ledningssystemet\Models\Supplier::orderBy('name')->get() as $obj)
       {
          $objdata = $obj->toArray();
          
@@ -359,7 +359,7 @@ class ReportCentralController extends Controller
             $objdata['assets'] .= (("" != $objdata['assets']) ? "\r\n" : "").$asset->name;
 
          $objdata['dataprocessor'] = $obj->dataprocessor ? __("Yes") : __("No");
-         $objdata['responsible'] = $obj->responsible_user_id ? \App\Models\User::findOrFail($obj->responsible_user_id)->name : "";
+         $objdata['responsible'] = $obj->responsible_user_id ? \Ledningssystemet\Ledningssystemet\Models\User::findOrFail($obj->responsible_user_id)->name : "";
 
 
          $data['suppliers'][] = $objdata;
@@ -374,7 +374,7 @@ class ReportCentralController extends Controller
     */
    public static function ComplianceEvaluation($id)
    {
-      $obj = \App\Models\ComplianceEvaluation::findOrFail($id);
+      $obj = \Ledningssystemet\Ledningssystemet\Models\ComplianceEvaluation::findOrFail($id);
       Gate::authorize('view', $obj);
       
       $phpWord = new \PhpOffice\PhpWord\TemplateProcessor(__DIR__.'/../../../../resources/templates/ComplianceEvaluation_'.config('ledningssystemet.locale', 'en').'.docx');
@@ -510,7 +510,7 @@ class ReportCentralController extends Controller
       ];
       
       // Create data object
-      foreach(\App\Models\Risk::whereNull('replacedby_id')->whereNull('risk_project_id')->orderBy('id', 'desc')->get() as $obj)
+      foreach(\Ledningssystemet\Ledningssystemet\Models\Risk::whereNull('replacedby_id')->whereNull('risk_project_id')->orderBy('id', 'desc')->get() as $obj)
       {
          $objdata = $obj->toArray();
          
@@ -527,7 +527,12 @@ class ReportCentralController extends Controller
          $objdata['context'] = '';
          if($obj->context_type && $obj->context_id)
          {
-            $contextobj = $obj->context_type::find($obj->context_id);
+            $contextType = $obj->context_type;
+            $contextClass = is_string($contextType) ? (str_contains($contextType, '\\') ? $contextType : 'Ledningssystemet\\Ledningssystemet\\Models\\'.$contextType) : null;
+            if (!is_string($contextClass) || !str_starts_with($contextClass, 'Ledningssystemet\\Ledningssystemet\\Models\\') || !is_subclass_of($contextClass, \Illuminate\Database\Eloquent\Model::class)) {
+               $contextClass = null;
+            }
+            $contextobj = $contextClass ? $contextClass::find($obj->context_id) : null;
             if(null != $contextobj)
                $objdata['context'] = $contextobj->name;
          }
@@ -555,7 +560,7 @@ class ReportCentralController extends Controller
      */
     public static function Controls($id)
     {
-      Gate::authorize('index', new \App\Models\Control);
+      Gate::authorize('index', new \Ledningssystemet\Ledningssystemet\Models\Control);
       
       $data = [
          'company' => [['name' => config('ledningssystemet.company_name', ''), 'uid' => config('ledningssystemet.company_uid', '')]],
@@ -565,7 +570,7 @@ class ReportCentralController extends Controller
       ];
       
       // Create data object
-      foreach(\App\Models\Control::whereNull('not_applicable_at')->orderBy('name')->get() as $obj)
+      foreach(\Ledningssystemet\Ledningssystemet\Models\Control::whereNull('not_applicable_at')->orderBy('name')->get() as $obj)
       {
          $objdata = $obj->toArray();
          
@@ -606,7 +611,7 @@ class ReportCentralController extends Controller
       ];
 
       // Create data object
-      foreach(\App\Models\InformationType::orderBy('name')->get() as $obj)
+      foreach(\Ledningssystemet\Ledningssystemet\Models\InformationType::orderBy('name')->get() as $obj)
       {
          $objdata = $obj->toArray();
 
@@ -642,7 +647,7 @@ class ReportCentralController extends Controller
     */
    public static function RiskProject($id)
    {
-      $riskproject = \App\Models\RiskProject::findOrFail($id);
+      $riskproject = \Ledningssystemet\Ledningssystemet\Models\RiskProject::findOrFail($id);
       if(!auth()->user()->can('view', $riskproject))
          abort(403);
 
@@ -671,7 +676,12 @@ class ReportCentralController extends Controller
          $objdata['context'] = '';
          if($obj->context_type && $obj->context_id)
          {
-            $contextobj = $obj->context_type::find($obj->context_id);
+            $contextType = $obj->context_type;
+            $contextClass = is_string($contextType) ? (str_contains($contextType, '\\') ? $contextType : 'Ledningssystemet\\Ledningssystemet\\Models\\'.$contextType) : null;
+            if (!is_string($contextClass) || !str_starts_with($contextClass, 'Ledningssystemet\\Ledningssystemet\\Models\\') || !is_subclass_of($contextClass, \Illuminate\Database\Eloquent\Model::class)) {
+               $contextClass = null;
+            }
+            $contextobj = $contextClass ? $contextClass::find($obj->context_id) : null;
             if(null != $contextobj)
                $objdata['context'] = $contextobj->name;
          }

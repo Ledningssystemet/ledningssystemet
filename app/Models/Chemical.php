@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Models;
+namespace Ledningssystemet\Ledningssystemet\Models;
 
-use App\Traits\HasCustomProperties;
+use Ledningssystemet\Ledningssystemet\Traits\HasCustomProperties;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\HasOne;
@@ -18,8 +18,8 @@ use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\DB;
-use App\Traits\HasMessages;
-use App\Traits\HasTags;
+use Ledningssystemet\Ledningssystemet\Traits\HasMessages;
+use Ledningssystemet\Ledningssystemet\Traits\HasTags;
 
 class Chemical extends Model
 {

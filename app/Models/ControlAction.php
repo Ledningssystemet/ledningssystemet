@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Models;
+namespace Ledningssystemet\Ledningssystemet\Models;
 
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Database\Eloquent\Model;
@@ -18,9 +18,9 @@ use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
-use App\Traits\HasTags;
-use App\Traits\HasMessages;
-use App\Traits\HasNotifications;
+use Ledningssystemet\Ledningssystemet\Traits\HasTags;
+use Ledningssystemet\Ledningssystemet\Traits\HasMessages;
+use Ledningssystemet\Ledningssystemet\Traits\HasNotifications;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 
 class ControlAction extends Model
@@ -317,7 +317,7 @@ class ControlAction extends Model
    {
       return Cache::rememberForever('ControlAction.getCreatedByNameAttribute.'.$this->id, function(){
          $firstEvent = ActivityLog::query()
-            ->where('subject_type', 'App\\Models\\ControlAction')
+            ->where('subject_type', ControlAction::class)
             ->where('subject_id', $this->id)
             ->where('event', 'created')
             ->first();
@@ -514,8 +514,8 @@ class ControlAction extends Model
          'name' => [
             'required',
          ],
-         'responsible_id' => 'nullable|exists:App\Models\User,id',
-         'control_id' => 'required|exists:App\Models\Control,id',
+         'responsible_id' => 'nullable|exists:Ledningssystemet\Ledningssystemet\Models\User,id',
+         'control_id' => 'required|exists:Ledningssystemet\Ledningssystemet\Models\Control,id',
          'estimated_cost' => 'sometimes|nullable|numeric|min:0',
       ];
    }

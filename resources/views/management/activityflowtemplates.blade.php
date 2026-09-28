@@ -1,4 +1,4 @@
-@php if(Auth::user()->cannot('index', \App\Models\ActivityFlowTemplate::class)) abort(403); @endphp
+@php if(Auth::user()->cannot('index', \Ledningssystemet\Ledningssystemet\Models\ActivityFlowTemplate::class)) abort(403); @endphp
 @extends('layouts.master')
 
 @section('container')
@@ -18,16 +18,16 @@ $(function(){
          addNewRecord: '{{ __('Add activity flow template') }}',
       },
       actions: {
-@if(Auth::user()->can('index', \App\Models\ActivityFlowTemplate::class))         
+@if(Auth::user()->can('index', \Ledningssystemet\Ledningssystemet\Models\ActivityFlowTemplate::class))
          listAction: '/api/v1/items/ActivityFlowTemplate',
 @endif
-@if(Auth::user()->can('create', \App\Models\ActivityFlowTemplate::class))         
+@if(Auth::user()->can('create', \Ledningssystemet\Ledningssystemet\Models\ActivityFlowTemplate::class))
          createAction: '/api/v1/items/ActivityFlowTemplate',
 @endif
-@if(Auth::user()->can('update', \App\Models\ActivityFlowTemplate::class))         
+@if(Auth::user()->can('update', \Ledningssystemet\Ledningssystemet\Models\ActivityFlowTemplate::class))
          updateAction: '/api/v1/items/ActivityFlowTemplate',
 @endif
-@if(Auth::user()->can('delete', \App\Models\ActivityFlowTemplate::class))         
+@if(Auth::user()->can('delete', \Ledningssystemet\Ledningssystemet\Models\ActivityFlowTemplate::class))
          deleteAction: '/api/v1/items/ActivityFlowTemplate',
 @endif
       },

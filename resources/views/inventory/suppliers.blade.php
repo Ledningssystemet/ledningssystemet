@@ -1,11 +1,11 @@
-@php if(Auth::user()->cannot('index', \App\Models\Supplier::class)) abort(403); @endphp
+@php if(Auth::user()->cannot('index', \Ledningssystemet\Ledningssystemet\Models\Supplier::class)) abort(403); @endphp
 @extends('layouts.master')
 
 @section('container')
 
 <script>
 $(function(){
-   const supplierCategoryOptions = @php echo(json_encode(\App\Models\SupplierCategory::orderBy('name')->get()->map(function($category){
+   const supplierCategoryOptions = @php echo(json_encode(\Ledningssystemet\Ledningssystemet\Models\SupplierCategory::orderBy('name')->get()->map(function($category){
       return [
          'id' => $category->id,
          'name' => $category->name,
@@ -94,7 +94,7 @@ $(function(){
          addNewRecord: '{{ __('Create supplier') }}',
       },
       filter: {
-@php $tags = \App\Models\Supplier::allUsedTags(); @endphp
+@php $tags = \Ledningssystemet\Ledningssystemet\Models\Supplier::allUsedTags(); @endphp
 @if(0 < count($tags))
          tag_id: {
             type: 'select',
@@ -108,7 +108,7 @@ $(function(){
             ]
          },
 @endif
-@php $categories = \App\Models\SupplierCategory::orderBy('name')->get(); @endphp
+@php $categories = \Ledningssystemet\Ledningssystemet\Models\SupplierCategory::orderBy('name')->get(); @endphp
 @if(0 < count($categories))
          supplier_category_id: {
             type: 'select',
@@ -127,7 +127,7 @@ $(function(){
             default: 0,
             options: [
                { value: 0, text: '{{ __('Show all') }}' },
-                  @foreach(\App\Models\User::leftJoin('suppliers', 'suppliers.responsible_user_id', '=', 'users.id')->whereNotNull('suppliers.id')->select('users.*')->distinct()->orderBy('users.name')->get()->each->setAppends([]) as $obj)
+                  @foreach(\Ledningssystemet\Ledningssystemet\Models\User::leftJoin('suppliers', 'suppliers.responsible_user_id', '=', 'users.id')->whereNotNull('suppliers.id')->select('users.*')->distinct()->orderBy('users.name')->get()->each->setAppends([]) as $obj)
                { value: {{ $obj->id }}, text: <?php echo(json_encode($obj->name)); ?> },
                @endforeach
             ]
@@ -144,19 +144,19 @@ $(function(){
             checked: false,
             text: '{{ __('Hide items without issues') }}',
          },
-@include('components.customproperty', ['classname' => 'App\Models\Supplier', 'showFilter' => true])
+@include('components.customproperty', ['classname' => 'Ledningssystemet\Ledningssystemet\Models\Supplier', 'showFilter' => true])
       },
       actions: {
-@if(Auth::user()->can('index', \App\Models\Supplier::class))
+@if(Auth::user()->can('index', \Ledningssystemet\Ledningssystemet\Models\Supplier::class))
          listAction: '/api/v1/items/Supplier',
 @endif         
-@if(Auth::user()->can('create', \App\Models\Supplier::class))
+@if(Auth::user()->can('create', \Ledningssystemet\Ledningssystemet\Models\Supplier::class))
          createAction: '/api/v1/items/Supplier',
 @endif         
-@if(Auth::user()->can('update', \App\Models\Supplier::class))
+@if(Auth::user()->can('update', \Ledningssystemet\Ledningssystemet\Models\Supplier::class))
          updateAction: '/api/v1/items/Supplier',
 @endif         
-@if(Auth::user()->can('delete', \App\Models\Supplier::class))
+@if(Auth::user()->can('delete', \Ledningssystemet\Ledningssystemet\Models\Supplier::class))
          deleteAction: '/api/v1/items/Supplier',
 @endif         
       },
@@ -188,7 +188,7 @@ $(function(){
             defaultValue: {{ auth()->user()->id }},
             options: [
                { Value: null, DisplayText: '{{ __("None assigned") }}' },
-@foreach(App\Models\User::orderBy('name')->get()->each->setAppends([]) as $obj)
+@foreach(Ledningssystemet\Ledningssystemet\Models\User::orderBy('name')->get()->each->setAppends([]) as $obj)
                { Value: {{$obj ->id}}, DisplayText: @php echo(json_encode($obj->name)); @endphp  },
 @endforeach
             ],
@@ -305,7 +305,7 @@ $(function(){
                return retobj;
             }
          },
-         @include('components.customproperty', ['classname' => 'App\Models\Supplier'])
+         @include('components.customproperty', ['classname' => 'Ledningssystemet\Ledningssystemet\Models\Supplier'])
          hr3: {
             list: true,
             edit: false,
@@ -316,13 +316,13 @@ $(function(){
          },
          showHistory: showHistoryField('Supplier', $('#tableContainer')),          
          showMessages: showMessagesField('Supplier', $('#tableContainer')),
-@if(Gate::allows('index', 'App\\Models\\Risk'))
-         showRisks: showRisks('Supplier', $('#tableContainer'),  @if(auth()->user()->can('useai')) true @else false @endif,@if(auth()->user()->can('delete', 'App\\Models\\Risk')) true @else false @endif ),
+@if(Gate::allows('index', 'Ledningssystemet\Ledningssystemet\\Models\\Risk'))
+         showRisks: showRisks('Supplier', $('#tableContainer'),  @if(auth()->user()->can('useai')) true @else false @endif,@if(auth()->user()->can('delete', 'Ledningssystemet\Ledningssystemet\\Models\\Risk')) true @else false @endif ),
 @endif
-@if(Auth::user()->can('index', \App\Models\Finding::class))
+@if(Auth::user()->can('index', \Ledningssystemet\Ledningssystemet\Models\Finding::class))
          showFindings: showFindings('Supplier', $('#tableContainer')),
 @endif
-@if(Auth::user()->can('update', \App\Models\Supplier::class))
+@if(Auth::user()->can('update', \Ledningssystemet\Ledningssystemet\Models\Supplier::class))
          suppliercategories: {
             sorting: false,
             edit: false,
@@ -386,7 +386,7 @@ $(function(){
                         bootstrap: true,
                         actions: {
                            listAction: '/api/v1/items/Supplier/'+sourcedata.record.id+'/evaluation',
-@if(Auth::user()->can('update', \App\Models\Supplier::class))
+@if(Auth::user()->can('update', \Ledningssystemet\Ledningssystemet\Models\Supplier::class))
                            updateAction: '/api/v1/items/Supplier/'+sourcedata.record.id+'/evaluation',
 @endif
                         },
@@ -505,14 +505,14 @@ $(function(){
                return retobj;
             }
          },             
-@if(Auth::user()->can('update', \App\Models\Supplier::class))
+@if(Auth::user()->can('update', \Ledningssystemet\Ledningssystemet\Models\Supplier::class))
          files: showFiles('Supplier', $('#tableContainer'), '{{ csrf_token() }}'),          
 @else
          files: showFiles('Supplier', $('#tableContainer')),          
 @endif
          forms: showForms('Supplier', $('#tableContainer')),
 
-@if(Auth::user()->can('index', \App\Models\Agreement::class))
+@if(Auth::user()->can('index', \Ledningssystemet\Ledningssystemet\Models\Agreement::class))
          agreements: {
             title: '',
             type: 'command',
@@ -544,7 +544,7 @@ $(function(){
                         title: '{{ __("Agreements") }}',
                         actions: {
                            listAction: '/api/v1/items/Agreement?supplier_id='+sourcedata.record.id,
-@if(Auth::user()->can('update', \App\Models\Agreement::class))
+@if(Auth::user()->can('update', \Ledningssystemet\Ledningssystemet\Models\Agreement::class))
                            createAction: '/api/v1/items/Agreement?supplier_id='+sourcedata.record.id,
                            updateAction: '/api/v1/items/Agreement',
                            deleteAction: '/api/v1/items/Agreement',
@@ -585,7 +585,7 @@ $(function(){
                               defaultValue: sourcedata.record.responsible_user_id,
                               options: [
                                  { Value: null, DisplayText: '{{ __("None assigned") }}' },
-@foreach(App\Models\User::orderBy('name')->get()->each->setAppends([]) as $obj)
+@foreach(Ledningssystemet\Ledningssystemet\Models\User::orderBy('name')->get()->each->setAppends([]) as $obj)
                                  { Value: {{$obj ->id}}, DisplayText: @php echo(json_encode($obj->name)); @endphp  },
 @endforeach
                               ],
@@ -652,7 +652,7 @@ $(function(){
                         title: '{{ __("Relations") }}',
                         actions: {
                            listAction: '/api/v1/items/Relation?relation_type=Supplier&relation_id='+sourcedata.record.id,
-                           @if(Auth::user()->can('update', \App\Models\Supplier::class))
+                           @if(Auth::user()->can('update', \Ledningssystemet\Ledningssystemet\Models\Supplier::class))
                            createAction: '/api/v1/items/Relation?relation_type=Supplier&relation_id='+sourcedata.record.id,
                            updateAction: '/api/v1/items/Relation',
                            deleteAction: '/api/v1/items/Relation',

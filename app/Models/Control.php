@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Models;
+namespace Ledningssystemet\Ledningssystemet\Models;
 
-use App\Traits\HasCustomProperties;
+use Ledningssystemet\Ledningssystemet\Traits\HasCustomProperties;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Eloquent\Model;
@@ -19,10 +19,10 @@ use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
-use App\Traits\HasTags;
-use App\Traits\HasMessages;
-use App\Traits\HasNotifications;
-use App\Models\Concerns\DefersRelationAttributeSync;
+use Ledningssystemet\Ledningssystemet\Traits\HasTags;
+use Ledningssystemet\Ledningssystemet\Traits\HasMessages;
+use Ledningssystemet\Ledningssystemet\Traits\HasNotifications;
+use Ledningssystemet\Ledningssystemet\Models\Concerns\DefersRelationAttributeSync;
 
 
 class Control extends Model
@@ -334,7 +334,7 @@ class Control extends Model
       return [
          'name' => 'required',
          'description' => 'required',
-         'responsible_user_id' => 'nullable|exists:App\Models\User,id',
+         'responsible_user_id' => 'nullable|exists:Ledningssystemet\Ledningssystemet\Models\User,id',
       ];
    }
    

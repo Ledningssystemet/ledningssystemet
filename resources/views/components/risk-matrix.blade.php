@@ -1,6 +1,6 @@
 <?php
-   $consequencelevels = \App\Models\ConsequenceLevel::orderBy('ordinal')->select(['id', 'name', 'ordinal'])->get()->each->setAppends([]);
-   $probabilitylevels = \App\Models\ProbabilityLevel::orderBy('ordinal', 'desc')->select(['id', 'name', 'ordinal'])->get()->each->setAppends([]);;
+   $consequencelevels = \Ledningssystemet\Ledningssystemet\Models\ConsequenceLevel::orderBy('ordinal')->select(['id', 'name', 'ordinal'])->get()->each->setAppends([]);
+   $probabilitylevels = \Ledningssystemet\Ledningssystemet\Models\ProbabilityLevel::orderBy('ordinal', 'desc')->select(['id', 'name', 'ordinal'])->get()->each->setAppends([]);;
    $colcount = (0 < count($consequencelevels)) ? count($consequencelevels)+($attributes->has('hideheaders') ? 0 : 1) : 1;
 
    $query = null;
@@ -16,7 +16,7 @@
 
          $query->when(function ($q) use ($attributes) {
             if ($attributes->has('risk_project_id') && (0 < intval($attributes->get('risk_project_id')))) {
-               $rp = \App\Models\RiskProject::find(intval($attributes->get('risk_project_id')));
+               $rp = \Ledningssystemet\Ledningssystemet\Models\RiskProject::find(intval($attributes->get('risk_project_id')));
                if (!auth()->user()->can('view', $rp))
                   abort(403);
 
@@ -39,7 +39,7 @@
       $riskcount[$prob->id] = [];
       foreach($consequencelevels as $cons)
       {
-         $count = $attributes->has('template') ? 0 : \App\Models\Risk::when($query)->where('probability_id', $prob->id)->where('consequence_id', $cons->id)->count();
+         $count = $attributes->has('template') ? 0 : \Ledningssystemet\Ledningssystemet\Models\Risk::when($query)->where('probability_id', $prob->id)->where('consequence_id', $cons->id)->count();
          $riskcount[$prob->id][$cons->id] = $count;
       }
    }
@@ -84,7 +84,7 @@
    $color = 'ffffff';
    foreach($consequencelevels as $cons)
    {
-      $risklevel = \App\Models\RiskLevel::getRiskLevel($prob, $cons);
+      $risklevel = \Ledningssystemet\Ledningssystemet\Models\RiskLevel::getRiskLevel($prob, $cons);
       $color = $risklevel->color;
       echo("<div style=\"background-color: #".$color."bb\" class=\"riskmatrix-col-item".($attributes->has('nolinks') ? "" : " has-links")."\"".($attributes->has('nolinks') ? '' : " onClick=\"document.location='/assessment/riskregister?jtFilter[riskregister][probability_id]=".$prob->id."&jtFilter[riskregister][consequence_id]=".$cons->id."&jtFilter[riskregister][department_id]=-1&jtFilter[riskregister][showapproved]=1".($attributes->has('riskowner_id') ? "&jtFilter[riskregister][riskowner_id]=".$attributes->get('riskowner_id') : "")."';\"")."><span data-probability-id=\"".$prob->id."\" data-consequence-id=\"".$cons->id."\">".$riskcount[$prob->id][$cons->id]."</span></div>\r\n");
    }

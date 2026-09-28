@@ -27,7 +27,7 @@ $(function(){
          addNewRecord: '{{ __('Add new action') }}',
       },
       filter: {
-@php $tags = \App\Models\ControlAction::allUsedTags(); @endphp
+@php $tags = \Ledningssystemet\Ledningssystemet\Models\ControlAction::allUsedTags(); @endphp
 @if(0 < count($tags))
          tag_id: {
             type: 'select',
@@ -47,7 +47,7 @@ $(function(){
             default: 0,
             options: [
                { value: 0, text: '{{ __('Show all') }}' },
-@foreach(\App\Models\Control::orderBy('name')->get()->each->setAppends([]) as $obj)
+@foreach(\Ledningssystemet\Ledningssystemet\Models\Control::orderBy('name')->get()->each->setAppends([]) as $obj)
                { value: {{ $obj->id }}, text: @php echo(json_encode($obj->name)); @endphp },
 @endforeach               
             ]
@@ -89,7 +89,7 @@ $(function(){
             required: true,
             listClass: 'd-inline-block col-4',
             options:[
-@foreach(App\Models\Control::orderBy('name')->get()->each->setAppends([]) as $obj)
+@foreach(Ledningssystemet\Ledningssystemet\Models\Control::orderBy('name')->get()->each->setAppends([]) as $obj)
 { Value: {{ $obj->id }}, DisplayText: '{{ $obj->name}}'}, 
 @endforeach
             ]

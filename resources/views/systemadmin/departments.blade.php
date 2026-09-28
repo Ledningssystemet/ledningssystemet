@@ -1,11 +1,11 @@
-@php if(Auth::user()->cannot('index', \App\Models\Department::class)) abort(403); @endphp
+@php if(Auth::user()->cannot('index', \Ledningssystemet\Ledningssystemet\Models\Department::class)) abort(403); @endphp
 @extends('layouts.master')
 
 @section('container')
 
 <script>
 $(function(){
-   const departmentParentOptions = @php echo json_encode(\App\Models\Department::orderBy('name')->get(['id', 'name', 'parent_department_id'])->map(function($department){
+   const departmentParentOptions = @php echo json_encode(\Ledningssystemet\Ledningssystemet\Models\Department::orderBy('name')->get(['id', 'name', 'parent_department_id'])->map(function($department){
       return [
          'id' => $department->id,
          'name' => $department->name,
@@ -59,19 +59,19 @@ $(function(){
          addNewRecord: '{{ __('Create department') }}',
       },
 	  filter: {
-@include('components.customproperty', ['classname' => 'App\Models\Department', 'showFilter' => true])
+@include('components.customproperty', ['classname' => 'Ledningssystemet\Ledningssystemet\Models\Department', 'showFilter' => true])
 	  },
       actions: {
-@if(Auth::user()->can('index', \App\Models\Department::class))         
+@if(Auth::user()->can('index', \Ledningssystemet\Ledningssystemet\Models\Department::class))
          listAction: '/api/v1/items/Department',
 @endif
-@if(Auth::user()->can('create', \App\Models\Department::class))         
+@if(Auth::user()->can('create', \Ledningssystemet\Ledningssystemet\Models\Department::class))
          createAction: '/api/v1/items/Department',
 @endif
-@if(Auth::user()->can('update', \App\Models\Department::class))         
+@if(Auth::user()->can('update', \Ledningssystemet\Ledningssystemet\Models\Department::class))
          updateAction: '/api/v1/items/Department',
 @endif
-@if(Auth::user()->can('delete', \App\Models\Department::class))         
+@if(Auth::user()->can('delete', \Ledningssystemet\Ledningssystemet\Models\Department::class))
          deleteAction: '/api/v1/items/Department',
 @endif
       },
@@ -100,7 +100,7 @@ $(function(){
             defaultValue: null,
             options: [
                { Value: null, DisplayText: '{{ __("None") }}' },
-@foreach(\App\Models\Site::orderBy('name')->get()->each->setAppends([]) as $obj)
+@foreach(\Ledningssystemet\Ledningssystemet\Models\Site::orderBy('name')->get()->each->setAppends([]) as $obj)
                { Value: {{$obj->id}}, DisplayText: '{{ $obj->name }}' },
 @endforeach
             ]
@@ -143,7 +143,7 @@ $(function(){
          },
          department_users: {
             title: '{{ __('Users') }}',
-            create: false,
+            create: true,
             edit: true,
             list: true,
             multiple: true,
@@ -151,7 +151,7 @@ $(function(){
             tooltip: '{{ __("This will be overwritten by the next synchronization with external provider if a group is selected above") }}',
 @endif
             options: [
-@foreach(App\Models\User::orderBy('name')->get()->each->setAppends([]) as $obj)
+@foreach(Ledningssystemet\Ledningssystemet\Models\User::orderBy('name')->get()->each->setAppends([]) as $obj)
                { Value: {{ $obj->id }}, DisplayText: @php echo(json_encode($obj->name)); @endphp },
 @endforeach
             ]
@@ -186,7 +186,7 @@ $(function(){
                return retval;
             }
          },
-         @include('components.customproperty', ['classname' => 'App\Models\Department'])
+         @include('components.customproperty', ['classname' => 'Ledningssystemet\Ledningssystemet\Models\Department'])
          hr2: {
             list: true,
             edit: false,
@@ -195,10 +195,10 @@ $(function(){
                return $('<hr />'); 
             }
          },
-@if(Auth::user()->can('index', \App\Models\Risk::class))         
+@if(Auth::user()->can('index', \Ledningssystemet\Ledningssystemet\Models\Risk::class))
          showRisks: showRisks('Department', $('#tableContainer')),
 @endif
-@if(Auth::user()->can('update', \App\Models\Department::class))         
+@if(Auth::user()->can('update', \Ledningssystemet\Ledningssystemet\Models\Department::class))
          reassign: {
             edit: false,
             create: false,
@@ -242,7 +242,7 @@ $(function(){
                      }
                      
                      retval.find('select').each(function(){
-@foreach(\App\Models\Department::orderBy('name')->get()->each->setAppends([]) as $obj)
+@foreach(\Ledningssystemet\Ledningssystemet\Models\Department::orderBy('name')->get()->each->setAppends([]) as $obj)
                         $(this).append($('<option value="{{ $obj->id }}" />')
                            .text(@php echo(json_encode($obj->name)); @endphp)
                            .prop('selected', ({{ $obj->id }} == data.record.id)));

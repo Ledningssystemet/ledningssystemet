@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Models;
+namespace Ledningssystemet\Ledningssystemet\Models;
 
-use App\Traits\HasCustomProperties;
+use Ledningssystemet\Ledningssystemet\Traits\HasCustomProperties;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
@@ -19,7 +19,7 @@ use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\DB;
-use App\Models\Concerns\DefersRelationAttributeSync;
+use Ledningssystemet\Ledningssystemet\Models\Concerns\DefersRelationAttributeSync;
 
 
 class Department extends Model
@@ -249,8 +249,8 @@ class Department extends Model
             'required',
             Rule::unique('departments')->ignore($this->id),
          ],
-         'site_id' => 'nullable|exists:App\Models\Site,id',
-         'parent_department_id' => 'nullable|exists:App\Models\Department,id',
+         'site_id' => 'nullable|exists:Ledningssystemet\Ledningssystemet\Models\Site,id',
+         'parent_department_id' => 'nullable|exists:Ledningssystemet\Ledningssystemet\Models\Department,id',
       ];
    }
 

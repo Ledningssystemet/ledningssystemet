@@ -7,13 +7,13 @@
 </style>
 <script>
    const confidentialityGrounds = {
-@foreach (\App\Models\ConfidentialityGround::all() as $obj)
+@foreach (\Ledningssystemet\Ledningssystemet\Models\ConfidentialityGround::all() as $obj)
       {{ $obj->id }}: <?php echo(json_encode($obj->name)); ?>,
 @endforeach
    };
 
    const diaries = {
-@foreach (\App\Models\Diary::all() as $obj)
+@foreach (\Ledningssystemet\Ledningssystemet\Models\Diary::all() as $obj)
            {{ $obj->id }}: <?php echo(json_encode($obj->name)); ?>,
 @endforeach
    };
@@ -32,7 +32,7 @@ $(function(){
             default: 0,
             options: [
                { value: null, text: '{{ __('Show all') }}' },
-@foreach(\App\Models\Department::orderBy('name')->get()->each->setAppends([]) as $obj)
+@foreach(\Ledningssystemet\Ledningssystemet\Models\Department::orderBy('name')->get()->each->setAppends([]) as $obj)
                { value: {{ $obj->id }}, text: <?php echo(json_encode($obj->name)); ?> },
 @endforeach               
             ]
@@ -43,7 +43,7 @@ $(function(){
             default: 0,
             options: [
                { value: null, text: '{{ __('Show all') }}' },
-@foreach(\App\Models\ConfidentialityGround::whereIn('id',\App\Models\InformationType::pluck('confidentiality_ground_id')->unique())->orderBy('name')->get()->each->setAppends([]) as $obj)
+@foreach(\Ledningssystemet\Ledningssystemet\Models\ConfidentialityGround::whereIn('id',\Ledningssystemet\Ledningssystemet\Models\InformationType::pluck('confidentiality_ground_id')->unique())->orderBy('name')->get()->each->setAppends([]) as $obj)
                { value: {{ $obj->id }}, text: <?php echo(json_encode($obj->name)); ?> },
 @endforeach
             ]
@@ -54,7 +54,7 @@ $(function(){
             default: 0,
             options: [
                { value: null, text: '{{ __('Show all') }}' },
-@foreach(\App\Models\Diary::whereIn('id',\App\Models\InformationType::pluck('diary_id')->unique())->orderBy('name')->get()->each->setAppends([]) as $obj)
+@foreach(\Ledningssystemet\Ledningssystemet\Models\Diary::whereIn('id',\Ledningssystemet\Ledningssystemet\Models\InformationType::pluck('diary_id')->unique())->orderBy('name')->get()->each->setAppends([]) as $obj)
                { value: {{ $obj->id }}, text: <?php echo(json_encode($obj->name)); ?> },
 @endforeach
             ]

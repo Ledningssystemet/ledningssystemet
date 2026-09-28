@@ -1,6 +1,6 @@
-@php if(Auth::user()->cannot('index', \App\Models\ActivityFlow::class)) abort(403); @endphp
+@php if(Auth::user()->cannot('index', \Ledningssystemet\Ledningssystemet\Models\ActivityFlow::class)) abort(403); @endphp
 <?php
-   $activityflowtemplate = \App\Models\ActivityFlowTemplate::findOrFail(request()->input('activity_flow_template_id', 0));
+   $activityflowtemplate = \Ledningssystemet\Ledningssystemet\Models\ActivityFlowTemplate::findOrFail(request()->input('activity_flow_template_id', 0));
    
    // Ensure that user have sufficient privileges
    if(!($activityflowtemplate->user_instantiatable || auth()->user()->canAny(['managementtools.edit'])))
@@ -119,7 +119,7 @@ else
       </td>
       <td>
          <select class="form-control form-select" name="itemresponsible_user_id[{{ $item->id }}]" required>
-@foreach(\App\Models\User::where('enabled', true)->get()->each->setAppends([]) as $obj)
+@foreach(\Ledningssystemet\Ledningssystemet\Models\User::where('enabled', true)->get()->each->setAppends([]) as $obj)
             <option value="{{ $obj->id }}" @php echo($obj->id==auth()->user()->id ? " selected=\"selected\"" : ""); @endphp>{{ $obj->name }}</option>
 
 @endforeach         

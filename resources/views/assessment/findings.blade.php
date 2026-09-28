@@ -1,4 +1,4 @@
-@php if(Auth::user()->cannot('index', \App\Models\Finding::class)) abort(403); @endphp
+@php if(Auth::user()->cannot('index', \Ledningssystemet\Ledningssystemet\Models\Finding::class)) abort(403); @endphp
 @extends('layouts.master')
 
 @section('container')
@@ -16,7 +16,7 @@ $(function(){
          addNewRecord: '{{ __('Add new finding') }}',
       },
       filter: {
-@php $tags = \App\Models\Finding::allUsedTags(); @endphp
+@php $tags = \Ledningssystemet\Ledningssystemet\Models\Finding::allUsedTags(); @endphp
 @if(0 < count($tags))
          tag_id: {
             type: 'select',
@@ -37,7 +37,7 @@ $(function(){
             options: [
                { value: 0, text: '{{ __('Show mine') }}' },
                { value: -1, text: '{{ __('Show all') }}' },
-@foreach(\App\Models\Department::orderBy('name')->select(['id', 'name'])->get()->each->setAppends([]) as $obj)
+@foreach(\Ledningssystemet\Ledningssystemet\Models\Department::orderBy('name')->select(['id', 'name'])->get()->each->setAppends([]) as $obj)
                { value: {{ $obj->id }}, text: '{{ $obj->name }}' },
 @endforeach               
             ]
@@ -60,19 +60,19 @@ $(function(){
             checked: false,
             text: '{{ __('Show non-conformities only') }}',
          },
-@include('components.customproperty', ['classname' => 'App\Models\Finding', 'showFilter' => true])
+@include('components.customproperty', ['classname' => 'Ledningssystemet\Ledningssystemet\Models\Finding', 'showFilter' => true])
       },
       actions: {
-@if(Auth::user()->can('index', \App\Models\Finding::class))         
+@if(Auth::user()->can('index', \Ledningssystemet\Ledningssystemet\Models\Finding::class))
          listAction: '/api/v1/items/Finding',
 @endif
-@if(Auth::user()->can('create', \App\Models\Finding::class))         
+@if(Auth::user()->can('create', \Ledningssystemet\Ledningssystemet\Models\Finding::class))
          createAction: '/api/v1/items/Finding',
 @endif
-@if(Auth::user()->can('update', \App\Models\Finding::class))         
+@if(Auth::user()->can('update', \Ledningssystemet\Ledningssystemet\Models\Finding::class))
          updateAction: '/api/v1/items/Finding',
 @endif
-@if(Auth::user()->can('delete', \App\Models\Finding::class))         
+@if(Auth::user()->can('delete', \Ledningssystemet\Ledningssystemet\Models\Finding::class))
          deleteAction: '/api/v1/items/Finding',
 @endif
       },
@@ -133,13 +133,13 @@ $(function(){
 <?php
    // Processes
    echo("{ Label: '".__('Process')."', Children: [\r\n");
-   foreach(\App\Models\Process::orderBy('name')->select(['id', 'name'])->get()->each->setAppends([]) as $obj)
+   foreach(\Ledningssystemet\Ledningssystemet\Models\Process::orderBy('name')->select(['id', 'name'])->get()->each->setAppends([]) as $obj)
       echo("{ Value: 'Process_".$obj->id."', DisplayText: ".json_encode($obj->name)." },\r\n");
    echo("]},\r\n");
 
    // Assets
    echo("{ Label: '".__('Asset')."', Children: [\r\n");
-   foreach(\App\Models\Asset::orderBy('name')->select(['id', 'name'])->get()->each->setAppends([]) as $obj)
+   foreach(\Ledningssystemet\Ledningssystemet\Models\Asset::orderBy('name')->select(['id', 'name'])->get()->each->setAppends([]) as $obj)
       echo("{ Value: 'Asset_".$obj->id."', DisplayText: ".json_encode($obj->name)." },\r\n");
    echo("]},\r\n");
    
@@ -147,7 +147,7 @@ if(!config('ledningssystemet.disable_supplier'))
 {
    // Suppliers
    echo("{ Label: '".__('Supplier')."', Children: [\r\n");
-   foreach(\App\Models\Supplier::orderBy('name')->select(['id', 'name'])->get()->each->setAppends([]) as $obj)
+   foreach(\Ledningssystemet\Ledningssystemet\Models\Supplier::orderBy('name')->select(['id', 'name'])->get()->each->setAppends([]) as $obj)
       echo("{ Value: 'Supplier_".$obj->id."', DisplayText: ".json_encode($obj->name)." },\r\n");
    echo("]},\r\n");
 }
@@ -163,7 +163,7 @@ if(!config('ledningssystemet.disable_supplier'))
             defaultValue: <?php $userdeps = auth()->user()->int_departments; echo((0 == count($userdeps)) ? '-1' : $userdeps[0]->id); ?>,
             listClass: 'd-inline-block col-6 col-md-4',
             options: [
-@foreach(App\Models\Department::orderBy('name')->select(['id', 'name'])->get()->each->setAppends([]) as $obj)
+@foreach(Ledningssystemet\Ledningssystemet\Models\Department::orderBy('name')->select(['id', 'name'])->get()->each->setAppends([]) as $obj)
                { Value: {{$obj->id}}, DisplayText: @php echo(json_encode($obj->name)); @endphp },
 @endforeach
             ]
@@ -259,7 +259,7 @@ if(!config('ledningssystemet.disable_supplier'))
             edit: true,
             list: true,
          },
-         @if(\App\Models\Site::count())
+         @if(\Ledningssystemet\Ledningssystemet\Models\Site::count())
          hr4: {
             list: true,
             edit: false,
@@ -277,7 +277,7 @@ if(!config('ledningssystemet.disable_supplier'))
             placeholder: '{{ __("Assess to what extent this observation applies to different parts (e.g. sites) of the organization") }}',
          },
          @endif
-         @include('components.customproperty', ['classname' => 'App\Models\Finding'])
+         @include('components.customproperty', ['classname' => 'Ledningssystemet\Ledningssystemet\Models\Finding'])
          hr5: {
             list: true,
             edit: false,
@@ -323,7 +323,7 @@ if(!config('ledningssystemet.disable_supplier'))
             }
          },
 @endif
-@if(Auth::user()->can('update', \App\Models\Finding::class))
+@if(Auth::user()->can('update', \Ledningssystemet\Ledningssystemet\Models\Finding::class))
          commands: {
             sorting: false,
             edit: false,
@@ -381,7 +381,7 @@ if(!config('ledningssystemet.disable_supplier'))
             display: function (sourcedata) {
                var actions = { listAction: '/api/v1/items/ControlAction?showhandled=1&finding='+sourcedata.record.id };
                
-@if(Auth::user()->can('update', \App\Models\Finding::class))         
+@if(Auth::user()->can('update', \Ledningssystemet\Ledningssystemet\Models\Finding::class))
                if(!sourcedata.record.finished_at)
                {
                   actions.createAction = '/api/v1/items/ControlAction?finding_id='+sourcedata.record.id;
@@ -446,7 +446,7 @@ if(!config('ledningssystemet.disable_supplier'))
                               create: true,
                               options:[
                                  { Value: null, DisplayText: '-- {{ __("Add new action") }} --' },
-@foreach(App\Models\ControlAction::whereNull('finished_at')->orderBy('name')->select(['id', 'name'])->get()->each->setAppends([]) as $obj)
+@foreach(Ledningssystemet\Ledningssystemet\Models\ControlAction::whereNull('finished_at')->orderBy('name')->select(['id', 'name'])->get()->each->setAppends([]) as $obj)
                                  { Value: {{ $obj->id }}, DisplayText: '{{ $obj->name}}'},
 @endforeach
 
@@ -460,7 +460,7 @@ if(!config('ledningssystemet.disable_supplier'))
                               create: true,
                               required: true,
                               options:[
-@foreach(App\Models\Control::orderBy('name')->select(['id', 'name'])->get()->each->setAppends([]) as $obj)
+@foreach(Ledningssystemet\Ledningssystemet\Models\Control::orderBy('name')->select(['id', 'name'])->get()->each->setAppends([]) as $obj)
    { Value: {{ $obj->id }}, DisplayText: '{{ $obj->name}}'}, 
 @endforeach
                               
@@ -473,7 +473,7 @@ if(!config('ledningssystemet.disable_supplier'))
                               edit: true,
                               create: true,
                               options: [
-@foreach(\App\Models\User::orderBy('name')->select(['id', 'name'])->get()->each->setAppends([]) as $obj)
+@foreach(\Ledningssystemet\Ledningssystemet\Models\User::orderBy('name')->select(['id', 'name'])->get()->each->setAppends([]) as $obj)
                                  { Value: {{ $obj->id }}, DisplayText: '{{ $obj->name }}'},
 @endforeach                                 
                               ],

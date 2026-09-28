@@ -159,8 +159,8 @@ if(request()->has('json'))
    <label class="form-label">{{ __("Approver") }}</label>
    <select id="approver_id" class="form-select" style="max-width: 500px;" onChange="setDirtyFlag();">
       <option value="">{{ __("No approver") }}</option>
-@foreach(\App\Models\User::orderBy('name')->get()->each->setAppends([]) as $user)
-   @if($user->can('publishdocument', \App\Models\DocumentVersion::class))
+@foreach(\Ledningssystemet\Ledningssystemet\Models\User::orderBy('name')->get()->each->setAppends([]) as $user)
+   @if($user->can('publishdocument', \Ledningssystemet\Ledningssystemet\Models\DocumentVersion::class))
       <option value="{{ $user->id }}"@php echo(($document->approver_id == $user->id) ? " selected=\"selected\"" : ""); @endphp>{{ $user->name }}</option>
    @endif
 @endforeach
@@ -192,7 +192,7 @@ if(request()->has('json'))
 @if($allowapprove)
    <button id="approve" class="btn btn-sm btn-outline-danger mb-3 mt-3" onclick="confirmDialog('{{__("Approve and publish")}}', '{{ __("Are you sure?") }}', function(){
       ajaxGet('/api/v1/items/DocumentVersion/{{ $document->id }}/approve', function(){
-@if(auth()->user()->can('create', \App\Models\LibraryDocument::class))
+@if(auth()->user()->can('create', \Ledningssystemet\Ledningssystemet\Models\LibraryDocument::class))
          document.location = '/management/documentlibrary';
 @else
          document.location = '/user/documents';
@@ -202,7 +202,7 @@ if(request()->has('json'))
 );">{{ __("Approve and publish") }}</button>
    <button id="reject" class="btn btn-sm btn-outline-danger mb-3 mt-3" onclick="confirmDialog('{{__("Reject version")}}', '{{ __("Are you sure?") }}', function(){
       ajaxGet('/api/v1/items/DocumentVersion/{{ $document->id }}/reject', function(){
-@if(auth()->user()->can('create', \App\Models\LibraryDocument::class))
+@if(auth()->user()->can('create', \Ledningssystemet\Ledningssystemet\Models\LibraryDocument::class))
          document.location = '/management/documentlibrary';
 @else
          document.location = '/user/documents';
@@ -215,7 +215,7 @@ if(request()->has('json'))
 @if(auth()->user()->can('delete', $document))
    <button id="deletedraft" class="btn btn-sm btn-outline-danger mb-3 mt-3" onclick="confirmDialog('{{__("Delete draft")}}', '{{ __("Are you sure?") }}', function(){
       ajaxDelete('/api/v1/items/DocumentVersion/{{ $document->id }}', function(){
-@if(auth()->user()->can('create', \App\Models\LibraryDocument::class))
+@if(auth()->user()->can('create', \Ledningssystemet\Ledningssystemet\Models\LibraryDocument::class))
          document.location = '/management/documentlibrary';
 @else
          document.location = '/user/documents';

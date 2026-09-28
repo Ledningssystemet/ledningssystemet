@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Models;
+namespace Ledningssystemet\Ledningssystemet\Models;
 
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Database\Eloquent\Model;
@@ -17,10 +17,10 @@ use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
-use App\Models\ComplianceEvaluationRequirementFinding;
-use App\Models\ActivityLog;
-use App\Traits\HasNotifications;
-use App\Models\Concerns\DefersRelationAttributeSync;
+use Ledningssystemet\Ledningssystemet\Models\ComplianceEvaluationRequirementFinding;
+use Ledningssystemet\Ledningssystemet\Models\ActivityLog;
+use Ledningssystemet\Ledningssystemet\Traits\HasNotifications;
+use Ledningssystemet\Ledningssystemet\Models\Concerns\DefersRelationAttributeSync;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 
 
@@ -99,7 +99,7 @@ class ComplianceEvaluation extends Model
             {
                foreach(ComplianceEvaluationRequirementFinding::where('compliance_evaluation_requirement_id', $req->id)->get() as $finding)
                {
-                  $newFinding = new \App\Models\Finding();
+                  $newFinding = new \Ledningssystemet\Ledningssystemet\Models\Finding();
                   $newFinding->name = $finding->name;
                   $newFinding->description = $finding->description;
                   $newFinding->department_id = $finding->department_id;
@@ -456,7 +456,7 @@ class ComplianceEvaluation extends Model
       
       // Ignore if already in this state
       if(null != $this->finished)
-         throw new \App\Exceptions\SoftException(__('Cannot alter a finished checklist'));
+         throw new \Ledningssystemet\Ledningssystemet\Exceptions\SoftException(__('Cannot alter a finished checklist'));
       
       // Sync requirement sources
       $this->int_requirement_sources()->sync(request()->input('reqsources'));

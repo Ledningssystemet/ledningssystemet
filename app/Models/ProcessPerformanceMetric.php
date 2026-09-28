@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Models;
+namespace Ledningssystemet\Ledningssystemet\Models;
 
-use App\Traits\HasCustomProperties;
+use Ledningssystemet\Ledningssystemet\Traits\HasCustomProperties;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\HasOne;
@@ -17,10 +17,10 @@ use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
-use App\Traits\HasTags;
-use App\Traits\HasMessages;
-use App\Traits\HasNotifications;
-use App\Models\Concerns\DefersRelationAttributeSync;
+use Ledningssystemet\Ledningssystemet\Traits\HasTags;
+use Ledningssystemet\Ledningssystemet\Traits\HasMessages;
+use Ledningssystemet\Ledningssystemet\Traits\HasNotifications;
+use Ledningssystemet\Ledningssystemet\Models\Concerns\DefersRelationAttributeSync;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use stdClass;
 
@@ -506,7 +506,7 @@ class ProcessPerformanceMetric extends Model
          'name' => [
             'required',
          ],
-         'responsible_user_id' => 'nullable|exists:App\Models\User,id',
+         'responsible_user_id' => 'nullable|exists:Ledningssystemet\Ledningssystemet\Models\User,id',
          'precision' => 'numeric|min:0|max:9',
       ];
    }

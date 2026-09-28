@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Http\Controllers\Api;
+namespace Ledningssystemet\Ledningssystemet\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
+use Ledningssystemet\Ledningssystemet\Http\Controllers\Controller;
 use Illuminate\Database\Eloquent\Model as EloquentModel;
 use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Support\Facades\DB;
@@ -18,7 +18,7 @@ class AIController extends Controller
    {
       $retobj = null;
 
-      $risk = \App\Models\Risk::findOrFail(request()->input('risk_id', 0));
+      $risk = \Ledningssystemet\Ledningssystemet\Models\Risk::findOrFail(request()->input('risk_id', 0));
       if(!auth()->user()->can('view', $risk))
          abort(403);
 
@@ -116,7 +116,7 @@ class AIController extends Controller
    {
       $retobj = null;
 
-      $requirementSource = \App\Models\RequirementSource::findOrFail(request()->input('requirement_source_id', 0));
+      $requirementSource = \Ledningssystemet\Ledningssystemet\Models\RequirementSource::findOrFail(request()->input('requirement_source_id', 0));
       if(!auth()->user()->can('view', $requirementSource))
          abort(403);
 
@@ -187,7 +187,7 @@ class AIController extends Controller
    public static function getFindingAnalysis(){
       $retobj = null;
 
-      $finding = \App\Models\Finding::findOrFail(request()->input('finding_id', 0));
+      $finding = \Ledningssystemet\Ledningssystemet\Models\Finding::findOrFail(request()->input('finding_id', 0));
       if(!auth()->user()->can('view', $finding))
          abort(403);
 
@@ -252,7 +252,7 @@ class AIController extends Controller
    public static function getControlAnalysis(){
       $retobj = null;
 
-      $control = \App\Models\Control::findOrFail(request()->input('control_id', 0));
+      $control = \Ledningssystemet\Ledningssystemet\Models\Control::findOrFail(request()->input('control_id', 0));
       if(!auth()->user()->can('view', $control))
          abort(403);
 
@@ -512,7 +512,7 @@ EOF;
 
       switch($contextobj::class)
       {
-         case \App\Models\RiskProject::class:
+         case \Ledningssystemet\Ledningssystemet\Models\RiskProject::class:
             foreach($contextobj->int_risks()->get() as $risk)
                $currentrisks[] = [
                   'name' => $risk->name,
@@ -522,7 +522,7 @@ EOF;
 
             $scopedescription = "The context for this request is a risk workshop where the scope of the workshop is: '".$contextobj->scopedescription."' and the purpose is described as '".$contextobj->purposedescription."'.";
             break;
-         case \App\Models\Asset::class:
+         case \Ledningssystemet\Ledningssystemet\Models\Asset::class:
             foreach($contextobj->int_risks()->get() as $risk)
                $currentrisks[] = [
                   'name' => $risk->name,
@@ -544,8 +544,8 @@ EOF;
                   $scopedescription .= (($propidx++ > 0) ? "," : "").$prop->name . "='" . $prop->value . "'";
                }
             }
-            $confidentialityClasses = \App\Models\ConfidentialityClass::orderBy('ordinal')->pluck('id');
-            $availabilityClasses = \App\Models\AvailabilityClass::orderBy('ordinal')->pluck('id');
+            $confidentialityClasses = \Ledningssystemet\Ledningssystemet\Models\ConfidentialityClass::orderBy('ordinal')->pluck('id');
+            $availabilityClasses = \Ledningssystemet\Ledningssystemet\Models\AvailabilityClass::orderBy('ordinal')->pluck('id');
 
             $infotypes = $contextobj->int_information_types()->get();
 
@@ -598,7 +598,7 @@ EOF;
 
             break;
 
-         case \App\Models\Supplier::class:
+         case \Ledningssystemet\Ledningssystemet\Models\Supplier::class:
 
             foreach($contextobj->int_risks()->get() as $risk)
                $currentrisks[] = [
@@ -699,24 +699,24 @@ EOF;
 
       // Create new risks
       foreach($risks as $risk){
-         $newrisk = new \App\Models\Risk();
+         $newrisk = new \Ledningssystemet\Ledningssystemet\Models\Risk();
          $newrisk->name = $risk['name'];
          $newrisk->scenariodescription = $risk['scenariodescription'];
          $newrisk->consequencedescription = $risk['consequencedescription'];
          $newrisk->department_id = $contextobj->department_id;
 
          // Associate with context object
-         if($contextobj instanceof \App\Models\RiskProject)
+         if($contextobj instanceof \Ledningssystemet\Ledningssystemet\Models\RiskProject)
             $newrisk->risk_project_id = $contextobj->id;
          else {
-            $newrisk->context_type = $contextobj::class;
+            $newrisk->context_type = $contextobj->getMorphClass();
             $newrisk->context_id = $contextobj->id;
          }
          $newrisk->riskowner_id = $contextobj->responsible_user_id;
          $newrisk->save();
 
          // Create new risk note
-         \App\Models\ActivityLog::addMessage(__("The risk was AI-generated on behalf of")." ".auth()->user()->name, $newrisk);
+         \Ledningssystemet\Ledningssystemet\Models\ActivityLog::addMessage(__("The risk was AI-generated on behalf of")." ".auth()->user()->name, $newrisk);
       }
 
       return response()->json(array('riskcount' => count($risks)));
@@ -909,7 +909,7 @@ EOF;
       $wantsHighestRisks = self::queryLooksLikeHighestRiskQuestion($queryText);
       if($wantsHighestRisks)
       {
-         $riskRows = \App\Models\Risk::query()
+         $riskRows = \Ledningssystemet\Ledningssystemet\Models\Risk::query()
             ->leftJoin('risk_level_mappings as rlm', function($join) {
                $join->on('rlm.probability_level_id', '=', 'risks.probability_id')
                   ->on('rlm.consequence_level_id', '=', 'risks.consequence_id');
@@ -978,7 +978,7 @@ EOF;
       $wantsOverdueActions = self::queryLooksLikeOverdueActionQuestion($queryText);
       if($wantsOverdueActions)
       {
-         $actionRows = \App\Models\ControlAction::query()
+         $actionRows = \Ledningssystemet\Ledningssystemet\Models\ControlAction::query()
             ->whereNull('finished_at')
             ->whereNotNull('due')
             ->where('due', '<', $today)

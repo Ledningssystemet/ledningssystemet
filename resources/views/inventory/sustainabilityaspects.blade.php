@@ -1,4 +1,4 @@
-@php if(Auth::user()->cannot('index', \App\Models\ProcessSustainabilityAspect::class)) abort(403); @endphp
+@php if(Auth::user()->cannot('index', \Ledningssystemet\Ledningssystemet\Models\ProcessSustainabilityAspect::class)) abort(403); @endphp
 @extends('layouts.master')
 
 @section('container')
@@ -16,7 +16,7 @@ $(function(){
          addNewRecord: '{{ __('Add new aspect') }}',
       },
       filter: {
-@php $tags = \App\Models\ProcessSustainabilityAspect::allUsedTags(); @endphp
+@php $tags = \Ledningssystemet\Ledningssystemet\Models\ProcessSustainabilityAspect::allUsedTags(); @endphp
 @if(0 < count($tags))
          tag_id: {
             type: 'select',
@@ -32,16 +32,16 @@ $(function(){
 @endif
       },
       actions: {
-@if(Auth::user()->can('index', \App\Models\ProcessSustainabilityAspect::class))
+@if(Auth::user()->can('index', \Ledningssystemet\Ledningssystemet\Models\ProcessSustainabilityAspect::class))
          listAction: '/api/v1/items/ProcessSustainabilityAspect',
 @endif         
-@if(Auth::user()->can('create', \App\Models\ProcessSustainabilityAspect::class))
+@if(Auth::user()->can('create', \Ledningssystemet\Ledningssystemet\Models\ProcessSustainabilityAspect::class))
          createAction: '/api/v1/items/ProcessSustainabilityAspect',
 @endif         
-@if(Auth::user()->can('update', \App\Models\ProcessSustainabilityAspect::class))
+@if(Auth::user()->can('update', \Ledningssystemet\Ledningssystemet\Models\ProcessSustainabilityAspect::class))
          updateAction: '/api/v1/items/ProcessSustainabilityAspect',
 @endif         
-@if(Auth::user()->can('delete', \App\Models\ProcessSustainabilityAspect::class))
+@if(Auth::user()->can('delete', \Ledningssystemet\Ledningssystemet\Models\ProcessSustainabilityAspect::class))
          deleteAction: '/api/v1/items/ProcessSustainabilityAspect',
 @endif         
       },
@@ -75,7 +75,7 @@ $(function(){
             required: true,
             listClass: 'd-inline-block col-12 col-md-4',
             options: [
-@foreach(App\Models\Process::orderBy('name')->get()->each->setAppends([]) as $obj)
+@foreach(Ledningssystemet\Ledningssystemet\Models\Process::orderBy('name')->get()->each->setAppends([]) as $obj)
                { Value: {{ $obj->id }}, DisplayText: @php echo(json_encode($obj->name)); @endphp, Tooltip: @php echo(json_encode($obj->description)); @endphp },
 @endforeach
             ],
@@ -90,7 +90,7 @@ $(function(){
             tooltip: '{{ __("Note: this cannot be changed after creation") }}',
             listClass: 'd-inline-block col-12 col-md-4',
             options: [
-@foreach(App\Models\SustainabilityAspect::orderBy('name')->get()->each->setAppends([]) as $obj)
+@foreach(Ledningssystemet\Ledningssystemet\Models\SustainabilityAspect::orderBy('name')->get()->each->setAppends([]) as $obj)
                { Value: {{ $obj->id }}, DisplayText: @php echo(json_encode($obj->name)); @endphp, Tooltip: @php echo(json_encode($obj->description)); @endphp },
 @endforeach
             ],
@@ -139,7 +139,7 @@ $(function(){
          },
          sustainability_metrics: {
             title: '',
-            create: false,
+            create: true,
             edit: true,
             list: true,
             display: function(data) {
@@ -169,7 +169,7 @@ $(function(){
             input: function(data) {
                var retobj = $('<div />');
                
-@foreach(App\Models\SustainabilityMetric::orderBy('name')->get() as $sm)
+@foreach(Ledningssystemet\Ledningssystemet\Models\SustainabilityMetric::orderBy('name')->get() as $sm)
                var selectedLevel = null;
                var isIncluded = null;
                Object.values(data.record.sustainability_metrics).forEach((obj) => {
@@ -266,14 +266,14 @@ $(function(){
          },
          process_performance_metrics: {
             title: '{{ __('Process performance metrics') }}',
-            create: false,
+            create: true,
             edit: true,
             list: true,
 
             multiple: true,
             listClass: 'd-inline-block col-12 col-md-4',
             options: [
-@foreach(App\Models\ProcessPerformanceMetric::where('quantitative', true)->orderBy('name')->get() as $obj)
+@foreach(Ledningssystemet\Ledningssystemet\Models\ProcessPerformanceMetric::where('quantitative', true)->orderBy('name')->get() as $obj)
 <?php
 $lastreport = $obj->int_last_report();
 if(null != $lastreport)
@@ -285,14 +285,14 @@ if(null != $lastreport)
          },
          objectives: {
             title: '{{ __('Objectives') }}',
-            create: false,
+            create: true,
             edit: true,
             list: true,
 
             multiple: true,
             listClass: 'd-inline-block col-12 col-md-4',
             options: [
-@foreach(App\Models\Objective::orderBy('name')->get()->each->setAppends([]) as $obj)
+@foreach(Ledningssystemet\Ledningssystemet\Models\Objective::orderBy('name')->get()->each->setAppends([]) as $obj)
                { Value: {{ $obj->id }}, DisplayText: @php echo(json_encode($obj->name)); @endphp, Tooltip: @php echo(json_encode($obj->description)); @endphp  },
 @endforeach            
             ],

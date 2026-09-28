@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Models;
+namespace Ledningssystemet\Ledningssystemet\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
@@ -127,7 +127,7 @@ class ProcessHref extends Model
          'name' => 'required',
          'url' => 'required|url',
          'blank' => 'required|boolean',
-         'process_id' => 'exists:App\Models\Process,id',
+         'process_id' => 'exists:Ledningssystemet\Ledningssystemet\Models\Process,id',
       ];
    }
    

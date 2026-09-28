@@ -37,8 +37,7 @@
     },
     "autoload": {
         "psr-4": {
-            "Ledningssystemet\\Ledningssystemet\\": "src/",
-            "App\\": "app/",
+            "Ledningssystemet\\Ledningssystemet\\": ["src/", "app/"],
             "Database\\Factories\\": "database/factories/",
             "Database\\Seeders\\": "database/seeders/"
         }

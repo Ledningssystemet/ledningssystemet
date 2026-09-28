@@ -1,4 +1,4 @@
-@php if(Auth::user()->cannot('index', \App\Models\Customer::class)) abort(403); @endphp
+@php if(Auth::user()->cannot('index', \Ledningssystemet\Ledningssystemet\Models\Customer::class)) abort(403); @endphp
 @extends('layouts.master')
 
 @section('container')
@@ -39,7 +39,7 @@ $(function(){
          @endif
       ],
       filter: {
-@php $tags = \App\Models\Customer::allUsedTags(); @endphp
+@php $tags = \Ledningssystemet\Ledningssystemet\Models\Customer::allUsedTags(); @endphp
 @if(0 < count($tags))
          tag_id: {
             type: 'select',
@@ -59,7 +59,7 @@ $(function(){
             default: 0,
             options: [
                { value: 0, text: '{{ __('Show all') }}' },
-                  @foreach(\App\Models\User::leftJoin('customers', 'customers.responsible_user_id', '=', 'users.id')->whereNotNull('customers.id')->select('users.*')->distinct()->orderBy('users.name')->get()->each->setAppends([]) as $obj)
+                  @foreach(\Ledningssystemet\Ledningssystemet\Models\User::leftJoin('customers', 'customers.responsible_user_id', '=', 'users.id')->whereNotNull('customers.id')->select('users.*')->distinct()->orderBy('users.name')->get()->each->setAppends([]) as $obj)
                { value: {{ $obj->id }}, text: <?php echo(json_encode($obj->name)); ?> },
                @endforeach
             ]
@@ -76,19 +76,19 @@ $(function(){
             checked: false,
             text: '{{ __('Hide items without issues') }}',
          },
-@include('components.customproperty', ['classname' => 'App\Models\Customer', 'showFilter' => true])
+@include('components.customproperty', ['classname' => 'Ledningssystemet\Ledningssystemet\Models\Customer', 'showFilter' => true])
       },
       actions: {
-@if(Auth::user()->can('index', \App\Models\Customer::class))
+@if(Auth::user()->can('index', \Ledningssystemet\Ledningssystemet\Models\Customer::class))
          listAction: '/api/v1/items/Customer',
 @endif         
-@if(Auth::user()->can('create', \App\Models\Customer::class))
+@if(Auth::user()->can('create', \Ledningssystemet\Ledningssystemet\Models\Customer::class))
          createAction: '/api/v1/items/Customer',
 @endif         
-@if(Auth::user()->can('update', \App\Models\Customer::class))
+@if(Auth::user()->can('update', \Ledningssystemet\Ledningssystemet\Models\Customer::class))
          updateAction: '/api/v1/items/Customer',
 @endif         
-@if(Auth::user()->can('delete', \App\Models\Customer::class))
+@if(Auth::user()->can('delete', \Ledningssystemet\Ledningssystemet\Models\Customer::class))
          deleteAction: '/api/v1/items/Customer',
 @endif         
       },
@@ -120,7 +120,7 @@ $(function(){
             defaultValue: {{ auth()->user()->id }},
             options: [
                { Value: null, DisplayText: '{{ __("None assigned") }}' },
-@foreach(App\Models\User::orderBy('name')->get()->each->setAppends([]) as $obj)
+@foreach(Ledningssystemet\Ledningssystemet\Models\User::orderBy('name')->get()->each->setAppends([]) as $obj)
                { Value: {{$obj ->id}}, DisplayText: @php echo(json_encode($obj->name)); @endphp  },
 @endforeach
             ],
@@ -184,7 +184,7 @@ $(function(){
             multiple: true,
             listClass: 'd-inline-block col-12 col-md-4',
             options: [
-@foreach(App\Models\Process::where('dataprocessor', 1)->orderBy('name')->get()->each->setAppends([]) as $process)
+@foreach(Ledningssystemet\Ledningssystemet\Models\Process::where('dataprocessor', 1)->orderBy('name')->get()->each->setAppends([]) as $process)
                { Value: {{ $process->id }}, DisplayText: @php echo(json_encode($process->name)); @endphp },
 @endforeach
             ]
@@ -212,7 +212,7 @@ $(function(){
             }
          },
 @endif
-@include('components.customproperty', ['classname' => 'App\Models\Customer'])
+@include('components.customproperty', ['classname' => 'Ledningssystemet\Ledningssystemet\Models\Customer'])
          hr3: {
             list: true,
             edit: false,
@@ -223,19 +223,19 @@ $(function(){
          },
          showHistory: showHistoryField('Customer', $('#tableContainer')),          
          showMessages: showMessagesField('Customer', $('#tableContainer')),    
-@if(Auth::user()->can('index', \App\Models\Risk::class))
+@if(Auth::user()->can('index', \Ledningssystemet\Ledningssystemet\Models\Risk::class))
          showRisks: showRisks('Customer', $('#tableContainer')),
 @endif
-@if(Auth::user()->can('index', \App\Models\Finding::class))
+@if(Auth::user()->can('index', \Ledningssystemet\Ledningssystemet\Models\Finding::class))
          showFindings: showFindings('Customer', $('#tableContainer')),
 @endif
-@if(Auth::user()->can('update', \App\Models\Customer::class))
+@if(Auth::user()->can('update', \Ledningssystemet\Ledningssystemet\Models\Customer::class))
          files: showFiles('Customer', $('#tableContainer'), '{{ csrf_token() }}'),          
 @else
          files: showFiles('Customer', $('#tableContainer')),          
 @endif
          forms: showForms('Customer', $('#tableContainer')),
-@if(Auth::user()->can('index', \App\Models\Agreement::class))
+@if(Auth::user()->can('index', \Ledningssystemet\Ledningssystemet\Models\Agreement::class))
          agreements: {
             title: '',
             type: 'command',
@@ -268,7 +268,7 @@ $(function(){
                         title: '{{ __("Agreements") }}',
                         actions: {
                            listAction: '/api/v1/items/Agreement?customer_id='+sourcedata.record.id,
-@if(Auth::user()->can('update', \App\Models\Agreement::class))
+@if(Auth::user()->can('update', \Ledningssystemet\Ledningssystemet\Models\Agreement::class))
                            createAction: '/api/v1/items/Agreement?customer_id='+sourcedata.record.id,
                            updateAction: '/api/v1/items/Agreement',
                            deleteAction: '/api/v1/items/Agreement',
@@ -308,7 +308,7 @@ $(function(){
                               defaultValue: sourcedata.record.responsible_user_id,
                               options: [
                                  { Value: null, DisplayText: '{{ __("None assigned") }}' },
-@foreach(App\Models\User::orderBy('name')->get()->each->setAppends([]) as $obj)
+@foreach(Ledningssystemet\Ledningssystemet\Models\User::orderBy('name')->get()->each->setAppends([]) as $obj)
                                  { Value: {{$obj ->id}}, DisplayText: @php echo(json_encode($obj->name)); @endphp  },
 @endforeach
                               ],
@@ -375,7 +375,7 @@ $(function(){
                         title: '{{ __("Relations") }}',
                         actions: {
                            listAction: '/api/v1/items/Relation?relation_type=Customer&relation_id='+sourcedata.record.id,
-                           @if(Auth::user()->can('update', \App\Models\Customer::class))
+                           @if(Auth::user()->can('update', \Ledningssystemet\Ledningssystemet\Models\Customer::class))
                            createAction: '/api/v1/items/Relation?relation_type=Customer&relation_id='+sourcedata.record.id,
                            updateAction: '/api/v1/items/Relation',
                            deleteAction: '/api/v1/items/Relation',

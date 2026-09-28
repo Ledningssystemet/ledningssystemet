@@ -28,7 +28,7 @@ return [
          * `Spatie\Permission\Contracts\Role` contract.
          */
 
-        'role' => \App\Models\AccessGroup::class,
+        'role' => \Ledningssystemet\Ledningssystemet\Models\AccessGroup::class,
 
         /*
          * When using the "Teams" feature from this package, we need to know which

@@ -74,37 +74,37 @@
 <?php
    // Sites
    echo("{ Label: '".__('Site')."', Children: [\r\n");
-   foreach(\App\Models\Site::orderBy('name')->select(['id', 'name'])->get()->each->setAppends([]) as $obj)
+   foreach(\Ledningssystemet\Ledningssystemet\Models\Site::orderBy('name')->select(['id', 'name'])->get()->each->setAppends([]) as $obj)
       echo("{ Value: 'Site_".$obj->id."', DisplayText: ".json_encode($obj->name)." },\r\n");
    echo("]},\r\n");
 
    // Customer
    echo("{ Label: '".__('Customer')."', Children: [\r\n");
-   foreach(\App\Models\Customer::orderBy('name')->select(['id', 'name'])->get()->each->setAppends([]) as $obj)
+   foreach(\Ledningssystemet\Ledningssystemet\Models\Customer::orderBy('name')->select(['id', 'name'])->get()->each->setAppends([]) as $obj)
       echo("{ Value: 'Customer_".$obj->id."', DisplayText: ".json_encode($obj->name)." },\r\n");
    echo("]},\r\n");
 
    // Departments
    echo("{ Label: '".__('Department')."', Children: [\r\n");
-   foreach(\App\Models\Department::orderBy('name')->select(['id', 'name'])->get()->each->setAppends([]) as $obj)
+   foreach(\Ledningssystemet\Ledningssystemet\Models\Department::orderBy('name')->select(['id', 'name'])->get()->each->setAppends([]) as $obj)
       echo("{ Value: 'Department_".$obj->id."', DisplayText: ".json_encode($obj->name)." },\r\n");
    echo("]},\r\n");
 
    // Processes
    echo("{ Label: '".__('Process')."', Children: [\r\n");
-   foreach(\App\Models\Process::orderBy('name')->select(['id', 'name'])->get()->each->setAppends([]) as $obj)
+   foreach(\Ledningssystemet\Ledningssystemet\Models\Process::orderBy('name')->select(['id', 'name'])->get()->each->setAppends([]) as $obj)
  	 echo("{ Value: 'Process_".$obj->id."', DisplayText: ".json_encode($obj->name)." },\r\n");
    echo("]},\r\n");
 
    // Assets
    echo("{ Label: '".__('Asset')."', Children: [\r\n");
-   foreach(\App\Models\Asset::orderBy('name')->select(['id', 'name'])->get()->each->setAppends([]) as $obj)
+   foreach(\Ledningssystemet\Ledningssystemet\Models\Asset::orderBy('name')->select(['id', 'name'])->get()->each->setAppends([]) as $obj)
       echo("{ Value: 'Asset_".$obj->id."', DisplayText: ".json_encode($obj->name)." },\r\n");
    echo("]},\r\n");
 
    // Information types
    echo("{ Label: '".__('Information type')."', Children: [\r\n");
-   foreach(\App\Models\InformationType::orderBy('name')->select(['id', 'name'])->get()->each->setAppends([]) as $obj)
+   foreach(\Ledningssystemet\Ledningssystemet\Models\InformationType::orderBy('name')->select(['id', 'name'])->get()->each->setAppends([]) as $obj)
       echo("{ Value: 'InformationType_".$obj->id."', DisplayText: ".json_encode($obj->name)." },\r\n");
    echo("]},\r\n");
 
@@ -112,14 +112,14 @@
    {
       // Suppliers
       echo("{ Label: '".__('Supplier')."', Children: [\r\n");
-      foreach(\App\Models\Supplier::orderBy('name')->select(['id', 'name'])->get()->each->setAppends([]) as $obj)
+      foreach(\Ledningssystemet\Ledningssystemet\Models\Supplier::orderBy('name')->select(['id', 'name'])->get()->each->setAppends([]) as $obj)
          echo("{ Value: 'Supplier_".$obj->id."', DisplayText: ".json_encode($obj->name)." },\r\n");
       echo("]},\r\n");
    }
 
    // Process activities
    echo("{ Label: '".__('Tasks')."', Children: [\r\n");
-   foreach(\App\Models\ProcessActivity::with('int_process')->orderBy('process_id')->orderBy('ordinal')->get() as $obj)
+   foreach(\Ledningssystemet\Ledningssystemet\Models\ProcessActivity::with('int_process')->orderBy('process_id')->orderBy('ordinal')->get() as $obj)
       echo("{ Value: 'ProcessActivity_".$obj->id."', DisplayText: ".json_encode($obj->int_process->name.'/'.$obj->name)." },\r\n");
    echo("]},\r\n");
 ?>
@@ -135,7 +135,7 @@
             listClass: 'd-inline-block col-12 col-md-4',
             defaultValue: <?php $userdeps = auth()->user()->int_departments()->get(); echo((0 == count($userdeps)) ? '-1' : $userdeps[0]->id); ?>,
             options: [
-@foreach(App\Models\Department::orderBy('name')->select(['id', 'name'])->get()->each->setAppends([]) as $obj)
+@foreach(Ledningssystemet\Ledningssystemet\Models\Department::orderBy('name')->select(['id', 'name'])->get()->each->setAppends([]) as $obj)
                { Value: {{$obj->id}}, DisplayText: <?php echo(json_encode($obj->name)); ?> },
 @endforeach
             ]
@@ -149,7 +149,7 @@
             listClass: 'd-inline-block col-12 col-md-4',
             defaultValue: {{ auth()->user()->id }},
             options: [
-@foreach(App\Models\User::orderBy('name')->select(['id', 'name'])->get()->each->setAppends([]) as $obj)
+@foreach(Ledningssystemet\Ledningssystemet\Models\User::orderBy('name')->select(['id', 'name'])->get()->each->setAppends([]) as $obj)
    @if(null != $obj->risklevel())
                { Value: {{$obj->id}}, DisplayText: <?php echo(json_encode($obj->name)); ?> },
    @endif
@@ -214,13 +214,13 @@
          },
          risk_controls: {
             title: '{{ __('Controls') }}',
-            create: false,
+            create: true,
             edit: true,
             list: true,
 
             multiple: true,
             options: [
-@foreach(App\Models\Control::orderBy('name')->select(['id', 'name', 'not_applicable_at', 'description'])->get()->each->setAppends([]) as $obj)
+@foreach(Ledningssystemet\Ledningssystemet\Models\Control::orderBy('name')->select(['id', 'name', 'not_applicable_at', 'description'])->get()->each->setAppends([]) as $obj)
             { Value: {{ $obj->id }}, DisplayText: <?php echo(json_encode($obj->name.($obj->not_applicable_at ? " [".__("Not applicable")."]" : ""))); ?>, Tooltip: <?php echo(json_encode($obj->description)); ?> },
 @endforeach
             ]
@@ -240,7 +240,7 @@
             list: false,
             options: [
                { Value: null, DisplayText: '{{ __("Not assessed") }}' },
-@foreach(App\Models\ProbabilityLevel::orderBy('ordinal', 'desc')->select(['id', 'name', 'description'])->get()->each->setAppends([]) as $obj)
+@foreach(Ledningssystemet\Ledningssystemet\Models\ProbabilityLevel::orderBy('ordinal', 'desc')->select(['id', 'name', 'description'])->get()->each->setAppends([]) as $obj)
                { Value: {{$obj->id}}, DisplayText: <?php echo(json_encode($obj->name)); ?>, Tooltip: <?php echo(json_encode($obj->description)); ?>},
 @endforeach
             ]
@@ -252,7 +252,7 @@
             list: false,
             options: [
                { Value: null, DisplayText: '{{ __("Not assessed") }}' },
-@foreach(App\Models\ConsequenceLevel::orderBy('ordinal', 'desc')->select(['id', 'name', 'description'])->get()->each->setAppends([]) as $obj)
+@foreach(Ledningssystemet\Ledningssystemet\Models\ConsequenceLevel::orderBy('ordinal', 'desc')->select(['id', 'name', 'description'])->get()->each->setAppends([]) as $obj)
                { Value: {{$obj->id}}, DisplayText: <?php echo(json_encode($obj->name)); ?>, Tooltip: <?php echo(json_encode($obj->description)); ?> },
 @endforeach
             ]
@@ -272,8 +272,8 @@
                   .appendTo(retval);
 
 @php
-   $probabilitylevels = \App\Models\ProbabilityLevel::orderBy('ordinal', 'desc')->select(['id', 'name'])->get()->each->setAppends([]);
-   $consequenceLevels = \App\Models\ConsequenceLevel::orderBy('ordinal')->select(['id', 'name'])->get()->each->setAppends([]);
+   $probabilitylevels = \Ledningssystemet\Ledningssystemet\Models\ProbabilityLevel::orderBy('ordinal', 'desc')->select(['id', 'name'])->get()->each->setAppends([]);
+   $consequenceLevels = \Ledningssystemet\Ledningssystemet\Models\ConsequenceLevel::orderBy('ordinal')->select(['id', 'name'])->get()->each->setAppends([]);
 @endphp
 
 @foreach($probabilitylevels as $probability)
@@ -284,7 +284,7 @@
                   .appendTo(tr);
 
    @foreach($consequenceLevels as $consequence)
-      @php $risklevel = \App\Models\RiskLevel::getRisklevel($probability, $consequence); @endphp
+      @php $risklevel = \Ledningssystemet\Ledningssystemet\Models\RiskLevel::getRisklevel($probability, $consequence); @endphp
                $('<td />')
                   .addClass('matrixitem')
                   .attr('data-probability', {{ $probability->id }})
@@ -361,7 +361,7 @@
             list: true,
             required: false,
          },
-      @include('components.customproperty', ['classname' => 'App\Models\Risk'])
+      @include('components.customproperty', ['classname' => 'Ledningssystemet\Ledningssystemet\Models\Risk'])
          hr5: {
             list: true,
             edit: false,
@@ -503,7 +503,7 @@
                   Object.values(sourcedata.record.risk_controls).forEach(elem => { selectedControls.push(elem.id); });
                   var includedcontrols = [];
                   var excludedcontrols = [];
-@foreach(App\Models\Control::orderBy('name')->select(['id', 'name', 'not_applicable_at'])->get()->each->setAppends([]) as $obj)
+@foreach(Ledningssystemet\Ledningssystemet\Models\Control::orderBy('name')->select(['id', 'name', 'not_applicable_at'])->get()->each->setAppends([]) as $obj)
    if(selectedControls.includes({{ $obj->id }}))
       includedcontrols.push({ Value: {{ $obj->id }}, DisplayText: <?php echo(json_encode($obj->name.($obj->not_applicable_at ? " [".__("Not applicable")."]" : ""))); ?>});
 	else
@@ -557,7 +557,7 @@
                               create: true,
                               options:[
                                  { Value: null, DisplayText: '-- {{ __("Add new action") }} --' },
-@foreach(App\Models\ControlAction::whereNull('finished_at')->orderBy('name')->select(['id', 'name'])->get()->each->setAppends([]) as $obj)
+@foreach(Ledningssystemet\Ledningssystemet\Models\ControlAction::whereNull('finished_at')->orderBy('name')->select(['id', 'name'])->get()->each->setAppends([]) as $obj)
                                     { Value: {{ $obj->id }}, DisplayText: '{{ $obj->name}}'},
 @endforeach
                               ]
@@ -582,7 +582,7 @@
                               create: true,
 
                               options: [
-@foreach(\App\Models\User::orderBy('name')->select(['id', 'name'])->get()->each->setAppends([]) as $obj)
+@foreach(\Ledningssystemet\Ledningssystemet\Models\User::orderBy('name')->select(['id', 'name'])->get()->each->setAppends([]) as $obj)
                                  { Value: {{ $obj->id }}, DisplayText: <?php echo(json_encode($obj->name)); ?>},
 @endforeach
                               ],

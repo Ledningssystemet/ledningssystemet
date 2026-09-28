@@ -1,12 +1,12 @@
 <?php
 
-namespace App\Console\Commands;
+namespace Ledningssystemet\Ledningssystemet\Console\Commands;
 
-use App\Models\AccessGroup;
-use App\Models\Department;
-use App\Models\Role;
-use App\Models\Site;
-use App\Models\User as AppUser;
+use Ledningssystemet\Ledningssystemet\Models\AccessGroup;
+use Ledningssystemet\Ledningssystemet\Models\Department;
+use Ledningssystemet\Ledningssystemet\Models\Role;
+use Ledningssystemet\Ledningssystemet\Models\Site;
+use Ledningssystemet\Ledningssystemet\Models\User as AppUser;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -119,7 +119,8 @@ class GraphSync extends Command
       $requestConfiguration = new UsersRequestBuilderGetRequestConfiguration(
          headers: ['ConsistencyLevel' => 'eventual'],
          queryParameters: UsersRequestBuilderGetRequestConfiguration::createQueryParameters(
-            filter: ('' !== $filter) ? $filter : null
+            filter: ('' !== $filter) ? $filter : null,
+            select: ['id', 'displayName', 'jobTitle', 'mail', 'userPrincipalName', 'accountEnabled'],
          ),
       );
 

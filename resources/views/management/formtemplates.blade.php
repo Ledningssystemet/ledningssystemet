@@ -1,4 +1,4 @@
-@php if(Auth::user()->cannot('index', \App\Models\FormTemplate::class)) abort(403); @endphp
+@php if(Auth::user()->cannot('index', \Ledningssystemet\Ledningssystemet\Models\FormTemplate::class)) abort(403); @endphp
 @extends('layouts.master')
 
 @section('container')
@@ -18,16 +18,16 @@ $(function(){
          addNewRecord: '{{ __('Add form template') }}',
       },
       actions: {
-@if(Auth::user()->can('index', \App\Models\FormTemplate::class))
+@if(Auth::user()->can('index', \Ledningssystemet\Ledningssystemet\Models\FormTemplate::class))
          listAction: '/api/v1/items/FormTemplate',
 @endif
-@if(Auth::user()->can('create', \App\Models\FormTemplate::class))
+@if(Auth::user()->can('create', \Ledningssystemet\Ledningssystemet\Models\FormTemplate::class))
          createAction: '/api/v1/items/FormTemplate',
 @endif
-@if(Auth::user()->can('update', \App\Models\FormTemplate::class))
+@if(Auth::user()->can('update', \Ledningssystemet\Ledningssystemet\Models\FormTemplate::class))
          updateAction: '/api/v1/items/FormTemplate',
 @endif
-@if(Auth::user()->can('delete', \App\Models\FormTemplate::class))
+@if(Auth::user()->can('delete', \Ledningssystemet\Ledningssystemet\Models\FormTemplate::class))
          deleteAction: '/api/v1/items/FormTemplate',
 @endif
       },

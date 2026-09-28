@@ -70,7 +70,7 @@ $(function(){
             listClass: 'd-inline-block col-4',
             defaultValue: {{ auth()->user()->id  }},
             options: [
-@foreach(App\Models\User::where('enabled', true)->get()->each->setAppends([]) as $obj)
+@foreach(Ledningssystemet\Ledningssystemet\Models\User::where('enabled', true)->get()->each->setAppends([]) as $obj)
                { Value: {{$obj->id}}, DisplayText: @php echo(json_encode($obj->name)); @endphp },
 @endforeach
             ]
@@ -277,7 +277,7 @@ $(function(){
             list: true,
             listClass: 'd-inline-block col col-12 col-md-4',
             options: [
-@foreach(\App\Models\ActivityFlowTemplate::orderBy('name')->get()->each->setAppends([]) as $obj)
+@foreach(\Ledningssystemet\Ledningssystemet\Models\ActivityFlowTemplate::orderBy('name')->get()->each->setAppends([]) as $obj)
                { Value: {{ $obj->id }}, DisplayText: @php echo(json_encode($obj->name)); @endphp },
 @endforeach            
             ]
@@ -287,7 +287,7 @@ $(function(){
             list: true,
             listClass: 'd-inline-block col col-12 col-md-4',
             options: [
-@foreach(\App\Models\User::where('enabled', true)->orderBy('name')->get()->each->setAppends([]) as $obj)
+@foreach(\Ledningssystemet\Ledningssystemet\Models\User::where('enabled', true)->orderBy('name')->get()->each->setAppends([]) as $obj)
                { Value: {{ $obj->id }}, DisplayText: @php echo(json_encode($obj->name)); @endphp },
 @endforeach            
             ]
@@ -357,13 +357,13 @@ $(function(){
       <div id="tableContainer"></div>
   </div>
   <div class="tab-pane fade show" id="activityflowtabcontents" role="tabpanel" aria-labelledby="activityflowtab">
-@if(\App\Models\ActivityFlowTemplate::where('user_instantiatable', true)->exists())
+@if(\Ledningssystemet\Ledningssystemet\Models\ActivityFlowTemplate::where('user_instantiatable', true)->exists())
    <div class="dropdown">
      <button class="btn btn-sm btn-outline-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
      {{ __("Start new flow") }}
      </button>
      <ul class="dropdown-menu" style="border-radius: 5px;">
-@foreach(\App\Models\ActivityFlowTemplate::where('user_instantiatable', true)->orderBy('name')->get()->each->setAppends([]) as $obj)
+@foreach(\Ledningssystemet\Ledningssystemet\Models\ActivityFlowTemplate::where('user_instantiatable', true)->orderBy('name')->get()->each->setAppends([]) as $obj)
        <li><a class="dropdown-item" href="/management/activityflow?activity_flow_template_id={{ $obj->id }}">{{ $obj->name }}</a></li>
 @endforeach
      </ul>

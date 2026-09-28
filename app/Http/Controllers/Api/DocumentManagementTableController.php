@@ -1,16 +1,16 @@
 <?php
 
-namespace App\Http\Controllers\Api;
+namespace Ledningssystemet\Ledningssystemet\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
-use App\Models\InformationType;
+use Ledningssystemet\Ledningssystemet\Http\Controllers\Controller;
+use Ledningssystemet\Ledningssystemet\Models\InformationType;
 use Illuminate\Http\Request;
-use App\Models\DataCategory;
+use Ledningssystemet\Ledningssystemet\Models\DataCategory;
 use Illuminate\Support\Facades\DB;
-use App\Exceptions\SoftException;
+use Ledningssystemet\Ledningssystemet\Exceptions\SoftException;
 use Illuminate\Database\Eloquent\Builder;
-use App\Models\Customer;
-use App\Models\Process;
+use Ledningssystemet\Ledningssystemet\Models\Customer;
+use Ledningssystemet\Ledningssystemet\Models\Process;
 
 
 class DocumentManagementTableController extends Controller

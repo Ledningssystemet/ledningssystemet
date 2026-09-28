@@ -1,9 +1,9 @@
-@php if(auth()->user()->cannot('index', \App\Models\CustomProperty::class)) abort(403); @endphp
+@php if(auth()->user()->cannot('index', \Ledningssystemet\Ledningssystemet\Models\CustomProperty::class)) abort(403); @endphp
 <?php
    $contexts = [];
-   foreach(App\Models\CustomProperty::getContexts() as $context) {
-      // Strip off the "App\Models\" prefix for easier handling in the view
-      $contexts[] = substr($context, strlen("App\\Models\\"));
+   foreach(Ledningssystemet\Ledningssystemet\Models\CustomProperty::getContexts() as $context) {
+      // Strip off the "Ledningssystemet\Ledningssystemet\Models\" prefix for easier handling in the view
+      $contexts[] = substr($context, strlen("Ledningssystemet\Ledningssystemet\\Models\\"));
    }
 ?>
 @extends('layouts.master')
@@ -20,19 +20,19 @@ $(function(){
          addNewRecord: '{{ __('Add new custom property') }}',
       },
       actions: {
-@if(Auth::user()->can('index', \App\Models\CustomProperty::class))
-         listAction: '/api/v1/items/CustomProperty?context={{ urlencode('App\\Models\\'.$context) }}',
+@if(Auth::user()->can('index', \Ledningssystemet\Ledningssystemet\Models\CustomProperty::class))
+         listAction: '/api/v1/items/CustomProperty?context={{ urlencode('Ledningssystemet\Ledningssystemet\\Models\\'.$context) }}',
 @endif
-@if(Auth::user()->can('create', \App\Models\CustomProperty::class))
-         createAction: '/api/v1/items/CustomProperty?context={{ urlencode('App\\Models\\'.$context) }}',
+@if(Auth::user()->can('create', \Ledningssystemet\Ledningssystemet\Models\CustomProperty::class))
+         createAction: '/api/v1/items/CustomProperty?context={{ urlencode('Ledningssystemet\Ledningssystemet\\Models\\'.$context) }}',
 @endif
-@if(Auth::user()->can('update', \App\Models\CustomProperty::class))
+@if(Auth::user()->can('update', \Ledningssystemet\Ledningssystemet\Models\CustomProperty::class))
          updateAction: '/api/v1/items/CustomProperty',
 @endif
-@if(Auth::user()->can('delete', \App\Models\CustomProperty::class))
+@if(Auth::user()->can('delete', \Ledningssystemet\Ledningssystemet\Models\CustomProperty::class))
          deleteAction: '/api/v1/items/CustomProperty',
 @endif
-@if(Auth::user()->can('update', \App\Models\CustomProperty::class))
+@if(Auth::user()->can('update', \Ledningssystemet\Ledningssystemet\Models\CustomProperty::class))
          reorderAction: '/api/v1/items/CustomProperty',
 @endif
       },
@@ -125,7 +125,7 @@ $(function(){
 <ul class="nav nav-tabs" id="pageTabs" role="tablist">
 <?php $idx = 0; ?>
 @foreach($contexts as $context)
-<?php $classname = "App\\Models\\" . $context; ?>
+<?php $classname = "Ledningssystemet\Ledningssystemet\\Models\\" . $context; ?>
    <li class="nav-item" role="presentation">
       <button class="nav-link@php echo(($idx++ == 0) ? " active" : ""); @endphp" id="tab_{{ $context }}" data-bs-toggle="tab" data-bs-target="#tab_{{ $context }}_content" type="button" role="tab" aria-controls="tab_{{ $context }}_content" aria-selected="true">{{ $classname::getPrettyName(true) }}</button>
    </li>

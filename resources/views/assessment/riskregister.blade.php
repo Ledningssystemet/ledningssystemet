@@ -1,4 +1,4 @@
-@php if(Auth::user()->cannot('index', \App\Models\Risk::class)) abort(403); @endphp
+@php if(Auth::user()->cannot('index', \Ledningssystemet\Ledningssystemet\Models\Risk::class)) abort(403); @endphp
 @extends('layouts.master')
 
 @section('container')
@@ -20,7 +20,7 @@ $(function(){
          addNewRecord: '{{ __('Add new risk') }}',
       },
       filter: {
-@php $tags = \App\Models\Risk::allUsedTags(); @endphp
+@php $tags = \Ledningssystemet\Ledningssystemet\Models\Risk::allUsedTags(); @endphp
 @if(0 < count($tags))
          tag_id: {
             type: 'select',
@@ -41,7 +41,7 @@ $(function(){
             options: [
                { value: 0, text: '{{ __('Show mine') }}' },
                { value: -1, text: '{{ __('Show all') }}' },
-@foreach(\App\Models\Department::orderBy('name')->select(['id', 'name'])->get()->each->setAppends([]) as $obj)
+@foreach(\Ledningssystemet\Ledningssystemet\Models\Department::orderBy('name')->select(['id', 'name'])->get()->each->setAppends([]) as $obj)
                { value: {{ $obj->id }}, text: <?php echo(json_encode($obj->name)); ?> },
 @endforeach               
             ]
@@ -70,7 +70,7 @@ $(function(){
             default: 0,
             options: [
                { value: 0, text: '{{ __('Show all') }}' },
-@foreach(\App\Models\ProbabilityLevel::orderBy('ordinal', 'desc')->select(['id', 'name'])->get()->each->setAppends([]) as $obj)
+@foreach(\Ledningssystemet\Ledningssystemet\Models\ProbabilityLevel::orderBy('ordinal', 'desc')->select(['id', 'name'])->get()->each->setAppends([]) as $obj)
                { value: {{ $obj->id }}, text: <?php echo(json_encode($obj->name)); ?> },
 @endforeach               
             ]
@@ -81,7 +81,7 @@ $(function(){
             default: 0,
             options: [
                { value: 0, text: '{{ __('Show all') }}' },
-@foreach(\App\Models\ConsequenceLevel::orderBy('ordinal', 'desc')->select(['id', 'name'])->get()->each->setAppends([]) as $obj)
+@foreach(\Ledningssystemet\Ledningssystemet\Models\ConsequenceLevel::orderBy('ordinal', 'desc')->select(['id', 'name'])->get()->each->setAppends([]) as $obj)
                { value: {{ $obj->id }}, text: <?php echo(json_encode($obj->name)); ?> },
 @endforeach               
             ]
@@ -92,7 +92,7 @@ $(function(){
             default: 0,
             options: [
                { value: 0, text: '{{ __('Show all') }}' },
-@foreach(\App\Models\RiskLevel::orderBy('ordinal', 'desc')->select(['id', 'name'])->get()->each->setAppends([]) as $obj)
+@foreach(\Ledningssystemet\Ledningssystemet\Models\RiskLevel::orderBy('ordinal', 'desc')->select(['id', 'name'])->get()->each->setAppends([]) as $obj)
                { value: {{ $obj->id }}, text: <?php echo(json_encode($obj->name)); ?> },
 @endforeach               
             ]
@@ -103,7 +103,7 @@ $(function(){
             default: 0,
             options: [
                { value: 0, text: '{{ __('Show all') }}' },
-                  @foreach(\App\Models\User::leftJoin('risks', 'risks.riskowner_id', '=', 'users.id')->whereNotNull('risks.id')->select(['users.id', 'users.name'])->distinct()->orderBy('users.name')->get()->each->setAppends([]) as $obj)
+                  @foreach(\Ledningssystemet\Ledningssystemet\Models\User::leftJoin('risks', 'risks.riskowner_id', '=', 'users.id')->whereNotNull('risks.id')->select(['users.id', 'users.name'])->distinct()->orderBy('users.name')->get()->each->setAppends([]) as $obj)
                { value: {{ $obj->id }}, text: <?php echo(json_encode($obj->name)); ?> },
                @endforeach
             ]
@@ -126,19 +126,19 @@ $(function(){
             checked: false,
             text: '{{ __('Show approved risks') }}',
          },
-@include('components.customproperty', ['classname' => 'App\Models\Risk', 'showFilter' => true])
+@include('components.customproperty', ['classname' => 'Ledningssystemet\Ledningssystemet\Models\Risk', 'showFilter' => true])
       },
       actions: {
-@if(Auth::user()->can('index', \App\Models\Risk::class))         
+@if(Auth::user()->can('index', \Ledningssystemet\Ledningssystemet\Models\Risk::class))
          listAction: '/api/v1/items/Risk',
 @endif         
-@if(Auth::user()->can('create', \App\Models\Risk::class))         
+@if(Auth::user()->can('create', \Ledningssystemet\Ledningssystemet\Models\Risk::class))
          createAction: '/api/v1/items/Risk',
 @endif         
-@if(Auth::user()->can('update', \App\Models\Risk::class))         
+@if(Auth::user()->can('update', \Ledningssystemet\Ledningssystemet\Models\Risk::class))
          updateAction: '/api/v1/items/Risk',
 @endif         
-@if(Auth::user()->can('delete', \App\Models\Risk::class))         
+@if(Auth::user()->can('delete', \Ledningssystemet\Ledningssystemet\Models\Risk::class))
          deleteAction: '/api/v1/items/Risk',
 @endif         
       },

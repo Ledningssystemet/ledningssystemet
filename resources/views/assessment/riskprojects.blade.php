@@ -1,4 +1,4 @@
-@php if(Auth::user()->cannot('index', \App\Models\RiskProject::class)) abort(403); @endphp
+@php if(Auth::user()->cannot('index', \Ledningssystemet\Ledningssystemet\Models\RiskProject::class)) abort(403); @endphp
 @extends('layouts.master')
 
 @section('container')
@@ -26,7 +26,7 @@ $(function(){
             default: 0,
             options: [
                { value: 0, text: '{{ __('Show all') }}' },
-                  @foreach(\App\Models\User::leftJoin('risk_projects', 'risk_projects.responsible_user_id', '=', 'users.id')->whereNotNull('risk_projects.id')->select('users.*')->distinct()->orderBy('users.name')->select(['users.id', 'users.name'])->get()->each->setAppends([]) as $obj)
+                  @foreach(\Ledningssystemet\Ledningssystemet\Models\User::leftJoin('risk_projects', 'risk_projects.responsible_user_id', '=', 'users.id')->whereNotNull('risk_projects.id')->select('users.*')->distinct()->orderBy('users.name')->select(['users.id', 'users.name'])->get()->each->setAppends([]) as $obj)
                { value: {{ $obj->id }}, text: <?php echo(json_encode($obj->name)); ?> },
                @endforeach
             ]
@@ -45,13 +45,13 @@ $(function(){
          },
       },
       actions: {
-@if(Auth::user()->can('index', \App\Models\RiskProject::class))         
+@if(Auth::user()->can('index', \Ledningssystemet\Ledningssystemet\Models\RiskProject::class))
          listAction: '/api/v1/items/RiskProject',
 @endif         
-@if(Auth::user()->can('create', \App\Models\RiskProject::class))         
+@if(Auth::user()->can('create', \Ledningssystemet\Ledningssystemet\Models\RiskProject::class))
          createAction: '/api/v1/items/RiskProject',
 @endif         
-@if(Auth::user()->can('update', \App\Models\RiskProject::class))         
+@if(Auth::user()->can('update', \Ledningssystemet\Ledningssystemet\Models\RiskProject::class))
          updateAction: '/api/v1/items/RiskProject',
 @endif         
       },
@@ -69,7 +69,7 @@ $(function(){
             list: false,
             options: [
                { Value: null, DisplayText: '{{ __("None") }}' },
-@foreach(App\Models\RiskProjectType::orderBy('name')->select(['id', 'name'])->get()->each->setAppends([]) as $obj)
+@foreach(Ledningssystemet\Ledningssystemet\Models\RiskProjectType::orderBy('name')->select(['id', 'name'])->get()->each->setAppends([]) as $obj)
                { Value: {{$obj->id}}, DisplayText: <?php echo(json_encode($obj->name)); ?> },
 @endforeach
             ]
@@ -108,7 +108,7 @@ $(function(){
             listClass: 'd-inline-block col-12 col-md-3',
             defaultValue: <?php $userdeps = auth()->user()->int_departments()->select('departments.id')->get()->each->setAppends([]); echo((0 == count($userdeps)) ? '-1' : $userdeps[0]->id); ?>,
             options: [
-@foreach(App\Models\Department::orderBy('name')->select(['id', 'name'])->get()->each->setAppends([]) as $obj)
+@foreach(Ledningssystemet\Ledningssystemet\Models\Department::orderBy('name')->select(['id', 'name'])->get()->each->setAppends([]) as $obj)
                { Value: {{$obj->id}}, DisplayText: <?php echo(json_encode($obj->name)); ?> },
 @endforeach
             ]
@@ -161,21 +161,21 @@ $(function(){
             listClass: 'd-inline-block col-12 col-md-6',
             defaultValue: {{ auth()->user()->id }},
             options: [
-                  @foreach(App\Models\User::orderBy('name')->select(['id', 'name'])->get()->each->setAppends([]) as $obj)
+                  @foreach(Ledningssystemet\Ledningssystemet\Models\User::orderBy('name')->select(['id', 'name'])->get()->each->setAppends([]) as $obj)
                { Value: {{$obj->id}}, DisplayText: <?php echo(json_encode($obj->name)); ?> },
                @endforeach
             ]
          },
          users: {
             title: '{{ __('Participants') }}',
-            create: false,
+            create: true,
             edit: true,
             list: true,
             listClass: 'd-inline-block col-12 col-md-6',
             multiple: true,
             tooltip: '{{ __("Participants will be able to view the project and its related risks") }}',
             options: [
-@foreach(App\Models\User::where('enabled', true)->orderBy('name')->select(['id', 'name'])->get()->each->setAppends([]) as $obj)
+@foreach(Ledningssystemet\Ledningssystemet\Models\User::where('enabled', true)->orderBy('name')->select(['id', 'name'])->get()->each->setAppends([]) as $obj)
             { Value: {{ $obj->id }}, DisplayText: <?php echo(json_encode($obj->name)); ?> },
 @endforeach
             ]
@@ -232,7 +232,7 @@ $(function(){
                   .prepend($('<span>support_agent</span>')
                      .addClass('material-symbols-rounded'))
                   .click(function(){
-                     ajaxPost('/api/v1/ai/riskidentification', { context_type: 'App\\Models\\RiskProject', context_id: data.record.id }, function(aidata, textStatus, jqXHR){
+                     ajaxPost('/api/v1/ai/riskidentification', { context_type: 'Ledningssystemet\Ledningssystemet\\Models\\RiskProject', context_id: data.record.id }, function(aidata, textStatus, jqXHR){
                         if(null == aidata.riskcount)
                            showDialog('{{ __("AI Risk identification") }}', '{{ __("No response was received from AI agent") }}');
                         else

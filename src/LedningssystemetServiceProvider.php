@@ -2,9 +2,9 @@
 
 namespace Ledningssystemet\Ledningssystemet;
 
-use App\Console\Commands\GraphSync;
-use App\Console\Commands\RiskReassess;
-use App\Console\Commands\MailSendstatus;
+use Ledningssystemet\Ledningssystemet\Console\Commands\GraphSync;
+use Ledningssystemet\Ledningssystemet\Console\Commands\RiskReassess;
+use Ledningssystemet\Ledningssystemet\Console\Commands\MailSendstatus;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Contracts\Foundation\CachesConfiguration;
 use Illuminate\Support\ServiceProvider;
@@ -79,7 +79,7 @@ class LedningssystemetServiceProvider extends ServiceProvider
 
          // Host applications (like the proprietary customer application) use the
          // Laravel 11+ bootstrap style, which never instantiates this package's
-         // own (legacy) App\Console\Kernel. That means its commands() and
+         // own (legacy) Ledningssystemet\Ledningssystemet\Console\Kernel. That means its commands() and
          // schedule() methods are never called when the package is required via
          // Composer. Register the artisan commands and the schedule explicitly
          // here instead, so they work both standalone and as a dependency.
@@ -145,11 +145,11 @@ class LedningssystemetServiceProvider extends ServiceProvider
       //
       // Note: these classes intentionally live under
       // Ledningssystemet\Ledningssystemet\Providers (this package's own
-      // namespace) rather than App\Providers. A previous version kept them
-      // under App\Providers, which Composer's autoloader also merges with
-      // the host app's own "App\" namespace directory. That worked only by
-      // accident (host apps normally define their own App\Providers\* with
-      // the very same class names, e.g. App\Providers\AppServiceProvider,
+      // namespace) rather than Ledningssystemet\Ledningssystemet\Providers. A previous version kept them
+      // under Ledningssystemet\Ledningssystemet\Providers, which Composer's autoloader also merges with
+      // the host app's own "Ledningssystemet\Ledningssystemet\" namespace directory. That worked only by
+      // accident (host apps normally define their own Ledningssystemet\Ledningssystemet\Providers\* with
+      // the very same class names, e.g. Ledningssystemet\Ledningssystemet\Providers\AppServiceProvider,
       // which would silently shadow this package's version the moment the
       // host app added one - registering nothing, with no visible error).
       $this->app->register(AppServiceProvider::class);

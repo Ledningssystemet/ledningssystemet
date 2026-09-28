@@ -209,7 +209,7 @@ return [
     */
 
     'aliases' => Facade::defaultAliases()->merge([
-        // 'ExampleClass' => App\Example\ExampleClass::class,
+        // 'ExampleClass' => Ledningssystemet\Ledningssystemet\Example\ExampleClass::class,
     ])->toArray(),
 
 ];

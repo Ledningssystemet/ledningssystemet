@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Models;
+namespace Ledningssystemet\Ledningssystemet\Models;
 
-use App\Traits\HasCustomProperties;
+use Ledningssystemet\Ledningssystemet\Traits\HasCustomProperties;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Eloquent\Model;
@@ -20,11 +20,11 @@ use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
-use App\Traits\HasTags;
-use App\Traits\HasMessages;
-use App\Traits\HasNotifications;
-use App\Http\Controllers\UserNotificationController;
-use App\Models\Concerns\DefersRelationAttributeSync;
+use Ledningssystemet\Ledningssystemet\Traits\HasTags;
+use Ledningssystemet\Ledningssystemet\Traits\HasMessages;
+use Ledningssystemet\Ledningssystemet\Traits\HasNotifications;
+use Ledningssystemet\Ledningssystemet\Http\Controllers\UserNotificationController;
+use Ledningssystemet\Ledningssystemet\Models\Concerns\DefersRelationAttributeSync;
 
 class Risk extends Model
 {
@@ -234,20 +234,20 @@ static::creating(function ($model) {
          if(2 !== count($contextParts))
             abort(400, __("Invalid context"));
          
-         $classname = 'App\\Models\\'.$contextParts[0];
-         if(!class_exists($classname))
+         $classname = __NAMESPACE__.'\\'.$contextParts[0];
+         if (!is_subclass_of($classname, Model::class))
             abort(400, __("Invalid context type"));
          
          switch($classname)
          {
-            case 'App\\Models\\Department':
-            case 'App\\Models\\Process':
-            case 'App\\Models\\Asset':
-            case 'App\\Models\\InformationType':
-            case 'App\\Models\\Supplier':
-            case 'App\\Models\\ProcessActivity':
-            case 'App\\Models\\Site':
-            case 'App\\Models\\Customer':
+            case 'Ledningssystemet\Ledningssystemet\\Models\\Department':
+            case 'Ledningssystemet\Ledningssystemet\\Models\\Process':
+            case 'Ledningssystemet\Ledningssystemet\\Models\\Asset':
+            case 'Ledningssystemet\Ledningssystemet\\Models\\InformationType':
+            case 'Ledningssystemet\Ledningssystemet\\Models\\Supplier':
+            case 'Ledningssystemet\Ledningssystemet\\Models\\ProcessActivity':
+            case 'Ledningssystemet\Ledningssystemet\\Models\\Site':
+            case 'Ledningssystemet\Ledningssystemet\\Models\\Customer':
                break;
             default:
                abort(400, __("Invalid context type"));
@@ -255,7 +255,7 @@ static::creating(function ($model) {
          
          $this->context_type = $classname;
          
-         $classInstance = $this->context_type::findOrFail($contextParts[1]);
+         $classInstance = $classname::findOrFail($contextParts[1]);
          $this->context_id = $classInstance->id;
       }
    }
@@ -284,7 +284,12 @@ static::creating(function ($model) {
    public function getContextObjectName()
    {
       return Cache::rememberForever('Risk.getContextObjectName.'.$this->context_type.'.'.$this->context_id, function(){
-         if((null == $this->context_type) || (null == $this->context_id) || ('App\\Models\\Company' == $this->context_type))
+         $contextType = $this->context_type;
+         $contextClass = is_string($contextType) ? (str_contains($contextType, '\\') ? $contextType : __NAMESPACE__.'\\'.$contextType) : null;
+         if (!is_string($contextClass) || !str_starts_with($contextClass, __NAMESPACE__.'\\') || !is_subclass_of($contextClass, Model::class)) {
+            $contextClass = null;
+         }
+         if((null == $this->context_type) || (null == $this->context_id) || (Company::class == $contextClass))
             return Company::getName();
 
          if ($this->relationLoaded('contextObject')) {
@@ -298,12 +303,12 @@ static::creating(function ($model) {
             return $contextNameCache[$cacheKey];
          }
 
-         if (!class_exists($this->context_type)) {
+         if (! $contextClass) {
             $contextNameCache[$cacheKey] = null;
             return null;
          }
          
-         $contextNameCache[$cacheKey] = $this->context_type::query()
+         $contextNameCache[$cacheKey] = $contextClass::query()
             ->whereKey($this->context_id)
             ->value('name');
          
@@ -520,8 +525,11 @@ static::creating(function ($model) {
       if(0 == $contexttype)
          $contexttype = null;
       
-      if($contexttype && (false === strpos($contexttype, 'App\\Models\\')))
-         $contexttype = 'App\\Models\\'.$contexttype;
+      $contextClass = is_string($contexttype) ? (str_contains($contexttype, '\\') ? $contexttype : __NAMESPACE__.'\\'.$contexttype) : null;
+      if (!is_string($contextClass) || !str_starts_with($contextClass, __NAMESPACE__.'\\') || !is_subclass_of($contextClass, Model::class)) {
+         $contextClass = null;
+      }
+      $contexttypes = $contextClass ? [$contextClass] : ($contexttype ? [$contexttype] : []);
       
       $returnCollection = (__CLASS__)::whereNull('replacedby_id')
          ->where(function (Builder $query) {
@@ -529,14 +537,14 @@ static::creating(function ($model) {
                
                // Find objects
                $objs = [];
-               foreach(Process::where('name', 'LIKE', '%'.request()->input('search').'%')->pluck('processes.id') as $objid) $objs[] = 'App\\Models\\Process:'.$objid;
-               foreach(Department::where('name', 'LIKE', '%'.request()->input('search').'%')->pluck('departments.id') as $objid) $objs[] = 'App\\Models\\Department:'.$objid;
-               foreach(ProcessActivity::where('name', 'LIKE', '%'.request()->input('search').'%')->pluck('process_activities.id') as $objid) $objs[] = 'App\\Models\\ProcessActivity:'.$objid;
-               foreach(Supplier::where('name', 'LIKE', '%'.request()->input('search').'%')->pluck('suppliers.id') as $objid) $objs[] = 'App\\Models\\Supplier:'.$objid;
-               foreach(Customer::where('name', 'LIKE', '%'.request()->input('search').'%')->pluck('customers.id') as $objid) $objs[] = 'App\\Models\\Customer:'.$objid;
-               foreach(Asset::where('name', 'LIKE', '%'.request()->input('search').'%')->pluck('assets.id') as $objid) $objs[] = 'App\\Models\\Asset:'.$objid;
-               foreach(InformationType::where('name', 'LIKE', '%'.request()->input('search').'%')->pluck('information_types.id') as $objid) $objs[] = 'App\\Models\\InformationType:'.$objid;
-               foreach(Site::where('name', 'LIKE', '%'.request()->input('search').'%')->pluck('sites.id') as $objid) $objs[] = 'App\\Models\\Site:'.$objid;
+               foreach(Process::where('name', 'LIKE', '%'.request()->input('search').'%')->pluck('processes.id') as $objid) $objs[] = Process::class.':'.$objid;
+               foreach(Department::where('name', 'LIKE', '%'.request()->input('search').'%')->pluck('departments.id') as $objid) $objs[] = Department::class.':'.$objid;
+               foreach(ProcessActivity::where('name', 'LIKE', '%'.request()->input('search').'%')->pluck('process_activities.id') as $objid) $objs[] = ProcessActivity::class.':'.$objid;
+               foreach(Supplier::where('name', 'LIKE', '%'.request()->input('search').'%')->pluck('suppliers.id') as $objid) $objs[] = Supplier::class.':'.$objid;
+               foreach(Customer::where('name', 'LIKE', '%'.request()->input('search').'%')->pluck('customers.id') as $objid) $objs[] = Customer::class.':'.$objid;
+               foreach(Asset::where('name', 'LIKE', '%'.request()->input('search').'%')->pluck('assets.id') as $objid) $objs[] = Asset::class.':'.$objid;
+               foreach(InformationType::where('name', 'LIKE', '%'.request()->input('search').'%')->pluck('information_types.id') as $objid) $objs[] = InformationType::class.':'.$objid;
+               foreach(Site::where('name', 'LIKE', '%'.request()->input('search').'%')->pluck('sites.id') as $objid) $objs[] = Site::class.':'.$objid;
                
                $query->where('name', 'LIKE', '%'.request()->input('search').'%')
                      ->orWhere('risks.id', str_ireplace('RISK-', '', request()->input('search')))
@@ -606,7 +614,7 @@ static::creating(function ($model) {
             $query->where('riskowner_id', intval(request()->input('riskowner_id', 0)));
          })
          ->when($contexttype, function (Builder $query) use ($contexttype) {
-            $query->where('context_type',$contexttype);
+            $query->whereIn('context_type', $contexttypes);
             
             if(request()->has('context_id'))
                $query->where('context_id',request()->input('context_id'));
@@ -661,11 +669,11 @@ static::creating(function ($model) {
    private static function eagerLoadContextObjects(\Illuminate\Database\Eloquent\Collection $collection): void
    {
       // Set contextObject = null for Company/null types so accessors short-circuit cleanly
-      $collection->filter(fn($r) => empty($r->context_type) || $r->context_type === Company::class)
+      $collection->filter(fn($r) => empty($r->context_type) || Company::class === $r->context_type)
          ->each(fn($r) => $r->setRelation('contextObject', null));
 
       // Eager-load for all other types in one batch per type (same as Eloquent's MorphTo, but safe)
-      $collection->filter(fn($r) => !empty($r->context_type) && $r->context_type !== Company::class)
+      $collection->filter(fn($r) => !empty($r->context_type) && Company::class !== $r->context_type)
          ->load('contextObject');
    }
 
@@ -679,11 +687,11 @@ static::creating(function ($model) {
    {
       return [
          'name' => 'required',
-         'department_id' => 'nullable|exists:App\Models\Department,id',
-         'riskowner_id' => 'nullable|exists:App\Models\User,id',
-         'probability_id' => 'nullable|exists:App\Models\ProbabilityLevel,id',
-         'consequence_id' => 'nullable|exists:App\Models\ConsequenceLevel,id',
-         'risk_project_id' => 'nullable|exists:App\Models\RiskProject,id',
+         'department_id' => 'nullable|exists:Ledningssystemet\Ledningssystemet\Models\Department,id',
+         'riskowner_id' => 'nullable|exists:Ledningssystemet\Ledningssystemet\Models\User,id',
+         'probability_id' => 'nullable|exists:Ledningssystemet\Ledningssystemet\Models\ProbabilityLevel,id',
+         'consequence_id' => 'nullable|exists:Ledningssystemet\Ledningssystemet\Models\ConsequenceLevel,id',
+         'risk_project_id' => 'nullable|exists:Ledningssystemet\Ledningssystemet\Models\RiskProject,id',
       ];
    }
 
@@ -773,10 +781,15 @@ static::creating(function ($model) {
       if(null == $this->context_type)
          return null;
 
-      if(!class_exists($this->context_type))
+      $contextType = $this->context_type;
+      $contextClass = is_string($contextType) ? (str_contains($contextType, '\\') ? $contextType : __NAMESPACE__.'\\'.$contextType) : null;
+      if (!is_string($contextClass) || !str_starts_with($contextClass, __NAMESPACE__.'\\') || !is_subclass_of($contextClass, Model::class)) {
+         $contextClass = null;
+      }
+      if(! $contextClass)
          return null;
 
-      if('App\\Models\\Company' == $this->context_type)
+      if(Company::class == $contextClass)
          return null;
 
       if ($this->relationLoaded('contextObject')) {
@@ -958,10 +971,15 @@ static::creating(function ($model) {
          foreach(Risk::whereNull('replacedby_id')->whereNotNull('context_type')->whereNotNull('context_id')->whereNotLike('context_type', '%\\Company')->get() as $risk)
          {
             // Check if object exists
-               if (null == $risk->context_type::find($risk->context_id)) {
+               $contextType = $risk->context_type;
+               $contextClass = is_string($contextType) ? (str_contains($contextType, '\\') ? $contextType : __NAMESPACE__.'\\'.$contextType) : null;
+               if (!is_string($contextClass) || !str_starts_with($contextClass, __NAMESPACE__.'\\') || !is_subclass_of($contextClass, Model::class)) {
+                  $contextClass = null;
+               }
+               if (! $contextClass || null == $contextClass::find($risk->context_id)) {
                   $objtypename = $risk->context_type;
-                  if (class_exists($risk->context_type) && method_exists($risk->context_type, 'getPrettyName'))
-                     $objtypename = $risk->context_type::getPrettyName();
+                  if ($contextClass && method_exists($contextClass, 'getPrettyName'))
+                     $objtypename = $contextClass::getPrettyName();
 
                   ActivityLog::addMessage(__("The risk RISK-") . $risk->id . " " . __("was deleted because assessment object") . " " . $objtypename . " " . __("with ID") . " " . $risk->context_id . " " . __("has been deleted"), $risk);
                   DB::table('risks')->where('id', $risk->id)->delete();
@@ -984,7 +1002,12 @@ static::creating(function ($model) {
          $contextobj = null;
          $riskowner = null;
          if((null != $risk->context_type) && (null != $risk->context_id)) {
-            $contextobj = $risk->context_type::where('id', $risk->context_id)->first();
+            $contextType = $risk->context_type;
+            $contextClass = is_string($contextType) ? (str_contains($contextType, '\\') ? $contextType : __NAMESPACE__.'\\'.$contextType) : null;
+            if (!is_string($contextClass) || !str_starts_with($contextClass, __NAMESPACE__.'\\') || !is_subclass_of($contextClass, Model::class)) {
+               $contextClass = null;
+            }
+            $contextobj = $contextClass ? $contextClass::where('id', $risk->context_id)->first() : null;
 
             if(null == $contextobj)
                continue;

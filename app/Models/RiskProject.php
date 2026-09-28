@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Models;
+namespace Ledningssystemet\Ledningssystemet\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
@@ -17,12 +17,12 @@ use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
-use App\Traits\HasTags;
-use App\Traits\HasMessages;
-use App\Http\Controllers\UserNotificationController;
+use Ledningssystemet\Ledningssystemet\Traits\HasTags;
+use Ledningssystemet\Ledningssystemet\Traits\HasMessages;
+use Ledningssystemet\Ledningssystemet\Http\Controllers\UserNotificationController;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Query\JoinClause;
-use App\Models\Concerns\DefersRelationAttributeSync;
+use Ledningssystemet\Ledningssystemet\Models\Concerns\DefersRelationAttributeSync;
 
 class RiskProject extends Model
 {
@@ -331,9 +331,9 @@ class RiskProject extends Model
    {
       return [
          'name' => 'required',
-         'department_id' => 'nullable|exists:App\Models\Department,id',
-         'responsible_user_id' => 'nullable|exists:App\Models\User,id',
-         'risk_project_type_id' => 'nullable|exists:App\Models\RiskProjectType,id',
+         'department_id' => 'nullable|exists:Ledningssystemet\Ledningssystemet\Models\Department,id',
+         'responsible_user_id' => 'nullable|exists:Ledningssystemet\Ledningssystemet\Models\User,id',
+         'risk_project_type_id' => 'nullable|exists:Ledningssystemet\Ledningssystemet\Models\RiskProjectType,id',
       ];
    }
 

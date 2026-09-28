@@ -1,4 +1,4 @@
-@php if(Auth::user()->cannot('index', \App\Models\IgnoredRisk::class)) abort(403); @endphp
+@php if(Auth::user()->cannot('index', \Ledningssystemet\Ledningssystemet\Models\IgnoredRisk::class)) abort(403); @endphp
 @extends('layouts.master')
 
 @section('container')
@@ -15,10 +15,10 @@ $(function(){
       searchfield: true,
       tableId: 'ignoredriskstable',
       actions: {
-@if(Auth::user()->can('index', \App\Models\IgnoredRisk::class))
+@if(Auth::user()->can('index', \Ledningssystemet\Ledningssystemet\Models\IgnoredRisk::class))
          listAction: '/api/v1/items/IgnoredRisk',
 @endif
-@if(Auth::user()->can('delete', \App\Models\IgnoredRisk::class))
+@if(Auth::user()->can('delete', \Ledningssystemet\Ledningssystemet\Models\IgnoredRisk::class))
          deleteAction: '/api/v1/items/IgnoredRisk',
 @endif
       },

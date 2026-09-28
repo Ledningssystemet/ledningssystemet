@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Models;
+namespace Ledningssystemet\Ledningssystemet\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
@@ -32,7 +32,7 @@ class File extends Model
          // Set model connection
          $obj = $model->obj();
 
-         $model->object_type = $obj::class;
+         $model->object_type = $obj->getMorphClass();
          $model->object_id = $obj->id;
          $model->created_by = request()->user()->name;
          $model->name = $model->name ? $model->name : $model->filename;
@@ -43,9 +43,9 @@ class File extends Model
          // Check if valid context
          switch($obj::class)
          {
-            case 'App\\Models\\Agreement':
-            case 'App\\Models\\Customer':
-            case 'App\\Models\\Supplier':
+            case 'Ledningssystemet\Ledningssystemet\\Models\\Agreement':
+            case 'Ledningssystemet\Ledningssystemet\\Models\\Customer':
+            case 'Ledningssystemet\Ledningssystemet\\Models\\Supplier':
                break;
             default:
                abort(400, __("This object does not support file upload"));
@@ -160,8 +160,9 @@ class File extends Model
     */
    public static function index(User $user)
    {
-      $classname = '\\App\\Models\\'.request()->input('object_type', '');
-      if(!class_exists($classname))
+      $objectType = request()->input('object_type', '');
+      $classname = is_string($objectType) ? (str_contains($objectType, '\\') ? $objectType : __NAMESPACE__.'\\'.$objectType) : null;
+      if (!is_string($classname) || !str_starts_with($classname, __NAMESPACE__.'\\') || !is_subclass_of($classname, Model::class))
          abort(404);
       
       $obj = $classname::findOrFail(request()->input('object_id', 0));
@@ -211,8 +212,9 @@ class File extends Model
     public function obj()
     {
          // Set model connection
-         $classname = (false !== strpos($this->object_type, 'App\\')) ? $this->object_type : '\\App\\Models\\'.$this->object_type;
-         if(!class_exists($classname))
+         $objectType = $this->object_type;
+         $classname = is_string($objectType) ? (str_contains($objectType, '\\') ? $objectType : __NAMESPACE__.'\\'.$objectType) : null;
+         if (!is_string($classname) || !str_starts_with($classname, __NAMESPACE__.'\\') || !is_subclass_of($classname, Model::class))
             abort(404);
          
          $obj = $classname::findOrFail($this->object_id);

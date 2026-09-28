@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Console\Commands;
+namespace Ledningssystemet\Ledningssystemet\Console\Commands;
 
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Mail;
@@ -30,7 +30,7 @@ class MailSendstatus extends Command
    {
       $this->info('Starting status E-mail transmission');
 
-      foreach (\App\Models\User::where('enabled', 1)->get() as $user) {
+      foreach (\Ledningssystemet\Ledningssystemet\Models\User::where('enabled', 1)->get() as $user) {
          // Check if user wants email today
          $weekdays = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
          $today = $weekdays[intval(Date("w"))];
@@ -54,7 +54,7 @@ class MailSendstatus extends Command
          }
 
          $this->info('Sending to ' . $user->email);
-         Mail::to($user->email)->send(new \App\Mail\StatusOverview($user, $sections, $dueItems));
+         Mail::to($user->email)->send(new \Ledningssystemet\Ledningssystemet\Mail\StatusOverview($user, $sections, $dueItems));
       }
 
       $this->info('Status E-mail transmission complete');
@@ -68,48 +68,48 @@ class MailSendstatus extends Command
     *
     * @return array<string, array>
     */
-   private function getStatusSections(\App\Models\User $user): array
+   private function getStatusSections(\Ledningssystemet\Ledningssystemet\Models\User $user): array
    {
       $sectionModels = [
          'Inventory' => [
-            \App\Models\RequirementSource::class,
-            \App\Models\Process::class,
-            \App\Models\InformationType::class,
-            \App\Models\Asset::class,
-            \App\Models\Customer::class,
-            \App\Models\Supplier::class,
-            \App\Models\Agreement::class,
-            \App\Models\Control::class,
-            \App\Models\ProcessSustainabilityAspect::class,
-            \App\Models\Chemical::class,
+            \Ledningssystemet\Ledningssystemet\Models\RequirementSource::class,
+            \Ledningssystemet\Ledningssystemet\Models\Process::class,
+            \Ledningssystemet\Ledningssystemet\Models\InformationType::class,
+            \Ledningssystemet\Ledningssystemet\Models\Asset::class,
+            \Ledningssystemet\Ledningssystemet\Models\Customer::class,
+            \Ledningssystemet\Ledningssystemet\Models\Supplier::class,
+            \Ledningssystemet\Ledningssystemet\Models\Agreement::class,
+            \Ledningssystemet\Ledningssystemet\Models\Control::class,
+            \Ledningssystemet\Ledningssystemet\Models\ProcessSustainabilityAspect::class,
+            \Ledningssystemet\Ledningssystemet\Models\Chemical::class,
          ],
          'Assess and mitigate' => [
-            \App\Models\RiskProject::class,
-            \App\Models\Risk::class,
-            \App\Models\ComplianceEvaluation::class,
-            \App\Models\Finding::class,
-            \App\Models\Incident::class,
-            \App\Models\ControlAction::class,
+            \Ledningssystemet\Ledningssystemet\Models\RiskProject::class,
+            \Ledningssystemet\Ledningssystemet\Models\Risk::class,
+            \Ledningssystemet\Ledningssystemet\Models\ComplianceEvaluation::class,
+            \Ledningssystemet\Ledningssystemet\Models\Finding::class,
+            \Ledningssystemet\Ledningssystemet\Models\Incident::class,
+            \Ledningssystemet\Ledningssystemet\Models\ControlAction::class,
          ],
          'Measure and improve' => [
-            \App\Models\ProcessPerformanceMetric::class,
-            \App\Models\Objective::class,
+            \Ledningssystemet\Ledningssystemet\Models\ProcessPerformanceMetric::class,
+            \Ledningssystemet\Ledningssystemet\Models\Objective::class,
          ],
          'Employee management' => [
-            \App\Models\Employee::class,
-            \App\Models\EmployeeRole::class,
-            \App\Models\Competence::class,
+            \Ledningssystemet\Ledningssystemet\Models\Employee::class,
+            \Ledningssystemet\Ledningssystemet\Models\EmployeeRole::class,
+            \Ledningssystemet\Ledningssystemet\Models\Competence::class,
          ],
          'Coordination' => [
-            \App\Models\Activity::class,
-            \App\Models\LibraryDocument::class,
+            \Ledningssystemet\Ledningssystemet\Models\Activity::class,
+            \Ledningssystemet\Ledningssystemet\Models\LibraryDocument::class,
          ],
          'System settings' => [
-            \App\Models\User::class,
-            \App\Models\Site::class,
-            \App\Models\Department::class,
-            \App\Models\Role::class,
-            \App\Models\AccessGroup::class,
+            \Ledningssystemet\Ledningssystemet\Models\User::class,
+            \Ledningssystemet\Ledningssystemet\Models\Site::class,
+            \Ledningssystemet\Ledningssystemet\Models\Department::class,
+            \Ledningssystemet\Ledningssystemet\Models\Role::class,
+            \Ledningssystemet\Ledningssystemet\Models\AccessGroup::class,
          ],
       ];
 
@@ -132,11 +132,11 @@ class MailSendstatus extends Command
     *
     * @return array<int, array{level: string, text: string}>
     */
-   private function getDueItems(\App\Models\User $user): array
+   private function getDueItems(\Ledningssystemet\Ledningssystemet\Models\User $user): array
    {
       $limit = date("Y-m-d", strtotime("+7 DAYS"));
-      $objects = \App\Models\Activity::where('responsible_user_id', $user->id)->whereNull('completed_at')->where('due', '<', $limit)->orderBy('due')->get()
-         ->concat(\App\Models\ControlAction::where('responsible_id', $user->id)->whereNull('finished_at')->where('due', '<', $limit)->orderBy('due')->get());
+      $objects = \Ledningssystemet\Ledningssystemet\Models\Activity::where('responsible_user_id', $user->id)->whereNull('completed_at')->where('due', '<', $limit)->orderBy('due')->get()
+         ->concat(\Ledningssystemet\Ledningssystemet\Models\ControlAction::where('responsible_id', $user->id)->whereNull('finished_at')->where('due', '<', $limit)->orderBy('due')->get());
 
       $items = [];
       foreach ($objects as $obj) {

@@ -1,4 +1,4 @@
-@php if(Auth::user()->cannot('index', \App\Models\Site::class)) abort(403); @endphp
+@php if(Auth::user()->cannot('index', \Ledningssystemet\Ledningssystemet\Models\Site::class)) abort(403); @endphp
 @extends('layouts.master')
 
 @section('container')
@@ -13,7 +13,7 @@ $(function(){
       bootstrap: true,
       accordion: true,
       filter: {
-@php $tags = \App\Models\Site::allUsedTags(); @endphp
+@php $tags = \Ledningssystemet\Ledningssystemet\Models\Site::allUsedTags(); @endphp
 @if(0 < count($tags))
          tag_id: {
             type: 'select',
@@ -33,7 +33,7 @@ $(function(){
             default: 0,
             options: [
                { value: 0, text: '{{ __('Show all') }}' },
-                  @foreach(\App\Models\User::leftJoin('sites', 'sites.responsible_user_id', '=', 'users.id')->whereNotNull('sites.id')->select('users.*')->distinct()->orderBy('users.name')->get()->each->setAppends([]) as $obj)
+                  @foreach(\Ledningssystemet\Ledningssystemet\Models\User::leftJoin('sites', 'sites.responsible_user_id', '=', 'users.id')->whereNotNull('sites.id')->select('users.*')->distinct()->orderBy('users.name')->get()->each->setAppends([]) as $obj)
                { value: {{ $obj->id }}, text: <?php echo(json_encode($obj->name)); ?> },
                @endforeach
             ]
@@ -44,22 +44,22 @@ $(function(){
             checked: false,
             text: '{{ __('Hide items without issues') }}',
          },
-@include('components.customproperty', ['classname' => 'App\Models\Site', 'showFilter' => true])
+@include('components.customproperty', ['classname' => 'Ledningssystemet\Ledningssystemet\Models\Site', 'showFilter' => true])
       },
       messages: {
          addNewRecord: '{{ __('Create site') }}',
       },
       actions: {
-@if(Auth::user()->can('index', \App\Models\Site::class))         
+@if(Auth::user()->can('index', \Ledningssystemet\Ledningssystemet\Models\Site::class))
          listAction: '/api/v1/items/Site',
 @endif
-@if(Auth::user()->can('create', \App\Models\Site::class))         
+@if(Auth::user()->can('create', \Ledningssystemet\Ledningssystemet\Models\Site::class))
          createAction: '/api/v1/items/Site',
 @endif
-@if(Auth::user()->can('update', \App\Models\Site::class))         
+@if(Auth::user()->can('update', \Ledningssystemet\Ledningssystemet\Models\Site::class))
          updateAction: '/api/v1/items/Site',
 @endif
-@if(Auth::user()->can('delete', \App\Models\Site::class))         
+@if(Auth::user()->can('delete', \Ledningssystemet\Ledningssystemet\Models\Site::class))
          deleteAction: '/api/v1/items/Site',
 @endif
       },
@@ -91,7 +91,7 @@ $(function(){
             defaultValue: {{ auth()->user()->id }},
             options: [
                { Value: null, DisplayText: '{{ __("None assigned") }}' },
-@foreach(App\Models\User::orderBy('name')->get()->each->setAppends([]) as $obj)
+@foreach(Ledningssystemet\Ledningssystemet\Models\User::orderBy('name')->get()->each->setAppends([]) as $obj)
                { Value: {{$obj ->id}}, DisplayText: @php echo(json_encode($obj->name)); @endphp  },
 @endforeach
             ],
@@ -131,7 +131,7 @@ $(function(){
             tooltip: '{{ __("This will be overwritten by the next synchronization with external provider if a group is selected above") }}',
 @endif
             options: [
-@foreach(App\Models\User::orderBy('name')->get()->each->setAppends([]) as $obj)
+@foreach(Ledningssystemet\Ledningssystemet\Models\User::orderBy('name')->get()->each->setAppends([]) as $obj)
                { Value: {{ $obj->id }}, DisplayText: @php echo(json_encode($obj->name)); @endphp },
 @endforeach
             ]
@@ -144,7 +144,7 @@ $(function(){
             multiple: true,
             listClass: 'd-inline-block col-12 col-md-4',
             options: [
-@foreach(App\Models\Department::orderBy('name')->get()->each->setAppends([]) as $obj)
+@foreach(Ledningssystemet\Ledningssystemet\Models\Department::orderBy('name')->get()->each->setAppends([]) as $obj)
                { Value: {{ $obj->id }}, DisplayText: @php echo(json_encode($obj->name)); @endphp },
 @endforeach
             ]
@@ -157,12 +157,12 @@ $(function(){
             multiple: true,
             listClass: 'd-inline-block col-12 col-md-4',
             options: [
-@foreach(App\Models\Asset::orderBy('name')->get()->each->setAppends([]) as $obj)
+@foreach(Ledningssystemet\Ledningssystemet\Models\Asset::orderBy('name')->get()->each->setAppends([]) as $obj)
                { Value: {{ $obj->id }}, DisplayText: @php echo(json_encode($obj->name)); @endphp },
 @endforeach
             ]
          },
-         @include('components.customproperty', ['classname' => 'App\Models\Site'])
+         @include('components.customproperty', ['classname' => 'Ledningssystemet\Ledningssystemet\Models\Site'])
          hr1: {
             list: true,
             edit: false,
@@ -171,7 +171,7 @@ $(function(){
                return $('<hr />'); 
             }
          },
-@if(Auth::user()->can('index', \App\Models\Site::class))         
+@if(Auth::user()->can('index', \Ledningssystemet\Ledningssystemet\Models\Site::class))
          showRisks: showRisks('Site', $('#tableContainer')),
 @endif
          showHistory: showHistoryField('Site', $('#tableContainer')),          

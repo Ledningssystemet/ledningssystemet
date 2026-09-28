@@ -1,15 +1,15 @@
 <?php
 
-namespace App\Http\Controllers\Api;
+namespace Ledningssystemet\Ledningssystemet\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
+use Ledningssystemet\Ledningssystemet\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use App\Models\DataCategory;
+use Ledningssystemet\Ledningssystemet\Models\DataCategory;
 use Illuminate\Support\Facades\DB;
-use App\Exceptions\SoftException;
+use Ledningssystemet\Ledningssystemet\Exceptions\SoftException;
 use Illuminate\Database\Eloquent\Builder;
-use App\Models\Customer;
-use App\Models\Process;
+use Ledningssystemet\Ledningssystemet\Models\Customer;
+use Ledningssystemet\Ledningssystemet\Models\Process;
 
 
 class DataProcessingTableController extends Controller
@@ -21,7 +21,7 @@ class DataProcessingTableController extends Controller
           abort(401);
       $retval = [];
       
-      $departments = \App\Models\Department::when(request()->has('department_id') && (0 < intval(request()->input('department_id'))), function (Builder $query) {
+      $departments = \Ledningssystemet\Ledningssystemet\Models\Department::when(request()->has('department_id') && (0 < intval(request()->input('department_id'))), function (Builder $query) {
          if(0 < intval(request()->input('department_id', -1)))
             $query->where('id', request()->input('department_id'));
       })->pluck('id');
@@ -100,7 +100,7 @@ class DataProcessingTableController extends Controller
          // Extract information about subprocessors regarding assets
          foreach($assets as $asset)
          {
-            $supplier = (null != $asset['supplier_id']) ? \App\Models\Supplier::findOrFail($asset['supplier_id']) : null;
+            $supplier = (null != $asset['supplier_id']) ? \Ledningssystemet\Ledningssystemet\Models\Supplier::findOrFail($asset['supplier_id']) : null;
             if((null != $supplier) && $supplier->dataprocessor)
                $processors[$supplier->id] =  array('id' => $supplier->id, 'name' => $supplier->name, 'description' => $supplier->description);
          }

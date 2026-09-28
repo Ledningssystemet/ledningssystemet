@@ -1,12 +1,12 @@
 <?php
 
-namespace App\Models;
+namespace Ledningssystemet\Ledningssystemet\Models;
 
-use App\Models\Concerns\DefersRelationAttributeSync;
-use App\Traits\HasCustomProperties;
-use App\Traits\HasMessages;
-use App\Traits\HasNotifications;
-use App\Traits\HasTags;
+use Ledningssystemet\Ledningssystemet\Models\Concerns\DefersRelationAttributeSync;
+use Ledningssystemet\Ledningssystemet\Traits\HasCustomProperties;
+use Ledningssystemet\Ledningssystemet\Traits\HasMessages;
+use Ledningssystemet\Ledningssystemet\Traits\HasNotifications;
+use Ledningssystemet\Ledningssystemet\Traits\HasTags;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -150,7 +150,7 @@ class Customer extends Model
 
     public function getFilesAttribute()
     {
-        return DB::table('files')->where('object_type', $this::class)->where('object_id', $this->id)->select(['id', 'filename', 'name', 'description', 'contenttype', 'contentlength'])->get();
+        return DB::table('files')->where('object_type', static::class)->where('object_id', $this->id)->select(['id', 'filename', 'name', 'description', 'contenttype', 'contentlength'])->get();
     }
 
     public function getAgreementsAttribute()
@@ -272,7 +272,7 @@ class Customer extends Model
             'name' => ['required', 'max:255', Rule::unique('customers')->ignore($this->id)],
             'legal_reg' => 'nullable|max:255',
             'ext_id' => 'nullable|max:255',
-            'responsible_user_id' => 'nullable|exists:App\Models\User,id',
+            'responsible_user_id' => 'nullable|exists:Ledningssystemet\Ledningssystemet\Models\User,id',
             'dpo_name' => 'nullable|max:255',
             'dpo_email' => 'nullable|max:255|email',
         ];

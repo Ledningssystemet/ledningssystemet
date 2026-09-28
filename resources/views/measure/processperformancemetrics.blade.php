@@ -1,4 +1,4 @@
-@php if(Auth::user()->cannot('index', \App\Models\ProcessPerformanceMetric::class)) abort(403); @endphp
+@php if(Auth::user()->cannot('index', \Ledningssystemet\Ledningssystemet\Models\ProcessPerformanceMetric::class)) abort(403); @endphp
 @extends('layouts.master')
 
 @section('container')
@@ -21,7 +21,7 @@ $(function(){
          addNewRecord: '{{ __('Create metric') }}',
       },
       filter: {
-         @php $tags = \App\Models\ProcessPerformanceMetric::allUsedTags(); @endphp
+         @php $tags = \Ledningssystemet\Ledningssystemet\Models\ProcessPerformanceMetric::allUsedTags(); @endphp
             @if(0 < count($tags))
          tag_id: {
             type: 'select',
@@ -41,7 +41,7 @@ $(function(){
             default: 0,
             options: [
                { value: 0, text: '{{ __('Show all') }}' },
-                  @foreach(\App\Models\User::leftJoin('process_performance_metrics', 'process_performance_metrics.responsible_user_id', '=', 'users.id')->whereNotNull('process_performance_metrics.id')->select('users.*')->distinct()->orderBy('users.name')->get()->each->setAppends([]) as $obj)
+                  @foreach(\Ledningssystemet\Ledningssystemet\Models\User::leftJoin('process_performance_metrics', 'process_performance_metrics.responsible_user_id', '=', 'users.id')->whereNotNull('process_performance_metrics.id')->select('users.*')->distinct()->orderBy('users.name')->get()->each->setAppends([]) as $obj)
                { value: {{ $obj->id }}, text: <?php echo(json_encode($obj->name)); ?> },
                @endforeach
             ]
@@ -52,19 +52,19 @@ $(function(){
             checked: false,
             text: '{{ __('Show only my metrics') }}',
          },
-         @include('components.customproperty', ['classname' => 'App\Models\ProcessPerformanceMetric', 'showFilter' => true])
+         @include('components.customproperty', ['classname' => 'Ledningssystemet\Ledningssystemet\Models\ProcessPerformanceMetric', 'showFilter' => true])
       },
       actions: {
-@if(Auth::user()->can('index', 'App\\Models\\ProcessPerformanceMetric'))
+@if(Auth::user()->can('index', 'Ledningssystemet\Ledningssystemet\\Models\\ProcessPerformanceMetric'))
          listAction: '/api/v1/items/ProcessPerformanceMetric',
 @endif
-@if(Auth::user()->can('create', 'App\\Models\\ProcessPerformanceMetric'))
+@if(Auth::user()->can('create', 'Ledningssystemet\Ledningssystemet\\Models\\ProcessPerformanceMetric'))
          createAction: '/api/v1/items/ProcessPerformanceMetric',
 @endif
-@if(Auth::user()->can('update', 'App\\Models\\ProcessPerformanceMetric'))
+@if(Auth::user()->can('update', 'Ledningssystemet\Ledningssystemet\\Models\\ProcessPerformanceMetric'))
          updateAction: '/api/v1/items/ProcessPerformanceMetric',
 @endif
-@if(Auth::user()->can('delete', 'App\\Models\\ProcessPerformanceMetric'))
+@if(Auth::user()->can('delete', 'Ledningssystemet\Ledningssystemet\\Models\\ProcessPerformanceMetric'))
          deleteAction: '/api/v1/items/ProcessPerformanceMetric',
 @endif
       },
@@ -128,7 +128,7 @@ $(function(){
             defaultValue: {{ auth()->user()->id }},
             options: [
                { Value: null, DisplayText: '{{ __("None assigned") }}' },
-@foreach(App\Models\User::orderBy('name')->get()->each->setAppends([]) as $obj)
+@foreach(Ledningssystemet\Ledningssystemet\Models\User::orderBy('name')->get()->each->setAppends([]) as $obj)
                { Value: {{$obj ->id}}, DisplayText: @php echo(json_encode($obj->name)); @endphp  },
 @endforeach
             ],
@@ -141,7 +141,7 @@ $(function(){
             listClass: 'd-inline-block col-12 col-md-8',
             multiple: true,
             options: [
-@foreach(App\Models\Process::orderBy('name')->get()->each->setAppends([]) as $obj)
+@foreach(Ledningssystemet\Ledningssystemet\Models\Process::orderBy('name')->get()->each->setAppends([]) as $obj)
                { Value: {{$obj ->id}}, DisplayText: @php echo(json_encode($obj->name)); @endphp  },
 @endforeach
             ],
@@ -186,8 +186,8 @@ $(function(){
             list: true,
             listClass: 'd-inline-block col-12 col-md-9',
             options: [
-@foreach(array_keys(\App\Models\ProcessPerformanceMetric::getIntervals()) as $objkey)
-               { Value: {{ $objkey }}, DisplayText: '{{ \App\Models\ProcessPerformanceMetric::getIntervals()[$objkey]['text'] }}' },
+@foreach(array_keys(\Ledningssystemet\Ledningssystemet\Models\ProcessPerformanceMetric::getIntervals()) as $objkey)
+               { Value: {{ $objkey }}, DisplayText: '{{ \Ledningssystemet\Ledningssystemet\Models\ProcessPerformanceMetric::getIntervals()[$objkey]['text'] }}' },
 @endforeach            
             ],
          },
@@ -259,8 +259,8 @@ $(function(){
             listClass: 'd-inline-block col-12 col-md-6',
             options: [
                { Value: null, DisplayText: '{{ __('None') }}' },
-@foreach(array_keys(\App\Models\ProcessPerformanceMetric::getMathFunctions()) as $objkey)
-   { Value: '{{ $objkey }}', DisplayText: '{{ \App\Models\ProcessPerformanceMetric::getMathFunctions()[$objkey] }}'},
+@foreach(array_keys(\Ledningssystemet\Ledningssystemet\Models\ProcessPerformanceMetric::getMathFunctions()) as $objkey)
+   { Value: '{{ $objkey }}', DisplayText: '{{ \Ledningssystemet\Ledningssystemet\Models\ProcessPerformanceMetric::getMathFunctions()[$objkey] }}'},
 @endforeach
             ],
          },
@@ -276,7 +276,7 @@ $(function(){
             step: 1,
             listClass: 'd-inline-block col-6 col-md-4',
          },
-         @include('components.customproperty', ['classname' => 'App\Models\ProcessPerformanceMetric'])
+         @include('components.customproperty', ['classname' => 'Ledningssystemet\Ledningssystemet\Models\ProcessPerformanceMetric'])
          hr4: {
             list: true,
             edit: false,

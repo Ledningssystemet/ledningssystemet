@@ -5,7 +5,7 @@
    if(0 == $department)
       $department = null;
    else
-      $department = \App\Models\Department::findOrFail($department)->setAppends([]);
+      $department = \Ledningssystemet\Ledningssystemet\Models\Department::findOrFail($department)->setAppends([]);
    
 ?>
 @extends('layouts.master')
@@ -22,7 +22,7 @@
    <div class="d-inline-block department-select form-group mb-3 col col-12 col-md-4">
       <select id="department_id" class="form-control form-select input-rounded" style="font-size: 0.9rem;" onChange="window.location='/dashboard?department_id='+$(this).val();">
          <option value="0" <?php echo((null == $department) ? "selected=\"selected\"" : ""); ?>>{{ __("Show all") }}</option>
-   @foreach(\App\Models\Department::orderBy('name')->select(['id','name'])->get()->each->setAppends([]) as $obj)
+   @foreach(\Ledningssystemet\Ledningssystemet\Models\Department::orderBy('name')->select(['id','name'])->get()->each->setAppends([]) as $obj)
          <option value="{{ $obj->id }}" <?php echo(((null != $department) && ($obj->id == $department->id)) ? "selected=\"selected\"" : ""); ?>>{{ $obj->name }}</option>
    @endforeach
       </select>
@@ -50,7 +50,7 @@
                <div class="col col-12 col-md-6">
                   <div class="department-container-header">{{ __("Inventory") }}</div>
                   <div class="container status-container">
-@foreach(array_merge(\App\Models\RequirementSource::getItemsStatus($department), \App\Models\Process::getItemsStatus($department), \App\Models\InformationType::getItemsStatus($department), \App\Models\Asset::getItemsStatus($department), \App\Models\Customer::getItemsStatus($department), \App\Models\Supplier::getItemsStatus($department), \App\Models\Agreement::getItemsStatus($department),\App\Models\Control::getItemsStatus($department), \App\Models\ProcessSustainabilityAspect::getItemsStatus($department), \App\Models\Chemical::getItemsStatus($department)) as $issue)
+@foreach(array_merge(\Ledningssystemet\Ledningssystemet\Models\RequirementSource::getItemsStatus($department), \Ledningssystemet\Ledningssystemet\Models\Process::getItemsStatus($department), \Ledningssystemet\Ledningssystemet\Models\InformationType::getItemsStatus($department), \Ledningssystemet\Ledningssystemet\Models\Asset::getItemsStatus($department), \Ledningssystemet\Ledningssystemet\Models\Customer::getItemsStatus($department), \Ledningssystemet\Ledningssystemet\Models\Supplier::getItemsStatus($department), \Ledningssystemet\Ledningssystemet\Models\Agreement::getItemsStatus($department),\Ledningssystemet\Ledningssystemet\Models\Control::getItemsStatus($department), \Ledningssystemet\Ledningssystemet\Models\ProcessSustainabilityAspect::getItemsStatus($department), \Ledningssystemet\Ledningssystemet\Models\Chemical::getItemsStatus($department)) as $issue)
                <div class="container status-item">
                   <span class="badge bg-{{ $issue['level'] }}">{{ $issue['count'] }}</span>
 @if($issue['url'])
@@ -66,7 +66,7 @@
                <div class="col col-12 col-md-6">
                   <div class="department-container-header">{{ __("Assess and mitigate") }}</div>
                   <div class="container status-container">
-@foreach(array_merge(\App\Models\RiskProject::getItemsStatus($department), \App\Models\Risk::getItemsStatus($department), \App\Models\ComplianceEvaluation::getItemsStatus($department), \App\Models\Finding::getItemsStatus($department), \App\Models\Incident::getItemsStatus($department), \App\Models\ControlAction::getItemsStatus($department)) as $issue)
+@foreach(array_merge(\Ledningssystemet\Ledningssystemet\Models\RiskProject::getItemsStatus($department), \Ledningssystemet\Ledningssystemet\Models\Risk::getItemsStatus($department), \Ledningssystemet\Ledningssystemet\Models\ComplianceEvaluation::getItemsStatus($department), \Ledningssystemet\Ledningssystemet\Models\Finding::getItemsStatus($department), \Ledningssystemet\Ledningssystemet\Models\Incident::getItemsStatus($department), \Ledningssystemet\Ledningssystemet\Models\ControlAction::getItemsStatus($department)) as $issue)
                <div class="container status-item">
                   <span class="badge bg-{{ $issue['level'] }}">{{ $issue['count'] }}</span>
 @if($issue['url'])
@@ -82,7 +82,7 @@
                <div class="col col-12 col-md-6">
                   <div class="department-container-header">{{ __("Measure and improve") }}</div>
                   <div class="container status-container">
-@foreach(array_merge(\App\Models\ProcessPerformanceMetric::getItemsStatus($department), \App\Models\Objective::getItemsStatus($department)) as $issue)
+@foreach(array_merge(\Ledningssystemet\Ledningssystemet\Models\ProcessPerformanceMetric::getItemsStatus($department), \Ledningssystemet\Ledningssystemet\Models\Objective::getItemsStatus($department)) as $issue)
                <div class="container status-item">
                   <span class="badge bg-{{ $issue['level'] }}">{{ $issue['count'] }}</span>
 @if($issue['url'])
@@ -98,7 +98,7 @@
                <div class="col col-12 col-md-6">
                   <div class="department-container-header">{{ __("Employee management") }}</div>
                   <div class="container status-container">
-@foreach(array_merge(\App\Models\Employee::getItemsStatus($department), \App\Models\EmployeeRole::getItemsStatus($department), \App\Models\Competence::getItemsStatus($department)) as $issue)
+@foreach(array_merge(\Ledningssystemet\Ledningssystemet\Models\Employee::getItemsStatus($department), \Ledningssystemet\Ledningssystemet\Models\EmployeeRole::getItemsStatus($department), \Ledningssystemet\Ledningssystemet\Models\Competence::getItemsStatus($department)) as $issue)
                <div class="container status-item">
                   <span class="badge bg-{{ $issue['level'] }}">{{ $issue['count'] }}</span>
 @if($issue['url'])
@@ -114,7 +114,7 @@
                <div class="col col-12 col-md-6">
                   <div class="department-container-header">{{ __("Coordination") }}</div>
                   <div class="container status-container">
-@foreach(array_merge(  \App\Models\Activity::getItemsStatus($department), \App\Models\LibraryDocument::getItemsStatus($department)) as $issue)
+@foreach(array_merge(  \Ledningssystemet\Ledningssystemet\Models\Activity::getItemsStatus($department), \Ledningssystemet\Ledningssystemet\Models\LibraryDocument::getItemsStatus($department)) as $issue)
                <div class="container status-item">
                   <span class="badge bg-{{ $issue['level'] }}">{{ $issue['count'] }}</span>
 @if($issue['url'])
@@ -130,7 +130,7 @@
                <div class="col col-12 col-md-6">
                   <div class="department-container-header">{{ __("System settings") }}</div>
                   <div class="container status-container">
-@foreach(array_merge(\App\Models\User::getItemsStatus($department), \App\Models\Site::getItemsStatus($department), \App\Models\Department::getItemsStatus($department), \App\Models\Role::getItemsStatus($department), \App\Models\AccessGroup::getItemsStatus($department)) as $issue)
+@foreach(array_merge(\Ledningssystemet\Ledningssystemet\Models\User::getItemsStatus($department), \Ledningssystemet\Ledningssystemet\Models\Site::getItemsStatus($department), \Ledningssystemet\Ledningssystemet\Models\Department::getItemsStatus($department), \Ledningssystemet\Ledningssystemet\Models\Role::getItemsStatus($department), \Ledningssystemet\Ledningssystemet\Models\AccessGroup::getItemsStatus($department)) as $issue)
                <div class="container status-item">
                   <span class="badge bg-{{ $issue['level'] }}">{{ $issue['count'] }}</span>
 @if($issue['url'])
@@ -158,7 +158,7 @@
 <?php
    $metricheaderCreated = false;
 
-   foreach(((null == $department) ? \App\Models\Process::orderBy('name')->select(['id','name'])->get()->each->setAppends([]) : \App\Models\Process::whereNotNull('department_id')->where('department_id', $department->id)->orderBy('name')->select(['id','name'])->get()->each->setAppends([])) as $process)
+   foreach(((null == $department) ? \Ledningssystemet\Ledningssystemet\Models\Process::orderBy('name')->select(['id','name'])->get()->each->setAppends([]) : \Ledningssystemet\Ledningssystemet\Models\Process::whereNotNull('department_id')->where('department_id', $department->id)->orderBy('name')->select(['id','name'])->get()->each->setAppends([])) as $process)
    {
       $metrics = $process->int_process_performance_metrics;
       if(0 < count($metrics))
@@ -319,15 +319,15 @@ for($i = -12; $i <= 0; $i++)
           ['ID', '{{ __("Avg days for approval") }}', '{{ __("Avg risk level") }}', '{{ __("Department") }}', '{{ __("Number of risks") }}'],
 <?php
 $hasData = false;
-foreach(App\Models\Department::get() as $dept)
+foreach(Ledningssystemet\Ledningssystemet\Models\Department::get() as $dept)
 {
    if($department && $department->id && ($dept->id != $department->id))
       continue;
    
-   $riskcount =  App\Models\Risk::where('department_id', $dept->id)->whereNotNull('assessed_at')->count();
+   $riskcount =  Ledningssystemet\Ledningssystemet\Models\Risk::where('department_id', $dept->id)->whereNotNull('assessed_at')->count();
    if(!$riskcount)
       continue;
-   $depdata = App\Models\Risk
+   $depdata = Ledningssystemet\Ledningssystemet\Models\Risk
       ::whereNotNull('risks.assessed_at')
       ->where('risks.department_id', $dept->id)
       ->leftJoin('risk_level_mappings', function($join){
@@ -368,7 +368,7 @@ foreach(App\Models\Department::get() as $dept)
           ['ID', '{{ __("Avg days for approval") }}', '{{ __("Avg risk level") }}', '{{ __("Risk owner") }}', '{{ __("Number of risks") }}'],
 <?php
 $hasData = false;
-foreach(App\Models\Risk
+foreach(Ledningssystemet\Ledningssystemet\Models\Risk
    ::whereNotNull('assessed_at')
    ->when($department, function($query, $department) {
       $query->where('department_id', $department->id); 
@@ -379,13 +379,13 @@ foreach(App\Models\Risk
    ->pluck('riskowner_id')
    ->toArray() as $roid)
 {
-   $riskowner = App\Models\User::findOrFail($roid);
-   $riskcount =  App\Models\Risk::where('riskowner_id', $riskowner->id)->whereNotNull('assessed_at')->count();
+   $riskowner = Ledningssystemet\Ledningssystemet\Models\User::findOrFail($roid);
+   $riskcount =  Ledningssystemet\Ledningssystemet\Models\Risk::where('riskowner_id', $riskowner->id)->whereNotNull('assessed_at')->count();
    
    if(!$riskcount)
       continue;
    
-   $depdata = App\Models\Risk
+   $depdata = Ledningssystemet\Ledningssystemet\Models\Risk
       ::whereNotNull('risks.assessed_at')
       ->where('risks.riskowner_id', $riskowner->id)
       ->leftJoin('risk_level_mappings', function($join){

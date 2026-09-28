@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Console\Commands;
+namespace Ledningssystemet\Ledningssystemet\Console\Commands;
 
 use Illuminate\Console\Command;
 
@@ -28,7 +28,7 @@ class RiskReassess extends Command
     public function handle()
     {
        // Output
-       foreach(\App\Models\Risk::whereNotNull('assessed_at')->whereNull('replacedby_id')->get() as $risk)
+       foreach(\Ledningssystemet\Ledningssystemet\Models\Risk::whereNotNull('assessed_at')->whereNull('replacedby_id')->get() as $risk)
        {
           $risklevel = $risk->int_risklevel();
           if(null == $risklevel)

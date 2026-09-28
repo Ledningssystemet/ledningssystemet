@@ -1,9 +1,10 @@
 <?php
-   $props = App\Models\CustomProperty::where('context', $classname)->orderBy('ordinal')->get()->each->setAppends([]);
+   $contexts = [$classname];
+   $props = Ledningssystemet\Ledningssystemet\Models\CustomProperty::whereIn('context', $contexts)->orderBy('ordinal')->get()->each->setAppends([]);
    $showFilter = $showFilter ?? false;
 ?>
 @if($showFilter)
-@foreach(App\Models\CustomProperty::where('context', $classname)->whereNotIn('type', ['string', 'textarea'])->get()->each->setAppends([]) as $obj)
+@foreach(Ledningssystemet\Ledningssystemet\Models\CustomProperty::whereIn('context', $contexts)->whereNotIn('type', ['string', 'textarea'])->get()->each->setAppends([]) as $obj)
 customproperty_{{$obj->id}}: {
    type: 'select',
    text: '{{ $obj->name }}',

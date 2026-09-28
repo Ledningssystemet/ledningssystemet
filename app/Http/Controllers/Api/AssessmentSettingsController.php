@@ -1,14 +1,14 @@
 <?php
 
-namespace App\Http\Controllers\Api;
+namespace Ledningssystemet\Ledningssystemet\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
+use Ledningssystemet\Ledningssystemet\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use App\Models\User;
+use Ledningssystemet\Ledningssystemet\Models\User;
 use Illuminate\Support\Facades\DB;
-use App\Models\RiskLevel;
-use App\Models\ProbabilityLevel;
-use App\Models\ConsequenceLevel;
+use Ledningssystemet\Ledningssystemet\Models\RiskLevel;
+use Ledningssystemet\Ledningssystemet\Models\ProbabilityLevel;
+use Ledningssystemet\Ledningssystemet\Models\ConsequenceLevel;
 
 class AssessmentSettingsController extends Controller
 {

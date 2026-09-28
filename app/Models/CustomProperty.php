@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Models;
+namespace Ledningssystemet\Ledningssystemet\Models;
 
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -65,16 +65,17 @@ class CustomProperty extends Model
       $retval = [];
 
       // List all files in the Models directory
-      $files = glob(app_path('Models/*.php'));
+      $files = glob(__DIR__.'/*.php') ?: [];
       foreach($files as $file)
       {
          // Get the class name from the file
          $class = pathinfo($file, PATHINFO_FILENAME);
+         $modelClass = __NAMESPACE__.'\\'.$class;
 
          // Check if the class exists and is a subclass of Model
-         if(class_exists("App\\Models\\$class") && is_subclass_of("App\\Models\\$class", Model::class))
+         if(is_subclass_of($modelClass, \Illuminate\Database\Eloquent\Model::class))
          {
-            $model = new ("App\\Models\\$class");
+            $model = new $modelClass();
             if(method_exists($model, 'bootHasCustomProperties'))
             {
                $retval[] = $model::class;

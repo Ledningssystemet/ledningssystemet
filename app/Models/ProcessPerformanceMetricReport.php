@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Models;
+namespace Ledningssystemet\Ledningssystemet\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
@@ -16,9 +16,9 @@ use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
-use App\Traits\HasTags;
-use App\Traits\HasMessages;
-use App\Traits\HasNotifications;
+use Ledningssystemet\Ledningssystemet\Traits\HasTags;
+use Ledningssystemet\Ledningssystemet\Traits\HasMessages;
+use Ledningssystemet\Ledningssystemet\Traits\HasNotifications;
 
 class ProcessPerformanceMetricReport extends Model
 {
@@ -230,7 +230,7 @@ class ProcessPerformanceMetricReport extends Model
    public function getValidationRules()
    {
       return [
-         'reported_by_id' => 'nullable|exists:App\Models\User,id',
+         'reported_by_id' => 'nullable|exists:Ledningssystemet\Ledningssystemet\Models\User,id',
          'process_performance_metric_id' => 'required|exists:process_performance_metrics,id',
          
       ];

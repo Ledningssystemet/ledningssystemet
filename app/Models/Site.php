@@ -1,12 +1,12 @@
 <?php
 
-namespace App\Models;
+namespace Ledningssystemet\Ledningssystemet\Models;
 
-use App\Traits\HasCustomProperties;
-use App\Traits\HasMessages;
-use App\Traits\HasNotifications;
-use App\Traits\HasTags;
-use App\Models\Concerns\DefersRelationAttributeSync;
+use Ledningssystemet\Ledningssystemet\Traits\HasCustomProperties;
+use Ledningssystemet\Ledningssystemet\Traits\HasMessages;
+use Ledningssystemet\Ledningssystemet\Traits\HasNotifications;
+use Ledningssystemet\Ledningssystemet\Traits\HasTags;
+use Ledningssystemet\Ledningssystemet\Models\Concerns\DefersRelationAttributeSync;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -281,7 +281,7 @@ class Site extends Model
                 'max:255',
                 Rule::unique('sites')->ignore($this->id),
             ],
-            'responsible_user_id' => 'nullable|exists:App\Models\User,id',
+            'responsible_user_id' => 'nullable|exists:Ledningssystemet\Ledningssystemet\Models\User,id',
             'external_provider_group_id' => 'nullable|exists:external_provider_groups,id',
         ];
     }

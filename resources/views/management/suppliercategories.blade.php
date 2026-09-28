@@ -77,8 +77,8 @@ $(function(){
             required: true,
             defaultValue: 'never',
             options: [
-@foreach(array_keys(\App\Models\SupplierCategory::getIntervals()) as $objkey)
-               { Value: '{{ $objkey }}', DisplayText: '{{ \App\Models\SupplierCategory::getIntervals()[$objkey]["text"] }}' },
+@foreach(array_keys(\Ledningssystemet\Ledningssystemet\Models\SupplierCategory::getIntervals()) as $objkey)
+               { Value: '{{ $objkey }}', DisplayText: '{{ \Ledningssystemet\Ledningssystemet\Models\SupplierCategory::getIntervals()[$objkey]["text"] }}' },
 @endforeach
             ]
          },

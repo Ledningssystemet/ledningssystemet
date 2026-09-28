@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace Ledningssystemet\Ledningssystemet\Http\Controllers;
 
 use DOMDocument;
 use XSLTProcessor;
@@ -149,10 +149,15 @@ class DocumentController extends Controller
    {
       // Generate a list of all models and their corresponding database table by traversing all model files and then call getTable() on each model
       $models = [];
-      foreach(glob(app_path('Models').'/*.php') as $filename) {
+      foreach(glob(__DIR__.'/../Models/*.php') ?: [] as $filename) {
          // Get only the class name from the file path and remove the .php extension
          $fileinfo = pathinfo($filename);
-         $classname = 'App\\Models\\'.$fileinfo['filename'];
+         $classname = is_subclass_of('Ledningssystemet\\Ledningssystemet\\Models\\'.$fileinfo['filename'], \Illuminate\Database\Eloquent\Model::class) ? 'Ledningssystemet\\Ledningssystemet\\Models\\'.$fileinfo['filename'] : null;
+
+         if (! $classname) {
+            continue;
+         }
+
          $tablename = (new $classname)->getTable();
 
          $models[$classname] = $tablename;

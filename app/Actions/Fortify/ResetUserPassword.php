@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Actions\Fortify;
+namespace Ledningssystemet\Ledningssystemet\Actions\Fortify;
 
-use App\Models\User;
+use Ledningssystemet\Ledningssystemet\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;

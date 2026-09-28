@@ -1,9 +1,9 @@
 <?php
 
-namespace App\Models;
+namespace Ledningssystemet\Ledningssystemet\Models;
 
-use App\Models\Concerns\DefersRelationAttributeSync;
-use App\Traits\HasNotifications;
+use Ledningssystemet\Ledningssystemet\Models\Concerns\DefersRelationAttributeSync;
+use Ledningssystemet\Ledningssystemet\Traits\HasNotifications;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -175,8 +175,8 @@ class ProcessActivity extends Model
                     return $query->where('process_id', '=', $this->process_id);
                 }),
             ],
-            'responsible_role_id' => 'nullable|exists:App\Models\Role,id',
-            'accountable_role_id' => 'nullable|exists:App\Models\Role,id',
+            'responsible_role_id' => 'nullable|exists:Ledningssystemet\Ledningssystemet\Models\Role,id',
+            'accountable_role_id' => 'nullable|exists:Ledningssystemet\Ledningssystemet\Models\Role,id',
         ];
     }
 

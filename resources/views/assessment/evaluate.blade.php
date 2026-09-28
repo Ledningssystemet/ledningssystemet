@@ -204,7 +204,7 @@ $(function(){
                               list: true,
                               width: '20%',
                               options: [
-@foreach(\App\Models\Department::orderBy('name')->get()->each->setAppends([]) as $obj)
+@foreach(\Ledningssystemet\Ledningssystemet\Models\Department::orderBy('name')->get()->each->setAppends([]) as $obj)
                { Value: {{ $obj->id }}, DisplayText: @php echo(json_encode($obj->name)); @endphp },
 @endforeach                                 
                               ]

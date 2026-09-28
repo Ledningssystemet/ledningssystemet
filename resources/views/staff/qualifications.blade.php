@@ -1,4 +1,4 @@
-@php if(Auth::user()->cannot('index', \App\Models\Qualification::class)) abort(403); @endphp
+@php if(Auth::user()->cannot('index', \Ledningssystemet\Ledningssystemet\Models\Qualification::class)) abort(403); @endphp
 @extends('layouts.master')
 
 @section('container')
@@ -16,16 +16,16 @@ $(function(){
          addNewRecord: '{{ __('Add new qualification') }}',
       },
       actions: {
-@if(Auth::user()->can('index', \App\Models\Qualification::class))         
+@if(Auth::user()->can('index', \Ledningssystemet\Ledningssystemet\Models\Qualification::class))
          listAction: '/api/v1/items/Qualification',
 @endif      
-@if(Auth::user()->can('create', \App\Models\Qualification::class))         
+@if(Auth::user()->can('create', \Ledningssystemet\Ledningssystemet\Models\Qualification::class))
          createAction: '/api/v1/items/Qualification',
 @endif      
-@if(Auth::user()->can('update', \App\Models\Qualification::class))         
+@if(Auth::user()->can('update', \Ledningssystemet\Ledningssystemet\Models\Qualification::class))
          updateAction: '/api/v1/items/Qualification',
 @endif      
-@if(Auth::user()->can('delete', \App\Models\Qualification::class))         
+@if(Auth::user()->can('delete', \Ledningssystemet\Ledningssystemet\Models\Qualification::class))
          deleteAction: '/api/v1/items/Qualification',
 @endif      
       },

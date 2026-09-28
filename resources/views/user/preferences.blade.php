@@ -75,7 +75,7 @@ if (Request::isMethod('post'))
                list: true,
                multiple: true,
                options: [
-@foreach(\App\Models\UserNotificationChannel::availableScopes() as $obj)
+@foreach(\Ledningssystemet\Ledningssystemet\Models\UserNotificationChannel::availableScopes() as $obj)
                      { Value:  @php echo(json_encode($obj['key'])); @endphp, DisplayText: @php echo(json_encode($obj['text'])); @endphp },
 @endforeach
                ]
@@ -87,7 +87,7 @@ if (Request::isMethod('post'))
                list: true,
                multiple: true,
                options: [
-@foreach(\App\Models\UserNotificationChannel::availableEvents() as $obj)
+@foreach(\Ledningssystemet\Ledningssystemet\Models\UserNotificationChannel::availableEvents() as $obj)
                      { Value:  @php echo(json_encode($obj['key'])); @endphp, DisplayText: @php echo(json_encode($obj['text'])); @endphp },
 @endforeach
                ]

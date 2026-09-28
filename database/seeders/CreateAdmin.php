@@ -2,8 +2,8 @@
 
 namespace Database\Seeders;
 
-use App\Models\AccessGroup;
-use App\Models\User;
+use Ledningssystemet\Ledningssystemet\Models\AccessGroup;
+use Ledningssystemet\Ledningssystemet\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;

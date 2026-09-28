@@ -1,4 +1,4 @@
-@php if(Auth::user()->cannot('index', \App\Models\EmployeeRole::class)) abort(403); @endphp
+@php if(Auth::user()->cannot('index', \Ledningssystemet\Ledningssystemet\Models\EmployeeRole::class)) abort(403); @endphp
 @extends('layouts.master')
 
 @section('container')
@@ -16,10 +16,10 @@ $(function(){
          addNewRecord: '{{ __('Create role') }}',
       },
       actions: {
-@if(Auth::user()->can('index', \App\Models\EmployeeRole::class))         
+@if(Auth::user()->can('index', \Ledningssystemet\Ledningssystemet\Models\EmployeeRole::class))
          listAction: '/api/v1/items/EmployeeRole',
 @endif
-@if(Auth::user()->can('update', \App\Models\EmployeeRole::class))         
+@if(Auth::user()->can('update', \Ledningssystemet\Ledningssystemet\Models\EmployeeRole::class))
          updateAction: '/api/v1/items/EmployeeRole',
 @endif
       },
@@ -63,7 +63,7 @@ $(function(){
          description: {
             title: '{{ __('Description') }}',
             type: 'textarea',
-            create: false,
+            create: true,
             edit: true,
             list: true,
          },
@@ -78,7 +78,7 @@ $(function(){
          authorities: {
             title: '{{ __('Authorities') }}',
             type: 'textarea',
-            create: false,
+            create: true,
             edit: true,
             list: true,
          },
@@ -118,16 +118,16 @@ $(function(){
                         title: '{{__("Qualifications") }}',
                         tableId: 'qualificationstable',
                         actions: {
-@if(Auth::user()->can('index', \App\Models\Qualification::class))         
+@if(Auth::user()->can('index', \Ledningssystemet\Ledningssystemet\Models\Qualification::class))
                            listAction: '/api/v1/items/QualificationRole?role_id='+sourcedata.record.id,
 @endif         
-@if(Auth::user()->can('create', \App\Models\Qualification::class))         
+@if(Auth::user()->can('create', \Ledningssystemet\Ledningssystemet\Models\Qualification::class))
                            createAction:  '/api/v1/items/QualificationRole',
 @endif         
-@if(Auth::user()->can('update', \App\Models\Qualification::class))         
+@if(Auth::user()->can('update', \Ledningssystemet\Ledningssystemet\Models\Qualification::class))
                            updateAction:  '/api/v1/items/QualificationRole',
 @endif         
-@if(Auth::user()->can('delete', \App\Models\Qualification::class))         
+@if(Auth::user()->can('delete', \Ledningssystemet\Ledningssystemet\Models\Qualification::class))
                            deleteAction:  '/api/v1/items/QualificationRole',
 @endif         
                         },
@@ -154,7 +154,7 @@ $(function(){
                               list: true,
                               required: true,
                               options: [
-@foreach(\App\Models\Qualification::orderBy('name')->get()->each->setAppends([]) as $obj)
+@foreach(\Ledningssystemet\Ledningssystemet\Models\Qualification::orderBy('name')->get()->each->setAppends([]) as $obj)
                                  { Value: {{ $obj->id }}, DisplayText: @php echo(json_encode($obj->name)); @endphp },
 @endforeach                              
                               ]
@@ -210,16 +210,16 @@ $(function(){
                         title: '{{__("Competences") }}',
                         tableId: 'competencesstable',
                         actions: {
-@if(Auth::user()->can('index', \App\Models\RoleCompetence::class))         
+@if(Auth::user()->can('index', \Ledningssystemet\Ledningssystemet\Models\RoleCompetence::class))
                            listAction: '/api/v1/items/RoleCompetence?role_id='+sourcedata.record.id,
 @endif         
-@if(Auth::user()->can('create', \App\Models\RoleCompetence::class))         
+@if(Auth::user()->can('create', \Ledningssystemet\Ledningssystemet\Models\RoleCompetence::class))
                            createAction:  '/api/v1/items/RoleCompetence',
 @endif         
-@if(Auth::user()->can('update', \App\Models\RoleCompetence::class))         
+@if(Auth::user()->can('update', \Ledningssystemet\Ledningssystemet\Models\RoleCompetence::class))
                            updateAction:  '/api/v1/items/RoleCompetence',
 @endif         
-@if(Auth::user()->can('delete', \App\Models\RoleCompetence::class))         
+@if(Auth::user()->can('delete', \Ledningssystemet\Ledningssystemet\Models\RoleCompetence::class))
                            deleteAction:  '/api/v1/items/RoleCompetence',
 @endif         
                         },
@@ -246,7 +246,7 @@ $(function(){
                               list: true,
                               required: true,
                               options: [
-@foreach(\App\Models\Competence::orderBy('name')->get()->each->setAppends([]) as $obj)
+@foreach(\Ledningssystemet\Ledningssystemet\Models\Competence::orderBy('name')->get()->each->setAppends([]) as $obj)
                                  { Value: {{ $obj->id }}, DisplayText: @php echo(json_encode($obj->name)); @endphp },
 @endforeach                              
                               ]

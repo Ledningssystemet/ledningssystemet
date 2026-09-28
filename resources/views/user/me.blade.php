@@ -7,7 +7,7 @@
       if(!array_key_exists(request()->input('user_id'), $mysubordinates))
          abort(403);
       
-      $user = \App\Models\User::where('id', request()->input('user_id'))->first();
+      $user = \Ledningssystemet\Ledningssystemet\Models\User::where('id', request()->input('user_id'))->first();
       $usersubordinates = $user->int_reporting_users();
    }
    else
@@ -20,7 +20,7 @@
    $qualificationTabClass = '';
    $competenceTabClass = '';
    
-   foreach(\App\Models\Me::getItemsStatus(null, $user) as $obj)
+   foreach(\Ledningssystemet\Ledningssystemet\Models\Me::getItemsStatus(null, $user) as $obj)
    {
       switch($obj['area'])
       {
@@ -98,7 +98,7 @@ $(function(){
 @if(count($usersubordinates))     
          <div class="col col-12 col-md-6 infocontainer">
             <div class="info-header">{{ __("Direct reports") }}</div>
-@foreach(\App\Models\User::where('manager_user_id', $user->id)->where('enabled', true)->get()->each->setAppends([]) as $obj)
+@foreach(\Ledningssystemet\Ledningssystemet\Models\User::where('manager_user_id', $user->id)->where('enabled', true)->get()->each->setAppends([]) as $obj)
 @if(array_key_exists($obj->id, $mysubordinates))
             <a class="directreport" href="/user/me?user_id={{ $obj->id }}">{{ $obj->name }}</a>
 @else
@@ -139,7 +139,7 @@ foreach($role->int_process_activities_responsible()->leftJoin('processes', 'proc
          <div class="col col-12 infocontainer">
             <div class="info-header">{{ __("Accountable for") }}</div>
             <div class="info-value processactivitycontainer accordion">
-@foreach(\App\Models\Process::orderBy('name')->get()->each->setAppends([]) as $process)
+@foreach(\Ledningssystemet\Ledningssystemet\Models\Process::orderBy('name')->get()->each->setAppends([]) as $process)
 @if(array_key_exists($process->id, $processaccountability))
                <div class="accordion-item">
                   <h2 class="accordion-header">
@@ -161,7 +161,7 @@ foreach($role->int_process_activities_responsible()->leftJoin('processes', 'proc
          <div class="col col-12 infocontainer">
             <div class="info-header">{{ __("Responsible for") }}</div>
             <div class="info-value processactivitycontainer accordion">
-@foreach(\App\Models\Process::orderBy('name')->get()->each->setAppends([]) as $process)
+@foreach(\Ledningssystemet\Ledningssystemet\Models\Process::orderBy('name')->get()->each->setAppends([]) as $process)
 @if(array_key_exists($process->id, $processresponsibility))
                <div class="accordion-item">
                   <h2 class="accordion-header">
@@ -228,12 +228,12 @@ $missingQualifications = $user->int_mandatory_qualifications()->whereNull('finis
      </div>   
      <div class="tab-pane fade container row" id="responsibilitiestabcontent" role="tabpanel" aria-labelledby="responsibilitiestab">
 <?php
-   $processes = \App\Models\Process::where('responsible_user_id', $user->id)->orderBy('name')->get()->each->setAppends([]);
-   $informationtype = \App\Models\InformationType::where('responsible_user_id', $user->id)->orderBy('name')->get()->each->setAppends([]);
-   $assets = \App\Models\Asset::where('responsible_user_id', $user->id)->orderBy('name')->get()->each->setAppends([]);
-   $customer = \App\Models\Customer::where('responsible_user_id', $user->id)->orderBy('name')->get()->each->setAppends([]);
-   $supplier = \App\Models\Supplier::where('responsible_user_id', $user->id)->orderBy('name')->get()->each->setAppends([]);
-   $controls = \App\Models\Control::whereNull('not_applicable_at')->where('responsible_user_id', $user->id)->orderBy('name')->get()->each->setAppends([]);
+   $processes = \Ledningssystemet\Ledningssystemet\Models\Process::where('responsible_user_id', $user->id)->orderBy('name')->get()->each->setAppends([]);
+   $informationtype = \Ledningssystemet\Ledningssystemet\Models\InformationType::where('responsible_user_id', $user->id)->orderBy('name')->get()->each->setAppends([]);
+   $assets = \Ledningssystemet\Ledningssystemet\Models\Asset::where('responsible_user_id', $user->id)->orderBy('name')->get()->each->setAppends([]);
+   $customer = \Ledningssystemet\Ledningssystemet\Models\Customer::where('responsible_user_id', $user->id)->orderBy('name')->get()->each->setAppends([]);
+   $supplier = \Ledningssystemet\Ledningssystemet\Models\Supplier::where('responsible_user_id', $user->id)->orderBy('name')->get()->each->setAppends([]);
+   $controls = \Ledningssystemet\Ledningssystemet\Models\Control::whereNull('not_applicable_at')->where('responsible_user_id', $user->id)->orderBy('name')->get()->each->setAppends([]);
 ?>
 @if(0 == (count($processes)+count($informationtype)+count($assets)+count($customer)+count($supplier)+count($controls)))
    {{ __("No direct assigned responsibilities for processes, information types, assets, customers, supppliers or controls") }}
@@ -329,7 +329,7 @@ $(function(){
       paging: true,
       bootstrap: true,
       actions: {
-@if(Auth::user()->can('index', \App\Models\Competence::class))         
+@if(Auth::user()->can('index', \Ledningssystemet\Ledningssystemet\Models\Competence::class))
          listAction: '/api/v1/items/Competence?user_id={{ $user->id }}',
 @endif         
 

@@ -1,12 +1,12 @@
 <?php
 
-namespace App\Models;
+namespace Ledningssystemet\Ledningssystemet\Models;
 
-use App\Models\Concerns\DefersRelationAttributeSync;
-use App\Traits\HasCustomProperties;
-use App\Traits\HasMessages;
-use App\Traits\HasNotifications;
-use App\Traits\HasTags;
+use Ledningssystemet\Ledningssystemet\Models\Concerns\DefersRelationAttributeSync;
+use Ledningssystemet\Ledningssystemet\Traits\HasCustomProperties;
+use Ledningssystemet\Ledningssystemet\Traits\HasMessages;
+use Ledningssystemet\Ledningssystemet\Traits\HasNotifications;
+use Ledningssystemet\Ledningssystemet\Traits\HasTags;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -507,9 +507,9 @@ class InformationType extends Model
                 'max:255',
                 Rule::unique('information_types')->ignore($this->id),
             ],
-            'responsible_user_id' => 'nullable|exists:App\Models\User,id',
-            'confidentiality_ground_id' => 'nullable|exists:App\Models\ConfidentialityGround,id',
-            'diary_id' => 'nullable|exists:App\Models\Diary,id',
+            'responsible_user_id' => 'nullable|exists:Ledningssystemet\Ledningssystemet\Models\User,id',
+            'confidentiality_ground_id' => 'nullable|exists:Ledningssystemet\Ledningssystemet\Models\ConfidentialityGround,id',
+            'diary_id' => 'nullable|exists:Ledningssystemet\Ledningssystemet\Models\Diary,id',
         ];
     }
 

@@ -1,4 +1,4 @@
-@php if(Auth::user()->cannot('index', \App\Models\Process::class)) abort(403); @endphp
+@php if(Auth::user()->cannot('index', \Ledningssystemet\Ledningssystemet\Models\Process::class)) abort(403); @endphp
 @extends('layouts.master')
 
 @section('container')
@@ -43,7 +43,7 @@
                addNewRecord: '{{ __('Add process') }}',
             },
             filter: {
-               @php $tags = \App\Models\Process::allUsedTags(); @endphp
+               @php $tags = \Ledningssystemet\Ledningssystemet\Models\Process::allUsedTags(); @endphp
                   @if(0 < count($tags))
                tag_id: {
                   type: 'select',
@@ -65,7 +65,7 @@
                   options: [
                      {value: 0, text: '{{ __('Show mine') }}'},
                      {value: -1, text: '{{ __('Show all') }}'},
-                        @foreach(\App\Models\Department::orderBy('name')->get()->each->setAppends([]) as $obj)
+                        @foreach(\Ledningssystemet\Ledningssystemet\Models\Department::orderBy('name')->get()->each->setAppends([]) as $obj)
                      {
                         value: {{ $obj->id }}, text: <?php echo(json_encode($obj->name)); ?> },
                      @endforeach
@@ -77,7 +77,7 @@
                   default: 0,
                   options: [
                      {value: 0, text: '{{ __('Show all') }}'},
-                        @foreach(\App\Models\User::leftJoin('processes', 'processes.responsible_user_id', '=', 'users.id')->whereNotNull('processes.id')->select('users.*')->distinct()->orderBy('users.name')->get()->each->setAppends([]) as $obj)
+                        @foreach(\Ledningssystemet\Ledningssystemet\Models\User::leftJoin('processes', 'processes.responsible_user_id', '=', 'users.id')->whereNotNull('processes.id')->select('users.*')->distinct()->orderBy('users.name')->get()->each->setAppends([]) as $obj)
                      {
                         value: {{ $obj->id }}, text: <?php echo(json_encode($obj->name)); ?> },
                      @endforeach
@@ -95,19 +95,19 @@
                   checked: false,
                   text: '{{ __('Hide items without issues') }}',
                },
-               @include('components.customproperty', ['classname' => 'App\Models\Process', 'showFilter' => true])
+               @include('components.customproperty', ['classname' => 'Ledningssystemet\Ledningssystemet\Models\Process', 'showFilter' => true])
             },
             actions: {
-               @if(Auth::user()->can('index', 'App\\Models\\Process'))
+               @if(Auth::user()->can('index', 'Ledningssystemet\Ledningssystemet\\Models\\Process'))
                listAction: '/api/v1/items/Process',
                @endif
-                  @if(Auth::user()->can('create', 'App\\Models\\Process'))
+                  @if(Auth::user()->can('create', 'Ledningssystemet\Ledningssystemet\\Models\\Process'))
                createAction: '/api/v1/items/Process',
                @endif
-                  @if(Auth::user()->can('update', 'App\\Models\\Process'))
+                  @if(Auth::user()->can('update', 'Ledningssystemet\Ledningssystemet\\Models\\Process'))
                updateAction: '/api/v1/items/Process',
                @endif
-                  @if(Auth::user()->can('delete', 'App\\Models\\Process'))
+                  @if(Auth::user()->can('delete', 'Ledningssystemet\Ledningssystemet\\Models\\Process'))
                deleteAction: '/api/v1/items/Process',
                @endif
             },
@@ -137,7 +137,7 @@
                   defaultValue: {{ auth()->user()->id }},
                   options: [
                      {Value: null, DisplayText: '{{ __("None assigned") }}'},
-                        @foreach(App\Models\User::orderBy('name')->get()->each->setAppends([]) as $obj)
+                        @foreach(Ledningssystemet\Ledningssystemet\Models\User::orderBy('name')->get()->each->setAppends([]) as $obj)
                      {
                         Value: {{$obj ->id}}, DisplayText: @php echo(json_encode($obj->name)); @endphp  },
                      @endforeach
@@ -148,11 +148,11 @@
                   create: true,
                   edit: true,
                   list: true,
-
+                  required: true ,
                   defaultValue: <?php $userdeps = auth()->user()->int_departments; echo((0 == count($userdeps)) ? '-1' : $userdeps[0]->id); ?>,
                   listClass: 'd-inline-block col-6 col-md-4',
                   options: [
-                        @foreach(App\Models\Department::orderBy('name')->get()->each->setAppends([]) as $department)
+                        @foreach(Ledningssystemet\Ledningssystemet\Models\Department::orderBy('name')->get()->each->setAppends([]) as $department)
                      {
                         Value: {{$department->id}}, DisplayText: '{{ $department->name }}'
                      },
@@ -203,7 +203,7 @@
                   edit: true,
                   multiple: true,
                   options: [
-                        @foreach(App\Models\LegalBasis::orderBy('name')->get()->each->setAppends([]) as $legalBasis)
+                        @foreach(Ledningssystemet\Ledningssystemet\Models\LegalBasis::orderBy('name')->get()->each->setAppends([]) as $legalBasis)
                      {
                         Value: {{ $legalBasis->id }}, DisplayText: @php echo(json_encode($legalBasis->name)); @endphp },
                      @endforeach
@@ -227,7 +227,7 @@
                   title: '{{ __('Protection of third country transfers') }}',
                   type: 'textarea',
                   list: false,
-                  create: false,
+                  create: true,
                   edit: true,
                },
                securitymeasuredescription: {
@@ -321,7 +321,7 @@
                      return retobj;
                   }
                },
-               @include('components.customproperty', ['classname' => 'App\Models\Process'])
+               @include('components.customproperty', ['classname' => 'Ledningssystemet\Ledningssystemet\Models\Process'])
                hr3: {
                   list: true,
                   edit: false,
@@ -359,7 +359,7 @@
                               paging: false,
                               actions: {
                                  listAction: '/api/v1/items/ProcessActivity?process_id=' + sourcedata.record.id,
-                                 @if(Gate::allows('update', 'App\\Models\\ProcessActivity'))
+                                 @if(Gate::allows('update', 'Ledningssystemet\Ledningssystemet\\Models\\ProcessActivity'))
                                  updateAction: '/api/v1/items/ProcessActivity',
                                  @endif
                               },
@@ -392,7 +392,7 @@
                                     edit: true,
                                     options: [
                                        {Value: null, DisplayText: '{{ __("None") }}'},
-                                          @foreach(\App\Models\Role::orderBy('name')->get()->each->setAppends([]) as $role)
+                                          @foreach(\Ledningssystemet\Ledningssystemet\Models\Role::orderBy('name')->get()->each->setAppends([]) as $role)
                                        {
                                           Value: {{ $role->id }},
                                           DisplayText: @php echo(json_encode($role->name)); @endphp },
@@ -415,7 +415,7 @@
                                     edit: true,
                                     options: [
                                        {Value: null, DisplayText: '{{ __("None") }}'},
-                                          @foreach(\App\Models\Role::orderBy('name')->get()->each->setAppends([]) as $role)
+                                          @foreach(\Ledningssystemet\Ledningssystemet\Models\Role::orderBy('name')->get()->each->setAppends([]) as $role)
                                        {
                                           Value: {{ $role->id }},
                                           DisplayText: @php echo(json_encode($role->name)); @endphp },
@@ -437,11 +437,11 @@
                                     title: '{{ __('Outsourcing supplier(s)') }}',
                                     width: '20%',
                                     list: true,
+                                    create: true,
                                     edit: true,
-                                    create: false,
                                     multiple: true,
                                     options: [
-                                          @foreach(\App\Models\Supplier::orderBy('name')->get()->each->setAppends([]) as $supplier)
+                                          @foreach(\Ledningssystemet\Ledningssystemet\Models\Supplier::orderBy('name')->get()->each->setAppends([]) as $supplier)
                                        {
                                           Value: {{ $supplier->id }},
                                           DisplayText: @php echo(json_encode($supplier->name)); @endphp },
@@ -464,7 +464,7 @@
                                     }
                                  },
                                  @endif
-                                 @include('components.customproperty', ['classname' => 'App\Models\ProcessActivity'])
+                                 @include('components.customproperty', ['classname' => 'Ledningssystemet\Ledningssystemet\Models\ProcessActivity'])
                               },
                               recordUpdated: function (event, data) {
                                  $(event.target).jtable('reload');
@@ -481,7 +481,7 @@
                      return retobj;
                   }
                },
-               @if(Gate::allows('update', 'App\\Models\\Process'))
+               @if(Gate::allows('update', 'Ledningssystemet\Ledningssystemet\\Models\\Process'))
                editprocess: {
                   sorting: false,
                   edit: false,
@@ -495,10 +495,10 @@
                @endif
                showHistory: showHistoryField('Process', $('#tableContainer')),
                showMessages: showMessagesField('Process', $('#tableContainer')),
-               @if(Gate::allows('index', 'App\\Models\\Risk'))
+               @if(Gate::allows('index', 'Ledningssystemet\Ledningssystemet\\Models\\Risk'))
                showRisks: showRisks('Process', $('#tableContainer')),
                @endif
-                  @if(Gate::allows('index', 'App\\Models\\Finding'))
+                  @if(Gate::allows('index', 'Ledningssystemet\Ledningssystemet\\Models\\Finding'))
                showFindings: showFindings('Process', $('#tableContainer')),
                @endif
                processhrefs: {
@@ -529,16 +529,16 @@
                               tableId: 'links-table',
                               paging: false,
                               actions: {
-                                 @if(Auth::user()->can('index', 'App\\Models\\ProcessHref'))
+                                 @if(Auth::user()->can('index', 'Ledningssystemet\Ledningssystemet\\Models\\ProcessHref'))
                                  listAction: '/api/v1/items/ProcessHref?process_id=' + sourcedata.record.id,
                                  @endif
-                                    @if(Auth::user()->can('create', 'App\\Models\\ProcessHref'))
+                                    @if(Auth::user()->can('create', 'Ledningssystemet\Ledningssystemet\\Models\\ProcessHref'))
                                  createAction: '/api/v1/items/ProcessHref',
                                  @endif
-                                    @if(Auth::user()->can('update', 'App\\Models\\ProcessHref'))
+                                    @if(Auth::user()->can('update', 'Ledningssystemet\Ledningssystemet\\Models\\ProcessHref'))
                                  updateAction: '/api/v1/items/ProcessHref',
                                  @endif
-                                    @if(Auth::user()->can('delete', 'App\\Models\\ProcessHref'))
+                                    @if(Auth::user()->can('delete', 'Ledningssystemet\Ledningssystemet\\Models\\ProcessHref'))
                                  deleteAction: '/api/v1/items/ProcessHref',
                                  @endif
                               },

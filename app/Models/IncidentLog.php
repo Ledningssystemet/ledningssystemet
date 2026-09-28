@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Models;
+namespace Ledningssystemet\Ledningssystemet\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
@@ -110,7 +110,7 @@ class IncidentLog extends Model
    {
       return [
          'description' => ['required'],
-         'incident_id' => 'required|exists:App\Models\Incident,id',
+         'incident_id' => 'required|exists:Ledningssystemet\Ledningssystemet\Models\Incident,id',
       ];
    }
    

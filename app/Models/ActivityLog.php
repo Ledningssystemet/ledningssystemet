@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Models;
+namespace Ledningssystemet\Ledningssystemet\Models;
 
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
@@ -152,8 +152,12 @@ class ActivityLog extends Activity
 
    public static function index(User $user)
    {
-      $classname = '\\App\\Models\\'.request()->input('object_type', '');
-      if(!class_exists($classname))
+      $objectType = request()->input('object_type', '');
+      $classname = is_string($objectType) ? (str_contains($objectType, '\\') ? $objectType : __NAMESPACE__.'\\'.$objectType) : null;
+      if (!is_string($classname) || !str_starts_with($classname, __NAMESPACE__.'\\') || !is_subclass_of($classname, \Illuminate\Database\Eloquent\Model::class)) {
+         $classname = null;
+      }
+      if(! $classname)
          abort(404);
 
       $obj = $classname::findOrFail(request()->input('object_id', 0));
@@ -202,4 +206,3 @@ class ActivityLog extends Activity
       $builder->log('message');
    }
 }
-

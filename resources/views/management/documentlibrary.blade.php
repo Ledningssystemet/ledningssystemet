@@ -1,4 +1,4 @@
-@php if(Auth::user()->cannot('create', \App\Models\LibraryDocument::class)) abort(403); @endphp
+@php if(Auth::user()->cannot('create', \Ledningssystemet\Ledningssystemet\Models\LibraryDocument::class)) abort(403); @endphp
 @extends('layouts.master')
 @section('container')
 
@@ -17,13 +17,13 @@ $(function(){
       filter: {},
       actions: {
          listAction: '/api/v1/items/LibraryDocument',
-@if(Auth::user()->can('create', \App\Models\LibraryDocument::class))
+@if(Auth::user()->can('create', \Ledningssystemet\Ledningssystemet\Models\LibraryDocument::class))
          createAction: '/api/v1/items/LibraryDocument',
 @endif
-@if(Auth::user()->can('update', \App\Models\LibraryDocument::class))
+@if(Auth::user()->can('update', \Ledningssystemet\Ledningssystemet\Models\LibraryDocument::class))
          updateAction: '/api/v1/items/LibraryDocument',
 @endif
-@if(Auth::user()->can('delete', \App\Models\LibraryDocument::class))
+@if(Auth::user()->can('delete', \Ledningssystemet\Ledningssystemet\Models\LibraryDocument::class))
          deleteAction: '/api/v1/items/LibraryDocument',
 @endif
       },
@@ -52,7 +52,7 @@ $(function(){
             defaultValue: {{ auth()->user()->id }},
             options: [
                { Value: null, DisplayText: '{{ __("None assigned") }}' },
-                  @foreach(App\Models\User::orderBy('name')->get()->each->setAppends([]) as $obj)
+                  @foreach(Ledningssystemet\Ledningssystemet\Models\User::orderBy('name')->get()->each->setAppends([]) as $obj)
                { Value: {{$obj ->id}}, DisplayText: @php echo(json_encode($obj->name)); @endphp  },
                @endforeach
             ],
@@ -104,12 +104,11 @@ $(function(){
             title: '{{ __('Processes') }}',
             type: 'select',
             list: true,
+            create: true,
             edit: true,
-            create: false,
-
             multiple: true,
             options: [
-@foreach(\App\Models\Process::orderBy('name')->get()->each->setAppends([]) as $obj)
+@foreach(\Ledningssystemet\Ledningssystemet\Models\Process::orderBy('name')->get()->each->setAppends([]) as $obj)
                { Value: {{ $obj->id }}, DisplayText: '{{ $obj->name }}' },
 @endforeach               
             ]

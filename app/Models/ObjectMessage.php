@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Models;
+namespace Ledningssystemet\Ledningssystemet\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
@@ -40,13 +40,15 @@ class ObjectMessage extends Model
 
       static::saving(function ($model) {
          // Set model connection
-         $classname = '\\App\\Models\\'.$model->object_type;
-         if(!class_exists($classname))
+         $objectType = $model->object_type;
+         $classname = is_string($objectType) ? (str_contains($objectType, '\\') ? $objectType : __NAMESPACE__.'\\'.$objectType) : null;
+         if (!is_string($classname) || !str_starts_with($classname, __NAMESPACE__.'\\') || !is_subclass_of($classname, \Illuminate\Database\Eloquent\Model::class)) {
             abort(404);
+         }
          
          $obj = $classname::findOrFail(request()->input('object_id', 0));
 
-         $model->object_type = $obj::class;
+         $model->object_type = $obj->getMorphClass();
          $model->object_id = $obj->id;
          $model->created_by = request()->user()->name;
          
@@ -123,9 +125,11 @@ class ObjectMessage extends Model
     */
    public static function index(User $user)
    {
-      $classname = '\\App\\Models\\'.request()->input('object_type', '');
-      if(!class_exists($classname))
+      $objectType = request()->input('object_type', '');
+      $classname = is_string($objectType) ? (str_contains($objectType, '\\') ? $objectType : __NAMESPACE__.'\\'.$objectType) : null;
+      if (!is_string($classname) || !str_starts_with($classname, __NAMESPACE__.'\\') || !is_subclass_of($classname, \Illuminate\Database\Eloquent\Model::class)) {
          abort(404);
+      }
       
       $obj = $classname::findOrFail(request()->input('object_id', 0));
       

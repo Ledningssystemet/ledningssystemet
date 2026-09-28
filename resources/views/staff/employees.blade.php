@@ -1,11 +1,11 @@
-@php if(Auth::user()->cannot('index', \App\Models\Employee::class)) abort(403); @endphp
+@php if(Auth::user()->cannot('index', \Ledningssystemet\Ledningssystemet\Models\Employee::class)) abort(403); @endphp
 @extends('layouts.master')
 
 @section('container')
 
 <script>
 
-const expiringQualifications = @php echo(\App\Models\Qualification::where('expires', true)->pluck('id')); @endphp;
+const expiringQualifications = @php echo(\Ledningssystemet\Ledningssystemet\Models\Qualification::where('expires', true)->pluck('id')); @endphp;
 
 $(function(){
    $('#tableContainer').jtable({
@@ -360,7 +360,7 @@ $(function(){
                return $('<hr />'); 
             }
          },
-@if(auth()->user()->can('index', \App\Models\QualificationUser::class))         
+@if(auth()->user()->can('index', \Ledningssystemet\Ledningssystemet\Models\QualificationUser::class))
          qualificationslist: {
             title: '',
             type: 'command',
@@ -414,7 +414,7 @@ $(function(){
                               list: true,
                               width: '55%',
                               options: [
-@foreach(\App\Models\Qualification::orderBy('name')->get()->each->setAppends([]) as $obj)
+@foreach(\Ledningssystemet\Ledningssystemet\Models\Qualification::orderBy('name')->get()->each->setAppends([]) as $obj)
                                  { Value: {{ $obj->id }}, DisplayText: @php echo(json_encode($obj->name)); @endphp },
 @endforeach                              
                               ]
@@ -546,10 +546,10 @@ $(function(){
                            editRecord: '{{ __('Re-assess competence') }}',
                         },
                         actions: {
-@if(Auth::user()->can('index', \App\Models\CompetenceLevel::class))
+@if(Auth::user()->can('index', \Ledningssystemet\Ledningssystemet\Models\CompetenceLevel::class))
                            listAction: '/api/v1/items/Competence?user_id='+sourcedata.record.id,
 @endif         
-@if(Auth::user()->can('update', \App\Models\CompetenceLevel::class))
+@if(Auth::user()->can('update', \Ledningssystemet\Ledningssystemet\Models\CompetenceLevel::class))
                            updateAction:  '/api/v1/items/Competence',
 @endif         
                         },
@@ -628,7 +628,7 @@ $(function(){
                                  return '<hr />';
                               }
                            },
-@if(Auth::user()->can('update', \App\Models\Competence::class))         
+@if(Auth::user()->can('update', \Ledningssystemet\Ledningssystemet\Models\Competence::class))
                            clearassessment: {
                               sorting: false,
                               edit: false,

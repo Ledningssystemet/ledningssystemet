@@ -5,7 +5,7 @@ if(request()->has('action'))
    if(('getProcessData' == request()->input('action')))
    {
       try{
-          $process = \App\Models\Process::find(request()->input('id'))->setAppends([]);
+          $process = \Ledningssystemet\Ledningssystemet\Models\Process::find(request()->input('id'))->setAppends([]);
           if(null == $process)
              abort(404);
 
@@ -104,7 +104,7 @@ if(request()->has('action'))
       if(!auth()->user()->can('showobjectivestatus.read'))
          return abort(403);
 
-      die(json_encode(\App\Models\Objective::whereNull('department_id')->orderBy('name')->get()));
+      die(json_encode(\Ledningssystemet\Ledningssystemet\Models\Objective::whereNull('department_id')->orderBy('name')->get()));
    }
    else
       abort(404);
@@ -116,11 +116,11 @@ if(request()->has('action'))
 
 <?php
 // Calculate process to display
-$process = (request()->has('process')) ? \App\Models\Process::find(request()->input('process')) : \App\Models\Process::where('isstartprocess',1)->orderBy('updated_at', 'desc')->first();
+$process = (request()->has('process')) ? \Ledningssystemet\Ledningssystemet\Models\Process::find(request()->input('process')) : \Ledningssystemet\Ledningssystemet\Models\Process::where('isstartprocess',1)->orderBy('updated_at', 'desc')->first();
 ?>
 <script>
       var processes = [
-   @foreach(\App\Models\Process::orderBy('name')->get()->each->setAppends([]) as $obj)
+   @foreach(\Ledningssystemet\Ledningssystemet\Models\Process::orderBy('name')->get()->each->setAppends([]) as $obj)
       { id: {{ $obj->id }}, name: '{{ $obj->name }}', text: '{{ $obj->name }}', selected: {{ ((null != $process) && ($process->id == $obj->id)) ? "true" : "false" }} },
    @endforeach
       ];
@@ -369,7 +369,7 @@ $process = (request()->has('process')) ? \App\Models\Process::find(request()->in
                   .addClass('description')
                   .text(objective.description));
                   
-@if(auth()->user()->can('index', \App\Models\Objective::class))
+@if(auth()->user()->can('index', \Ledningssystemet\Ledningssystemet\Models\Objective::class))
                infocontainer.append($('<a />')
                   .addClass('link')
                   .prop('href', '/measure/objectives?jtId[objectiveslist]='+objective.id)
@@ -408,7 +408,7 @@ $process = (request()->has('process')) ? \App\Models\Process::find(request()->in
             <div class="d-block">
                <div class="container-header"><span class="material-symbols-rounded">pending_actions</span>{{ __("Activities") }}</div>
                <div class="status-container">
-@foreach(\App\Models\Activity::where('responsible_user_id', auth()->user()->id)->whereNull('completed_at')->where('due','<',date("Y-m-d", strtotime('+1 MONTHS')))->orderBy('due')->get()->each->setAppends([]) as $issue)
+@foreach(\Ledningssystemet\Ledningssystemet\Models\Activity::where('responsible_user_id', auth()->user()->id)->whereNull('completed_at')->where('due','<',date("Y-m-d", strtotime('+1 MONTHS')))->orderBy('due')->get()->each->setAppends([]) as $issue)
 @php
 $statuslevel = 'warning';
 if($issue->due < date("Y-m-d"))
@@ -424,7 +424,7 @@ if($issue->due < date("Y-m-d"))
             <div class="d-block">
                <div class="container-header"><span class="material-symbols-rounded">event_list</span>{{ __("Control actions") }}</div>
                <div class="status-container">
-@foreach(\App\Models\ControlAction::where('responsible_id', auth()->user()->id)->whereNull('finished_at')->where('due','<',date("Y-m-d", strtotime('+1 MONTHS')))->orderBy('due')->get()->each->setAppends([]) as $issue)
+@foreach(\Ledningssystemet\Ledningssystemet\Models\ControlAction::where('responsible_id', auth()->user()->id)->whereNull('finished_at')->where('due','<',date("Y-m-d", strtotime('+1 MONTHS')))->orderBy('due')->get()->each->setAppends([]) as $issue)
 @php
 $statuslevel = 'warning';
 if($issue->due < date("Y-m-d"))
@@ -440,7 +440,7 @@ if($issue->due < date("Y-m-d"))
             <div class="d-block">
                <div class="container-header"><span class="material-symbols-rounded">trending_up</span>{{ __("My contributions") }}</div>
                <div class="status-container">
-                  @foreach(array_merge(\App\Models\LibraryDocument::getItemsStatus(null, auth()->user(), true)) as $issue)
+                  @foreach(array_merge(\Ledningssystemet\Ledningssystemet\Models\LibraryDocument::getItemsStatus(null, auth()->user(), true)) as $issue)
                      <div class="status-item">
                         <span class="badge bg-{{ $issue['level'] }}"></span>
                         <span class="count">{{ $issue['count'] }}</span>
@@ -456,7 +456,7 @@ if($issue->due < date("Y-m-d"))
             <div class="d-block">
                <div class="container-header"><span class="material-symbols-rounded">checklist</span>{{ __("Inventory") }}</div>
                <div class="status-container">
-      @foreach(array_merge(\App\Models\RequirementSource::getItemsStatus(null, auth()->user(), true), \App\Models\Process::getItemsStatus(null, auth()->user(), true), \App\Models\InformationType::getItemsStatus(null, auth()->user(), true), \App\Models\Asset::getItemsStatus(null, auth()->user(), true), \App\Models\Customer::getItemsStatus(null, auth()->user(), true), \App\Models\Supplier::getItemsStatus(null, auth()->user(), true), \App\Models\Agreement::getItemsStatus(null, auth()->user(), true),\App\Models\Control::getItemsStatus(null, auth()->user(), true), \App\Models\ProcessSustainabilityAspect::getItemsStatus(null, auth()->user(), true), \App\Models\Chemical::getItemsStatus(null, auth()->user(), true)) as $issue)
+      @foreach(array_merge(\Ledningssystemet\Ledningssystemet\Models\RequirementSource::getItemsStatus(null, auth()->user(), true), \Ledningssystemet\Ledningssystemet\Models\Process::getItemsStatus(null, auth()->user(), true), \Ledningssystemet\Ledningssystemet\Models\InformationType::getItemsStatus(null, auth()->user(), true), \Ledningssystemet\Ledningssystemet\Models\Asset::getItemsStatus(null, auth()->user(), true), \Ledningssystemet\Ledningssystemet\Models\Customer::getItemsStatus(null, auth()->user(), true), \Ledningssystemet\Ledningssystemet\Models\Supplier::getItemsStatus(null, auth()->user(), true), \Ledningssystemet\Ledningssystemet\Models\Agreement::getItemsStatus(null, auth()->user(), true),\Ledningssystemet\Ledningssystemet\Models\Control::getItemsStatus(null, auth()->user(), true), \Ledningssystemet\Ledningssystemet\Models\ProcessSustainabilityAspect::getItemsStatus(null, auth()->user(), true), \Ledningssystemet\Ledningssystemet\Models\Chemical::getItemsStatus(null, auth()->user(), true)) as $issue)
                   <div class="status-item">
                      <span class="badge bg-{{ $issue['level'] }}"></span>
                      <span class="count">{{ $issue['count'] }}</span>
@@ -473,7 +473,7 @@ if($issue->due < date("Y-m-d"))
             <div class="d-block">
                <div class="container-header"><span class="material-symbols-rounded">frame_inspect</span>{{ __("Assess and mitigate") }}</div>
                <div class="status-container">
-      @foreach(array_merge(\App\Models\RiskProject::getItemsStatus(null, auth()->user(), true), \App\Models\Risk::getItemsStatus(null, auth()->user(), true), \App\Models\ComplianceEvaluation::getItemsStatus(null, auth()->user(), true), \App\Models\Finding::getItemsStatus(null, auth()->user(), true), \App\Models\Incident::getItemsStatus(null, auth()->user(), true)) as $issue)
+      @foreach(array_merge(\Ledningssystemet\Ledningssystemet\Models\RiskProject::getItemsStatus(null, auth()->user(), true), \Ledningssystemet\Ledningssystemet\Models\Risk::getItemsStatus(null, auth()->user(), true), \Ledningssystemet\Ledningssystemet\Models\ComplianceEvaluation::getItemsStatus(null, auth()->user(), true), \Ledningssystemet\Ledningssystemet\Models\Finding::getItemsStatus(null, auth()->user(), true), \Ledningssystemet\Ledningssystemet\Models\Incident::getItemsStatus(null, auth()->user(), true)) as $issue)
                   <div class="status-item">
                      <span class="badge bg-{{ $issue['level'] }}"></span>
                      <span class="count">{{ $issue['count'] }}</span>
@@ -490,7 +490,7 @@ if($issue->due < date("Y-m-d"))
             <div class="d-block">
                <div class="container-header"><span class="material-symbols-rounded">sports_score</span>{{ __("Measure and improve") }}</div>
                <div class="status-container">
-      @foreach(array_merge(\App\Models\ProcessPerformanceMetric::getItemsStatus(null, auth()->user(), true), \App\Models\Objective::getItemsStatus(null, auth()->user(), true)) as $issue)
+      @foreach(array_merge(\Ledningssystemet\Ledningssystemet\Models\ProcessPerformanceMetric::getItemsStatus(null, auth()->user(), true), \Ledningssystemet\Ledningssystemet\Models\Objective::getItemsStatus(null, auth()->user(), true)) as $issue)
                   <div class="status-item">
                      <span class="badge bg-{{ $issue['level'] }}"></span>
                      <span class="count">{{ $issue['count'] }}</span>
@@ -507,7 +507,7 @@ if($issue->due < date("Y-m-d"))
             <div class="d-block">
                <div class="container-header"><span class="material-symbols-rounded">mood</span>{{ __("Employee management") }}</div>
                <div class="status-container">
-      @foreach(array_merge(\App\Models\Employee::getItemsStatus(null, auth()->user(), true), \App\Models\EmployeeRole::getItemsStatus(null, auth()->user(), true), \App\Models\Competence::getItemsStatus(null, auth()->user(), true)) as $issue)
+      @foreach(array_merge(\Ledningssystemet\Ledningssystemet\Models\Employee::getItemsStatus(null, auth()->user(), true), \Ledningssystemet\Ledningssystemet\Models\EmployeeRole::getItemsStatus(null, auth()->user(), true), \Ledningssystemet\Ledningssystemet\Models\Competence::getItemsStatus(null, auth()->user(), true)) as $issue)
                   <div class="status-item">
                      <span class="badge bg-{{ $issue['level'] }}"></span>
                      <span class="count">{{ $issue['count'] }}</span>
@@ -524,7 +524,7 @@ if($issue->due < date("Y-m-d"))
             <div class="d-block">
                <div class="container-header"><span class="material-symbols-rounded">settings_alert</span>{{ __("System settings") }}</div>
                <div class="status-container">
-      @foreach(array_merge(\App\Models\User::getItemsStatus(null, auth()->user(), true), \App\Models\Site::getItemsStatus(null, auth()->user(), true), \App\Models\Department::getItemsStatus(null, auth()->user(), true), \App\Models\Role::getItemsStatus(null, auth()->user(), true), \App\Models\AccessGroup::getItemsStatus(null, auth()->user(), true)) as $issue)
+      @foreach(array_merge(\Ledningssystemet\Ledningssystemet\Models\User::getItemsStatus(null, auth()->user(), true), \Ledningssystemet\Ledningssystemet\Models\Site::getItemsStatus(null, auth()->user(), true), \Ledningssystemet\Ledningssystemet\Models\Department::getItemsStatus(null, auth()->user(), true), \Ledningssystemet\Ledningssystemet\Models\Role::getItemsStatus(null, auth()->user(), true), \Ledningssystemet\Ledningssystemet\Models\AccessGroup::getItemsStatus(null, auth()->user(), true)) as $issue)
                   <div class="status-item">
                      <span class="badge bg-{{ $issue['level'] }}"></span>
                      <span class="count">{{ $issue['count'] }}</span>
@@ -555,13 +555,13 @@ if($issue->due < date("Y-m-d"))
                   </div>
                </div>
                @endif
-@if(\App\Models\Risk::where('riskowner_id', auth()->user()->id)->whereNull('replacedby_id')->whereNotNull('assessed_at')->count())
+@if(\Ledningssystemet\Ledningssystemet\Models\Risk::where('riskowner_id', auth()->user()->id)->whereNull('replacedby_id')->whereNotNull('assessed_at')->count())
                <div class="col col-12 col-xl-6">
                   <div id="riskoverview" class="useborder">
                      <div id="toprisklist">
                         <h2>10 {{ __("top risks") }}</h2>
                         <div class="toprisks">
-   @foreach(\App\Models\Risk
+   @foreach(\Ledningssystemet\Ledningssystemet\Models\Risk
       ::where('riskowner_id', auth()->user()->id)
       ->leftJoin('consequence_levels', 'consequence_levels.id', '=', 'risks.consequence_id')
       ->leftJoin('probability_levels', 'probability_levels.id', '=', 'risks.probability_id')
@@ -595,7 +595,7 @@ if($issue->due < date("Y-m-d"))
                </div>
 @endif
             </div>
-         @if(\App\Models\Process::count())
+         @if(\Ledningssystemet\Ledningssystemet\Models\Process::count())
             <div class="row">
                <div class="col col-12">
                   <div id="processcontainer" class="useborder">
@@ -609,14 +609,14 @@ if($issue->due < date("Y-m-d"))
 
                            @foreach(DB::table('processes')->leftJoin('departments', 'processes.department_id', '=', 'departments.id')->orderBy('departments.name')->select(['departments.id', 'departments.name'])->distinct()->get() as $department)
                               <optgroup label="{{ $department->name }}">
-                                 @foreach(\App\Models\Process::where('department_id', $department->id)->orderBy('name')->get()->each->setAppends([]) as $obj)
+                                 @foreach(\Ledningssystemet\Ledningssystemet\Models\Process::where('department_id', $department->id)->orderBy('name')->get()->each->setAppends([]) as $obj)
                                     <option value="{{ $obj->id }}" @php if((null != $process) && ($process->id == $obj->id)) echo('selected="true"');@endphp>{{ $obj->name }}</option>
                                  @endforeach
                               </optgroup>
                            @endforeach
                         </select>
 
-                        @if(auth()->user()->can('update', App\Models\Process::class))
+                        @if(auth()->user()->can('update', Ledningssystemet\Ledningssystemet\Models\Process::class))
                            <a id="editProcessChart" onClick="id=$('#processSelector').val();if(0 < id){ document.location='/inventory/processedit/'+id; }" class="d-none mt-2 btn btn-outline-secondary btn-sm toolbar-button" title="{{ __('Edit process chart') }}"><span class="material-symbols-rounded">draw</span>{{ __("Edit process chart") }}</a>
                         @endif
                      </div>

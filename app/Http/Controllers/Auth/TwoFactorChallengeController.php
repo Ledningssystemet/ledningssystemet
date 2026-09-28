@@ -1,9 +1,9 @@
 <?php
 
-namespace App\Http\Controllers\Auth;
+namespace Ledningssystemet\Ledningssystemet\Http\Controllers\Auth;
 
-use App\Actions\Fortify\RedirectIfTwoFactorAuthenticatable;
-use App\Http\Controllers\Controller;
+use Ledningssystemet\Ledningssystemet\Actions\Fortify\RedirectIfTwoFactorAuthenticatable;
+use Ledningssystemet\Ledningssystemet\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;

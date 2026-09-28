@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Http\Controllers\Api;
+namespace Ledningssystemet\Ledningssystemet\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
+use Ledningssystemet\Ledningssystemet\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use App\Models\User;
+use Ledningssystemet\Ledningssystemet\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
@@ -15,10 +15,10 @@ class LegacyTableController extends Controller
    public function index($model)
    {
       // Derive classname
-      $classname = "App\\Models\\" . $model;
+      $classname = !str_contains($model, '\\') && is_subclass_of('Ledningssystemet\\Ledningssystemet\\Models\\'.$model, \Illuminate\Database\Eloquent\Model::class) ? 'Ledningssystemet\\Ledningssystemet\\Models\\'.$model : null;
 
       // Ensure class exist
-      if (!class_exists($classname))
+      if (! $classname)
          abort(404);
 
       // Ensure index function exist
@@ -56,10 +56,10 @@ class LegacyTableController extends Controller
    public function show($model, $id)
    {
       // Derive classname
-      $classname = "App\\Models\\" . $model;
+      $classname = !str_contains($model, '\\') && is_subclass_of('Ledningssystemet\\Ledningssystemet\\Models\\'.$model, \Illuminate\Database\Eloquent\Model::class) ? 'Ledningssystemet\\Ledningssystemet\\Models\\'.$model : null;
 
       // Ensure class exist
-      if (!class_exists($classname))
+      if (! $classname)
          abort(404);
 
       // Ensure item exists
@@ -77,10 +77,10 @@ class LegacyTableController extends Controller
    public function create($model)
    {
       // Derive classname
-      $classname = "App\\Models\\" . $model;
+      $classname = !str_contains($model, '\\') && is_subclass_of('Ledningssystemet\\Ledningssystemet\\Models\\'.$model, \Illuminate\Database\Eloquent\Model::class) ? 'Ledningssystemet\\Ledningssystemet\\Models\\'.$model : null;
 
       // Ensure class exist
-      if (!class_exists($classname))
+      if (! $classname)
          abort(404);
 
       // Ensure user have correct access
@@ -102,10 +102,10 @@ class LegacyTableController extends Controller
    public function update($model, $id)
    {
       // Derive classname
-      $classname = "App\\Models\\" . $model;
+      $classname = !str_contains($model, '\\') && is_subclass_of('Ledningssystemet\\Ledningssystemet\\Models\\'.$model, \Illuminate\Database\Eloquent\Model::class) ? 'Ledningssystemet\\Ledningssystemet\\Models\\'.$model : null;
 
       // Ensure class exist
-      if (!class_exists($classname))
+      if (! $classname)
          abort(404);
 
       // Ensure item exists
@@ -130,10 +130,10 @@ class LegacyTableController extends Controller
    public function delete($model, $id)
    {
       // Derive classname
-      $classname = "App\\Models\\" . $model;
+      $classname = !str_contains($model, '\\') && is_subclass_of('Ledningssystemet\\Ledningssystemet\\Models\\'.$model, \Illuminate\Database\Eloquent\Model::class) ? 'Ledningssystemet\\Ledningssystemet\\Models\\'.$model : null;
 
       // Ensure class exist
-      if(!class_exists($classname))
+      if(! $classname)
          abort(404);
 
       // Ensure item exists
@@ -158,10 +158,10 @@ class LegacyTableController extends Controller
    public function customAction($model, $id, $action)
    {
       // Derive classname
-      $classname = "App\\Models\\".$model;
+      $classname = !str_contains($model, '\\') && is_subclass_of('Ledningssystemet\\Ledningssystemet\\Models\\'.$model, \Illuminate\Database\Eloquent\Model::class) ? 'Ledningssystemet\\Ledningssystemet\\Models\\'.$model : null;
 
       // Ensure class exist
-      if(!class_exists($classname))
+      if(! $classname)
          abort(404);
 
       // Ensure item exists
@@ -182,4 +182,3 @@ class LegacyTableController extends Controller
       return response()->json($retval->$action());
    }
 }
-

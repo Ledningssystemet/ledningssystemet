@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Models;
+namespace Ledningssystemet\Ledningssystemet\Models;
 
-use App\Models\User;
+use Ledningssystemet\Ledningssystemet\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\HasOne;
@@ -18,8 +18,8 @@ use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
-use App\Traits\HasTags;
-use App\Traits\HasCustomProperties;
+use Ledningssystemet\Ledningssystemet\Traits\HasTags;
+use Ledningssystemet\Ledningssystemet\Traits\HasCustomProperties;
 
 
 class Agreement extends Model
@@ -125,7 +125,7 @@ class Agreement extends Model
    
    public function getFilesAttribute()
    {
-      return DB::table('files')->where('object_type', $this::class)->where('object_id', $this->id)->select(['id', 'filename', 'name', 'description', 'contenttype', 'contentlength'])->get();
+      return DB::table('files')->where('object_type', static::class)->where('object_id', $this->id)->select(['id', 'filename', 'name', 'description', 'contenttype', 'contentlength'])->get();
    }
    
 
@@ -283,9 +283,9 @@ class Agreement extends Model
    {
       return [
          'name' => 'required|max:255',
-         'responsible_user_id' => 'nullable|exists:App\Models\User,id',
-         'supplier_id' => 'nullable|exists:App\Models\Supplier,id',
-         'customer_id' => 'nullable|exists:App\Models\Customer,id',
+         'responsible_user_id' => 'nullable|exists:Ledningssystemet\Ledningssystemet\Models\User,id',
+         'supplier_id' => 'nullable|exists:Ledningssystemet\Ledningssystemet\Models\Supplier,id',
+         'customer_id' => 'nullable|exists:Ledningssystemet\Ledningssystemet\Models\Customer,id',
          'startdate' => 'nullable|date',
          'enddate' => 'nullable|date|after:today|after:startdate',
          'reminderdate' => 'nullable|date|before:enddate|after:startdate',

@@ -1,12 +1,12 @@
 <?php
 
-namespace App\Models;
+namespace Ledningssystemet\Ledningssystemet\Models;
 
-use App\Models\Concerns\DefersRelationAttributeSync;
-use App\Traits\HasCustomProperties;
-use App\Traits\HasMessages;
-use App\Traits\HasNotifications;
-use App\Traits\HasTags;
+use Ledningssystemet\Ledningssystemet\Models\Concerns\DefersRelationAttributeSync;
+use Ledningssystemet\Ledningssystemet\Traits\HasCustomProperties;
+use Ledningssystemet\Ledningssystemet\Traits\HasMessages;
+use Ledningssystemet\Ledningssystemet\Traits\HasNotifications;
+use Ledningssystemet\Ledningssystemet\Traits\HasTags;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -527,8 +527,8 @@ class Process extends Model
                 'required',
                 Rule::unique('processes')->ignore($this->id),
             ],
-            'responsible_user_id' => 'nullable|exists:App\Models\User,id',
-            'department_id' => 'nullable|exists:App\Models\Department,id',
+            'responsible_user_id' => 'nullable|exists:Ledningssystemet\Ledningssystemet\Models\User,id',
+            'department_id' => 'nullable|exists:Ledningssystemet\Ledningssystemet\Models\Department,id',
         ];
     }
 
@@ -714,7 +714,7 @@ class Process extends Model
 
         $hitcount = 0;
         switch ($object::class) {
-            case 'App\Models\Asset':
+            case 'Ledningssystemet\Ledningssystemet\Models\Asset':
                 if ($publishedbpmn) {
                     foreach ($publishedbpmn->xpath('//bpmn:dataStoreReference[@name="'.str_replace('"', '&quot;', $oldname).'"]/@name') as $node) {
                         $node[0] = $newname;
@@ -728,7 +728,7 @@ class Process extends Model
                     }
                 }
                 break;
-            case 'App\Models\InformationType':
+            case 'Ledningssystemet\Ledningssystemet\Models\InformationType':
                 if ($publishedbpmn) {
                     foreach ($publishedbpmn->xpath('//bpmn:dataObjectReference[@name="'.str_replace('"', '&quot;', $oldname).'"]/@name') as $node) {
                         $node[0] = $newname;
@@ -742,7 +742,7 @@ class Process extends Model
                     }
                 }
                 break;
-            case 'App\Models\Process':
+            case 'Ledningssystemet\Ledningssystemet\Models\Process':
                 if ($publishedbpmn) {
                     foreach ($publishedbpmn->xpath('//bpmn:subProcess[@name="'.str_replace('"', '&quot;', $oldname).'"]/@name') as $node) {
                         $node[0] = $newname;

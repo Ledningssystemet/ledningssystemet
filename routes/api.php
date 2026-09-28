@@ -1,19 +1,19 @@
 <?php
 
-use App\Http\Controllers\Api\AIController;
-use App\Http\Controllers\Api\AssessmentSettingsController;
-use App\Http\Controllers\Api\DataProcessingTableController;
-use App\Http\Controllers\Api\DocumentManagementTableController;
-use App\Http\Controllers\Api\LegacyTableController;
-use App\Http\Controllers\Api\ReportCentralController;
-use App\Http\Controllers\Api\TableController;
-use App\Http\Controllers\Api\TagController;
-use App\Http\Controllers\DocumentController;
-use App\Http\Controllers\StatusController;
-use App\Models\Department;
-use App\Models\LibraryDocument;
-use App\Models\RiskLevel;
-use App\Models\User;
+use Ledningssystemet\Ledningssystemet\Http\Controllers\Api\AIController;
+use Ledningssystemet\Ledningssystemet\Http\Controllers\Api\AssessmentSettingsController;
+use Ledningssystemet\Ledningssystemet\Http\Controllers\Api\DataProcessingTableController;
+use Ledningssystemet\Ledningssystemet\Http\Controllers\Api\DocumentManagementTableController;
+use Ledningssystemet\Ledningssystemet\Http\Controllers\Api\LegacyTableController;
+use Ledningssystemet\Ledningssystemet\Http\Controllers\Api\ReportCentralController;
+use Ledningssystemet\Ledningssystemet\Http\Controllers\Api\TableController;
+use Ledningssystemet\Ledningssystemet\Http\Controllers\Api\TagController;
+use Ledningssystemet\Ledningssystemet\Http\Controllers\DocumentController;
+use Ledningssystemet\Ledningssystemet\Http\Controllers\StatusController;
+use Ledningssystemet\Ledningssystemet\Models\Department;
+use Ledningssystemet\Ledningssystemet\Models\LibraryDocument;
+use Ledningssystemet\Ledningssystemet\Models\RiskLevel;
+use Ledningssystemet\Ledningssystemet\Models\User;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Route;
 
@@ -217,7 +217,14 @@ Route::prefix('v1/ai')->group(function () {
 
     // Risk identification
     Route::post('/riskidentification', function () {
-        if (! class_exists(request()->input('context_type'))) {
+        $contextType = request()->input('context_type');
+        $contextClass = is_string($contextType)
+            ? (str_contains($contextType, '\\') ? $contextType : 'Ledningssystemet\\Ledningssystemet\\Models\\'.$contextType)
+            : null;
+        if (!is_string($contextClass) || !str_starts_with($contextClass, 'Ledningssystemet\\Ledningssystemet\\Models\\') || !is_subclass_of($contextClass, \Illuminate\Database\Eloquent\Model::class)) {
+            $contextClass = null;
+        }
+        if (! $contextClass) {
             abort(404);
         }
 
@@ -225,7 +232,7 @@ Route::prefix('v1/ai')->group(function () {
             abort(404);
         }
 
-        $contextobj = request()->input('context_type')::findOrFail(request()->input('context_id'));
+        $contextobj = $contextClass::findOrFail(request()->input('context_id'));
 
         return (new AIController)::getRiskSuggestions($contextobj);
     });
@@ -235,8 +242,8 @@ Route::prefix('v1/ai')->group(function () {
 Route::prefix('v1/documentcontroller')->group(function () {
     Route::get('/{template}/{model}/{id}', function ($template, $model, $id) {
         // Load requested model
-        $classname = 'App\\Models\\'.$model;
-        if (! class_exists($classname)) {
+        $classname = !str_contains($model, '\\') && is_subclass_of('Ledningssystemet\\Ledningssystemet\\Models\\'.$model, \Illuminate\Database\Eloquent\Model::class) ? 'Ledningssystemet\\Ledningssystemet\\Models\\'.$model : null;
+        if (! $classname) {
             abort(404);
         }
 

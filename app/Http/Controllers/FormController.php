@@ -1,7 +1,7 @@
 <?php
 
-namespace App\Http\Controllers;
-use App\Models\Form;
+namespace Ledningssystemet\Ledningssystemet\Http\Controllers;
+use Ledningssystemet\Ledningssystemet\Models\Form;
 
 
 class FormController extends Controller

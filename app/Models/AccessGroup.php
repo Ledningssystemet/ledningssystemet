@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Models;
+namespace Ledningssystemet\Ledningssystemet\Models;
 
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Spatie\Permission\Models\Role as SpatieRole;
-use App\Models\Concerns\DefersRelationAttributeSync;
+use Ledningssystemet\Ledningssystemet\Models\Concerns\DefersRelationAttributeSync;
 
 
 class AccessGroup extends SpatieRole
@@ -182,7 +182,7 @@ class AccessGroup extends SpatieRole
    {
       return [
          'name' => ['required', Rule::unique('access_groups')->ignore($this->id)],
-         'risk_level_id' => 'nullable|exists:App\Models\RiskLevel,id',
+         'risk_level_id' => 'nullable|exists:Ledningssystemet\Ledningssystemet\Models\RiskLevel,id',
          'permission_ids' => 'nullable',
          'external_provider_group_id' => 'nullable|exists:external_provider_groups,id',
          'users' => 'nullable',

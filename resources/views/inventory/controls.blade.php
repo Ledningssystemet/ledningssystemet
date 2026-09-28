@@ -1,4 +1,4 @@
-@php if(Auth::user()->cannot('index', \App\Models\Control::class)) abort(403); @endphp
+@php if(Auth::user()->cannot('index', \Ledningssystemet\Ledningssystemet\Models\Control::class)) abort(403); @endphp
 @extends('layouts.master')
 
 @section('container')
@@ -16,7 +16,7 @@ $(function(){
          addNewRecord: '{{ __('Add new control') }}',
       },
       filter: {
-@php $tags = \App\Models\Control::allUsedTags(); @endphp
+@php $tags = \Ledningssystemet\Ledningssystemet\Models\Control::allUsedTags(); @endphp
 @if(0 < count($tags))
          tag_id: {
             type: 'select',
@@ -36,7 +36,7 @@ $(function(){
             default: 0,
             options: [
                { value: 0, text: '{{ __('Show all') }}' },
-                  @foreach(\App\Models\User::leftJoin('controls', 'controls.responsible_user_id', '=', 'users.id')->whereNotNull('controls.id')->select('users.*')->distinct()->orderBy('users.name')->get()->each->setAppends([]) as $obj)
+                  @foreach(\Ledningssystemet\Ledningssystemet\Models\User::leftJoin('controls', 'controls.responsible_user_id', '=', 'users.id')->whereNotNull('controls.id')->select('users.*')->distinct()->orderBy('users.name')->get()->each->setAppends([]) as $obj)
                { value: {{ $obj->id }}, text: <?php echo(json_encode($obj->name)); ?> },
                @endforeach
             ]
@@ -59,19 +59,19 @@ $(function(){
             checked: false,
             text: '{{ __('Show not applicable') }}',
          },
-@include('components.customproperty', ['classname' => 'App\Models\Control', 'showFilter' => true])
+@include('components.customproperty', ['classname' => 'Ledningssystemet\Ledningssystemet\Models\Control', 'showFilter' => true])
       },
       actions: {
-@if(Auth::user()->can('index', \App\Models\Control::class))
+@if(Auth::user()->can('index', \Ledningssystemet\Ledningssystemet\Models\Control::class))
          listAction: '/api/v1/items/Control',
 @endif         
-@if(Auth::user()->can('create', \App\Models\Control::class))
+@if(Auth::user()->can('create', \Ledningssystemet\Ledningssystemet\Models\Control::class))
          createAction: '/api/v1/items/Control',
 @endif         
-@if(Auth::user()->can('update', \App\Models\Control::class))
+@if(Auth::user()->can('update', \Ledningssystemet\Ledningssystemet\Models\Control::class))
          updateAction: '/api/v1/items/Control',
 @endif         
-@if(Auth::user()->can('delete', \App\Models\Control::class))
+@if(Auth::user()->can('delete', \Ledningssystemet\Ledningssystemet\Models\Control::class))
          deleteAction: '/api/v1/items/Control',
 @endif         
       },
@@ -103,7 +103,7 @@ $(function(){
             defaultValue: {{ auth()->user()->id }},
             options: [
                { Value: null, DisplayText: '{{ __("None assigned") }}' },
-@foreach(App\Models\User::orderBy('name')->get()->each->setAppends([]) as $obj)
+@foreach(Ledningssystemet\Ledningssystemet\Models\User::orderBy('name')->get()->each->setAppends([]) as $obj)
                { Value: {{$obj ->id}}, DisplayText: @php echo(json_encode($obj->name)); @endphp  },
 @endforeach
             ],
@@ -155,14 +155,14 @@ $(function(){
          },
          requirements: {
             title: '{{ __('Governed requirements') }}',
-            create: false,
+            create: true,
             edit: true,
             list: true,
 
             multiple: true,
             listClass: 'd-inline-block col-12 col-md-6',
             options: [
-@foreach(App\Models\RequirementSource::whereNull('not_applicable_at')->orderBy('name')->get()->each->setAppends([]) as $reqsource)
+@foreach(Ledningssystemet\Ledningssystemet\Models\RequirementSource::whereNull('not_applicable_at')->orderBy('name')->get()->each->setAppends([]) as $reqsource)
                { Label: '{{ $reqsource->reference." ".$reqsource->name }}', Children: [
    @foreach($reqsource->int_requirements()->where('requirements.applicable', 1)->orderBy('requirements.ordinal')->get()->each->setAppends([]) as $obj)
                   { Value: {{$obj->id}}, DisplayText: '{{ $reqsource->reference." ".$obj->reference." ".$obj->name}}', Tooltip: @php echo(json_encode($obj->description)); @endphp },
@@ -198,7 +198,7 @@ $(function(){
                return retval;
             },
          },
-         @include('components.customproperty', ['classname' => 'App\Models\Control'])
+         @include('components.customproperty', ['classname' => 'Ledningssystemet\Ledningssystemet\Models\Control'])
          hr2: {
             list: true,
             edit: false,
@@ -244,7 +244,7 @@ $(function(){
             }
          },
          @endif
-@if(Auth::user()->can('update', \App\Models\Control::class))
+@if(Auth::user()->can('update', \Ledningssystemet\Ledningssystemet\Models\Control::class))
          notapplicable: {
             title: '',
             type: 'command',
@@ -304,7 +304,7 @@ $(function(){
             display: function (sourcedata) {
                var actions = {listAction: '/api/v1/items/ControlAction?showhandled=1&control=' + sourcedata.record.id};
 
-@if(Auth::user()->can('update', \App\Models\ControlAction::class))
+@if(Auth::user()->can('update', \Ledningssystemet\Ledningssystemet\Models\ControlAction::class))
                if (!sourcedata.record.finished_at) {
                   actions.createAction = '/api/v1/items/ControlAction';
                   actions.updateAction = '/api/v1/items/ControlAction';
@@ -371,7 +371,7 @@ $(function(){
                               edit: true,
                               create: true,
                               options: [
-                                    @foreach(\App\Models\User::orderBy('name')->get()->each->setAppends([]) as $obj)
+                                    @foreach(\Ledningssystemet\Ledningssystemet\Models\User::orderBy('name')->get()->each->setAppends([]) as $obj)
                                  {
                                     Value: {{ $obj->id }}, DisplayText: '{{ $obj->name }}'
                                  },

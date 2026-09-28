@@ -1,10 +1,10 @@
-@php if(Auth::user()->cannot('index', \App\Models\Form::class)) abort(403); @endphp
+@php if(Auth::user()->cannot('index', \Ledningssystemet\Ledningssystemet\Models\Form::class)) abort(403); @endphp
 @extends('layouts.master')
 @section('container')
 
 <script>
    var formTemplateContexts = {
-   @foreach(App\Models\FormTemplate::orderBy('name')->select(['id', 'name', 'context'])->get()->each->setAppends([]) as $obj)
+   @foreach(Ledningssystemet\Ledningssystemet\Models\FormTemplate::orderBy('name')->select(['id', 'name', 'context'])->get()->each->setAppends([]) as $obj)
       {{ $obj->id }}: <?php echo(json_encode($obj->context)); ?>,
    @endforeach
    };
@@ -31,7 +31,7 @@ $(function(){
             default: 0,
             options: [
                { value: 0, text: '{{ __('Show all') }}' },
-                  @foreach(\App\Models\User::leftJoin('incidents', 'incidents.responsible_user_id', '=', 'users.id')->whereNotNull('incidents.id')->select(['users.id', 'users.name'])->distinct()->orderBy('users.name')->get()->each->setAppends([]) as $obj)
+                  @foreach(\Ledningssystemet\Ledningssystemet\Models\User::leftJoin('incidents', 'incidents.responsible_user_id', '=', 'users.id')->whereNotNull('incidents.id')->select(['users.id', 'users.name'])->distinct()->orderBy('users.name')->get()->each->setAppends([]) as $obj)
                { value: {{ $obj->id }}, text: <?php echo(json_encode($obj->name)); ?> },
                @endforeach
             ]
@@ -60,16 +60,16 @@ $(function(){
          },
       },
       actions: {
-@if(Auth::user()->can('index', \App\Models\Form::class))
+@if(Auth::user()->can('index', \Ledningssystemet\Ledningssystemet\Models\Form::class))
          listAction: '/api/v1/items/Form',
 @endif         
-@if(Auth::user()->can('create', \App\Models\Form::class) && \App\Models\FormTemplate::exists())
+@if(Auth::user()->can('create', \Ledningssystemet\Ledningssystemet\Models\Form::class) && \Ledningssystemet\Ledningssystemet\Models\FormTemplate::exists())
          createAction: '/api/v1/items/Form',
 @endif         
-@if(Auth::user()->can('update', \App\Models\Form::class))
+@if(Auth::user()->can('update', \Ledningssystemet\Ledningssystemet\Models\Form::class))
          updateAction: '/api/v1/items/Form',
 @endif
-@if(Auth::user()->can('delete', \App\Models\Form::class))
+@if(Auth::user()->can('delete', \Ledningssystemet\Ledningssystemet\Models\Form::class))
          deleteAction: '/api/v1/items/Form',
 @endif
       },
@@ -88,10 +88,10 @@ $(function(){
             required: true,
             listClass: 'd-inline-block col-12 col-md-4',
             options: [
-                  @if(\App\Models\FormTemplate::where('context', 'supplier')->exists())
+                  @if(\Ledningssystemet\Ledningssystemet\Models\FormTemplate::where('context', 'supplier')->exists())
                {
                   Label: '{{ __("Supplier") }}', Children: [
-                        @foreach (\App\Models\FormTemplate::where('context', 'supplier')->orderBy('name')->select(['id', 'name'])->get() as $template)
+                        @foreach (\Ledningssystemet\Ledningssystemet\Models\FormTemplate::where('context', 'supplier')->orderBy('name')->select(['id', 'name'])->get() as $template)
                      {
                         Value: '{{ $template->id }}', DisplayText: '{{ $template->name }}'
                      },
@@ -99,10 +99,10 @@ $(function(){
                   ]
                },
                   @endif
-                  @if(\App\Models\FormTemplate::where('context', 'customer')->exists())
+                  @if(\Ledningssystemet\Ledningssystemet\Models\FormTemplate::where('context', 'customer')->exists())
                {
                   Label: '{{ __("Customer") }}', Children: [
-                        @foreach (\App\Models\FormTemplate::where('context', 'customer')->orderBy('name')->select(['id', 'name'])->get() as $template)
+                        @foreach (\Ledningssystemet\Ledningssystemet\Models\FormTemplate::where('context', 'customer')->orderBy('name')->select(['id', 'name'])->get() as $template)
                      {
                         Value: '{{ $template->id }}', DisplayText: '{{ $template->name }}'
                      },
@@ -128,11 +128,11 @@ $(function(){
                let context_type = formTemplateContexts[form_template_id];
                let options = [{Value: null, DisplayText: '{{ __("None") }}'}];
                if (context_type == 'supplier') {
-                  @foreach(App\Models\Supplier::orderBy('name')->select(['id', 'name'])->get()->each->setAppends([]) as $obj)
+                  @foreach(Ledningssystemet\Ledningssystemet\Models\Supplier::orderBy('name')->select(['id', 'name'])->get()->each->setAppends([]) as $obj)
                   options.push({Value: {{ $obj->id }}, DisplayText: '{{ $obj->name }}'});
                   @endforeach
                } else if (context_type == 'customer') {
-                  @foreach(App\Models\Customer::orderBy('name')->select(['id', 'name'])->get()->each->setAppends([]) as $obj)
+                  @foreach(Ledningssystemet\Ledningssystemet\Models\Customer::orderBy('name')->select(['id', 'name'])->get()->each->setAppends([]) as $obj)
                   options.push({Value: {{ $obj->id }}, DisplayText: '{{ $obj->name }}'});
                   @endforeach
                }
@@ -193,7 +193,7 @@ $(function(){
             listClass: 'd-inline-block col-12 col-md-8',
             options: [
                {Value: null, DisplayText: '{{ __("None assigned") }}'},
-                  @foreach(App\Models\User::orderBy('name')->select(['id', 'name'])->get()->each->setAppends([]) as $obj)
+                  @foreach(Ledningssystemet\Ledningssystemet\Models\User::orderBy('name')->select(['id', 'name'])->get()->each->setAppends([]) as $obj)
                {
                   Value: {{$obj ->id}}, DisplayText: '{{ $obj->name }}'
                },
@@ -301,10 +301,10 @@ $(function(){
                         paging: false,
                         actions: {
                            listAction: '/api/v1/items/FormRelation?form_id='+sourcedata.record.id,
-                           @if(Auth::user()->can('create', 'App\\Models\\Form'))
+                           @if(Auth::user()->can('create', 'Ledningssystemet\Ledningssystemet\\Models\\Form'))
                            createAction: allowEdit && '/api/v1/items/FormRelation',
                            @endif
-                           @if(Auth::user()->can('delete', 'App\\Models\\Form'))
+                           @if(Auth::user()->can('delete', 'Ledningssystemet\Ledningssystemet\\Models\\Form'))
                            deleteAction: allowEdit && '/api/v1/items/FormRelation',
                            @endif
                         },

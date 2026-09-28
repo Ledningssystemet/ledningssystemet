@@ -1,4 +1,4 @@
-@php if(Auth::user()->cannot('index', \App\Models\ControlAction::class)) abort(403); @endphp
+@php if(Auth::user()->cannot('index', \Ledningssystemet\Ledningssystemet\Models\ControlAction::class)) abort(403); @endphp
 @extends('layouts.master')
 
 @section('container')
@@ -28,7 +28,7 @@ $(function(){
          addNewRecord: '{{ __('Add new action') }}',
       },
       filter: {
-@php $tags = \App\Models\ControlAction::allUsedTags(); @endphp
+@php $tags = \Ledningssystemet\Ledningssystemet\Models\ControlAction::allUsedTags(); @endphp
 @if(0 < count($tags))
          tag_id: {
             type: 'select',
@@ -48,7 +48,7 @@ $(function(){
             default: 0,
             options: [
                { value: 0, text: '{{ __('Show all') }}' },
-@foreach(\App\Models\Control::orderBy('name')->get()->each->setAppends([]) as $obj)
+@foreach(\Ledningssystemet\Ledningssystemet\Models\Control::orderBy('name')->get()->each->setAppends([]) as $obj)
                { value: {{ $obj->id }}, text: @php echo(json_encode($obj->name.($obj->not_applicable_at ? " [".__("Not applicable")."]" : ""))); @endphp },
 @endforeach               
             ]
@@ -59,7 +59,7 @@ $(function(){
             default: 0,
             options: [
                { value: 0, text: '{{ __('Show all') }}' },
-                  @foreach(\App\Models\User::leftJoin('control_actions', 'control_actions.responsible_id', '=', 'users.id')->whereNotNull('control_actions.id')->select(['users.id', 'users.name'])->distinct()->orderBy('users.name')->get()->each->setAppends([]) as $obj)
+                  @foreach(\Ledningssystemet\Ledningssystemet\Models\User::leftJoin('control_actions', 'control_actions.responsible_id', '=', 'users.id')->whereNotNull('control_actions.id')->select(['users.id', 'users.name'])->distinct()->orderBy('users.name')->get()->each->setAppends([]) as $obj)
                { value: {{ $obj->id }}, text: <?php echo(json_encode($obj->name)); ?> },
                @endforeach
             ]
@@ -78,16 +78,16 @@ $(function(){
          },
       },
       actions: {
-@if(Auth::user()->can('index', App\Models\ControlAction::class))         
+@if(Auth::user()->can('index', Ledningssystemet\Ledningssystemet\Models\ControlAction::class))
          listAction: '/api/v1/items/ControlAction',
 @endif         
-@if(Auth::user()->can('create', App\Models\ControlAction::class))         
+@if(Auth::user()->can('create', Ledningssystemet\Ledningssystemet\Models\ControlAction::class))
          createAction: '/api/v1/items/ControlAction',
 @endif         
-@if(Auth::user()->can('update', App\Models\ControlAction::class))         
+@if(Auth::user()->can('update', Ledningssystemet\Ledningssystemet\Models\ControlAction::class))
          updateAction: '/api/v1/items/ControlAction',
 @endif         
-@if(Auth::user()->can('delete', App\Models\ControlAction::class))         
+@if(Auth::user()->can('delete', Ledningssystemet\Ledningssystemet\Models\ControlAction::class))
          deleteAction: '/api/v1/items/ControlAction',
 @endif         
       },
@@ -118,7 +118,7 @@ $(function(){
 
             listClass: 'd-inline-block col-4',
             options:[
-@foreach(App\Models\Control::orderBy('name')->select(['id', 'name', 'not_applicable_at'])->get()->each->setAppends([]) as $obj)
+@foreach(Ledningssystemet\Ledningssystemet\Models\Control::orderBy('name')->select(['id', 'name', 'not_applicable_at'])->get()->each->setAppends([]) as $obj)
 { Value: {{ $obj->id }}, DisplayText: '{{ $obj->name }}{{ $obj->not_applicable_at ? " [".__("Not applicable")."]" : "" }}'}, 
 @endforeach
             ]
@@ -162,7 +162,7 @@ $(function(){
 
             listClass: 'd-inline-block col-4',
             options: [
-@foreach(\App\Models\User::orderBy('name')->select(['id', 'name'])->get()->each->setAppends([]) as $obj)
+@foreach(\Ledningssystemet\Ledningssystemet\Models\User::orderBy('name')->select(['id', 'name'])->get()->each->setAppends([]) as $obj)
                { Value: {{ $obj->id }}, DisplayText: '{{ $obj->name }}'},
 @endforeach                                 
             ],
@@ -226,7 +226,7 @@ $(function(){
                return $('<hr />'); 
             }
          },
-@if(Auth::user()->can('index', App\Models\ControlAction::class))         
+@if(Auth::user()->can('index', Ledningssystemet\Ledningssystemet\Models\ControlAction::class))
          commands: {
             sorting: false,
             edit: false,

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Models;
+namespace Ledningssystemet\Ledningssystemet\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
@@ -121,8 +121,8 @@ class GhgFactorReport extends Model
    {
       return [
          'comment' => 'nullable|string',
-         'user_id' => 'nullable|exists:App\Models\User,id',
-         'ghg_factor_id' => 'required|exists:App\Models\GhgFactor,id',
+         'user_id' => 'nullable|exists:Ledningssystemet\Ledningssystemet\Models\User,id',
+         'ghg_factor_id' => 'required|exists:Ledningssystemet\Ledningssystemet\Models\GhgFactor,id',
          'value' => 'required|integer',
          'valuedate' => 'required|date',
       ];

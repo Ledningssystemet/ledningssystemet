@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Actions\Fortify;
+namespace Ledningssystemet\Ledningssystemet\Actions\Fortify;
 
-use App\Models\TrustedDevice;
+use Ledningssystemet\Ledningssystemet\Models\TrustedDevice;
 use Laravel\Fortify\Actions\RedirectIfTwoFactorAuthenticatable as BaseRedirectIfTwoFactorAuthenticatable;
 use Laravel\Fortify\Fortify;
 use Laravel\Fortify\TwoFactorAuthenticatable;

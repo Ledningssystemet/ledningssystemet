@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Models;
+namespace Ledningssystemet\Ledningssystemet\Models;
 
-use App\Traits\HasCustomProperties;
+use Ledningssystemet\Ledningssystemet\Traits\HasCustomProperties;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\HasOne;
@@ -18,9 +18,9 @@ use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
-use App\Traits\HasTags;
-use App\Traits\HasMessages;
-use App\Traits\HasNotifications;
+use Ledningssystemet\Ledningssystemet\Traits\HasTags;
+use Ledningssystemet\Ledningssystemet\Traits\HasMessages;
+use Ledningssystemet\Ledningssystemet\Traits\HasNotifications;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 
 class Finding extends Model
@@ -73,7 +73,9 @@ class Finding extends Model
          // Ensure valid context
          if($model->context_type)
          {
-            if(null == $model->context_type::find($model->context_id))
+            $contextType = $model->context_type;
+            $contextClass = is_string($contextType) ? (str_contains($contextType, '\\') ? $contextType : __NAMESPACE__.'\\'.$contextType) : null;
+            if (!is_string($contextClass) || !str_starts_with($contextClass, __NAMESPACE__.'\\') || !is_subclass_of($contextClass, Model::class) || null == $contextClass::find($model->context_id))
                abort(400, __("Invalid context"));
          }
          else if($model->context_id)
@@ -189,15 +191,15 @@ static::creating(function ($model) {
          if(2 !== count($contextParts))
             abort(400, __("Invalid context"));
          
-         $classname = 'App\\Models\\'.$contextParts[0];
-         if(!class_exists($classname))
+         $classname = __NAMESPACE__.'\\'.$contextParts[0];
+         if (!is_subclass_of($classname, Model::class))
             abort(400, __("Invalid context type"));
          
          switch($classname)
          {
-            case 'App\\Models\\Process':
-            case 'App\\Models\\Asset':
-            case 'App\\Models\\Supplier':
+            case 'Ledningssystemet\Ledningssystemet\\Models\\Process':
+            case 'Ledningssystemet\Ledningssystemet\\Models\\Asset':
+            case 'Ledningssystemet\Ledningssystemet\\Models\\Supplier':
                break;
             default:
                abort(400, __("Invalid context type"));
@@ -205,7 +207,7 @@ static::creating(function ($model) {
          
          $this->context_type = $classname;
          
-         $classInstance = $this->context_type::findOrFail($contextParts[1]);
+         $classInstance = $classname::findOrFail($contextParts[1]);
          $this->context_id = $classInstance->id;
       }
    }
@@ -343,7 +345,12 @@ static::creating(function ($model) {
             }
          })
          ->when(request()->has('context_type'), function (Builder $query) {
-            $query->where('context_type','App\\Models\\'.request()->input('context_type'));
+            $contextType = request()->input('context_type');
+            $contextClass = is_string($contextType) ? (str_contains($contextType, '\\') ? $contextType : __NAMESPACE__.'\\'.$contextType) : null;
+            if (!is_string($contextClass) || !str_starts_with($contextClass, __NAMESPACE__.'\\') || !is_subclass_of($contextClass, Model::class)) {
+               $contextClass = null;
+            }
+            $query->whereIn('context_type', [$contextClass ?? $contextType]);
 
             if(request()->has('context_id'))
                $query->where('context_id',request()->input('context_id'));
@@ -381,7 +388,7 @@ static::creating(function ($model) {
    {
       return [
          'name' => 'required',
-         'department_id' => 'required|exists:App\Models\Department,id',
+         'department_id' => 'required|exists:Ledningssystemet\Ledningssystemet\Models\Department,id',
          'description' => 'required',
          'consequence' => 'nullable',
          'rootcause' => 'nullable',

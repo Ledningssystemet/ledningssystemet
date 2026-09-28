@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Models;
+namespace Ledningssystemet\Ledningssystemet\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
@@ -140,9 +140,9 @@ class ComplianceEvaluationRequirementFinding extends Model
    {
       return [
          'name' => 'required',
-         'compliance_evaluation_requirement_id' => 'required|exists:App\Models\ComplianceEvaluationRequirement,id',
+         'compliance_evaluation_requirement_id' => 'required|exists:Ledningssystemet\Ledningssystemet\Models\ComplianceEvaluationRequirement,id',
          'description' => 'required',
-         'department_id' => 'required|exists:App\Models\Department,id',
+         'department_id' => 'required|exists:Ledningssystemet\Ledningssystemet\Models\Department,id',
          'isnc' => 'required|boolean',
       ];
    }

@@ -2,9 +2,9 @@
 
 namespace Ledningssystemet\Ledningssystemet\Providers;
 
-use App\Actions\Fortify\GenericPasswordResetLinkResponse;
-use App\Actions\Fortify\ResetUserPassword;
-use App\Actions\Fortify\RedirectIfTwoFactorAuthenticatable;
+use Ledningssystemet\Ledningssystemet\Actions\Fortify\GenericPasswordResetLinkResponse;
+use Ledningssystemet\Ledningssystemet\Actions\Fortify\ResetUserPassword;
+use Ledningssystemet\Ledningssystemet\Actions\Fortify\RedirectIfTwoFactorAuthenticatable;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;

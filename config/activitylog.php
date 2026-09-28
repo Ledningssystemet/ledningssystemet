@@ -2,7 +2,7 @@
 
 use Spatie\Activitylog\Actions\CleanActivityLogAction;
 use Spatie\Activitylog\Actions\LogActivityAction;
-use App\Models\ActivityLog;
+use Ledningssystemet\Ledningssystemet\Models\ActivityLog;
 
 return [
 

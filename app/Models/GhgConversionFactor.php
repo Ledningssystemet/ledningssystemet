@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Models;
+namespace Ledningssystemet\Ledningssystemet\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
@@ -146,7 +146,7 @@ class GhgConversionFactor extends Model
       return [
          'name' => 'string|required',
          'description' => 'string|nullable',
-         'ghg_category_id' => 'required|exists:App\Models\GhgCategory,id',
+         'ghg_category_id' => 'required|exists:Ledningssystemet\Ledningssystemet\Models\GhgCategory,id',
          'activity_sourceunit' => 'sometimes|string|nullable',
          'activity_factor' => 'sometimes|numeric|nullable',
          'activity_datasource_name' => 'sometimes|string|nullable',

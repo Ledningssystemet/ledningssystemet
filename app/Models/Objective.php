@@ -1,9 +1,9 @@
 <?php
 
-namespace App\Models;
+namespace Ledningssystemet\Ledningssystemet\Models;
 
-use App\Traits\HasCustomProperties;
-use App\Traits\HasTags;
+use Ledningssystemet\Ledningssystemet\Traits\HasCustomProperties;
+use Ledningssystemet\Ledningssystemet\Traits\HasTags;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
@@ -19,8 +19,8 @@ use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
-use App\Traits\HasMessages;
-use App\Traits\HasNotifications;
+use Ledningssystemet\Ledningssystemet\Traits\HasMessages;
+use Ledningssystemet\Ledningssystemet\Traits\HasNotifications;
 
 class Objective extends Model
 {
@@ -321,8 +321,8 @@ class Objective extends Model
          'name' => [
             'required',
          ],
-         'responsible_user_id' => 'nullable|exists:App\Models\User,id',
-         'department_id' => 'nullable|exists:App\Models\Department,id',
+         'responsible_user_id' => 'nullable|exists:Ledningssystemet\Ledningssystemet\Models\User,id',
+         'department_id' => 'nullable|exists:Ledningssystemet\Ledningssystemet\Models\Department,id',
       ];
    }
    

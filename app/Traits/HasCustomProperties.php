@@ -1,9 +1,9 @@
 <?php
-namespace App\Traits;
+namespace Ledningssystemet\Ledningssystemet\Traits;
 
-use App\Models\CustomPropertyObject;
+use Ledningssystemet\Ledningssystemet\Models\CustomPropertyObject;
 use Illuminate\Database\Eloquent\Relations\HasManyThrough;
-use App\Models\CustomProperty;
+use Ledningssystemet\Ledningssystemet\Models\CustomProperty;
 use Illuminate\Database\Query\JoinClause;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Validator;

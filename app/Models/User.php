@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Models;
+namespace Ledningssystemet\Ledningssystemet\Models;
 
-use App\Traits\HasCustomProperties;
+use Ledningssystemet\Ledningssystemet\Traits\HasCustomProperties;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\HasOne;
@@ -23,7 +23,7 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\DB;
 use Spatie\Permission\Traits\HasRoles;
-use App\Models\Concerns\DefersRelationAttributeSync;
+use Ledningssystemet\Ledningssystemet\Models\Concerns\DefersRelationAttributeSync;
 
 
 class User extends Authenticatable
@@ -409,7 +409,7 @@ static::creating(function ($model) {
     * Issue a new API token
     */
    public function issuetoken(){
-      if(request()->user()->cannot('create', \App\Models\PersonalAccessToken::class))
+      if(request()->user()->cannot('create', \Ledningssystemet\Ledningssystemet\Models\PersonalAccessToken::class))
          abort(403);
       
       return $this->createToken(request()->input('name', date("Y-m-d H:i:s")));

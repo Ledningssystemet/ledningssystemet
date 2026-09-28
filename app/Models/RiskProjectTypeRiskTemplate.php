@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Models;
+namespace Ledningssystemet\Ledningssystemet\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Query\JoinClause;
@@ -18,11 +18,11 @@ use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
-use App\Traits\HasTags;
-use App\Traits\HasMessages;
-use App\Traits\HasNotifications;
-use App\Http\Controllers\UserNotificationController;
-use App\Models\Concerns\DefersRelationAttributeSync;
+use Ledningssystemet\Ledningssystemet\Traits\HasTags;
+use Ledningssystemet\Ledningssystemet\Traits\HasMessages;
+use Ledningssystemet\Ledningssystemet\Traits\HasNotifications;
+use Ledningssystemet\Ledningssystemet\Http\Controllers\UserNotificationController;
+use Ledningssystemet\Ledningssystemet\Models\Concerns\DefersRelationAttributeSync;
 
 class RiskProjectTypeRiskTemplate extends Model
 {
@@ -166,9 +166,9 @@ class RiskProjectTypeRiskTemplate extends Model
    {
       return [
          'name' => 'required',
-         'probability_id' => 'nullable|exists:App\Models\ProbabilityLevel,id',
-         'consequence_id' => 'nullable|exists:App\Models\ConsequenceLevel,id',
-         'risk_project_type_id' => 'nullable|exists:App\Models\RiskProjectType,id',
+         'probability_id' => 'nullable|exists:Ledningssystemet\Ledningssystemet\Models\ProbabilityLevel,id',
+         'consequence_id' => 'nullable|exists:Ledningssystemet\Ledningssystemet\Models\ConsequenceLevel,id',
+         'risk_project_type_id' => 'nullable|exists:Ledningssystemet\Ledningssystemet\Models\RiskProjectType,id',
       ];
    }
 

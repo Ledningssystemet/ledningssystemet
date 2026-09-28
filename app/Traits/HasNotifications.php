@@ -1,8 +1,8 @@
 <?php
-namespace App\Traits;
+namespace Ledningssystemet\Ledningssystemet\Traits;
 
-use App\Models\User;
-use App\Notifications\ModelLifecycleNotification;
+use Ledningssystemet\Ledningssystemet\Models\User;
+use Ledningssystemet\Ledningssystemet\Notifications\ModelLifecycleNotification;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Notification;
 

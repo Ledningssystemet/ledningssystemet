@@ -54,7 +54,7 @@ if(request()->has('json'))
          continue;
     
       $modelname = substr($filename, 0, strlen($filename)-4);
-      $classname = 'App\\Models\\'.$modelname;
+      $classname = 'Ledningssystemet\Ledningssystemet\\Models\\'.$modelname;
       
       // Ensure index function exist
       if(!method_exists($classname, 'index'))

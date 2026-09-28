@@ -1,4 +1,4 @@
-@php if(Auth::user()->cannot('index', \App\Models\Incident::class)) abort(403); @endphp
+@php if(Auth::user()->cannot('index', \Ledningssystemet\Ledningssystemet\Models\Incident::class)) abort(403); @endphp
 @extends('layouts.master')
 
 @section('container')
@@ -23,7 +23,7 @@ $(function(){
             default: 0,
             options: [
                { value: 0, text: '{{ __('Show all') }}' },
-                  @foreach(\App\Models\User::leftJoin('incidents', 'incidents.responsible_user_id', '=', 'users.id')->whereNotNull('incidents.id')->select(['users.id', 'users.name'])->distinct()->orderBy('users.name')->get()->each->setAppends([]) as $obj)
+                  @foreach(\Ledningssystemet\Ledningssystemet\Models\User::leftJoin('incidents', 'incidents.responsible_user_id', '=', 'users.id')->whereNotNull('incidents.id')->select(['users.id', 'users.name'])->distinct()->orderBy('users.name')->get()->each->setAppends([]) as $obj)
                { value: {{ $obj->id }}, text: <?php echo(json_encode($obj->name)); ?> },
                @endforeach
             ]
@@ -40,19 +40,19 @@ $(function(){
             checked: false,
             text: '{{ __('Show finished incidents') }}',
          },
-@include('components.customproperty', ['classname' => 'App\Models\Incident', 'showFilter' => true])
+@include('components.customproperty', ['classname' => 'Ledningssystemet\Ledningssystemet\Models\Incident', 'showFilter' => true])
       },
       actions: {
-@if(Auth::user()->can('index', \App\Models\Incident::class))         
+@if(Auth::user()->can('index', \Ledningssystemet\Ledningssystemet\Models\Incident::class))
          listAction: '/api/v1/items/Incident',
 @endif         
-@if(Auth::user()->can('create', \App\Models\Incident::class))         
+@if(Auth::user()->can('create', \Ledningssystemet\Ledningssystemet\Models\Incident::class))
          createAction: '/api/v1/items/Incident',
 @endif         
-@if(Auth::user()->can('update', \App\Models\Incident::class))         
+@if(Auth::user()->can('update', \Ledningssystemet\Ledningssystemet\Models\Incident::class))
          updateAction: '/api/v1/items/Incident',
 @endif         
-@if(Auth::user()->can('delete', \App\Models\Incident::class))         
+@if(Auth::user()->can('delete', \Ledningssystemet\Ledningssystemet\Models\Incident::class))
          deleteAction: '/api/v1/items/Incident',
 @endif         
       },
@@ -98,7 +98,7 @@ $(function(){
             listClass: 'd-inline-block col-12 col-md-4',
             options: [
                { Value: null, DisplayText: '{{ __("None assigned") }}' },
-@foreach(App\Models\User::orderBy('name')->select(['id', 'name'])->get()->each->setAppends([]) as $obj)
+@foreach(Ledningssystemet\Ledningssystemet\Models\User::orderBy('name')->select(['id', 'name'])->get()->each->setAppends([]) as $obj)
                { Value: {{$obj ->id}}, DisplayText: '{{ $obj->name }}' },
 @endforeach
             ]
@@ -143,7 +143,7 @@ $(function(){
             list: true,
             required: false,
          },
-         @include('components.customproperty', ['classname' => 'App\Models\Incident'])
+         @include('components.customproperty', ['classname' => 'Ledningssystemet\Ledningssystemet\Models\Incident'])
          hr2: {
             list: true,
             edit: false,
@@ -152,7 +152,7 @@ $(function(){
                return $('<hr />'); 
             }
          },
-@if(Auth::user()->can('update', \App\Models\Incident::class))         
+@if(Auth::user()->can('update', \Ledningssystemet\Ledningssystemet\Models\Incident::class))
          commands: {
             sorting: false,
             edit: false,
@@ -200,7 +200,7 @@ $(function(){
                var actions = {};
                
                actions.listAction ='/api/v1/items/IncidentLog?incident_id='+sourcedata.record.id;
-@if(Auth::user()->can('update', \App\Models\Incident::class))         
+@if(Auth::user()->can('update', \Ledningssystemet\Ledningssystemet\Models\Incident::class))
                if(!sourcedata.record.finished_at)
                {
                   actions.createAction = '/api/v1/items/IncidentLog';
@@ -286,7 +286,7 @@ $(function(){
                   
                var actions = { listAction: '/api/v1/items/ControlAction?incident='+sourcedata.record.id };
                
-@if(Auth::user()->can('update', \App\Models\Incident::class))         
+@if(Auth::user()->can('update', \Ledningssystemet\Ledningssystemet\Models\Incident::class))
                if(!sourcedata.record.finished_at)
                {
                   actions.createAction = '/api/v1/items/ControlAction?incident_id='+sourcedata.record.id;
@@ -343,7 +343,7 @@ $(function(){
                               create: true,
                               options:[
                                  { Value: null, DisplayText: '-- {{ __("Add new action") }} --' },
-                                    @foreach(App\Models\ControlAction::whereNull('finished_at')->orderBy('name')->get()->each->setAppends([]) as $obj)
+                                    @foreach(Ledningssystemet\Ledningssystemet\Models\ControlAction::whereNull('finished_at')->orderBy('name')->get()->each->setAppends([]) as $obj)
                                  { Value: {{ $obj->id }}, DisplayText: '{{ $obj->name}}'},
                                  @endforeach
 
@@ -357,7 +357,7 @@ $(function(){
                               create: true,
                               required: true,
                               options:[
-@foreach(App\Models\Control::orderBy('name')->select(['id', 'name'])->get()->each->setAppends([]) as $obj)
+@foreach(Ledningssystemet\Ledningssystemet\Models\Control::orderBy('name')->select(['id', 'name'])->get()->each->setAppends([]) as $obj)
    { Value: {{ $obj->id }}, DisplayText: '{{ $obj->name}}'}, 
 @endforeach
                               
@@ -370,7 +370,7 @@ $(function(){
                               edit: true,
                               create: true,
                               options: [
-@foreach(\App\Models\User::orderBy('name')->select(['id', 'name'])->get()->each->setAppends([]) as $obj)
+@foreach(\Ledningssystemet\Ledningssystemet\Models\User::orderBy('name')->select(['id', 'name'])->get()->each->setAppends([]) as $obj)
                                  { Value: {{ $obj->id }}, DisplayText: '{{ $obj->name }}'},
 @endforeach                                 
                               ],

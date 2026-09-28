@@ -1,4 +1,4 @@
-@php if(Auth::user()->cannot('index', \App\Models\Objective::class)) abort(403); @endphp
+@php if(Auth::user()->cannot('index', \Ledningssystemet\Ledningssystemet\Models\Objective::class)) abort(403); @endphp
 @extends('layouts.master')
 
 @section('container')
@@ -21,7 +21,7 @@ $(function(){
          addNewRecord: '{{ __('Create objective') }}',
       },
       filter: {
-@php $tags = \App\Models\Objective::allUsedTags(); @endphp
+@php $tags = \Ledningssystemet\Ledningssystemet\Models\Objective::allUsedTags(); @endphp
 @if(0 < count($tags))
          tag_id: {
             type: 'select',
@@ -41,7 +41,7 @@ $(function(){
             default: 0,
             options: [
                { value: 0, text: '{{ __('Show all') }}' },
-                  @foreach(\App\Models\User::leftJoin('objectives', 'objectives.responsible_user_id', '=', 'users.id')->whereNotNull('objectives.id')->select('users.*')->distinct()->orderBy('users.name')->get()->each->setAppends([]) as $obj)
+                  @foreach(\Ledningssystemet\Ledningssystemet\Models\User::leftJoin('objectives', 'objectives.responsible_user_id', '=', 'users.id')->whereNotNull('objectives.id')->select('users.*')->distinct()->orderBy('users.name')->get()->each->setAppends([]) as $obj)
                { value: {{ $obj->id }}, text: <?php echo(json_encode($obj->name)); ?> },
                @endforeach
             ]
@@ -58,19 +58,19 @@ $(function(){
             checked: false,
             text: '{{ __('Show archived objectives') }}',
          },
-@include('components.customproperty', ['classname' => 'App\Models\Objective', 'showFilter' => true])
+@include('components.customproperty', ['classname' => 'Ledningssystemet\Ledningssystemet\Models\Objective', 'showFilter' => true])
       },
       actions: {
-@if(Auth::user()->can('index', 'App\\Models\\Objective'))
+@if(Auth::user()->can('index', 'Ledningssystemet\Ledningssystemet\\Models\\Objective'))
          listAction: '/api/v1/items/Objective',
 @endif
-@if(Auth::user()->can('create', 'App\\Models\\Objective'))
+@if(Auth::user()->can('create', 'Ledningssystemet\Ledningssystemet\\Models\\Objective'))
          createAction: '/api/v1/items/Objective',
 @endif
-@if(Auth::user()->can('update', 'App\\Models\\Objective'))
+@if(Auth::user()->can('update', 'Ledningssystemet\Ledningssystemet\\Models\\Objective'))
          updateAction: '/api/v1/items/Objective',
 @endif
-@if(Auth::user()->can('delete', 'App\\Models\\Objective'))
+@if(Auth::user()->can('delete', 'Ledningssystemet\Ledningssystemet\\Models\\Objective'))
          deleteAction: '/api/v1/items/Objective',
 @endif
       },
@@ -101,7 +101,7 @@ $(function(){
             defaultValue: {{ auth()->user()->id }},
             options: [
                { Value: null, DisplayText: '{{ __("None assigned") }}' },
-@foreach(App\Models\User::orderBy('name')->get()->each->setAppends([]) as $obj)
+@foreach(Ledningssystemet\Ledningssystemet\Models\User::orderBy('name')->get()->each->setAppends([]) as $obj)
                { Value: {{$obj ->id}}, DisplayText: @php echo(json_encode($obj->name)); @endphp  },
 @endforeach
             ],
@@ -126,7 +126,7 @@ $(function(){
             defaultValue: {{ auth()->user()->id }},
             options: [
                { Value: null, DisplayText: '{{ __("None") }}' },
-                  @foreach(App\Models\Department::orderBy('name')->get()->each->setAppends([]) as $obj)
+                  @foreach(Ledningssystemet\Ledningssystemet\Models\Department::orderBy('name')->get()->each->setAppends([]) as $obj)
                { Value: {{$obj ->id}}, DisplayText: @php echo(json_encode($obj->name)); @endphp  },
                @endforeach
             ],
@@ -165,7 +165,7 @@ $(function(){
             required: false,
             placeholder: '{{ __("The description is supposed to outline the plans on how to achieve the objective, summarizing the detailed actions") }}',
          },
-         @include('components.customproperty', ['classname' => 'App\Models\Objective'])
+         @include('components.customproperty', ['classname' => 'Ledningssystemet\Ledningssystemet\Models\Objective'])
          hr2: {
             list: true,
             edit: false,
@@ -282,7 +282,7 @@ $(function(){
                               create: true,
 
                               options: [
-@foreach(\App\Models\ProcessPerformanceMetric::where('quantitative', true)->orderBy('name')->get()->each->setAppends([]) as $obj)
+@foreach(\Ledningssystemet\Ledningssystemet\Models\ProcessPerformanceMetric::where('quantitative', true)->orderBy('name')->get()->each->setAppends([]) as $obj)
                                  { Value: {{ $obj->id}}, DisplayText: @php echo(json_encode($obj->name)); @endphp },
 @endforeach                           
                               ],
@@ -348,7 +348,7 @@ $(function(){
                                  
                                  switch(parseInt(selectedId))
                                  {
-@foreach(\App\Models\ProcessPerformanceMetric::get() as $obj)
+@foreach(\Ledningssystemet\Ledningssystemet\Models\ProcessPerformanceMetric::get() as $obj)
                                     case {{ $obj->id }}:
                                        min = {{ $obj->minvalue / (10 ** $obj->precision)}};
                                        max = {{ $obj->maxvalue / (10 ** $obj->precision)}};
@@ -393,7 +393,7 @@ $(function(){
             display: function (sourcedata) {
                var actions = { listAction: '/api/v1/items/ControlAction?objective_id='+sourcedata.record.id };
                
-@if(Auth::user()->can('update', \App\Models\Objective::class))         
+@if(Auth::user()->can('update', \Ledningssystemet\Ledningssystemet\Models\Objective::class))
                if(!sourcedata.record.finished_at)
                {
                   actions.createAction = '/api/v1/items/ControlAction?objective_id='+sourcedata.record.id;
@@ -457,7 +457,7 @@ $(function(){
                               create: true,
                               options:[
                                  { Value: null, DisplayText: '-- {{ __("Add new action") }} --' },
-                                    @foreach(App\Models\ControlAction::whereNull('finished_at')->orderBy('name')->get()->each->setAppends([]) as $obj)
+                                    @foreach(Ledningssystemet\Ledningssystemet\Models\ControlAction::whereNull('finished_at')->orderBy('name')->get()->each->setAppends([]) as $obj)
                                  { Value: {{ $obj->id }}, DisplayText: '{{ $obj->name}}'},
                                  @endforeach
 
@@ -472,7 +472,7 @@ $(function(){
 
                               required: true,
                               options:[
-@foreach(App\Models\Control::whereNull('not_applicable_at')->orderBy('name')->get()->each->setAppends([]) as $obj)
+@foreach(Ledningssystemet\Ledningssystemet\Models\Control::whereNull('not_applicable_at')->orderBy('name')->get()->each->setAppends([]) as $obj)
    { Value: {{ $obj->id }}, DisplayText: '{{ $obj->name}}'}, 
 @endforeach
                               
@@ -486,7 +486,7 @@ $(function(){
 
                               create: true,
                               options: [
-@foreach(\App\Models\User::orderBy('name')->get()->each->setAppends([]) as $obj)
+@foreach(\Ledningssystemet\Ledningssystemet\Models\User::orderBy('name')->get()->each->setAppends([]) as $obj)
                                  { Value: {{ $obj->id }}, DisplayText: '{{ $obj->name }}'},
 @endforeach                                 
                               ],

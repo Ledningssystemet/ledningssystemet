@@ -1,4 +1,4 @@
-@php if(Auth::user()->cannot('index', \App\Models\Agreement::class)) abort(403); @endphp
+@php if(Auth::user()->cannot('index', \Ledningssystemet\Ledningssystemet\Models\Agreement::class)) abort(403); @endphp
 @extends('layouts.master')
 
 @section('container')
@@ -16,7 +16,7 @@ $(function(){
          addNewRecord: '{{ __('Add agreement') }}',
       },
       filter: {
-@php $tags = \App\Models\Agreement::allUsedTags(); @endphp
+@php $tags = \Ledningssystemet\Ledningssystemet\Models\Agreement::allUsedTags(); @endphp
 @if(0 < count($tags))
          tag_id: {
             type: 'select',
@@ -36,7 +36,7 @@ $(function(){
             default: 0,
             options: [
                { value: 0, text: '{{ __('Show all') }}' },
-                  @foreach(\App\Models\User::leftJoin('agreements', 'agreements.responsible_user_id', '=', 'users.id')->whereNotNull('agreements.id')->select('users.*')->distinct()->orderBy('users.name')->get() as $obj)
+                  @foreach(\Ledningssystemet\Ledningssystemet\Models\User::leftJoin('agreements', 'agreements.responsible_user_id', '=', 'users.id')->whereNotNull('agreements.id')->select('users.*')->distinct()->orderBy('users.name')->get() as $obj)
                { value: {{ $obj->id }}, text: <?php echo(json_encode($obj->name)); ?> },
                @endforeach
             ]
@@ -59,19 +59,19 @@ $(function(){
             checked: false,
             text: '{{ __('Show archived agreements') }}',
          },
-@include('components.customproperty', ['classname' => 'App\Models\Agreement', 'showFilter' => true])
+@include('components.customproperty', ['classname' => 'Ledningssystemet\Ledningssystemet\Models\Agreement', 'showFilter' => true])
       },
       actions: {
-@if(Auth::user()->can('index', \App\Models\Agreement::class))
+@if(Auth::user()->can('index', \Ledningssystemet\Ledningssystemet\Models\Agreement::class))
          listAction: '/api/v1/items/Agreement',
 @endif         
-@if(Auth::user()->can('create', \App\Models\Agreement::class))
+@if(Auth::user()->can('create', \Ledningssystemet\Ledningssystemet\Models\Agreement::class))
          createAction: '/api/v1/items/Agreement',
 @endif         
-@if(Auth::user()->can('update', \App\Models\Agreement::class))
+@if(Auth::user()->can('update', \Ledningssystemet\Ledningssystemet\Models\Agreement::class))
          updateAction: '/api/v1/items/Agreement',
 @endif         
-@if(Auth::user()->can('delete', \App\Models\Agreement::class))
+@if(Auth::user()->can('delete', \Ledningssystemet\Ledningssystemet\Models\Agreement::class))
          deleteAction: '/api/v1/items/Agreement',
 @endif         
       },
@@ -102,7 +102,7 @@ $(function(){
 <?php
    // Customer
    echo("{ Label: '".__('Customer')."', Children: [\r\n");
-   foreach(\App\Models\Customer::orderBy('name')->get()->each->setAppends([]) as $obj)
+   foreach(\Ledningssystemet\Ledningssystemet\Models\Customer::orderBy('name')->get()->each->setAppends([]) as $obj)
       echo("{ Value: 'Customer_".$obj->id."', DisplayText: ".json_encode($obj->name)." },\r\n");
    echo("]},\r\n");
 
@@ -110,7 +110,7 @@ $(function(){
    {
       // Suppliers
       echo("{ Label: '".__('Supplier')."', Children: [\r\n");
-      foreach(\App\Models\Supplier::orderBy('name')->get()->each->setAppends([]) as $obj)
+      foreach(\Ledningssystemet\Ledningssystemet\Models\Supplier::orderBy('name')->get()->each->setAppends([]) as $obj)
          echo("{ Value: 'Supplier_".$obj->id."', DisplayText: ".json_encode($obj->name)." },\r\n");
       echo("]},\r\n");
    }
@@ -126,7 +126,7 @@ $(function(){
             defaultValue: {{ auth()->user()->id }},
             options: [
                { Value: null, DisplayText: '{{ __("None assigned") }}' },
-@foreach(App\Models\User::orderBy('name')->get()->each->setAppends([]) as $obj)
+@foreach(Ledningssystemet\Ledningssystemet\Models\User::orderBy('name')->get()->each->setAppends([]) as $obj)
                { Value: {{$obj ->id}}, DisplayText: @php echo(json_encode($obj->name)); @endphp  },
 @endforeach
             ],
@@ -179,7 +179,7 @@ $(function(){
             create: true,
             listClass: 'd-inline-block col-6 col-md-4',
          },
-@include('components.customproperty', ['classname' => 'App\Models\Agreement'])
+@include('components.customproperty', ['classname' => 'Ledningssystemet\Ledningssystemet\Models\Agreement'])
          hr2: {
             list: true,
             edit: false,

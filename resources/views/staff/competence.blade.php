@@ -1,4 +1,4 @@
-@php if(Auth::user()->cannot('index', \App\Models\Competence::class)) abort(403); @endphp
+@php if(Auth::user()->cannot('index', \Ledningssystemet\Ledningssystemet\Models\Competence::class)) abort(403); @endphp
 @extends('layouts.master')
 
 @section('container')
@@ -16,16 +16,16 @@ $(function(){
          addNewRecord: '{{ __('Add new competence') }}',
       },
       actions: {
-@if(Auth::user()->can('index', \App\Models\Competence::class))         
+@if(Auth::user()->can('index', \Ledningssystemet\Ledningssystemet\Models\Competence::class))
          listAction: '/api/v1/items/Competence',
 @endif      
-@if(Auth::user()->can('create', \App\Models\Competence::class))         
+@if(Auth::user()->can('create', \Ledningssystemet\Ledningssystemet\Models\Competence::class))
          createAction: '/api/v1/items/Competence',
 @endif      
-@if(Auth::user()->can('update', \App\Models\Competence::class))         
+@if(Auth::user()->can('update', \Ledningssystemet\Ledningssystemet\Models\Competence::class))
          updateAction: '/api/v1/items/Competence',
 @endif      
-@if(Auth::user()->can('delete', \App\Models\Competence::class))         
+@if(Auth::user()->can('delete', \Ledningssystemet\Ledningssystemet\Models\Competence::class))
          deleteAction: '/api/v1/items/Competence',
 @endif      
       },
@@ -138,19 +138,19 @@ $(function(){
                         title: '{{__("Competence levels") }}',
                         tableId: 'competencesstable',
                         actions: {
-@if(Auth::user()->can('index', \App\Models\CompetenceLevel::class))         
+@if(Auth::user()->can('index', \Ledningssystemet\Ledningssystemet\Models\CompetenceLevel::class))
                            listAction: '/api/v1/items/CompetenceLevel?competence_id='+sourcedata.record.id,
 @endif         
-@if(Auth::user()->can('create', \App\Models\CompetenceLevel::class))         
+@if(Auth::user()->can('create', \Ledningssystemet\Ledningssystemet\Models\CompetenceLevel::class))
                            createAction:  '/api/v1/items/CompetenceLevel',
 @endif         
-@if(Auth::user()->can('update', \App\Models\CompetenceLevel::class))         
+@if(Auth::user()->can('update', \Ledningssystemet\Ledningssystemet\Models\CompetenceLevel::class))
                            updateAction:  '/api/v1/items/CompetenceLevel',
 @endif         
-@if(Auth::user()->can('delete', \App\Models\CompetenceLevel::class))         
+@if(Auth::user()->can('delete', \Ledningssystemet\Ledningssystemet\Models\CompetenceLevel::class))
                            deleteAction:  '/api/v1/items/CompetenceLevel',
 @endif         
-@if(Auth::user()->can('update', \App\Models\CompetenceLevel::class))         
+@if(Auth::user()->can('update', \Ledningssystemet\Ledningssystemet\Models\CompetenceLevel::class))
                            reorderAction:  '/api/v1/items/CompetenceLevel',
 @endif         
                         },

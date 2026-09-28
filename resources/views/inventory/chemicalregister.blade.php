@@ -1,4 +1,4 @@
-@php if(Auth::user()->cannot('index', \App\Models\Chemical::class)) abort(403); @endphp
+@php if(Auth::user()->cannot('index', \Ledningssystemet\Ledningssystemet\Models\Chemical::class)) abort(403); @endphp
 @extends('layouts.master')
 
 @section('container')
@@ -20,7 +20,7 @@ $(function(){
       bootstrap: true,
       accordion: true,
       filter: {
-         @php $tags = \App\Models\Chemical::allUsedTags(); @endphp
+         @php $tags = \Ledningssystemet\Ledningssystemet\Models\Chemical::allUsedTags(); @endphp
             @if(0 < count($tags))
          tag_id: {
             type: 'select',
@@ -35,22 +35,22 @@ $(function(){
             ]
          },
          @endif
-@include('components.customproperty', ['classname' => 'App\Models\Chemical', 'showFilter' => true])
+@include('components.customproperty', ['classname' => 'Ledningssystemet\Ledningssystemet\Models\Chemical', 'showFilter' => true])
       },
       messages: {
          addNewRecord: '{{ __('Create chemical') }}',
       },
       actions: {
-@if(request()->user()->can('index', \App\Models\Chemical::class))         
+@if(request()->user()->can('index', \Ledningssystemet\Ledningssystemet\Models\Chemical::class))
          listAction: '/api/v1/items/Chemical',
 @endif         
-@if(request()->user()->can('create', \App\Models\Chemical::class))         
+@if(request()->user()->can('create', \Ledningssystemet\Ledningssystemet\Models\Chemical::class))
          createAction: '/api/v1/items/Chemical',
 @endif         
-@if(request()->user()->can('update', \App\Models\Chemical::class))         
+@if(request()->user()->can('update', \Ledningssystemet\Ledningssystemet\Models\Chemical::class))
          updateAction: '/api/v1/items/Chemical',
 @endif         
-@if(request()->user()->can('delete', \App\Models\Chemical::class))         
+@if(request()->user()->can('delete', \Ledningssystemet\Ledningssystemet\Models\Chemical::class))
          deleteAction: '/api/v1/items/Chemical',
 @endif         
       },
@@ -86,14 +86,14 @@ $(function(){
             listClass: 'd-inline-block col-8',
             display: function(data) {
                var retval = $('<div />');
-@foreach(array_keys(App\Models\Chemical::dangerProperties()) as $objkey)
+@foreach(array_keys(Ledningssystemet\Ledningssystemet\Models\Chemical::dangerProperties()) as $objkey)
                if(data.record.danger.includes(@php echo(json_encode($objkey)); @endphp))
                {
                   retval.append($('<div />')
                      .addClass('d-inline-block px-1 py-1')
                      .append($('<div />')
-                        .attr('title', @php echo(json_encode(App\Models\Chemical::dangerProperties()[$objkey]['text'])); @endphp)
-                        .append(@php echo(json_encode(App\Models\Chemical::dangerProperties()[$objkey]['svg'])); @endphp)
+                        .attr('title', @php echo(json_encode(Ledningssystemet\Ledningssystemet\Models\Chemical::dangerProperties()[$objkey]['text'])); @endphp)
+                        .append(@php echo(json_encode(Ledningssystemet\Ledningssystemet\Models\Chemical::dangerProperties()[$objkey]['svg'])); @endphp)
                      )
                   );
                }
@@ -102,7 +102,7 @@ $(function(){
             },
             input: function(data) {
                var retval = $('<div />');
-@foreach(array_keys(App\Models\Chemical::dangerProperties()) as $objkey)
+@foreach(array_keys(Ledningssystemet\Ledningssystemet\Models\Chemical::dangerProperties()) as $objkey)
                retval.append($('<div />')
                   .addClass('d-inline-block col-12 col-md-4 mb-1')
                   .append($('<input />')
@@ -117,8 +117,8 @@ $(function(){
                   .append($('<label />')
                      .addClass('form-check-label')
                      .attr('for', 'ohs_danger_properties_{{ $objkey }}')
-                     .attr('title', @php echo(json_encode(App\Models\Chemical::dangerProperties()[$objkey]['text'])); @endphp)
-                     .append(@php echo(json_encode(App\Models\Chemical::dangerProperties()[$objkey]['svg'])); @endphp)
+                     .attr('title', @php echo(json_encode(Ledningssystemet\Ledningssystemet\Models\Chemical::dangerProperties()[$objkey]['text'])); @endphp)
+                     .append(@php echo(json_encode(Ledningssystemet\Ledningssystemet\Models\Chemical::dangerProperties()[$objkey]['svg'])); @endphp)
                   )
                );
 @endforeach    
@@ -200,7 +200,7 @@ $(function(){
             edit: true,
             create: true,
          },
-         @include('components.customproperty', ['classname' => 'App\Models\Chemical'])
+         @include('components.customproperty', ['classname' => 'Ledningssystemet\Ledningssystemet\Models\Chemical'])
          hr1: {
             list: true,
             edit: false,
@@ -241,7 +241,7 @@ $(function(){
 <div class="d-flex flex-row flex-row-reverse mb-4 w-100">
 </div>
 <?php
-$lastupdatedchem = \App\Models\Chemical::orderBy('updated_at', 'desc')->select('updated_at')->first();
+$lastupdatedchem = \Ledningssystemet\Ledningssystemet\Models\Chemical::orderBy('updated_at', 'desc')->select('updated_at')->first();
 if(null !== $lastupdatedchem)
    echo('<div style="color: var(--bs-gray-500); font-style: italic; margin-bottom: 20px;">'.__("Updated").': '.date("Y-m-d", strtotime($lastupdatedchem->updated_at)).'</div>');
 

@@ -1,11 +1,11 @@
 <?php
 
-namespace App\Http\Controllers\Api;
+namespace Ledningssystemet\Ledningssystemet\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
+use Ledningssystemet\Ledningssystemet\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use App\Models\User;
-use App\Models\Tag;
+use Ledningssystemet\Ledningssystemet\Models\User;
+use Ledningssystemet\Ledningssystemet\Models\Tag;
 
 class TagController extends Controller
 {
@@ -15,13 +15,12 @@ class TagController extends Controller
    public function getTags($modelname, $id)
    {
      // Check if model exist
-     $classname = 'App\\Models\\'.$modelname;
-     if(!class_exists($classname))
+     $classname = !str_contains($modelname, '\\') && is_subclass_of('Ledningssystemet\\Ledningssystemet\\Models\\'.$modelname, \Illuminate\Database\Eloquent\Model::class) ? 'Ledningssystemet\\Ledningssystemet\\Models\\'.$modelname : null;
+     if(! $classname)
       abort(404, __('Could not find the requested item'));
       
      // Ensure requested object exist
-     $modeltype = 'App\\Models\\'.$modelname;
-     $modelobj = $modeltype::findOrFail($id);
+     $modelobj = $classname::findOrFail($id);
      
      // Authorize action
      $this->authorize('view', $modelobj);
@@ -49,13 +48,12 @@ class TagController extends Controller
    public function getAllTags($modelname, $id)
    {
      // Check if model exist
-     $classname = 'App\\Models\\'.$modelname;
-     if(!class_exists($classname))
+     $classname = !str_contains($modelname, '\\') && is_subclass_of('Ledningssystemet\\Ledningssystemet\\Models\\'.$modelname, \Illuminate\Database\Eloquent\Model::class) ? 'Ledningssystemet\\Ledningssystemet\\Models\\'.$modelname : null;
+     if(! $classname)
       abort(404, __('Could not find the requested item'));
       
      // Ensure requested object exist
-     $modeltype = 'App\\Models\\'.$modelname;
-     $modelobj = $modeltype::findOrFail($id);
+     $modelobj = $classname::findOrFail($id);
      
      // Authorize action
      $this->authorize('view', $modelobj);
@@ -86,8 +84,8 @@ class TagController extends Controller
    public function setTags($modelname, $id)
    {
      // Check if model exist
-     $classname = 'App\\Models\\'.$modelname;
-     if(!class_exists($classname))
+     $classname = !str_contains($modelname, '\\') && is_subclass_of('Ledningssystemet\\Ledningssystemet\\Models\\'.$modelname, \Illuminate\Database\Eloquent\Model::class) ? 'Ledningssystemet\\Ledningssystemet\\Models\\'.$modelname : null;
+     if(! $classname)
         abort(404, __('Could not find the requested item'));
      
      // Get object

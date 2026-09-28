@@ -781,7 +781,7 @@ window.showRisks = function(modeltype, parentContainer, ai=false, allowdelete=fa
                            text: translateString('AI Risk identification'),
                            click: function (buttonContainer) {
                               var jtableContainer = $(buttonContainer).closest('.jtable-child-table-container');
-                              ajaxPost('/api/v1/ai/riskidentification', { context_type: 'App\\Models\\'+modeltype.split('\\').slice(-1)[0], context_id: sourcedata.record.id }, function(aidata, textStatus, jqXHR){
+                              ajaxPost('/api/v1/ai/riskidentification', { context_type: 'Ledningssystemet\Ledningssystemet\\Models\\'+modeltype.split('\\').slice(-1)[0], context_id: sourcedata.record.id }, function(aidata, textStatus, jqXHR){
                                  if(null == aidata.riskcount)
                                     showDialog(translateString("AI Risk identification"), translateString("No response was received from AI agent"));
                                  else {
@@ -1345,12 +1345,29 @@ window.getCookieValue = function(name) {
    var cookies = document.cookie ? document.cookie.split(';') : [];
    for (var i = 0; i < cookies.length; i++) {
       var parts = cookies[i].trim().split('=');
-      var cookiename = decodeURIComponent(parts.shift());
+      if(parts.length < 2)
+         continue;
 
-      if (cookiename && cookiename === name) {
-         return JSON.parse(decodeURIComponent(parts.shift()));
-      }
-   }   
+      // Check that the cookie has a name and that is matches the requested name
+      var cookiename = decodeURIComponent(parts.shift());
+      if (!cookiename || (name.toLowerCase() !== cookiename.toLowerCase()))
+         continue;
+
+      var cookievalue = parts.shift();
+
+      // If the cookie value is null or empty, return null
+      if((null == cookievalue) || ('' == cookievalue))
+         return null;
+
+      // Deocode it as a URI component
+      cookievalue = decodeURIComponent(cookievalue);
+
+      // Ensure that the cookie value is a valid JSON string and return it as an object
+      if(!cookievalue.startsWith('{') && !cookievalue.startsWith('['))
+         return null;
+
+      return JSON.parse(cookievalue);
+   }
    
    return null;
 }

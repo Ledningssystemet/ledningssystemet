@@ -1,4 +1,4 @@
-@php if(Auth::user()->cannot('index', \App\Models\RequirementSource::class)) abort(403); @endphp
+@php if(Auth::user()->cannot('index', \Ledningssystemet\Ledningssystemet\Models\RequirementSource::class)) abort(403); @endphp
 @extends('layouts.master')
 
 @section('container')
@@ -28,7 +28,7 @@ $(function(){
          addNewRecord: '{{ __('Add requirement source') }}',
       },
       filter: {
-@php $tags = \App\Models\RequirementSource::allUsedTags(); @endphp
+@php $tags = \Ledningssystemet\Ledningssystemet\Models\RequirementSource::allUsedTags(); @endphp
 @if(0 < count($tags))
          tag_id: {
             type: 'select',
@@ -48,7 +48,7 @@ $(function(){
             default: 0,
             options: [
                { value: 0, text: '{{ __('Show all') }}' },
-                  @foreach(\App\Models\User::leftJoin('requirement_sources', 'requirement_sources.responsible_user_id', '=', 'users.id')->whereNotNull('requirement_sources.id')->select('users.*')->distinct()->orderBy('users.name')->get()->each->setAppends([]) as $obj)
+                  @foreach(\Ledningssystemet\Ledningssystemet\Models\User::leftJoin('requirement_sources', 'requirement_sources.responsible_user_id', '=', 'users.id')->whereNotNull('requirement_sources.id')->select('users.*')->distinct()->orderBy('users.name')->get()->each->setAppends([]) as $obj)
                { value: {{ $obj->id }}, text: <?php echo(json_encode($obj->name)); ?> },
                @endforeach
             ]
@@ -71,19 +71,19 @@ $(function(){
             checked: false,
             text: '{{ __('Show not applicable') }}',
          },
-@include('components.customproperty', ['classname' => 'App\Models\RequirementSource', 'showFilter' => true])
+@include('components.customproperty', ['classname' => 'Ledningssystemet\Ledningssystemet\Models\RequirementSource', 'showFilter' => true])
       },
       actions: {
-@if(Auth::user()->can('index', 'App\\Models\\RequirementSource'))
+@if(Auth::user()->can('index', 'Ledningssystemet\Ledningssystemet\\Models\\RequirementSource'))
          listAction: '/api/v1/items/RequirementSource',
 @endif
-@if(Auth::user()->can('create', 'App\\Models\\RequirementSource'))
+@if(Auth::user()->can('create', 'Ledningssystemet\Ledningssystemet\\Models\\RequirementSource'))
          createAction: '/api/v1/items/RequirementSource',
 @endif
-@if(Auth::user()->can('update', 'App\\Models\\RequirementSource'))
+@if(Auth::user()->can('update', 'Ledningssystemet\Ledningssystemet\\Models\\RequirementSource'))
          updateAction: '/api/v1/items/RequirementSource',
 @endif
-@if(Auth::user()->can('delete', 'App\\Models\\RequirementSource'))
+@if(Auth::user()->can('delete', 'Ledningssystemet\Ledningssystemet\\Models\\RequirementSource'))
          deleteAction: '/api/v1/items/RequirementSource',
 @endif
       },
@@ -167,7 +167,7 @@ $(function(){
             defaultValue: {{ auth()->user()->id }},
             options: [
                {Value: null, DisplayText: '{{ __("None assigned") }}'},
-                  @foreach(App\Models\User::orderBy('name')->get()->each->setAppends([]) as $obj)
+                  @foreach(Ledningssystemet\Ledningssystemet\Models\User::orderBy('name')->get()->each->setAppends([]) as $obj)
                {
                   Value: {{$obj ->id}}, DisplayText: @php echo(json_encode($obj->name)); @endphp  },
                @endforeach
@@ -203,7 +203,7 @@ $(function(){
             list: true,
             width: '40%',
          },
-         @include('components.customproperty', ['classname' => 'App\Models\RequirementSource'])
+         @include('components.customproperty', ['classname' => 'Ledningssystemet\Ledningssystemet\Models\RequirementSource'])
          hr2: {
             list: true,
             edit: false,
@@ -249,7 +249,7 @@ $(function(){
             }
          },
 @endif
-@if(auth()->user()->can('update', 'App\\Models\\RequirementSource'))
+@if(auth()->user()->can('update', 'Ledningssystemet\Ledningssystemet\\Models\\RequirementSource'))
          notapplicable: {
             title: '',
             type: 'command',
@@ -331,17 +331,17 @@ $(function(){
                            addNewRecord: '{{ __('Add requirement') }}',
                         },
                         actions: {
-                           @if(Auth::user()->can('index', 'App\\Models\\Requirement'))
+                           @if(Auth::user()->can('index', 'Ledningssystemet\Ledningssystemet\\Models\\Requirement'))
                            listAction: '/api/v1/items/Requirement?requirement_source_id=' + reqsourcedata.record.id,
                            @endif
-                              @if(Auth::user()->can('create', 'App\\Models\\Requirement'))
+                              @if(Auth::user()->can('create', 'Ledningssystemet\Ledningssystemet\\Models\\Requirement'))
                            createAction: (reqsourcedata.record.not_applicable_at || reqsourcedata.record.partner_id) ? null : '/api/v1/items/Requirement',
                            @endif
-                              @if(Auth::user()->can('update', 'App\\Models\\Requirement'))
+                              @if(Auth::user()->can('update', 'Ledningssystemet\Ledningssystemet\\Models\\Requirement'))
                            updateAction: reqsourcedata.record.not_applicable_at ? null : '/api/v1/items/Requirement',
                            reorderAction: (reqsourcedata.record.not_applicable_at || reqsourcedata.record.partner_id) ? null : '/api/v1/items/Requirement',
                            @endif
-                              @if(Auth::user()->can('delete', 'App\\Models\\Requirement'))
+                              @if(Auth::user()->can('delete', 'Ledningssystemet\Ledningssystemet\\Models\\Requirement'))
                            deleteAction: reqsourcedata.record.not_applicable_at ? null : '/api/v1/items/Requirement',
                            @endif
                         },
@@ -415,12 +415,12 @@ $(function(){
                            },
                            controls: {
                               title: '{{ __('Governing controls') }}',
-                              create: false,
+                              create: true,
                               edit: true,
                               list: true,
                               multiple: true,
                               options: [
-                                    @foreach(App\Models\Control::whereNull('not_applicable_at')->orderBy('name')->get()->each->setAppends([]) as $obj)
+                                    @foreach(Ledningssystemet\Ledningssystemet\Models\Control::whereNull('not_applicable_at')->orderBy('name')->get()->each->setAppends([]) as $obj)
                                  {
                                     Value: {{ $obj->id }}, DisplayText: @php echo(json_encode($obj->name)); @endphp },
                                  @endforeach

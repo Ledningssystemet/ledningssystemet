@@ -14,7 +14,7 @@ use Illuminate\Http\Request;
 |
 */
 
-Route::group(['namespace' => 'App\Http\Controllers'], function()
+Route::group(['namespace' => 'Ledningssystemet\Ledningssystemet\Http\Controllers'], function()
 {
    // Unauthenticated routes
    Route::group(['middleware' => ['guest']], function()
@@ -23,18 +23,18 @@ Route::group(['namespace' => 'App\Http\Controllers'], function()
       * Authentication-related routes
       */
       // Login
-      Route::get('/login', [\App\Http\Controllers\Auth\LoginController::class, 'show'])->name('login');
+      Route::get('/login', [\Ledningssystemet\Ledningssystemet\Http\Controllers\Auth\LoginController::class, 'show'])->name('login');
       Route::post('/login', [\Laravel\Fortify\Http\Controllers\AuthenticatedSessionController::class, 'store']);
        
       // SSO login
       Route::get('/ssologin', function () {
-         return app(\App\Http\Controllers\Auth\SsoController::class)->redirect('azure');
+         return app(\Ledningssystemet\Ledningssystemet\Http\Controllers\Auth\SsoController::class)->redirect('azure');
       })->name('ssologin');
       Route::get('/oauthcallback', function (\Illuminate\Http\Request $request) {
-         return app(\App\Http\Controllers\Auth\SsoController::class)->callback($request, 'azure');
+         return app(\Ledningssystemet\Ledningssystemet\Http\Controllers\Auth\SsoController::class)->callback($request, 'azure');
       })->name('oauthcallback');
-      Route::get('/sso/{provider}', 'App\Http\Controllers\Auth\SsoController@redirect')->where('provider', 'azure|google')->name('sso.redirect');
-      Route::get('/sso/{provider}/callback', 'App\Http\Controllers\Auth\SsoController@callback')->where('provider', 'azure|google')->name('sso.callback');
+      Route::get('/sso/{provider}', 'Ledningssystemet\Ledningssystemet\Http\Controllers\Auth\SsoController@redirect')->where('provider', 'azure|google')->name('sso.redirect');
+      Route::get('/sso/{provider}/callback', 'Ledningssystemet\Ledningssystemet\Http\Controllers\Auth\SsoController@callback')->where('provider', 'azure|google')->name('sso.callback');
        
       // Password reset
       Route::get('/forgot-password', [\Laravel\Fortify\Http\Controllers\PasswordResetLinkController::class, 'create'])->name('password.request');
@@ -43,8 +43,8 @@ Route::group(['namespace' => 'App\Http\Controllers'], function()
       Route::post('/reset-password', [\Laravel\Fortify\Http\Controllers\NewPasswordController::class, 'store'])->name('password.update');
       if(config('ledningssystemet.mfa_enabled'))
       {
-         Route::get('/two-factor-challenge', 'App\Http\Controllers\Auth\TwoFactorChallengeController@create')->name('two-factor.login');
-         Route::post('/two-factor-challenge', 'App\Http\Controllers\Auth\TwoFactorChallengeController@store');
+         Route::get('/two-factor-challenge', 'Ledningssystemet\Ledningssystemet\Http\Controllers\Auth\TwoFactorChallengeController@create')->name('two-factor.login');
+         Route::post('/two-factor-challenge', 'Ledningssystemet\Ledningssystemet\Http\Controllers\Auth\TwoFactorChallengeController@store');
       }
       Route::post('/auth/keepalive', function () {
          return response()->json(['ok' => true]);
@@ -56,7 +56,7 @@ Route::group(['namespace' => 'App\Http\Controllers'], function()
    {
      if(config('ledningssystemet.mfa_enabled') && config('ledningssystemet.mfa_enforced'))
      {
-        Route::get('/mfa-enforcement', [\App\Http\Controllers\Auth\MfaEnforcementController::class, 'index'])->withoutMiddleware(['authproxy'])->name('mfa.enforcement');
+        Route::get('/mfa-enforcement', [\Ledningssystemet\Ledningssystemet\Http\Controllers\Auth\MfaEnforcementController::class, 'index'])->withoutMiddleware(['authproxy'])->name('mfa.enforcement');
      }
 
       /**
@@ -90,10 +90,10 @@ Route::group(['namespace' => 'App\Http\Controllers'], function()
       if(!config('ledningssystemet.disable_processes'))
       {
          Route::get('/inventory/processes', function() { return view('inventory.processes'); }); // Display processes
-         Route::get('/inventory/processedit/{id}',  function(string $id) { return view('inventory.processedit')->with('process', App\Models\Process::findOrFail($id)); }); // Edit process chart   
-         Route::post('/inventory/processedit/{id}/save', 'App\Http\Controllers\ProcessController@save');
-         Route::get('/inventory/processedit/{id}/revert', 'App\Http\Controllers\ProcessController@revert');
-         Route::get('/inventory/processload/{id}', 'App\Http\Controllers\ProcessController@loadxml');
+         Route::get('/inventory/processedit/{id}',  function(string $id) { return view('inventory.processedit')->with('process', Ledningssystemet\Ledningssystemet\Models\Process::findOrFail($id)); }); // Edit process chart
+         Route::post('/inventory/processedit/{id}/save', 'Ledningssystemet\Ledningssystemet\Http\Controllers\ProcessController@save');
+         Route::get('/inventory/processedit/{id}/revert', 'Ledningssystemet\Ledningssystemet\Http\Controllers\ProcessController@revert');
+         Route::get('/inventory/processload/{id}', 'Ledningssystemet\Ledningssystemet\Http\Controllers\ProcessController@loadxml');
       }
       
       Route::get('/inventory/customers', function() { return view('inventory.customers'); }); 
@@ -129,7 +129,7 @@ Route::group(['namespace' => 'App\Http\Controllers'], function()
       Route::get('/assessment/incidents', function() { return view('assessment.incidents'); }); // Display incidents
       Route::get('/assessment/controlactions', function() { return view('assessment.controlactions'); }); // Display actions
       Route::get('/assessment/evaluations', function() { return view('assessment.evaluations'); }); 
-      Route::get('/assessment/evaluate/{eval}', function(\App\Models\ComplianceEvaluation $eval) {
+      Route::get('/assessment/evaluate/{eval}', function(\Ledningssystemet\Ledningssystemet\Models\ComplianceEvaluation $eval) {
          return View::make('assessment.evaluate')->with('evaluation', $eval); 
       });
 
@@ -176,7 +176,7 @@ Route::group(['namespace' => 'App\Http\Controllers'], function()
             return view('management.formtemplates');
          }); // Display form templates
 
-         Route::get('/management/formtemplate/{formtemplate}', function (App\Models\FormTemplate $formtemplate) {
+         Route::get('/management/formtemplate/{formtemplate}', function (Ledningssystemet\Ledningssystemet\Models\FormTemplate $formtemplate) {
             // Return blade view with form template
             if(auth()->user()->cannot('view', $formtemplate))
                abort(403);
@@ -187,22 +187,22 @@ Route::group(['namespace' => 'App\Http\Controllers'], function()
       }
 
       Route::get('/management/documenteditor/{id}', function($id) {
-         $libraryDocument = \App\Models\LibraryDocument::where('id', $id)->firstOrFail();
+         $libraryDocument = \Ledningssystemet\Ledningssystemet\Models\LibraryDocument::where('id', $id)->firstOrFail();
 
          // Ensure correct contenttype
          if('ledningssystemet/document' != $libraryDocument->contenttype)
             abort(404);
 
          // Get document version
-         $version = \App\Models\DocumentVersion::where('library_document_id', $libraryDocument->id)->orderBy('major_version', 'desc')->orderBy('minor_version', 'desc')->first();
+         $version = \Ledningssystemet\Ledningssystemet\Models\DocumentVersion::where('library_document_id', $libraryDocument->id)->orderBy('major_version', 'desc')->orderBy('minor_version', 'desc')->first();
          if(null == $version)
          {
             // Only the responsible user or a coordinator can create a new version
             if((auth()->user()->id != $libraryDocument->responsible_user_id) &&
-               auth()->user()->cannot('create', \App\Models\DocumentVersion::class))
+               auth()->user()->cannot('create', \Ledningssystemet\Ledningssystemet\Models\DocumentVersion::class))
                abort(403);
 
-            $version = new \App\Models\DocumentVersion();
+            $version = new \Ledningssystemet\Ledningssystemet\Models\DocumentVersion();
             $version->library_document_id = $libraryDocument->id;
             $version->save();
          }
@@ -210,7 +210,7 @@ Route::group(['namespace' => 'App\Http\Controllers'], function()
          {
             // Only the responsible user or a coordinator can create a new version
             if((auth()->user()->id != $libraryDocument->responsible_user_id) &&
-               auth()->user()->cannot('create', \App\Models\DocumentVersion::class))
+               auth()->user()->cannot('create', \Ledningssystemet\Ledningssystemet\Models\DocumentVersion::class))
                abort(403);
 
             $newversion = $version->replicate();

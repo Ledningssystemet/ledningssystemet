@@ -146,7 +146,7 @@ $(function(){
                               listClass: 'd-inline-block col col-12 col-md-6',
                               options: [
                                  { Value: null, DisplayText: '{{ __("Not assessed") }}' },
-                  @foreach(App\Models\ProbabilityLevel::orderBy('ordinal', 'desc')->get()->each->setAppends([]) as $obj)
+                  @foreach(Ledningssystemet\Ledningssystemet\Models\ProbabilityLevel::orderBy('ordinal', 'desc')->get()->each->setAppends([]) as $obj)
                                  { Value: {{$obj->id}}, DisplayText: <?php echo(json_encode($obj->name)); ?> },
                   @endforeach
                               ]
@@ -159,7 +159,7 @@ $(function(){
                               listClass: 'd-inline-block col col-12 col-md-6',
                               options: [
                                  { Value: null, DisplayText: '{{ __("Not assessed") }}' },
-                  @foreach(App\Models\ConsequenceLevel::orderBy('ordinal', 'desc')->get()->each->setAppends([]) as $obj)
+                  @foreach(Ledningssystemet\Ledningssystemet\Models\ConsequenceLevel::orderBy('ordinal', 'desc')->get()->each->setAppends([]) as $obj)
                                  { Value: {{$obj->id}}, DisplayText: <?php echo(json_encode($obj->name)); ?> },
                   @endforeach
                               ]
@@ -174,12 +174,12 @@ $(function(){
                            },
                            controls: {
                               title: '{{ __('Controls') }}',
-                              create: false,
+                              create: true,
                               edit: true,
                               list: true,
                               multiple: true,
                               options: [
-                                    @foreach(App\Models\Control::orderBy('name')->get()->each->setAppends([]) as $obj)
+                                    @foreach(Ledningssystemet\Ledningssystemet\Models\Control::orderBy('name')->get()->each->setAppends([]) as $obj)
                                  { Value: {{ $obj->id }}, DisplayText: <?php echo(json_encode($obj->name.($obj->not_applicable_at ? " [".__("Not applicable")."]" : ""))); ?>, Tooltip: <?php echo(json_encode($obj->description)); ?> },
                                  @endforeach
                               ]

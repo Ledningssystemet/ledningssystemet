@@ -1,4 +1,4 @@
-@php if(Auth::user()->cannot('index', \App\Models\User::class)) abort(403); @endphp
+@php if(Auth::user()->cannot('index', \Ledningssystemet\Ledningssystemet\Models\User::class)) abort(403); @endphp
 @extends('layouts.master')
 
 @section('container')
@@ -29,20 +29,20 @@ $(function(){
            checked: false,
            text: '{{ __('Hide deactivated users') }}',
         },
-@include('components.customproperty', ['classname' => 'App\Models\User', 'showFilter' => true])
+@include('components.customproperty', ['classname' => 'Ledningssystemet\Ledningssystemet\Models\User', 'showFilter' => true])
 	  },
       actions: {
-@if(Auth::user()->can('index', \App\Models\User::class))
+@if(Auth::user()->can('index', \Ledningssystemet\Ledningssystemet\Models\User::class))
          listAction: '/api/v1/items/User',
 @endif
-@if(Auth::user()->can('delete', \App\Models\User::class))
+@if(Auth::user()->can('delete', \Ledningssystemet\Ledningssystemet\Models\User::class))
          deleteAction: '/api/v1/items/User',
 @endif
 @if(config('ledningssystemet.local_user_management'))
-@if(Auth::user()->can('create', \App\Models\User::class))
+@if(Auth::user()->can('create', \Ledningssystemet\Ledningssystemet\Models\User::class))
          createAction: '/api/v1/items/User',
 @endif
-@if(Auth::user()->can('update', \App\Models\User::class))
+@if(Auth::user()->can('update', \Ledningssystemet\Ledningssystemet\Models\User::class))
          updateAction: '/api/v1/items/User',
 @endif
 @endif
@@ -84,13 +84,13 @@ $(function(){
 @if(!config('ledningssystemet.disable_staff'))
          manager_user_id: {
             title: '{{ __('Manager') }}',
-            create: false,
+            create: true,
             edit: true,
             list: true,
             listClass: 'd-inline-block col-6 col-md-4',
             options: [
                { Value: null, DisplayText: '{{ __("None") }}' },
-@foreach(\App\Models\User::orderBy('name')->get()->each->setAppends([]) as $obj)
+@foreach(\Ledningssystemet\Ledningssystemet\Models\User::orderBy('name')->get()->each->setAppends([]) as $obj)
                { Value: {{ $obj->id }}, DisplayText: @php echo(json_encode($obj->name)); @endphp },
 @endforeach            
             ]
@@ -126,7 +126,7 @@ $(function(){
             list: true,
             multiple: true,
             options: [
-@foreach(App\Models\Department::orderBy('name')->get()->each->setAppends([]) as $obj)
+@foreach(Ledningssystemet\Ledningssystemet\Models\Department::orderBy('name')->get()->each->setAppends([]) as $obj)
    { Value: {{ $obj->id }}, DisplayText: @php echo(json_encode($obj->name)); @endphp },
 @endforeach
             ]
@@ -142,12 +142,12 @@ $(function(){
 @if(!config('ledningssystemet.disable_staff'))
          roles: {
             title: '{{ __('Roles') }}',
-            create: false,
+            create: true,
             edit: true,
             list: true,
             multiple: true,
             options: [
-@foreach(App\Models\Role::orderBy('name')->get()->each->setAppends([]) as $obj)
+@foreach(Ledningssystemet\Ledningssystemet\Models\Role::orderBy('name')->get()->each->setAppends([]) as $obj)
                { Value: {{ $obj->id }}, DisplayText: @php echo(json_encode($obj->name)); @endphp },
 @endforeach
             ]
@@ -163,12 +163,12 @@ $(function(){
 @endif
          accessgroups: {
             title: '{{ __('Access groups') }}',
-            create: false,
+            create: true,
             edit: true,
             list: true,
             multiple: true,
             options: [
-@foreach(App\Models\AccessGroup::orderBy('name')->get()->each->setAppends([]) as $obj)
+@foreach(Ledningssystemet\Ledningssystemet\Models\AccessGroup::orderBy('name')->get()->each->setAppends([]) as $obj)
                { Value: {{ $obj->id }}, DisplayText: @php echo(json_encode($obj->name)); @endphp },
 @endforeach
             ]
@@ -196,7 +196,7 @@ $(function(){
             }
          },
 @endif
-   @include('components.customproperty', ['classname' => 'App\Models\User'])
+   @include('components.customproperty', ['classname' => 'Ledningssystemet\Ledningssystemet\Models\User'])
 
          hr4: {
             list: true,
@@ -206,7 +206,7 @@ $(function(){
                return $('<hr />'); 
             }
          },
-@if(Auth::user()->can('update', \App\Models\User::class))
+@if(Auth::user()->can('update', \Ledningssystemet\Ledningssystemet\Models\User::class))
          reassign: {
             edit: false,
             create: false,
@@ -320,7 +320,7 @@ $(function(){
 @endif
                         
                      retval.find('select').each(function(){
-@foreach(\App\Models\User::orderBy('name')->get()->each->setAppends([]) as $obj)
+@foreach(\Ledningssystemet\Ledningssystemet\Models\User::orderBy('name')->get()->each->setAppends([]) as $obj)
                         $(this).append($('<option value="{{ $obj->id }}" />')
                            .text(@php echo(json_encode($obj->name)); @endphp)
                            .prop('selected', ({{ $obj->id }} == data.record.id)));
