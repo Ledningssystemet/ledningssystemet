@@ -30,7 +30,7 @@ CREATE TABLE `access_group_user` (
 `model_id` bigint(20) unsigned NOT NULL,
 `created_at` timestamp NULL DEFAULT NULL,
 `updated_at` timestamp NULL DEFAULT NULL,
-`model_type` varchar(255) NOT NULL DEFAULT 'App\\Models\\User',
+`model_type` varchar(255) NOT NULL DEFAULT 'Ledningssystemet\\Ledningssystemet\\Models\\User',
 PRIMARY KEY (`id`),
 KEY `access_group_user_access_group_id_foreign` (`access_group_id`),
 KEY `access_group_user_user_id_foreign` (`model_id`),

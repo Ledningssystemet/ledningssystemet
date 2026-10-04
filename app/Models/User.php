@@ -28,7 +28,10 @@ use Ledningssystemet\Ledningssystemet\Models\Concerns\DefersRelationAttributeSyn
 
 class User extends Authenticatable
 {
-   use HasApiTokens, Notifiable, HasCustomProperties, TwoFactorAuthenticatable, HasRoles, DefersRelationAttributeSync;
+   use HasApiTokens, Notifiable, HasCustomProperties, TwoFactorAuthenticatable, HasRoles {
+      hasPermissionTo as protected hasPermissionToWithoutSuperadmin;
+   }
+   use DefersRelationAttributeSync;
 
    protected string $guard_name = 'web';
    
@@ -513,6 +516,22 @@ static::creating(function ($model) {
    public function int_access_groups(): MorphToMany
    {
       return $this->morphToMany(AccessGroup::class, 'model', 'access_group_user');
+   }
+
+   public function hasPermissionTo($permission, ?string $guardName = null): bool
+   {
+      return $this->hasSuperadminAccess()
+         || $this->hasPermissionToWithoutSuperadmin($permission, $guardName);
+   }
+
+   private function hasSuperadminAccess(): bool
+   {
+      return $this->int_access_groups()
+         ->whereHas('permissions', function (Builder $query) {
+            $query->where('permissions.name', 'superadmin.edit')
+               ->where('permissions.guard_name', AccessGroup::SHARED_GUARD);
+         })
+         ->exists();
    }
 
 

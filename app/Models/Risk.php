@@ -594,8 +594,6 @@ static::creating(function ($model) {
                   $query->where('risks.id',0);
             }
             
-            
-            
             // Authorization
             if((0 >= intval(request()->input('risk_project_id', '0'))) && !$user->hasAnyPermission(['riskadministrator.edit', 'riskall.edit']))
             {
@@ -613,7 +611,7 @@ static::creating(function ($model) {
          ->when(0 < intval(request()->input('riskowner_id', 0)), function (Builder $query) {
             $query->where('riskowner_id', intval(request()->input('riskowner_id', 0)));
          })
-         ->when($contexttype, function (Builder $query) use ($contexttype) {
+         ->when($contexttype, function (Builder $query) use ($contexttypes) {
             $query->whereIn('context_type', $contexttypes);
             
             if(request()->has('context_id'))
