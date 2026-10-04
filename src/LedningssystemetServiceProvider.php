@@ -121,15 +121,15 @@ class LedningssystemetServiceProvider extends ServiceProvider
       // its own config file with the same name (config_path("{$name}.php")
       // exists) - in that case the host's file already took precedence
       // during Laravel's normal config loading and must not be touched.
-      if ($this->app instanceof CachesConfiguration && $this->app->configurationIsCached()) {
-         return;
-      }
+      $skipConfigLoading = $this->app->runningInConsole() && $this->app->configurationIsCached();
 
-      $config = $this->app->make('config');
+      if(!$skipConfigLoading) {
+         $config = $this->app->make('config');
 
-      foreach ($this->configFiles() as $name) {
-         if (! is_file(config_path("{$name}.php"))) {
-            $config->set($name, require __DIR__ . "/../config/{$name}.php");
+         foreach ($this->configFiles() as $name) {
+            if (!is_file(config_path("{$name}.php"))) {
+               $config->set($name, require __DIR__ . "/../config/{$name}.php");
+            }
          }
       }
 
