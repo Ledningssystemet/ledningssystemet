@@ -21,10 +21,10 @@ use Spatie\QueryBuilder\QueryBuilder;
 
 class TableController extends Controller
 {
-   public function index($model)
+   public function index($model, $namespace = 'Ledningssystemet\\Ledningssystemet\\Models')
    {
       // Derive classname
-      $classname = !str_contains($model, '\\') && is_subclass_of('Ledningssystemet\\Ledningssystemet\\Models\\'.$model, Model::class) ? 'Ledningssystemet\\Ledningssystemet\\Models\\'.$model : null;
+      $classname = !str_contains($model, '\\') && is_subclass_of($namespace.'\\'.$model, Model::class) ? $namespace.'\\'.$model : null;
 
       // Ensure class exist
       if (! $classname)
@@ -328,10 +328,10 @@ class TableController extends Controller
       request()->merge(['fields' => $sanitizedFields]);
    }
 
-   public function show($model, $id)
+   public function show($model, $id, $namespace = 'Ledningssystemet\\Ledningssystemet\\Models')
    {
       // Derive classname
-      $classname = !str_contains($model, '\\') && is_subclass_of('Ledningssystemet\\Ledningssystemet\\Models\\'.$model, Model::class) ? 'Ledningssystemet\\Ledningssystemet\\Models\\'.$model : null;
+      $classname = !str_contains($model, '\\') && is_subclass_of($namespace.'\\'.$model, Model::class) ? $namespace.'\\'.$model : null;
 
       // Ensure class exist
       if (! $classname)
@@ -349,10 +349,10 @@ class TableController extends Controller
       return response()->json($retval);
    }
 
-   public function create($model)
+   public function create($model, $namespace = 'Ledningssystemet\\Ledningssystemet\\Models')
    {
       // Derive classname
-      $classname = !str_contains($model, '\\') && is_subclass_of('Ledningssystemet\\Ledningssystemet\\Models\\'.$model, Model::class) ? 'Ledningssystemet\\Ledningssystemet\\Models\\'.$model : null;
+      $classname = !str_contains($model, '\\') && is_subclass_of($namespace.'\\'.$model, Model::class) ? $namespace.'\\'.$model : null;
 
       // Ensure class exist
       if (! $classname)
@@ -374,10 +374,10 @@ class TableController extends Controller
       return response()->json($newitem);
    }
 
-   public function update($model, $id)
+   public function update($model, $id, $namespace = 'Ledningssystemet\\Ledningssystemet\\Models')
    {
       // Derive classname
-      $classname = !str_contains($model, '\\') && is_subclass_of('Ledningssystemet\\Ledningssystemet\\Models\\'.$model, Model::class) ? 'Ledningssystemet\\Ledningssystemet\\Models\\'.$model : null;
+      $classname = !str_contains($model, '\\') && is_subclass_of($namespace.'\\'.$model, Model::class) ? $namespace.'\\'.$model : null;
 
       // Ensure class exist
       if (! $classname)
@@ -402,10 +402,10 @@ class TableController extends Controller
       return response()->json($retval);
    }
 
-   public function delete($model, $id)
+   public function delete($model, $id, $namespace = 'Ledningssystemet\\Ledningssystemet\\Models')
    {
       // Derive classname
-      $classname = !str_contains($model, '\\') && is_subclass_of('Ledningssystemet\\Ledningssystemet\\Models\\'.$model, Model::class) ? 'Ledningssystemet\\Ledningssystemet\\Models\\'.$model : null;
+      $classname = !str_contains($model, '\\') && is_subclass_of($namespace.'\\'.$model, Model::class) ? $namespace.'\\'.$model : null;
 
       // Ensure class exist
       if(! $classname)
@@ -430,10 +430,10 @@ class TableController extends Controller
       return response()->json([]);
    }
 
-   public function customAction($model, $id, $action)
+   public function customAction($model, $id, $action, $namespace = 'Ledningssystemet\\Ledningssystemet\\Models')
    {
       // Derive classname
-      $classname = !str_contains($model, '\\') && is_subclass_of('Ledningssystemet\\Ledningssystemet\\Models\\'.$model, Model::class) ? 'Ledningssystemet\\Ledningssystemet\\Models\\'.$model : null;
+      $classname = !str_contains($model, '\\') && is_subclass_of($namespace.'\\'.$model, Model::class) ? $namespace.'\\'.$model : null;
 
       // Ensure class exist
       if(! $classname)
