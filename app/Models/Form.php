@@ -280,7 +280,7 @@ class Form extends Model
          })
          ->orderBy('name');
 
-      $paginator = $returnCollection->paginate();
+      $paginator = $returnCollection->paginate(request()->query('per_page'));
 
       return $paginator;
    }

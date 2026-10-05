@@ -4865,7 +4865,7 @@ import 'jquery-ui-sortable';
          }
 
 
-         return (url + (url.indexOf('?') < 0 ? '?' : '&') + 'page=' + pageNumber + '&pageSize=' + this.options.pageSize);
+         return (url + (url.indexOf('?') < 0 ? '?' : '&') + 'page=' + pageNumber + '&per_page=' + this.options.pageSize);
       },
 
       /* Creates and shows the page list.

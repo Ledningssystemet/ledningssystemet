@@ -376,7 +376,7 @@ static::creating(function ($model) {
          return $returnCollection->whereNull('finished_at')->get();
       }
 
-      return $returnCollection->paginate();
+      return $returnCollection->paginate(request()->query('per_page'));
    }
    
    /**

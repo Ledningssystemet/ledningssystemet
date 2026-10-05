@@ -214,7 +214,7 @@ class ComplianceEvaluationRequirement extends Model
          ->orderBy('requirements.requirement_source_id')
          ->orderBy('requirements.ordinal')
          ->orderBy('requirements.id')
-         ->paginate(null, ['compliance_evaluation_requirement.*']);
+         ->paginate(request()->query('per_page'), ['compliance_evaluation_requirement.*']);
    }   
     
    /**

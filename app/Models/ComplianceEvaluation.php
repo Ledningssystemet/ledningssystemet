@@ -351,7 +351,7 @@ class ComplianceEvaluation extends Model
          ->orderBy('archived')
          ->orderBy('startdate');
          
-      return $returnCollection->paginate(); 
+      return $returnCollection->paginate(request()->query('per_page'));
    }   
     
     

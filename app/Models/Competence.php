@@ -217,7 +217,7 @@ class Competence extends Model
 
          if(request()->input('hidechecked', 0) && (new (__CLASS__))->status)  { return $returnCollection->get()->filter(function($item) { return ($item->status['level'] != 'info'); }); }
 
-         return $returnCollection->paginate(); 
+         return $returnCollection->paginate(request()->query('per_page'));
       }
          
       if((request()->user()->id != request()->input('user_id')) && !request()->user()->hasPermissionTo('employeemanagement.edit'))
@@ -248,7 +248,7 @@ class Competence extends Model
             $query->where((new (__CLASS__))->getTable().'.id', intval(request()->input('id', 0)));
          })
          ->orderBy('name')
-         ->paginate();
+         ->paginate(request()->query('per_page'));
             
       $retval->each(function($competence) {
          $competence->user_id = request()->input('user_id');

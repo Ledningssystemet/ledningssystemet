@@ -170,7 +170,7 @@ class AccessGroup extends SpatieRole
          });
       }
 
-      return $returnCollection->paginate();
+      return $returnCollection->paginate(request()->query('per_page'));
    }
 
    /**

@@ -142,7 +142,7 @@ class Relation extends Model
          ->where('relation_id', $obj->id)
          ->orderBy('updated_at', 'desc');
 
-      return $returnCollection->paginate();
+      return $returnCollection->paginate(request()->query('per_page'));
    }
    
    /**

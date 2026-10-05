@@ -111,7 +111,7 @@ class FormRelation extends Model
          ->select('form_relations.*')
          ->orderBy('relations.name');
          
-      return $returnCollection->paginate();
+      return $returnCollection->paginate(request()->query('per_page'));
    }
 
    /**

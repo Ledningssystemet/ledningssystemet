@@ -265,7 +265,7 @@ class Site extends Model
             });
         }
 
-        return $returnCollection->paginate();
+        return $returnCollection->paginate(request()->query('per_page'));
     }
 
     /**

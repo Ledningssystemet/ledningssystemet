@@ -500,7 +500,7 @@ class ControlAction extends Model
          ->orderByRaw('finished_at IS NOT NULL')
          ->orderBy('due');
 
-      return $returnCollection->paginate();
+      return $returnCollection->paginate(request()->query('per_page'));
    }
    
    /**

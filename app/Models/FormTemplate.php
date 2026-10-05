@@ -104,7 +104,7 @@ class FormTemplate extends Model
          })
          ->orderBy('name');
 
-      return $returnCollection->paginate(); 
+      return $returnCollection->paginate(request()->query('per_page'));
    }
    
    /**

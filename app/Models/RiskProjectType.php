@@ -119,7 +119,7 @@ class RiskProjectType extends Model
          
       if(request()->input('hidechecked', 0) && (new (__CLASS__))->status)  { return $returnCollection->get()->filter(function($item) { return ($item->status['level'] != 'info'); }); }
          
-      return $returnCollection->paginate(); 
+      return $returnCollection->paginate(request()->query('per_page'));
    }
    
     

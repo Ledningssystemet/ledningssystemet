@@ -159,7 +159,7 @@ class CustomProperty extends Model
          })
          ->orderBy('ordinal');
          
-      return $returnCollection->paginate();
+      return $returnCollection->paginate(request()->query('per_page'));
    }
    
    /**

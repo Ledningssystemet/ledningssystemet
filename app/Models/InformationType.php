@@ -491,7 +491,7 @@ class InformationType extends Model
             return $query->get();
         }
 
-        return $query->paginate();
+        return $query->paginate(request()->query('per_page'));
     }
 
     /**

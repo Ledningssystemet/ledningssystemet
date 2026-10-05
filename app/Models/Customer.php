@@ -258,7 +258,7 @@ class Customer extends Model
             return $query->get()->filter(fn ($item) => $item->status['level'] !== 'info');
         }
 
-        return $query->paginate();
+        return $query->paginate(request()->query('per_page'));
     }
 
     /**

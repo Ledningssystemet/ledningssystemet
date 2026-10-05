@@ -512,7 +512,7 @@ class Process extends Model
             return $query->orderBy('name')->get();
         }
 
-        return $query->orderBy('name')->paginate();
+        return $query->orderBy('name')->paginate(request()->query('per_page'));
     }
 
     /**

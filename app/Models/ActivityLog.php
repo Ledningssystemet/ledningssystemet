@@ -173,7 +173,7 @@ class ActivityLog extends Activity
       if(request()->input('hidechecked', 0) && (new static())->status)
          return $returnCollection->get()->filter(function($item) { return ($item->status['level'] != 'info'); });
 
-      return $returnCollection->paginate();
+      return $returnCollection->paginate(request()->query('per_page'));
    }
 
    public function obj($model)

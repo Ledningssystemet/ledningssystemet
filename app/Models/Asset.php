@@ -545,7 +545,7 @@ class Asset extends Model
             self::getIndexQuery($query);
         }
 
-        return $query->paginate();
+        return $query->paginate(request()->query('per_page'));
     }
 
     /**

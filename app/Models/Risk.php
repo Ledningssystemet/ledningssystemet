@@ -653,7 +653,7 @@ static::creating(function ($model) {
          return $results;
       }
 
-      $paginator = $returnCollection->paginate();
+      $paginator = $returnCollection->paginate(request()->query('per_page'));
       self::eagerLoadContextObjects($paginator->getCollection());
       return $paginator;
    }
