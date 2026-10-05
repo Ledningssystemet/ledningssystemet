@@ -86,7 +86,7 @@ class LedningssystemetServiceProvider extends ServiceProvider
          $this->commands([
             GraphSync::class,
             RiskReassess::class,
-			MailSendstatus::class,
+			   MailSendstatus::class,
          ]);
 
          $this->app->booted(function (): void {
@@ -121,7 +121,7 @@ class LedningssystemetServiceProvider extends ServiceProvider
       // its own config file with the same name (config_path("{$name}.php")
       // exists) - in that case the host's file already took precedence
       // during Laravel's normal config loading and must not be touched.
-      $skipConfigLoading = $this->app->runningInConsole() && $this->app->configurationIsCached();
+      $skipConfigLoading = $this->app->configurationIsCached();
 
       if(!$skipConfigLoading) {
          $config = $this->app->make('config');
