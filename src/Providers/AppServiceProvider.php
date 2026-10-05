@@ -306,9 +306,6 @@ class AppServiceProvider extends ServiceProvider
             case 'Ledningssystemet\Ledningssystemet\Models\Agreement':
                return $user->hasAnyPermission(['agreements.read', 'agreements.edit']);
 
-            case 'Ledningssystemet\Ledningssystemet\Models\IgnoredRisk':
-               return $user->hasAnyPermission(['riskadministrator.edit']);
-
             case 'Ledningssystemet\Ledningssystemet\Models\CustomProperty':
                return $user->hasAnyPermission(['systemadministrator.edit']);
 
@@ -537,9 +534,6 @@ class AppServiceProvider extends ServiceProvider
             case 'Ledningssystemet\Ledningssystemet\Models\Agreement':
                return $user->hasAnyPermission(['agreements.read', 'agreements.edit']);
 
-            case 'Ledningssystemet\Ledningssystemet\Models\IgnoredRisk':
-               return $user->hasAnyPermission(['riskadministrator.edit']);
-
             case 'Ledningssystemet\Ledningssystemet\Models\CustomProperty':
                return $user->hasAnyPermission(['systemadministrator.edit']);
 
@@ -719,9 +713,6 @@ class AppServiceProvider extends ServiceProvider
             case 'Ledningssystemet\Ledningssystemet\Models\File':
             case 'Ledningssystemet\Ledningssystemet\Models\Relation':
                return true;
-
-            case 'Ledningssystemet\Ledningssystemet\Models\IgnoredRisk':
-               return false;
 
             case 'Ledningssystemet\Ledningssystemet\Models\Form':
             case 'Ledningssystemet\Ledningssystemet\Models\FormRelation':
@@ -970,9 +961,6 @@ class AppServiceProvider extends ServiceProvider
             case 'Ledningssystemet\Ledningssystemet\Models\Agreement':
                return $user->hasAnyPermission(['agreements.edit']);
 
-            case 'Ledningssystemet\Ledningssystemet\Models\IgnoredRisk':
-               return false;
-
             case 'Ledningssystemet\Ledningssystemet\Models\CustomProperty':
                return $user->hasAnyPermission(['systemadministrator.edit']);
 
@@ -996,11 +984,6 @@ class AppServiceProvider extends ServiceProvider
 
          /* If a user can update, then it can delete for most objects */
          if (is_string($model)) {
-            switch($model) {
-               case 'Ledningssystemet\Ledningssystemet\Models\IgnoredRisk':
-                  return $user->hasAnyPermission(['riskadministrator.edit']);
-            }
-
             return $user->can('update', $model);
          }
 
@@ -1100,9 +1083,6 @@ class AppServiceProvider extends ServiceProvider
                   return true;
 
                return $user->can('update', $model->obj());
-
-            case 'Ledningssystemet\Ledningssystemet\Models\IgnoredRisk':
-               return $user->hasAnyPermission(['riskadministrator.edit']);
 
             case 'Ledningssystemet\Ledningssystemet\Models\LibraryDocument':
                return $user->hasAnyPermission(['managementtools.edit']);

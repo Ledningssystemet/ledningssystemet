@@ -35,28 +35,6 @@ class SupplierRequirement extends Model
    }
    
    /**
-    * Bootstrap any application services.
-    *
-    * @return void
-    */
-   public static function boot()
-   {
-      parent::boot();
-
-      // Cannot update if this is a partner provided list
-      static::updating(function ($model) {
-         if((null != auth()->user()) && $model->int_supplier_category->partner)
-            abort(400, __('This is a partner controlled object where modifications are not allowed'));
-      });
-      
-      // Cannot delete if this is a partner provided list
-      static::deleting(function ($model) {
-         if((null != auth()->user()) && $model->int_supplier_category->partner)
-            abort(400, __('This is a partner controlled object where modifications are not allowed'));
-      });
-   }
-   
-   /**
     * Appended attributes
     */
    protected $appends = [

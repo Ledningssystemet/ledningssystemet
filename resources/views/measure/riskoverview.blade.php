@@ -53,44 +53,6 @@ if(request()->has('dataset'))
                      'pointHoverBackgroundColor' => '#fff',
                      'pointHoverBorderColor' => '#ced4da'
                   ],
-                  [
-                     'label' => __("Manually identified"),
-                     'data' => [
-                        (\Ledningssystemet\Ledningssystemet\Models\Department::count() == 0) ? 0 : round(100*(\Ledningssystemet\Ledningssystemet\Models\Risk::whereNull('replacedby_id')->whereNull('partner_object_uid')->whereIn('context_type', [\Ledningssystemet\Ledningssystemet\Models\Department::class])->whereIn('context_id', \Ledningssystemet\Ledningssystemet\Models\Department::pluck('id'))->select('context_id')->distinct()->count('context_id')/\Ledningssystemet\Ledningssystemet\Models\Department::count())),
-                        (\Ledningssystemet\Ledningssystemet\Models\Process::count() == 0) ? 0 : round(100*(\Ledningssystemet\Ledningssystemet\Models\Risk::whereNull('replacedby_id')->whereNull('partner_object_uid')->whereIn('context_type', [\Ledningssystemet\Ledningssystemet\Models\Process::class])->whereIn('context_id', \Ledningssystemet\Ledningssystemet\Models\Process::pluck('id'))->select('context_id')->distinct()->count('context_id')/\Ledningssystemet\Ledningssystemet\Models\Process::count())),
-                        (\Ledningssystemet\Ledningssystemet\Models\ProcessActivity::count() == 0) ? 0 : round(100*(\Ledningssystemet\Ledningssystemet\Models\Risk::whereNull('replacedby_id')->whereNull('partner_object_uid')->whereIn('context_type', [\Ledningssystemet\Ledningssystemet\Models\ProcessActivity::class])->whereIn('context_id', \Ledningssystemet\Ledningssystemet\Models\ProcessActivity::pluck('id'))->select('context_id')->distinct()->count('context_id')/\Ledningssystemet\Ledningssystemet\Models\ProcessActivity::count())),
-                        (\Ledningssystemet\Ledningssystemet\Models\InformationType::count() == 0) ? 0 : round(100*(\Ledningssystemet\Ledningssystemet\Models\Risk::whereNull('replacedby_id')->whereNull('partner_object_uid')->whereIn('context_type', [\Ledningssystemet\Ledningssystemet\Models\InformationType::class])->whereIn('context_id', \Ledningssystemet\Ledningssystemet\Models\InformationType::pluck('id'))->select('context_id')->distinct()->count('context_id')/\Ledningssystemet\Ledningssystemet\Models\InformationType::count())),
-                        (\Ledningssystemet\Ledningssystemet\Models\Asset::count() == 0) ? 0 : round(100*(\Ledningssystemet\Ledningssystemet\Models\Risk::whereNull('replacedby_id')->whereNull('partner_object_uid')->whereIn('context_type', [\Ledningssystemet\Ledningssystemet\Models\Asset::class])->whereIn('context_id', \Ledningssystemet\Ledningssystemet\Models\Asset::pluck('id'))->select('context_id')->distinct()->count('context_id')/\Ledningssystemet\Ledningssystemet\Models\Asset::count())),
-                        (\Ledningssystemet\Ledningssystemet\Models\Supplier::count() == 0) ? 0 : round(100*(\Ledningssystemet\Ledningssystemet\Models\Risk::whereNull('replacedby_id')->whereNull('partner_object_uid')->whereIn('context_type', [\Ledningssystemet\Ledningssystemet\Models\Supplier::class])->whereIn('context_id', \Ledningssystemet\Ledningssystemet\Models\Supplier::pluck('id'))->select('context_id')->distinct()->count('context_id')/\Ledningssystemet\Ledningssystemet\Models\Supplier::count())),
-                        (\Ledningssystemet\Ledningssystemet\Models\Customer::count() == 0) ? 0 : round(100*(\Ledningssystemet\Ledningssystemet\Models\Risk::whereNull('replacedby_id')->whereNull('partner_object_uid')->whereIn('context_type', [\Ledningssystemet\Ledningssystemet\Models\Customer::class])->whereIn('context_id', \Ledningssystemet\Ledningssystemet\Models\Customer::pluck('id'))->select('context_id')->distinct()->count('context_id')/\Ledningssystemet\Ledningssystemet\Models\Customer::count())),
-                     ],
-                     'fill' => true,
-                     'backgroundColor' => '#288c9830',
-                     'borderColor' => '#288c98',
-                     'pointBackgroundColor' => '#288c98',
-                     'pointBorderColor' => '#fff',
-                     'pointHoverBackgroundColor' => '#fff',
-                     'pointHoverBorderColor' => '#288c98'
-                  ],
-                  [
-                     'label' => __("Partner proposed"),
-                     'data' => [
-                        (\Ledningssystemet\Ledningssystemet\Models\Department::count() == 0) ? 0 : round(100*(\Ledningssystemet\Ledningssystemet\Models\Risk::whereNull('replacedby_id')->whereNotNull('partner_object_uid')->whereIn('context_type', [\Ledningssystemet\Ledningssystemet\Models\Department::class])->whereIn('context_id', \Ledningssystemet\Ledningssystemet\Models\Department::pluck('id'))->select('context_id')->distinct()->count('context_id')/\Ledningssystemet\Ledningssystemet\Models\Department::count())),
-                        (\Ledningssystemet\Ledningssystemet\Models\Process::count() == 0) ? 0 : round(100*(\Ledningssystemet\Ledningssystemet\Models\Risk::whereNull('replacedby_id')->whereNotNull('partner_object_uid')->whereIn('context_type', [\Ledningssystemet\Ledningssystemet\Models\Process::class])->whereIn('context_id', \Ledningssystemet\Ledningssystemet\Models\Process::pluck('id'))->select('context_id')->distinct()->count('context_id')/\Ledningssystemet\Ledningssystemet\Models\Process::count())),
-                        (\Ledningssystemet\Ledningssystemet\Models\ProcessActivity::count() == 0) ? 0 : round(100*(\Ledningssystemet\Ledningssystemet\Models\Risk::whereNull('replacedby_id')->whereNotNull('partner_object_uid')->whereIn('context_type', [\Ledningssystemet\Ledningssystemet\Models\ProcessActivity::class])->whereIn('context_id', \Ledningssystemet\Ledningssystemet\Models\ProcessActivity::pluck('id'))->select('context_id')->distinct()->count('context_id')/\Ledningssystemet\Ledningssystemet\Models\ProcessActivity::count())),
-                        (\Ledningssystemet\Ledningssystemet\Models\InformationType::count() == 0) ? 0 : round(100*(\Ledningssystemet\Ledningssystemet\Models\Risk::whereNull('replacedby_id')->whereNotNull('partner_object_uid')->whereIn('context_type', [\Ledningssystemet\Ledningssystemet\Models\InformationType::class])->whereIn('context_id', \Ledningssystemet\Ledningssystemet\Models\InformationType::pluck('id'))->select('context_id')->distinct()->count('context_id')/\Ledningssystemet\Ledningssystemet\Models\InformationType::count())),
-                        (\Ledningssystemet\Ledningssystemet\Models\Asset::count() == 0) ? 0 : round(100*(\Ledningssystemet\Ledningssystemet\Models\Risk::whereNull('replacedby_id')->whereNotNull('partner_object_uid')->whereIn('context_type', [\Ledningssystemet\Ledningssystemet\Models\Asset::class])->whereIn('context_id', \Ledningssystemet\Ledningssystemet\Models\Asset::pluck('id'))->select('context_id')->distinct()->count('context_id')/\Ledningssystemet\Ledningssystemet\Models\Asset::count())),
-                        (\Ledningssystemet\Ledningssystemet\Models\Supplier::count() == 0) ? 0 : round(100*(\Ledningssystemet\Ledningssystemet\Models\Risk::whereNull('replacedby_id')->whereNotNull('partner_object_uid')->whereIn('context_type', [\Ledningssystemet\Ledningssystemet\Models\Supplier::class])->whereIn('context_id', \Ledningssystemet\Ledningssystemet\Models\Supplier::pluck('id'))->select('context_id')->distinct()->count('context_id')/\Ledningssystemet\Ledningssystemet\Models\Supplier::count())),
-                        (\Ledningssystemet\Ledningssystemet\Models\Customer::count() == 0) ? 0 : round(100*(\Ledningssystemet\Ledningssystemet\Models\Risk::whereNull('replacedby_id')->whereNotNull('partner_object_uid')->whereIn('context_type', [\Ledningssystemet\Ledningssystemet\Models\Customer::class])->whereIn('context_id', \Ledningssystemet\Ledningssystemet\Models\Customer::pluck('id'))->select('context_id')->distinct()->count('context_id')/\Ledningssystemet\Ledningssystemet\Models\Customer::count())),
-                     ],
-                     'fill' => true,
-                     'backgroundColor' => '#ffcc0030',
-                     'borderColor' => '#ffcc00',
-                     'pointBackgroundColor' => '#ffcc00',
-                     'pointBorderColor' => '#fff',
-                     'pointHoverBackgroundColor' => '#fff',
-                     'pointHoverBorderColor' => '#ffcc00'
-                  ]
                ]
             ]
          ]

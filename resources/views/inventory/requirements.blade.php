@@ -107,20 +107,6 @@ $(function(){
             }
          },
          tags: showTags('RequirementSource', $('#tableContainer')),
-         partnerinfo: {
-            list: true,
-            create: false,
-            edit: false,
-            listClass: 'd-inline-block col col-12 col-md-4',
-            display: function (data) {
-               if (data.record.partner_id)
-                  return $('<div />')
-                     .css({'font-size': '10pt', 'font-style': 'italic'})
-                     .text('{{ __("This requirement source is provided by") }} ' + data.record.partner_name);
-               else
-                  return '';
-            },
-         },
          exportsoa: {
             title: '',
             create: false,
@@ -128,7 +114,7 @@ $(function(){
             list: true,
             listClass: 'd-inline-block col col-12 col-md-4',
             display: function (data) {
-               if(data.record.partner_id && data.record.not_applicable_at)
+               if(data.record.not_applicable_at)
                   return '';
 
                return $('<a />')
@@ -249,55 +235,6 @@ $(function(){
             }
          },
 @endif
-@if(auth()->user()->can('update', 'Ledningssystemet\Ledningssystemet\\Models\\RequirementSource'))
-         notapplicable: {
-            title: '',
-            type: 'command',
-            width: '1%',
-            sorting: false,
-            edit: false,
-            create: false,
-            footer: true,
-            display: function (data) {
-               if(data.record.partner_id && !data.record.not_applicable_at)
-               {
-                  return $('<button />')
-                     .addClass('btn btn-warning btn-sm')
-                     .css({'margin-left': '10px'})
-                     .text('{{ __('Not applicable') }}')
-                     .prepend($('<span>visibility_off</span>')
-                        .addClass('material-symbols-rounded'))
-                     .click(function(clickevent){
-                        confirmDialog('{{ __("Not applicable") }}', '{{ __("By marking this requirement source as not applicable, you certify that the requirements within are not relevant to our business") }}', function(){
-                           ajaxPost('/api/v1/items/RequirementSource/'+data.record.id+'/notapplicable', {}, function(){
-                              $('#tableContainer').jtable('reload');
-                           });
-                        });
-                     });
-               }
-               else if(data.record.partner_id && data.record.not_applicable_at)
-               {
-                  return $('<button />')
-                     .addClass('btn btn-warning btn-sm')
-                     .css({'margin-left': '10px'})
-                     .text('{{ __('Applicable') }}')
-                     .prepend($('<span>visibility</span>')
-                        .addClass('material-symbols-rounded'))
-                     .click(function(clickevent){
-                        confirmDialog('{{ __("Applicable") }}', '{{ __("By marking this requirement source as applicable, you override a prior decision that the requirements within are not relevant to our business") }}', function(){
-                           ajaxPost('/api/v1/items/RequirementSource/'+data.record.id+'/applicable', {}, function(){
-                              $('#tableContainer').jtable('reload');
-                           });
-                        });
-                     });
-               }
-
-
-               return '';
-
-            }
-         },
-@endif
          requirements: {
             title: '',
             type: 'command',
@@ -335,11 +272,11 @@ $(function(){
                            listAction: '/api/v1/items/Requirement?requirement_source_id=' + reqsourcedata.record.id,
                            @endif
                               @if(Auth::user()->can('create', 'Ledningssystemet\Ledningssystemet\\Models\\Requirement'))
-                           createAction: (reqsourcedata.record.not_applicable_at || reqsourcedata.record.partner_id) ? null : '/api/v1/items/Requirement',
+                           createAction: reqsourcedata.record.not_applicable_at ? null : '/api/v1/items/Requirement',
                            @endif
                               @if(Auth::user()->can('update', 'Ledningssystemet\Ledningssystemet\\Models\\Requirement'))
                            updateAction: reqsourcedata.record.not_applicable_at ? null : '/api/v1/items/Requirement',
-                           reorderAction: (reqsourcedata.record.not_applicable_at || reqsourcedata.record.partner_id) ? null : '/api/v1/items/Requirement',
+                           reorderAction: reqsourcedata.record.not_applicable_at ? null : '/api/v1/items/Requirement',
                            @endif
                               @if(Auth::user()->can('delete', 'Ledningssystemet\Ledningssystemet\\Models\\Requirement'))
                            deleteAction: reqsourcedata.record.not_applicable_at ? null : '/api/v1/items/Requirement',
@@ -427,38 +364,13 @@ $(function(){
                               ]
                            },
                         },
-                        formCreated: function (event, data) {
-                           if (reqsourcedata.record.partner_id) {
-                              $(data.form).find('*[name]').each(function () {
-                                 switch ($(this).prop('name')) {
-                                    case 'applicable':
-                                    case 'governance':
-                                    case 'controls[]':
-                                       break;
-                                    default:
-                                       $(this).closest('div.jtable-input-field-container').remove();
-                                       break;
-                                 }
-                              });
-                           }
-                        },
                         rowLoaded: function (event, data) {
-                           if(reqsourcedata.record.partner_id && reqsourcedata.record.not_applicable_at)
-                              return;
-
                            if(data.record.needsapproval && ({{ auth()->user()->id }} == reqsourcedata.record.responsible_user_id))
                            {
                              $(event.target).find('.jtable-data-row[data-record-key="' + data.record.id + '"]').addClass('needsapproval');
                            }
                         },
                         recordsLoaded: function (event, data) {
-                           if (reqsourcedata.record.partner_id) {
-                              $(event.target).find('.jtable-delete-command').remove();
-                           }
-
-                           if(reqsourcedata.record.partner_id && reqsourcedata.record.not_applicable_at)
-                              return;
-
                            $(event.target).closest('.jtable-data-row').find('[data-jtable-fieldname="requirements"] .material-symbols-rounded').css({'color': $(event.target).find('.not-applicable').length ? 'var(--bs-danger)' : 'inherit'});
                         },
                         recordDeleted: function (event, data) {
@@ -508,31 +420,10 @@ $(function(){
          showHistory: showHistoryField('RequirementSource', $('#tableContainer')),
          showMessages: showMessagesField('RequirementSource', $('#tableContainer')),
       },
-      formCreated: function(event, data){
-         if(data.record && data.record.partner_id)
-         {
-            $(data.form).find('*[name]').each(function(){
-               switch($(this).prop('name'))
-               {
-                  case 'responsible_user_id':
-                  case 'max_sanction_fee':
-                     break;
-                  default:
-                     if(!$(this).prop('name').startsWith('customproperty_'))
-                        $(this).closest('div.jtable-input-field-container').remove();
-                     break;
-               }
-            });
-         }
-      },
       recordUpdated: function(event, data){
          $('#tableContainer').jtable('reloadRow', 
             $('#jtable-body-requirementslist > .jtable-data-row[data-record-key="'+data.record.id+'"]')
          );
-      },
-      rowLoaded: function(event, data){
-         if(data.record.partner_id)
-            $('#jtable-body-requirementslist > .jtable-data-row[data-record-key="'+data.record.id+'"] .jtable-delete-command').remove();
       },
    });
    $('#tableContainer').jtable('load');      

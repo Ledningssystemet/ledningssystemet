@@ -36,19 +36,6 @@ $(function(){
             header: true,
             maxlength: 255,
          },
-         partnerinfo: {
-            list: true,
-            create: false,
-            edit: false,
-            display: function(data){
-               if(data.record.partner_id)
-                  return $('<div />')
-                     .css({'font-size': '10pt', 'font-style': 'italic'})
-                     .text('{{ __("This risk project type is provided by") }} '+data.record.partner_name);
-               else
-                  return '';
-            },
-         },
          description: {
             title: '{{ __('Description') }}',
             type: 'textarea',
@@ -89,9 +76,9 @@ $(function(){
                         accordion: false,
                         actions: {
                            listAction: '/api/v1/items/RiskProjectTypeRiskTemplate?risk_project_type_id='+sourcedata.record.id,
-                           updateAction: (sourcedata.record.partner_id) ? null : '/api/v1/items/RiskProjectTypeRiskTemplate',
-                           createAction: (sourcedata.record.partner_id) ? null : '/api/v1/items/RiskProjectTypeRiskTemplate',
-                           deleteAction: (sourcedata.record.partner_id) ? null : '/api/v1/items/RiskProjectTypeRiskTemplate',
+                           updateAction: '/api/v1/items/RiskProjectTypeRiskTemplate',
+                           createAction: '/api/v1/items/RiskProjectTypeRiskTemplate',
+                           deleteAction: '/api/v1/items/RiskProjectTypeRiskTemplate',
                         },
                         fields: {
                            risk_project_type_id: {
@@ -194,15 +181,6 @@ $(function(){
                return retobj;
             }
          },      
-      },
-      recordsLoaded: function(event, data){
-         data.serverResponse.data.forEach((obj) => {
-            if(obj.partner_id)
-            {
-               $(event.target).find('[data-record-key="'+obj.id+'"] .jtable-edit-command').remove();
-               $(event.target).find('[data-record-key="'+obj.id+'"] .jtable-delete-command').remove();
-            }
-         });
       },
    });
    $('#tableContainer').jtable('load');          

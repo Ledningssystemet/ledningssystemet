@@ -169,7 +169,6 @@ Route::group(['namespace' => 'Ledningssystemet\Ledningssystemet\Http\Controllers
       Route::get('/management/tags', function() { return view('management.tags'); }); // Display tags
       Route::get('/management/suppliercategories', function() { return view('management.suppliercategories'); }); // Display supplier categories
       Route::get('/management/riskprojecttypes', function() { return view('management.riskprojecttypes'); }); // Display risk project types
-      Route::get('/management/ignoredrisks', function() { return view('management.ignoredrisks'); }); // Display ignored risks
 
       if(config('ledningssystemet.exchangeproxy_url')) {
          Route::get('/management/formtemplates', function () {

@@ -70,7 +70,8 @@ $(function(){
             {{ __("My contributions") }}
          </a>
          <ul class="nav-group-items collapse" id="mycontributions-menu" data-bs-parent="#sidebar">
-@if(!config('ledningssystemet.disable_staff'))
+            <div data-ui-slot="sidebar.groups.mycontributions.top"></div>
+         @if(!config('ledningssystemet.disable_staff'))
             <li class="nav-item" id="nav-me">
                <a class="nav-link" href="/user/me">
                   <div class="nav-item-status"></div>
@@ -106,6 +107,7 @@ $(function(){
                </a>
             </li>
    @endif
+            <div data-ui-slot="sidebar.groups.mycontributions.bottom"></div>
          </ul>
       </li>
       <li class="nav-group">
@@ -114,7 +116,8 @@ $(function(){
             {{ __("Inventory") }}
          </a>
          <ul class="nav-group-items collapse" id="inventory-menu" data-bs-parent="#sidebar">
-@if(request()->user()->can('index', Ledningssystemet\Ledningssystemet\Models\RequirementSource::class))
+            <div data-ui-slot="sidebar.groups.inventory.top"></div>
+            @if(request()->user()->can('index', Ledningssystemet\Ledningssystemet\Models\RequirementSource::class))
             <li class="nav-item" id="nav-requirementsource">
                <a class="nav-link" href="/inventory/requirements">
                   <div class="nav-item-status"></div>
@@ -226,6 +229,7 @@ $(function(){
             </li>
 @endif            
 @endif
+            <div data-ui-slot="sidebar.groups.inventory.bottom"></div>
          </ul>
       </li>
       <li class="nav-group">
@@ -234,6 +238,7 @@ $(function(){
             {{ __("Assess and mitigate") }}
          </a>
          <ul class="nav-group-items collapse" id="assessment-menu" data-bs-parent="#sidebar">
+            <div data-ui-slot="sidebar.groups.assessment.top"></div>
 @if(request()->user()->can('index', Ledningssystemet\Ledningssystemet\Models\RiskProject::class))
             <li class="nav-item" id="nav-riskproject">
                <a class="nav-link" href="/assessment/riskprojects">
@@ -297,6 +302,7 @@ $(function(){
                </a>
             </li>
 @endif
+            <div data-ui-slot="sidebar.groups.assessment.bottom"></div>
          </ul>
       </li>
       <li class="nav-group">
@@ -305,6 +311,7 @@ $(function(){
             {{ __("Measure and improve") }}
          </a>
          <ul class="nav-group-items collapse" id="measureandimprove-menu" data-bs-parent="#sidebar">
+            <div data-ui-slot="sidebar.groups.measureandimprove.top"></div>
 @if(request()->user()->can('index', Ledningssystemet\Ledningssystemet\Models\Risk::class))
             <li class="nav-item" id="nav-riskoverview">
                <a class="nav-link" href="/measure/riskoverview">
@@ -341,6 +348,7 @@ $(function(){
                </a>
             </li>
 @endif
+            <div data-ui-slot="sidebar.groups.measureandimprove.bottom"></div>
                </ul>
       </li>      
 
@@ -350,6 +358,7 @@ $(function(){
             {{ __("Employee management") }}
          </a>
          <ul class="nav-group-items collapse" id="employee-menu" data-bs-parent="#sidebar">
+            <div data-ui-slot="sidebar.groups.employee.top"></div>
 @if(request()->user()->can('create', Ledningssystemet\Ledningssystemet\Models\Employee::class))
             <li class="nav-item" id="nav-employee">
                <a class="nav-link" href="/staff/employees">
@@ -385,7 +394,8 @@ $(function(){
                   {{ __("Competences") }}
                </a>
             </li>
-@endif            
+@endif
+            <div data-ui-slot="sidebar.groups.employee.bottom"></div>
          </ul>
       </li>      
       <li class="nav-group">
@@ -394,6 +404,7 @@ $(function(){
             {{ __("Coordination") }}
          </a>
          <ul class="nav-group-items collapse" id="management-menu" data-bs-parent="#sidebar">
+            <div data-ui-slot="sidebar.groups.management.top"></div>
 @if(request()->user()->can('create', Ledningssystemet\Ledningssystemet\Models\SupplierCategory::class))
             <li class="nav-item" id="nav-suppliercategory">
                <a class="nav-link" href="/management/suppliercategories">
@@ -466,6 +477,7 @@ $(function(){
                </a>
             </li>
 @endif
+            <div data-ui-slot="sidebar.groups.management.bottom"></div>
          </ul>
       </li>
       <div data-ui-slot="sidebar.groups.before-systemsettings"></div>
@@ -475,6 +487,7 @@ $(function(){
             {{ __("System settings") }}
          </a>
          <ul class="nav-group-items collapse" id="systemsettings-menu" data-bs-parent="#sidebar">
+            <div data-ui-slot="sidebar.groups.systemsettings.top"></div>
 @if(request()->user()->can('create', Ledningssystemet\Ledningssystemet\Models\User::class))
             <li class="nav-item" id="nav-user">
                <a class="nav-link" href="/systemadmin/users">
@@ -538,6 +551,8 @@ $(function(){
                </a>
             </li>
 @endif
+
+            <div data-ui-slot="sidebar.groups.systemsettings.bottom"></div>
          </ul>
       </li>
       <div data-ui-slot="sidebar.groups.bottom"></div>

@@ -926,40 +926,6 @@ static::creating(function ($model) {
    }   
 
    /**
-    * Ignore this risk. This is only possible for partner-provided risks.
-    */
-   public function ignore()
-   {
-      // Ensure correct authorization
-      if(!request()->user()->can('update', $this))
-         abort(403);
-      
-      // Ensure this is a partner-provided risk
-      if(null == $this->partner_object_uid)
-         abort(400, __('Only partner-provided risks may be ignored'));
-      
-      // Ensure a risk has not been approved already
-      if(null != $this->assessed_at)
-         abort(400, __('Ignoring a risk is not possible after it has been assessed'));
-      
-      // Create new ingored-risks entry
-      \Illuminate\Support\Facades\DB::table('ignored_risks')->insert([
-         'risk_id' => $this->id,
-         'name' => $this->name_pretty,
-         'scenariodescription' => $this->scenariodescription_pretty,
-         'partner_object_uid' => $this->partner_object_uid,
-         'context_type' => $this->context_type,
-         'context_id' => $this->context_id,
-         'created_by' => (null != auth()->user()) ? auth()->user()->name : null,
-         'created_at' => date("Y-m-d H:i:s"),
-         'updated_at' => date("Y-m-d H:i:s"),
-      ]);
-      
-      // Delete this risk
-      $this->delete();
-   }
-
-   /**
     * Housekeeping. Delete risks where objects no longer exist
     */
    public static function deleteObsoleteRisks()

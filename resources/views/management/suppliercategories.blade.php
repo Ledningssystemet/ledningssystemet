@@ -37,19 +37,6 @@ $(function(){
             header: true,
             maxlength: 255,
          },
-         partnerinfo: {
-            list: true,
-            create: false,
-            edit: false,
-            display: function(data){
-               if(data.record.partner_id)
-                  return $('<div />')
-                     .css({'font-size': '10pt', 'font-style': 'italic'})
-                     .text('{{ __("This category is provided by") }} '+data.record.partner_name);
-               else
-                  return '';
-            },
-         },
          require_assessment: {
             title: '{{ __('Require assessment of existing suppliers') }}',
             create: true,
@@ -112,9 +99,9 @@ $(function(){
                         paging: false,
                         actions: {
                            listAction: '/api/v1/items/SupplierRequirement?supplier_category_id='+sourcedata.record.id,
-                           updateAction: (sourcedata.record.partner_id) ? null : '/api/v1/items/SupplierRequirement',
-                           createAction: (sourcedata.record.partner_id) ? null : '/api/v1/items/SupplierRequirement',
-                           deleteAction: (sourcedata.record.partner_id) ? null : '/api/v1/items/SupplierRequirement',
+                           updateAction: '/api/v1/items/SupplierRequirement',
+                           createAction: '/api/v1/items/SupplierRequirement',
+                           deleteAction: '/api/v1/items/SupplierRequirement',
                         },
                         fields: {
                            supplier_category_id: {
@@ -167,15 +154,6 @@ $(function(){
                return retobj;
             }
          },      
-      },
-      recordsLoaded: function(event, data){
-         data.serverResponse.forEach((obj) => {
-            if(obj.partner_id)
-            {
-               $(event.target).find('[data-record-key="'+obj.id+'"] .jtable-edit-command').remove();
-               $(event.target).find('[data-record-key="'+obj.id+'"] .jtable-delete-command').remove();
-            }
-         });
       },
    });
    $('#supplierCategoryContainer').jtable('load');          

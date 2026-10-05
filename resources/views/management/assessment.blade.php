@@ -796,22 +796,6 @@ $(function(){
             create: false,
             edit: false,
          },
-         partner_id: {
-            title: '',
-            list: true,
-            edit: false,
-            create: false,
-            display: function (data) {
-               if(data.record.partner_id)
-               {
-                  return $('<span />')
-                     .text('{{ __("This is a partner-provided category") }}')
-                     .css({'font-style': 'italic', 'color': '#6c757d'});
-
-               }
-               return '';
-            },
-         },
          scope: {
             title: '{{ __('Scope') }}',
             create: true,
@@ -875,7 +859,7 @@ $(function(){
                         actions: {
                            listAction: '/api/v1/items/GhgConversionFactor?ghg_category_id='+sourcedata.record.id,
                            updateAction: '/api/v1/items/GhgConversionFactor',
-                           createAction: !sourcedata.record.partner_id &&'/api/v1/items/GhgConversionFactor',
+                           createAction: '/api/v1/items/GhgConversionFactor',
                            deleteAction: '/api/v1/items/GhgConversionFactor',
                         },
                         fields: {
@@ -896,12 +880,6 @@ $(function(){
                               header: true,
                               required: true,
                               maxlength: 255,
-                           },
-                           partner_id:{
-                              title: '{{ __('Partner') }}',
-                              create: true,
-                              edit: true,
-                              list: true,
                            },
                            description: {
                               title: '{{ __('Description') }}',

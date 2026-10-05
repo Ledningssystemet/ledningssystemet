@@ -47,20 +47,6 @@ $(function(){
             required: true,
             maxlength: 255,
          },
-         partnerinfo: {
-            list: true,
-            create: false,
-            edit: false,
-            listClass: 'd-inline-block col-6 col-md-4',
-            display: function(data){
-               if(data.record.partner_id)
-                  return $('<div />')
-                     .css({'font-size': '10pt', 'font-style': 'italic'})
-                     .text('{{ __("This template is provided by") }} '+data.record.partner_name);
-               else
-                  return '';
-            },
-         },
          description: {
             title: '{{ __('Notes') }}',
             type: 'textarea',
@@ -130,10 +116,10 @@ $(function(){
                         },
                         actions: {
                            listAction: '/api/v1/items/ActivityFlowTemplateItem?activity_flow_template_id='+reqsourcedata.record.id,
-                           createAction: reqsourcedata.record.partner_id ? null : '/api/v1/items/ActivityFlowTemplateItem',
-                           updateAction: reqsourcedata.record.partner_id ? null : '/api/v1/items/ActivityFlowTemplateItem',
-                           reorderAction: reqsourcedata.record.partner_id ? null : '/api/v1/items/ActivityFlowTemplateItem',
-                           deleteAction: reqsourcedata.record.partner_id ? null : '/api/v1/items/ActivityFlowTemplateItem',
+                           createAction: '/api/v1/items/ActivityFlowTemplateItem',
+                           updateAction: '/api/v1/items/ActivityFlowTemplateItem',
+                           reorderAction: '/api/v1/items/ActivityFlowTemplateItem',
+                           deleteAction: '/api/v1/items/ActivityFlowTemplateItem',
                         },
                         fields: {
                            activity_flow_template_id: {
@@ -244,25 +230,6 @@ $(function(){
                });
                   
                return retobj;
-            }
-         }
-      },
-      recordsLoaded: function(event, data){
-         if(data.serverResponse.data)
-         {
-            data.serverResponse.data.forEach((obj) => {
-               if(obj.partner_id)
-               {
-                  $(event.target).find('[data-record-key="'+obj.id+'"]').find('.jtable-delete-command').remove();
-                  $(event.target).find('[data-record-key="'+obj.id+'"]').find('.jtable-edit-command').remove();
-               }
-            });
-         }
-         else
-         {
-            if(data.serverResponse.partner_id){
-               $(event.target).find('[data-record-key="'+data.serverResponse.id+'"]').find('.jtable-delete-command').remove();
-               $(event.target).find('[data-record-key="'+data.serverResponse.id+'"]').find('.jtable-edit-command').remove();
             }
          }
       },

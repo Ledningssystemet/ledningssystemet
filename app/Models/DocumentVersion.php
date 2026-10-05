@@ -45,13 +45,6 @@ class DocumentVersion extends Model
          Validator::make($model->toArray(), $model->getValidationRules())->validate();
       });
 
-      // Generate a new document version when a new document is created
-      static::created(function ($model) {
-      });
-      
-      // Prevent deletion of partner provided documents
-      static::deleting(function ($model) {
-      });
    }
    
    /**

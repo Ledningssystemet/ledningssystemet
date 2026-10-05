@@ -108,20 +108,6 @@ $(function(){
 @endforeach
             ],
          },
-         partnerinfo: {
-            list: true,
-            create: false,
-            edit: false,
-            listClass: 'd-inline-block col-6 col-md-4',
-            display: function(data){
-               if(data.record.partner_id)
-                  return $('<div />')
-                     .css({'font-size': '10pt', 'font-style': 'italic'})
-                     .text('{{ __("This control is provided by") }} '+data.record.partner_name);
-               else
-                  return '';
-            },
-         },
          description: {
             title: '{{ __('Description') }}',
             type: 'textarea',
@@ -244,55 +230,6 @@ $(function(){
             }
          },
          @endif
-@if(Auth::user()->can('update', \Ledningssystemet\Ledningssystemet\Models\Control::class))
-         notapplicable: {
-            title: '',
-            type: 'command',
-            width: '1%',
-            sorting: false,
-            edit: false,
-            create: false,
-            footer: true,
-            display: function (data) {
-               if(data.record.partner_id && !data.record.not_applicable_at)
-               {
-                  return $('<button />')
-                     .addClass('btn btn-warning btn-sm')
-                     .css({'margin-left': '10px'})
-                     .text('{{ __('Not applicable') }}')
-                     .prepend($('<span>visibility_off</span>')
-                        .addClass('material-symbols-rounded'))
-                     .click(function(clickevent){
-                        confirmDialog('{{ __("Not applicable") }}', '{{ __("By marking this control as not applicable, you certify that this is not relevant to our business") }}', function(){
-                           ajaxPost('/api/v1/items/Control/'+data.record.id+'/notapplicable', {}, function(){
-                              $('#tableContainer').jtable('reload');
-                           });
-                        });
-                     });
-               }
-               else if(data.record.partner_id && data.record.not_applicable_at)
-               {
-                  return $('<button />')
-                     .addClass('btn btn-warning btn-sm')
-                     .css({'margin-left': '10px'})
-                     .text('{{ __('Applicable') }}')
-                     .prepend($('<span>visibility</span>')
-                        .addClass('material-symbols-rounded'))
-                     .click(function(clickevent){
-                        confirmDialog('{{ __("Applicable") }}', '{{ __("By marking this control as applicable, you override a prior decision that the control is not relevant to our business") }}', function(){
-                           ajaxPost('/api/v1/items/Control/'+data.record.id+'/applicable', {}, function(){
-                              $('#tableContainer').jtable('reload');
-                           });
-                        });
-                     });
-               }
-
-
-               return '';
-
-            }
-         },
-@endif
          actions: {
             title: '',
             type: 'command',
@@ -453,47 +390,16 @@ $(function(){
          showHistory: showHistoryField('Control', $('#tableContainer')),
          showMessages: showMessagesField('Control', $('#tableContainer')),    
       },
-      formCreated: function(event, data){
-         if(data.record && data.record.partner_id)
-         {
-            $(data.form).find('*[name]').each(function(){
-               switch($(this).prop('name'))
-               {
-                  case 'description':
-                     $(this).prop('disabled', true);
-                     break;
-                  case 'responsible_user_id':
-                  case 'statusdescription':
-                  case 'requirements[]':
-                     break;
-                  default:
-                     $(this).closest('div.jtable-input-field-container').remove();
-                     break;
-               }
-            });
-            $(data.form).find('.jtable-input-field-container:has(textarea[name="description"]) .jtable-input-label').text('{{ __("Partner proposed governance") }}');
-         }
-      },
-      rowLoaded: function (event, data) {
-         if(data.record.partner_id)
-            $(event.target).find('[data-record-key="'+data.record.id+'"] div[data-jtable-fieldname="description"] .jtable-field-label').text('{{ __("Partner proposed governance") }}');
-      },
       recordsLoaded: function(event, data){
          if(data.serverResponse.data)
          {
             data.serverResponse.data.forEach((obj) => {
-               if(obj.partner_id)
-                  $(event.target).find('[data-record-key="'+obj.id+'"]').find('.jtable-delete-command').remove();
-               
                if(!obj.responsible_user_id)
                   $('#jtable-body-controlstable > .jtable-data-row[data-record-key="'+obj.id+'"] div[data-jtable-fieldname="responsible_user_id"] .jtable-field-label').addClass('text-danger');
             });
          }
          else
          {
-            if(data.serverResponse.partner_id)
-               $(event.target).find('[data-record-key="'+data.serverResponse.id+'"]').find('.jtable-delete-command').remove();
-            
             if(!data.serverResponse.responsible_user_id)
                $('#jtable-body-controlstable > .jtable-data-row[data-record-key="'+data.serverResponse.id+'"] div[data-jtable-fieldname="responsible_user_id"] .jtable-field-label').addClass('text-danger');
          }

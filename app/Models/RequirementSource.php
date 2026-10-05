@@ -17,7 +17,6 @@ use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
-use Ledningssystemet\Ledningssystemet\Models\ProvidedObject;
 use Illuminate\Support\Facades\DB; 
 use Ledningssystemet\Ledningssystemet\Traits\HasNotifications;
 use Ledningssystemet\Ledningssystemet\Traits\HasTags;
@@ -81,18 +80,6 @@ class RequirementSource extends Model
       return $retval;
    }
 
-   /**
-    * Bootstrap any application services.
-    *
-    * @return void
-    */
-   public static function boot()
-   {
-      parent::boot();
-      
-      // No legacy partner-specific restrictions; normal validation is enforced elsewhere.
-   }
-   
    /**
     * Appended attributes
     */
@@ -407,5 +394,3 @@ class RequirementSource extends Model
       ActivityLog::addMessage(__("The requirement source was set applicable by")." ".auth()->user()->name, $this);
    }
 }
-
-

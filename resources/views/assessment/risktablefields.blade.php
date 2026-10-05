@@ -29,20 +29,6 @@
             maxlength: 255,
             tooltip: '{{ __("Note") }}: {{ __("If you write {name} it will be replaced with the actual name of the associated object, and will reflect any changes to the object name when viewed or exported.") }}',
          },
-         partnerinfo: {
-            list: true,
-            create: false,
-            edit: false,
-            listClass: 'd-inline-block col-12',
-            display: function(data){
-               if(data.record.partner_id)
-                  return $('<div />')
-                     .css({'font-size': '10pt', 'font-style': 'italic'})
-                     .text('{{ __("This risk is provided by") }} '+data.record.partner_name);
-               else
-                  return '';
-            },
-         },
          tags: showTags('Risk', $('#tableContainer')),
          id: {
             title: '{{ __('ID') }}',
@@ -431,23 +417,6 @@
                            confirmDialog('{{ __("Approve risk") }}', '{{ __("By approving the risk, you certify that the risk is correctly assessed, that planned actions are relevant and sufficient to manage the risk and that you have the mandate to approve this risk") }}', function(){
                                  ajaxPost('/api/v1/items/Risk/'+data.record.id+'/approve', {}, function(){
                                     $(clickevent.target).closest('.jtable-main-container').parent('div').jtable('reload');
-                                    });
-                           });
-                        }));
-                  }
-
-                  if(data.record.partner_id && !data.record.replacing_id)
-                  {
-                     retval.append($('<button />')
-                        .addClass('btn btn-warning btn-sm')
-                        .css({'margin-left': '10px'})
-                        .text('{{ __('Ignore') }}')
-                        .prepend($('<span>delete</span>')
-                           .addClass('material-symbols-rounded'))
-                        .click(function(clickevent){
-                           confirmDialog('{{ __("Ignore") }}', '{{ __("By ignoring the risk, you certify that the provided risk is not relevant for assessment") }}', function(){
-                                 ajaxPost('/api/v1/items/Risk/'+data.record.id+'/ignore', {}, function(){
-                                       $(clickevent.target).closest('.jtable-data-row').remove();
                                     });
                            });
                         }));

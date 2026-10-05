@@ -144,27 +144,6 @@ $(function(){
       },
 @include('assessment.risktablefields')      
       formCreated: function(event, data){
-         if(data.record && data.record.partner_id)
-         {
-            $(data.form).find('*[name]').each(function(){
-               switch($(this).prop('name'))
-               {
-                  case 'name':
-                     $(this).closest('div.jtable-input-field-container [name]').prop('disabled', 1);
-                     $(this).closest('div.jtable-input-field-container [name]').val(data.record.name_pretty);
-                     
-                     break;
-                  case 'scenariodescription':
-                     $(this).closest('div.jtable-input-field-container [name]').prop('disabled', 1);
-                     $(this).closest('div.jtable-input-field-container [name]').val(data.record.scenariodescription_pretty);
-                     break;
-                  case 'context':
-                     $(this).closest('div.jtable-input-field-container [name]').prop('disabled', 1);
-                     break;
-               }
-            });
-         }
-         
          $(data.form).find('select#Edit-context').select2({dropdownParent: data.form});
       },
       recordUpdated: function(event, data) {

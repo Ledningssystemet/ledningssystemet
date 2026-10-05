@@ -45,27 +45,9 @@ class Requirement extends Model
    {
       parent::boot();
       
-      // Cannot update some fields if this is a partner provided list
-      static::updating(function ($model) {
-         if((null != auth()->user()) && $model->int_requirement_source->partner)
-         {
-            if($model->isDirty('name') ||
-               $model->isDirty('ordinal') ||
-               $model->isDirty('reference') ||
-               $model->isDirty('description'))
-               abort(400, __('This is a partner controlled requirement where only limited modifications are allowed'));
-         }
-      });
-      
       // Update timestamp on parent requirement source
       static::updated(function ($model) {
          $model->int_requirement_source->touch();
-      });
-         
-      // Cannot delete if this is part of a partner provided list
-      static::deleting(function ($model) {
-         if((null != auth()->user()) && $model->int_requirement_source->partner)
-            abort(400, __('This is a partner controlled requirement where modifications are not allowed'));
       });
       
       // Update timestamp on parent requirement source
@@ -235,10 +217,6 @@ class Requirement extends Model
       if(!request()->user()->can('update', $this))
          abort(403);
 
-      // Ensure this is not a partner-controlled list
-      if($this->int_requirement_source->partner)
-         abort(400, __("This is a partner-controlled requirement source which may not be altered"));
-         
       // Get after-object
       $after = request()->input('after');
       $afterobj = (null == $after) ? null : Requirement::findOrFail($after);
@@ -263,5 +241,4 @@ class Requirement extends Model
       return [];
    }
 }
-
 
