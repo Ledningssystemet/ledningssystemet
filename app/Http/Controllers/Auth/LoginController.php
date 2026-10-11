@@ -11,8 +11,15 @@ class LoginController extends Controller
     */
    public function show()
    {
-      if(config('ledningssystemet.login_allow_passwordlogin') || SsoController::hasEnabledProviders()) {
-         $ssoProviders = collect(SsoController::enabledProviders())->map(function (array $provider): array {
+      $passwordLoginEnabled = (bool) config('ledningssystemet.login_allow_passwordlogin');
+      $enabledProviders = SsoController::enabledProviders();
+
+      if (!$passwordLoginEnabled && count($enabledProviders) === 1) {
+         return redirect()->route('sso.redirect', ['provider' => $enabledProviders[0]['name']]);
+      }
+
+      if($passwordLoginEnabled || count($enabledProviders) > 0) {
+         $ssoProviders = collect($enabledProviders)->map(function (array $provider): array {
             return [
                'name' => $provider['name'],
                'label' => $provider['label'],
@@ -26,7 +33,7 @@ class LoginController extends Controller
             'pageClass' => 'login',
             'formAction' => route('login'),
             'passwordResetRequestAction' => route('password.email'),
-            'passwordLoginEnabled' => (bool) config('ledningssystemet.login_allow_passwordlogin'),
+            'passwordLoginEnabled' => $passwordLoginEnabled,
             'mfaEnabled' => (bool) config('ledningssystemet.mfa_enabled'),
             'ssoProviders' => $ssoProviders,
             'logoSrc' => file_exists(resource_path().'/brand/logo/logo_login.png')

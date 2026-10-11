@@ -28,6 +28,7 @@ return [
    'company_uid' => env('COMPANY_UID', ''),
 
    'local_user_management' => env('LOCAL_USER_MANAGEMENT', true),
+   // When disabled with exactly one enabled SSO provider, login redirects directly to SSO.
    'login_allow_passwordlogin' => env('LOGIN_ALLOW_PASSWORDLOGIN', true),
    'mfa_enabled' => env('MFA_ENABLED', false),
    'mfa_enforced' => env('MFA_ENFORCED', false),
