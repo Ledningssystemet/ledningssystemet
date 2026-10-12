@@ -109,24 +109,33 @@ class GraphSync extends Command
     */
    protected function fetchUsers(): array
    {
-      $filter = trim((string) config('ledningssystemet.graph_usersync_filter', ''));
+      $path = trim((string) config('ledningssystemet.graph_usersync_path', ''));
+      if ('' !== $path) {
+         $requestConfiguration = new UsersRequestBuilderGetRequestConfiguration(
+            headers: ['ConsistencyLevel' => 'eventual'],
+         );
+         $response = $this->graphClient->users()->withUrl($path)->get($requestConfiguration)->wait();
+      } else {
+         $filter = trim((string) config('ledningssystemet.graph_usersync_filter', ''));
 
-      // If external users shall not be synced, add a filter
-      if(!config('ledningssystemet.graph_sync_external_users', false)) {
-         $filter .= ($filter == '') ? 'userType eq \'Member\'' : ' and userType eq \'Member\'';
+         // If external users shall not be synced, add a filter
+         if(!config('ledningssystemet.graph_sync_external_users', false)) {
+            $filter .= ($filter == '') ? 'userType eq \'Member\'' : ' and userType eq \'Member\'';
+         }
+
+         $requestConfiguration = new UsersRequestBuilderGetRequestConfiguration(
+            headers: ['ConsistencyLevel' => 'eventual'],
+            queryParameters: UsersRequestBuilderGetRequestConfiguration::createQueryParameters(
+               filter: ('' !== $filter) ? $filter : null,
+               select: ['id', 'displayName', 'jobTitle', 'mail', 'userPrincipalName', 'accountEnabled'],
+            ),
+         );
+         $response = $this->graphClient->users()->get($requestConfiguration)->wait();
       }
-
-      $requestConfiguration = new UsersRequestBuilderGetRequestConfiguration(
-         headers: ['ConsistencyLevel' => 'eventual'],
-         queryParameters: UsersRequestBuilderGetRequestConfiguration::createQueryParameters(
-            filter: ('' !== $filter) ? $filter : null,
-            select: ['id', 'displayName', 'jobTitle', 'mail', 'userPrincipalName', 'accountEnabled'],
-         ),
-      );
 
       $users = [];
       $this->iteratePages(
-         $this->graphClient->users()->get($requestConfiguration)->wait(),
+         $response,
          function (User $user) use (&$users) {
             if (null !== $user->getId())
                $users[$user->getId()] = $user;
@@ -179,7 +188,7 @@ class GraphSync extends Command
                $enabled = $graphUser->getAccountEnabled();
                $email = $graphUser->getMail() ?? $graphUser->getUserPrincipalName();
 
-               if (null === $name || null === $enabled || null === $email)
+               if (null === $name || null === $enabled || null === $email || false === $enabled)
                   continue;
 
                if (  (strtolower($graphUser->getMail()) === strtolower((string) $existingUser->email)) ||
@@ -263,19 +272,28 @@ class GraphSync extends Command
     */
    protected function fetchGroups(): array
    {
-      $filter = trim((string) config('ledningssystemet.graph_groupsync_filter', ''));
+      $path = trim((string) config('ledningssystemet.graph_groupsync_path', ''));
+      if ('' !== $path) {
+         $requestConfiguration = new GroupsRequestBuilderGetRequestConfiguration(
+            headers: ['ConsistencyLevel' => 'eventual'],
+         );
+         $response = $this->graphClient->groups()->withUrl($path)->get($requestConfiguration)->wait();
+      } else {
+         $filter = trim((string) config('ledningssystemet.graph_groupsync_filter', ''));
 
-      $requestConfiguration = new GroupsRequestBuilderGetRequestConfiguration(
-         headers: ['ConsistencyLevel' => 'eventual'],
-         queryParameters: GroupsRequestBuilderGetRequestConfiguration::createQueryParameters(
-            filter: ('' !== $filter) ? $filter : null,
-            select: ['id', 'displayName'],
-         ),
-      );
+         $requestConfiguration = new GroupsRequestBuilderGetRequestConfiguration(
+            headers: ['ConsistencyLevel' => 'eventual'],
+            queryParameters: GroupsRequestBuilderGetRequestConfiguration::createQueryParameters(
+               filter: ('' !== $filter) ? $filter : null,
+               select: ['id', 'displayName'],
+            ),
+         );
+         $response = $this->graphClient->groups()->get($requestConfiguration)->wait();
+      }
 
       $groups = [];
       $this->iteratePages(
-         $this->graphClient->groups()->get($requestConfiguration)->wait(),
+         $response,
          function (Group $group) use (&$groups) {
             if (null !== $group->getId())
                $groups[$group->getId()] = $group;

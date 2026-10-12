@@ -49,8 +49,12 @@ return [
    'graph_provider_name' => env('GRAPH_PROVIDER_NAME', 'External provider'),
    'graph_sync_enabled' => env('GRAPH_SYNC_ENABLED', false),
    'graph_sync_external_users' => env('GRAPH_SYNC_EXTERNAL_USERS', false),
+   // Optional full Graph API URL; when set, this takes precedence over GRAPH_USERSYNC_FILTER.
+   'graph_usersync_path' => env('GRAPH_USERSYNC_PATH', ''),
    'graph_usersync_filter' => env('GRAPH_USERSYNC_FILTER', ''),
    'graph_management_sync' => env('GRAPH_MANAGEMENT_SYNC', false),
+   // Optional full Graph API URL; when set, this takes precedence over GRAPH_GROUPSYNC_FILTER.
+   'graph_groupsync_path' => env('GRAPH_GROUPSYNC_PATH', ''),
    'graph_groupsync_filter' => env('GRAPH_GROUPSYNC_FILTER', ''),
 
    // OpenAI / AI assistant settings
