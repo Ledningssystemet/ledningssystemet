@@ -46,7 +46,7 @@
                      'piidescription',
 
                   ]
-               }
+               },
                   @endif
                   @if(!config('ledningssystemet.disable_archival'))
                {
@@ -59,7 +59,7 @@
                      'archiveshippingtime',
                      'archivemedia',
                   ]
-               }
+               },
                @endif
             ],
             bootstrap: true,
