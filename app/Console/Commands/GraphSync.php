@@ -177,12 +177,13 @@ class GraphSync extends Command
             foreach ($users as $graphUser) {
                $name = $graphUser->getDisplayName();
                $enabled = $graphUser->getAccountEnabled();
-               $email = $graphUser->getMail()?? $graphUser->getUserPrincipalName();
+               $email = $graphUser->getMail() ?? $graphUser->getUserPrincipalName();
 
                if (null === $name || null === $enabled || null === $email)
                   continue;
 
-               if (strtolower($email) === strtolower((string) $existingUser->email)) {
+               if (  (strtolower($graphUser->getMail()) === strtolower((string) $existingUser->email)) ||
+                     (strtolower($graphUser->getUserPrincipalName()) === strtolower((string) $existingUser->email)) ) {
                   $existingUser->external_id = $graphUser->getId();
                   $existingUser->name = $name;
                   $existingUser->title = $graphUser->getJobTitle() ?? '';
@@ -204,7 +205,7 @@ class GraphSync extends Command
 
          $name = $graphUser->getDisplayName();
          $enabled = $graphUser->getAccountEnabled();
-         $email = $graphUser->getUserPrincipalName();
+         $email = $graphUser->getMail() ?? $graphUser->getUserPrincipalName();
 
          if (null === $name || null === $enabled || null === $email)
             continue;
