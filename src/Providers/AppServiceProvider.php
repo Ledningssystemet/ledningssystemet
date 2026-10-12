@@ -161,34 +161,41 @@ class AppServiceProvider extends ServiceProvider
       /* Define access levels for model actions */
       // Indexing (list all)
       Gate::define('index', function (User $user, $model) {
-         switch (is_string($model) ? $model : get_class($model)) {
-            case 'Ledningssystemet\Ledningssystemet\Models\Customer':
+         $modelClass = is_string($model) ? $model : get_class($model);
+         
+         // Remove any namespace declaration from the modelClass
+         if(str_contains($modelClass, '\\')) {
+            $modelClass = substr($modelClass, strrpos($modelClass, '\\') + 1);
+         }
+         
+         switch ($modelClass) {
+            case 'Customer':
                return $user->hasAnyPermission(['customers.read', 'customers.edit']);
 
-            case 'Ledningssystemet\Ledningssystemet\Models\ComplianceEvaluation':
-            case 'Ledningssystemet\Ledningssystemet\Models\ComplianceEvaluationRequirementFinding':
-            case 'Ledningssystemet\Ledningssystemet\Models\ComplianceEvaluationRequirement':
-            case 'Ledningssystemet\Ledningssystemet\Models\ComplianceEvaluationRequirementSource':
+            case 'ComplianceEvaluation':
+            case 'ComplianceEvaluationRequirementFinding':
+            case 'ComplianceEvaluationRequirement':
+            case 'ComplianceEvaluationRequirementSource':
                return $user->hasAnyPermission(['complianceevaluations.read', 'complianceevaluations.edit']);
 
-            case 'Ledningssystemet\Ledningssystemet\Models\Requirement':
-            case 'Ledningssystemet\Ledningssystemet\Models\RequirementSource':
+            case 'Requirement':
+            case 'RequirementSource':
                return $user->hasAnyPermission(['requirements.read', 'requirements.edit']);
 
-            case 'Ledningssystemet\Ledningssystemet\Models\Process':
-            case 'Ledningssystemet\Ledningssystemet\Models\ProcessActivity':
-            case 'Ledningssystemet\Ledningssystemet\Models\ProcessHref':
-            case 'Ledningssystemet\Ledningssystemet\Models\InformationType':
-            case 'Ledningssystemet\Ledningssystemet\Models\Asset':
+            case 'Process':
+            case 'ProcessActivity':
+            case 'ProcessHref':
+            case 'InformationType':
+            case 'Asset':
                return $user->hasAnyPermission(['processes.read', 'processes.edit']);
 
-            case 'Ledningssystemet\Ledningssystemet\Models\Supplier':
+            case 'Supplier':
                return (!config('ledningssystemet.disable_supplier')) && $user->hasAnyPermission(['suppliers.read', 'suppliers.edit']);
 
-            case 'Ledningssystemet\Ledningssystemet\Models\Control':
+            case 'Control':
                return $user->hasAnyPermission(['controls.read', 'controls.edit']);
 
-            case 'Ledningssystemet\Ledningssystemet\Models\RiskProject':
+            case 'RiskProject':
                // User may view risk projects if the are part of one or have the correct access rights
                if($user->hasAnyPermission(['riskdepartment.edit', 'riskall.edit', 'riskadministrator.edit']))
                   return true;
@@ -203,85 +210,85 @@ class AppServiceProvider extends ServiceProvider
 
                return false;
 
-            case 'Ledningssystemet\Ledningssystemet\Models\Risk':
+            case 'Risk':
                return ((0 < intval(request()->input('risk_project_id', '0'))) || $user->hasAnyPermission(['riskdepartment.edit', 'riskall.edit', 'riskadministrator.edit']));
 
-            case 'Ledningssystemet\Ledningssystemet\Models\Finding':
+            case 'Finding':
                return (!config('ledningssystemet.disable_finding')) && $user->hasAnyPermission(['findings.read', 'findings.edit']);
 
-            case 'Ledningssystemet\Ledningssystemet\Models\Incident':
-            case 'Ledningssystemet\Ledningssystemet\Models\IncidentLog':
+            case 'Incident':
+            case 'IncidentLog':
                return $user->hasAnyPermission(['incidents.read', 'incidents.edit']);
 
-            case 'Ledningssystemet\Ledningssystemet\Models\ActivityFlowTemplateItem':
-            case 'Ledningssystemet\Ledningssystemet\Models\AvailabilityClass':
-            case 'Ledningssystemet\Ledningssystemet\Models\ConfidentialityClass':
-            case 'Ledningssystemet\Ledningssystemet\Models\IntegrityClass':
-            case 'Ledningssystemet\Ledningssystemet\Models\ConsequenceLevel':
-            case 'Ledningssystemet\Ledningssystemet\Models\Department':
-            case 'Ledningssystemet\Ledningssystemet\Models\FormTemplate':
-            case 'Ledningssystemet\Ledningssystemet\Models\ProbabilityLevel':
-            case 'Ledningssystemet\Ledningssystemet\Models\RiskLevel':
-            case 'Ledningssystemet\Ledningssystemet\Models\Tag':
-            case 'Ledningssystemet\Ledningssystemet\Models\RiskProjectType':
-            case 'Ledningssystemet\Ledningssystemet\Models\RiskProjectTypeRiskTemplate':
-            case 'Ledningssystemet\Ledningssystemet\Models\GhgCategory':
-            case 'Ledningssystemet\Ledningssystemet\Models\GhgConversionFactor':
+            case 'ActivityFlowTemplateItem':
+            case 'AvailabilityClass':
+            case 'ConfidentialityClass':
+            case 'IntegrityClass':
+            case 'ConsequenceLevel':
+            case 'Department':
+            case 'FormTemplate':
+            case 'ProbabilityLevel':
+            case 'RiskLevel':
+            case 'Tag':
+            case 'RiskProjectType':
+            case 'RiskProjectTypeRiskTemplate':
+            case 'GhgCategory':
+            case 'GhgConversionFactor':
                return $user->hasAnyPermission(['managementtools.edit']);
 
-            case 'Ledningssystemet\Ledningssystemet\Models\ConfidentialityGround':
-            case 'Ledningssystemet\Ledningssystemet\Models\Diary':
+            case 'ConfidentialityGround':
+            case 'Diary':
                return (!config('ledningssystemet.disable_archival') && $user->hasAnyPermission(['managementtools.edit']));
 
-            case 'Ledningssystemet\Ledningssystemet\Models\LibraryDocument':
-            case 'Ledningssystemet\Ledningssystemet\Models\DocumentVersion':
+            case 'LibraryDocument':
+            case 'DocumentVersion':
                // Authorization handled by models themselves
             return true;
 
-            case 'Ledningssystemet\Ledningssystemet\Models\Role':
+            case 'Role':
                return (!config('ledningssystemet.disable_staff')) && $user->hasAnyPermission(['managementtools.edit']);
 
-            case 'Ledningssystemet\Ledningssystemet\Models\SubjectCategory':
-            case 'Ledningssystemet\Ledningssystemet\Models\DataCategory':
-            case 'Ledningssystemet\Ledningssystemet\Models\LegalBasis':
-            case 'Ledningssystemet\Ledningssystemet\Models\RecipientCategory':
+            case 'SubjectCategory':
+            case 'DataCategory':
+            case 'LegalBasis':
+            case 'RecipientCategory':
                return (!config('ledningssystemet.disable_gdpr')) && $user->hasAnyPermission(['managementtools.edit']);
 
-            case 'Ledningssystemet\Ledningssystemet\Models\SupplierCategory':
-            case 'Ledningssystemet\Ledningssystemet\Models\SupplierRequirement':
+            case 'SupplierCategory':
+            case 'SupplierRequirement':
                return (!config('ledningssystemet.disable_supplier')) && $user->hasAnyPermission(['managementtools.edit', 'suppliers.read', 'suppliers.edit']);
 
-            case 'Ledningssystemet\Ledningssystemet\Models\SustainabilityAspect':
-            case 'Ledningssystemet\Ledningssystemet\Models\SustainabilityMetric':
-            case 'Ledningssystemet\Ledningssystemet\Models\SustainabilityMetricLevel':
+            case 'SustainabilityAspect':
+            case 'SustainabilityMetric':
+            case 'SustainabilityMetricLevel':
                return $user->hasAnyPermission(['managementtools.edit']);
 
-            case 'Ledningssystemet\Ledningssystemet\Models\User':
-            case 'Ledningssystemet\Ledningssystemet\Models\Site':
-            case 'Ledningssystemet\Ledningssystemet\Models\AccessGroup':
-            case 'Ledningssystemet\Ledningssystemet\Models\PersonalAccessToken':
+            case 'User':
+            case 'Site':
+            case 'AccessGroup':
+            case 'PersonalAccessToken':
                return $user->hasAnyPermission(['systemadministrator.edit']);
 
-            case 'Ledningssystemet\Ledningssystemet\Models\ProcessPerformanceMetric':
-            case 'Ledningssystemet\Ledningssystemet\Models\ProcessPerformanceMetricReport':
+            case 'ProcessPerformanceMetric':
+            case 'ProcessPerformanceMetricReport':
                return $user->hasAnyPermission(['processmetrics.read', 'processmetrics.edit']);
 
-            case 'Ledningssystemet\Ledningssystemet\Models\Objective':
-            case 'Ledningssystemet\Ledningssystemet\Models\ObjectiveProcessPerformanceMetric':
+            case 'Objective':
+            case 'ObjectiveProcessPerformanceMetric':
                return $user->hasAnyPermission(['objectives.read', 'objectives.edit']);
 
 
-            case 'Ledningssystemet\Ledningssystemet\Models\Employee':
+            case 'Employee':
                return (!config('ledningssystemet.disable_staff')) && $user->hasAnyPermission(['employeemanagement.edit', 'subordinateemployeemenagement.edit']);
 
-            case 'Ledningssystemet\Ledningssystemet\Models\EmployeeRole':
-            case 'Ledningssystemet\Ledningssystemet\Models\Qualification':
-            case 'Ledningssystemet\Ledningssystemet\Models\QualificationRole':
-            case 'Ledningssystemet\Ledningssystemet\Models\RoleCompetence':
+            case 'EmployeeRole':
+            case 'Qualification':
+            case 'QualificationRole':
+            case 'RoleCompetence':
                return (!config('ledningssystemet.disable_staff')) && $user->hasAnyPermission(['employeemanagement.edit']);
 
-            case 'Ledningssystemet\Ledningssystemet\Models\QualificationUser':
-            case 'Ledningssystemet\Ledningssystemet\Models\UserCompetence':
+            case 'QualificationUser':
+            case 'UserCompetence':
             {
                if(config('ledningssystemet.disable_staff')) return false;
 
@@ -297,39 +304,39 @@ class AppServiceProvider extends ServiceProvider
                return ($model->manager_user_id == $user->id);
             }
 
-            case 'Ledningssystemet\Ledningssystemet\Models\ProcessSustainabilityAspect':
+            case 'ProcessSustainabilityAspect':
                return $user->hasAnyPermission(['sustainabilityaspects.read', 'sustainabilityaspects.edit']);
 
-            case 'Ledningssystemet\Ledningssystemet\Models\Chemical':
+            case 'Chemical':
                return $user->hasAnyPermission(['chemicalregister.read', 'chemicalregister.edit']);
 
-            case 'Ledningssystemet\Ledningssystemet\Models\Agreement':
+            case 'Agreement':
                return $user->hasAnyPermission(['agreements.read', 'agreements.edit']);
 
-            case 'Ledningssystemet\Ledningssystemet\Models\CustomProperty':
+            case 'CustomProperty':
                return $user->hasAnyPermission(['systemadministrator.edit']);
 
-            case 'Ledningssystemet\Ledningssystemet\Models\FormRelation':
+            case 'FormRelation':
                return $user->hasAnyPermission(['forms.edit']);
 
-            case 'Ledningssystemet\Ledningssystemet\Models\GhgFactor':
-            case 'Ledningssystemet\Ledningssystemet\Models\GhgFactorReport':
+            case 'GhgFactor':
+            case 'GhgFactorReport':
                return $user->hasAnyPermission(['ghg.read', 'ghg.edit']);
 
             // Authorization handled by models themselves
-            case 'Ledningssystemet\Ledningssystemet\Models\Activity':
-            case 'Ledningssystemet\Ledningssystemet\Models\ActivityFlow':
-            case 'Ledningssystemet\Ledningssystemet\Models\ActivityFlowTemplate':
-            case 'Ledningssystemet\Ledningssystemet\Models\UserNotificationChannel':
-            case 'Ledningssystemet\Ledningssystemet\Models\ActivityLog':
-            case 'Ledningssystemet\Ledningssystemet\Models\ObjectMessage':
-            case 'Ledningssystemet\Ledningssystemet\Models\Me':
-            case 'Ledningssystemet\Ledningssystemet\Models\Competence':
-            case 'Ledningssystemet\Ledningssystemet\Models\CompetenceLevel':
-            case 'Ledningssystemet\Ledningssystemet\Models\ControlAction':
-            case 'Ledningssystemet\Ledningssystemet\Models\File':
-            case 'Ledningssystemet\Ledningssystemet\Models\Relation':
-            case 'Ledningssystemet\Ledningssystemet\Models\Form':
+            case 'Activity':
+            case 'ActivityFlow':
+            case 'ActivityFlowTemplate':
+            case 'UserNotificationChannel':
+            case 'ActivityLog':
+            case 'ObjectMessage':
+            case 'Me':
+            case 'Competence':
+            case 'CompetenceLevel':
+            case 'ControlAction':
+            case 'File':
+            case 'Relation':
+            case 'Form':
                return true;
          }
 
@@ -338,49 +345,56 @@ class AppServiceProvider extends ServiceProvider
 
       // View (list single)
       Gate::define('view', function (User $user, $model) {
-         switch (is_string($model) ? $model : get_class($model)) {
-            case 'Ledningssystemet\Ledningssystemet\Models\Customer':
+         $modelClass = is_string($model) ? $model : get_class($model);
+
+         // Remove any namespace declaration from the modelClass
+         if(str_contains($modelClass, '\\')) {
+            $modelClass = substr($modelClass, strrpos($modelClass, '\\') + 1);
+         }
+
+         switch ($modelClass) {
+            case 'Customer':
                return $user->hasAnyPermission(['customers.read', 'customers.edit']);
 
-            case 'Ledningssystemet\Ledningssystemet\Models\Me':
-            case 'Ledningssystemet\Ledningssystemet\Models\Competence':
-            case 'Ledningssystemet\Ledningssystemet\Models\CompetenceLevel':
+            case 'Me':
+            case 'Competence':
+            case 'CompetenceLevel':
                return true;
 
-            case 'Ledningssystemet\Ledningssystemet\Models\ActivityLog':
-            case 'Ledningssystemet\Ledningssystemet\Models\ObjectMessage':
+            case 'ActivityLog':
+            case 'ObjectMessage':
                return $user->can('view', self::resolveObject($model));
 
 
-            case 'Ledningssystemet\Ledningssystemet\Models\ComplianceEvaluation':
-            case 'Ledningssystemet\Ledningssystemet\Models\ComplianceEvaluationRequirementFinding':
-            case 'Ledningssystemet\Ledningssystemet\Models\ComplianceEvaluationRequirement':
-            case 'Ledningssystemet\Ledningssystemet\Models\ComplianceEvaluationRequirementSource':
+            case 'ComplianceEvaluation':
+            case 'ComplianceEvaluationRequirementFinding':
+            case 'ComplianceEvaluationRequirement':
+            case 'ComplianceEvaluationRequirementSource':
                return $user->hasAnyPermission(['complianceevaluations.read', 'complianceevaluations.edit']);
 
-            case 'Ledningssystemet\Ledningssystemet\Models\Requirement':
-            case 'Ledningssystemet\Ledningssystemet\Models\RequirementSource':
+            case 'Requirement':
+            case 'RequirementSource':
                return $user->hasAnyPermission(['requirements.read', 'requirements.edit']);
 
 
-            case 'Ledningssystemet\Ledningssystemet\Models\Process':
-            case 'Ledningssystemet\Ledningssystemet\Models\ProcessActivity':
-            case 'Ledningssystemet\Ledningssystemet\Models\ProcessHref':
+            case 'Process':
+            case 'ProcessActivity':
+            case 'ProcessHref':
                return $user->hasAnyPermission(['processes.read', 'processes.edit']);
 
-            case 'Ledningssystemet\Ledningssystemet\Models\InformationType':
+            case 'InformationType':
                return $user->hasAnyPermission(['processes.read', 'processes.edit']);
 
-            case 'Ledningssystemet\Ledningssystemet\Models\Asset':
+            case 'Asset':
                return $user->hasAnyPermission(['processes.read', 'processes.edit']);
 
-            case 'Ledningssystemet\Ledningssystemet\Models\Supplier':
+            case 'Supplier':
                return (!config('ledningssystemet.disable_supplier')) && $user->hasAnyPermission(['suppliers.read', 'suppliers.edit']);
 
-            case 'Ledningssystemet\Ledningssystemet\Models\Control':
+            case 'Control':
                return $user->hasAnyPermission(['controls.read', 'controls.edit']);
 
-            case 'Ledningssystemet\Ledningssystemet\Models\Risk':
+            case 'Risk':
 
                if (is_string($model))
                   return $user->hasAnyPermission(['riskdepartment.edit', 'riskall.edit', 'riskadministrator.edit']);
@@ -405,7 +419,7 @@ class AppServiceProvider extends ServiceProvider
 
                return false;
 
-            case 'Ledningssystemet\Ledningssystemet\Models\RiskProject':
+            case 'RiskProject':
                if ($user->hasAnyPermission(['riskadministrator.edit'])) // If user is admin, then user may view any risk project
                   return true;
                if ($model->responsible_user_id == $user->id) // If user is responsible, then user may view the risk project
@@ -415,87 +429,87 @@ class AppServiceProvider extends ServiceProvider
 
                return false;
 
-            case 'Ledningssystemet\Ledningssystemet\Models\Finding':
+            case 'Finding':
                return (!config('ledningssystemet.disable_finding')) && $user->hasAnyPermission(['findings.read', 'findings.edit']);
 
-            case 'Ledningssystemet\Ledningssystemet\Models\Incident':
-            case 'Ledningssystemet\Ledningssystemet\Models\IncidentLog':
+            case 'Incident':
+            case 'IncidentLog':
                return $user->hasAnyPermission(['incidents.read', 'incidents.edit']);
 
 
-            case 'Ledningssystemet\Ledningssystemet\Models\ActivityFlowTemplate':
-            case 'Ledningssystemet\Ledningssystemet\Models\ActivityFlowTemplateItem':
-            case 'Ledningssystemet\Ledningssystemet\Models\AvailabilityClass':
-            case 'Ledningssystemet\Ledningssystemet\Models\ConfidentialityClass':
-            case 'Ledningssystemet\Ledningssystemet\Models\IntegrityClass':
-            case 'Ledningssystemet\Ledningssystemet\Models\ConsequenceLevel':
-            case 'Ledningssystemet\Ledningssystemet\Models\Department':
-            case 'Ledningssystemet\Ledningssystemet\Models\ProbabilityLevel':
-            case 'Ledningssystemet\Ledningssystemet\Models\RiskLevel':
-            case 'Ledningssystemet\Ledningssystemet\Models\Tag':
-            case 'Ledningssystemet\Ledningssystemet\Models\RiskProjectType':
-            case 'Ledningssystemet\Ledningssystemet\Models\RiskProjectTypeRiskTemplate':
-            case 'Ledningssystemet\Ledningssystemet\Models\GhgCategory':
-            case 'Ledningssystemet\Ledningssystemet\Models\GhgConversionFactor':
+            case 'ActivityFlowTemplate':
+            case 'ActivityFlowTemplateItem':
+            case 'AvailabilityClass':
+            case 'ConfidentialityClass':
+            case 'IntegrityClass':
+            case 'ConsequenceLevel':
+            case 'Department':
+            case 'ProbabilityLevel':
+            case 'RiskLevel':
+            case 'Tag':
+            case 'RiskProjectType':
+            case 'RiskProjectTypeRiskTemplate':
+            case 'GhgCategory':
+            case 'GhgConversionFactor':
                return $user->hasAnyPermission(['managementtools.edit']);
 
-            case 'Ledningssystemet\Ledningssystemet\Models\ConfidentialityGround':
-            case 'Ledningssystemet\Ledningssystemet\Models\Diary':
+            case 'ConfidentialityGround':
+            case 'Diary':
                return (!config('ledningssystemet.disable_archival') && $user->hasAnyPermission(['managementtools.edit']));
 
-            case 'Ledningssystemet\Ledningssystemet\Models\LibraryDocument':
+            case 'LibraryDocument':
                return true;
 
-            case 'Ledningssystemet\Ledningssystemet\Models\DocumentVersion':
+            case 'DocumentVersion':
                if(is_string($model))
                   return false;
                else
                   return (($user->id == $model->approver_id) || ($user->id == $model->int_library_document->responsible_user_id) || $user->hasAnyPermission(['managementtools.edit']));
 
-            case 'Ledningssystemet\Ledningssystemet\Models\Role':
+            case 'Role':
                return (!config('ledningssystemet.disable_staff')) && $user->hasAnyPermission(['managementtools.edit']);
 
-            case 'Ledningssystemet\Ledningssystemet\Models\SubjectCategory':
-            case 'Ledningssystemet\Ledningssystemet\Models\DataCategory':
-            case 'Ledningssystemet\Ledningssystemet\Models\LegalBasis':
-            case 'Ledningssystemet\Ledningssystemet\Models\RecipientCategory':
+            case 'SubjectCategory':
+            case 'DataCategory':
+            case 'LegalBasis':
+            case 'RecipientCategory':
                return (!config('ledningssystemet.disable_gdpr')) && $user->hasAnyPermission(['managementtools.edit']);
 
-            case 'Ledningssystemet\Ledningssystemet\Models\SupplierCategory':
-            case 'Ledningssystemet\Ledningssystemet\Models\SupplierRequirement':
+            case 'SupplierCategory':
+            case 'SupplierRequirement':
                return (!config('ledningssystemet.disable_supplier')) && $user->hasAnyPermission(['managementtools.edit', 'suppliers.read', 'suppliers.edit']);
 
-            case 'Ledningssystemet\Ledningssystemet\Models\SustainabilityAspect':
-            case 'Ledningssystemet\Ledningssystemet\Models\SustainabilityMetric':
-            case 'Ledningssystemet\Ledningssystemet\Models\SustainabilityMetricLevel':
+            case 'SustainabilityAspect':
+            case 'SustainabilityMetric':
+            case 'SustainabilityMetricLevel':
                return $user->hasAnyPermission(['managementtools.edit']);
 
-            case 'Ledningssystemet\Ledningssystemet\Models\User':
-            case 'Ledningssystemet\Ledningssystemet\Models\Site':
-            case 'Ledningssystemet\Ledningssystemet\Models\AccessGroup':
-            case 'Ledningssystemet\Ledningssystemet\Models\PersonalAccessToken':
+            case 'User':
+            case 'Site':
+            case 'AccessGroup':
+            case 'PersonalAccessToken':
                return $user->hasAnyPermission(['systemadministrator.edit']);
 
-            case 'Ledningssystemet\Ledningssystemet\Models\ProcessPerformanceMetric':
-            case 'Ledningssystemet\Ledningssystemet\Models\ProcessPerformanceMetricReport':
+            case 'ProcessPerformanceMetric':
+            case 'ProcessPerformanceMetricReport':
                return $user->hasAnyPermission(['processmetrics.read', 'processmetrics.edit']);
 
-            case 'Ledningssystemet\Ledningssystemet\Models\Objective':
-            case 'Ledningssystemet\Ledningssystemet\Models\ObjectiveProcessPerformanceMetric':
+            case 'Objective':
+            case 'ObjectiveProcessPerformanceMetric':
                return $user->hasAnyPermission(['objectives.read', 'objectives.edit']);
 
 
-            case 'Ledningssystemet\Ledningssystemet\Models\Employee':
+            case 'Employee':
                return (!config('ledningssystemet.disable_staff')) && $user->hasAnyPermission(['employeemanagement.edit', 'subordinateemployeemenagement.edit']);
 
-            case 'Ledningssystemet\Ledningssystemet\Models\EmployeeRole':
-            case 'Ledningssystemet\Ledningssystemet\Models\Qualification':
-            case 'Ledningssystemet\Ledningssystemet\Models\QualificationRole':
-            case 'Ledningssystemet\Ledningssystemet\Models\RoleCompetence':
+            case 'EmployeeRole':
+            case 'Qualification':
+            case 'QualificationRole':
+            case 'RoleCompetence':
                return (!config('ledningssystemet.disable_staff')) && $user->hasAnyPermission(['employeemanagement.edit']);
 
-            case 'Ledningssystemet\Ledningssystemet\Models\QualificationUser':
-            case 'Ledningssystemet\Ledningssystemet\Models\UserCompetence':
+            case 'QualificationUser':
+            case 'UserCompetence':
             {
                if(config('ledningssystemet.disable_staff')) return false;
 
@@ -512,45 +526,45 @@ class AppServiceProvider extends ServiceProvider
             }
 
 
-            case 'Ledningssystemet\Ledningssystemet\Models\ProcessSustainabilityAspect':
+            case 'ProcessSustainabilityAspect':
                return $user->hasAnyPermission(['sustainabilityaspects.read', 'sustainabilityaspects.edit']);
 
-            case 'Ledningssystemet\Ledningssystemet\Models\Chemical':
+            case 'Chemical':
                return $user->hasAnyPermission(['chemicalregister.read', 'chemicalregister.edit']);
 
-            case 'Ledningssystemet\Ledningssystemet\Models\Activity':
-            case 'Ledningssystemet\Ledningssystemet\Models\ActivityFlow':
+            case 'Activity':
+            case 'ActivityFlow':
                return (($model->responsible_user_id == $user->id) || $user->hasAnyPermission(['managementtools.edit']));
 
-            case 'Ledningssystemet\Ledningssystemet\Models\UserNotificationChannel':
+            case 'UserNotificationChannel':
                return (($model->user_id == $user->id) || $user->hasAnyPermission(['systemadministrator.edit']));
 
-            case 'Ledningssystemet\Ledningssystemet\Models\ControlAction':
+            case 'ControlAction':
                return (($model->responsible_id == $user->id) || $user->hasAnyPermission(['allcontrolactions.read']));
 
-            case 'Ledningssystemet\Ledningssystemet\Models\File':
+            case 'File':
                return $user->can('view', self::resolveObject($model));
 
-            case 'Ledningssystemet\Ledningssystemet\Models\Agreement':
+            case 'Agreement':
                return $user->hasAnyPermission(['agreements.read', 'agreements.edit']);
 
-            case 'Ledningssystemet\Ledningssystemet\Models\CustomProperty':
+            case 'CustomProperty':
                return $user->hasAnyPermission(['systemadministrator.edit']);
 
-            case 'Ledningssystemet\Ledningssystemet\Models\FormTemplate':
+            case 'FormTemplate':
                return $user->hasAnyPermission(['managementtools.edit']);
 
-            case 'Ledningssystemet\Ledningssystemet\Models\Form':
+            case 'Form':
                return $user->hasAnyPermission(['forms.edit']) || $user->can('view', self::resolveObject($model));
 
-            case 'Ledningssystemet\Ledningssystemet\Models\FormRelation':
+            case 'FormRelation':
                return $user->hasAnyPermission(['forms.edit']);
 
-            case 'Ledningssystemet\Ledningssystemet\Models\Relation':
+            case 'Relation':
                return $user->can('view', self::resolveObject($model));
 
-            case 'Ledningssystemet\Ledningssystemet\Models\GhgFactor':
-            case 'Ledningssystemet\Ledningssystemet\Models\GhgFactorReport':
+            case 'GhgFactor':
+            case 'GhgFactorReport':
                return $user->hasAnyPermission(['ghg.read', 'ghg.edit']);
 
          }
@@ -560,120 +574,127 @@ class AppServiceProvider extends ServiceProvider
 
       // Create
       Gate::define('create', function (User $user, $model) {
-         switch (is_string($model) ? $model : get_class($model)) {
-            case 'Ledningssystemet\Ledningssystemet\Models\Customer':
+         $modelClass = is_string($model) ? $model : get_class($model);
+
+         // Remove any namespace declaration from the modelClass
+         if(str_contains($modelClass, '\\')) {
+            $modelClass = substr($modelClass, strrpos($modelClass, '\\') + 1);
+         }
+
+         switch ($modelClass) {
+            case 'Customer':
                return $user->hasAnyPermission(['customers.edit']);
 
-            case 'Ledningssystemet\Ledningssystemet\Models\ComplianceEvaluation':
-            case 'Ledningssystemet\Ledningssystemet\Models\ComplianceEvaluationRequirementFinding':
-            case 'Ledningssystemet\Ledningssystemet\Models\ComplianceEvaluationRequirement':
-            case 'Ledningssystemet\Ledningssystemet\Models\ComplianceEvaluationRequirementSource':
+            case 'ComplianceEvaluation':
+            case 'ComplianceEvaluationRequirementFinding':
+            case 'ComplianceEvaluationRequirement':
+            case 'ComplianceEvaluationRequirementSource':
                return $user->hasAnyPermission(['complianceevaluations.edit']);
 
-            case 'Ledningssystemet\Ledningssystemet\Models\Requirement':
-            case 'Ledningssystemet\Ledningssystemet\Models\RequirementSource':
+            case 'Requirement':
+            case 'RequirementSource':
                return $user->hasAnyPermission(['requirements.edit']);
 
-            case 'Ledningssystemet\Ledningssystemet\Models\Process':
-            case 'Ledningssystemet\Ledningssystemet\Models\ProcessActivity':
-            case 'Ledningssystemet\Ledningssystemet\Models\ProcessHref':
+            case 'Process':
+            case 'ProcessActivity':
+            case 'ProcessHref':
                return $user->hasAnyPermission(['processes.edit']);
 
-            case 'Ledningssystemet\Ledningssystemet\Models\InformationType':
+            case 'InformationType':
                return $user->hasAnyPermission(['processes.edit']);
 
-            case 'Ledningssystemet\Ledningssystemet\Models\Asset':
+            case 'Asset':
                return $user->hasAnyPermission(['processes.edit']);
 
-            case 'Ledningssystemet\Ledningssystemet\Models\Supplier':
+            case 'Supplier':
                return (!config('ledningssystemet.disable_supplier')) && $user->hasAnyPermission(['suppliers.edit']);
 
-            case 'Ledningssystemet\Ledningssystemet\Models\Control':
+            case 'Control':
                return $user->hasAnyPermission(['controls.edit']);
 
-            case 'Ledningssystemet\Ledningssystemet\Models\Risk':
+            case 'Risk':
                return true;
 
-            case 'Ledningssystemet\Ledningssystemet\Models\RiskProject':
+            case 'RiskProject':
                return $user->hasAnyPermission(['riskdepartment.edit', 'riskall.edit', 'riskadministrator.edit']);
 
-            case 'Ledningssystemet\Ledningssystemet\Models\Finding':
+            case 'Finding':
                return (!config('ledningssystemet.disable_finding'));
 
-            case 'Ledningssystemet\Ledningssystemet\Models\Incident':
-            case 'Ledningssystemet\Ledningssystemet\Models\IncidentLog':
+            case 'Incident':
+            case 'IncidentLog':
                return $user->hasAnyPermission(['incidents.edit']);
 
-            case 'Ledningssystemet\Ledningssystemet\Models\ActivityFlowTemplateItem':
-            case 'Ledningssystemet\Ledningssystemet\Models\AvailabilityClass':
-            case 'Ledningssystemet\Ledningssystemet\Models\ConfidentialityClass':
-            case 'Ledningssystemet\Ledningssystemet\Models\IntegrityClass':
-            case 'Ledningssystemet\Ledningssystemet\Models\ConsequenceLevel':
-            case 'Ledningssystemet\Ledningssystemet\Models\Department':
-            case 'Ledningssystemet\Ledningssystemet\Models\ProbabilityLevel':
-            case 'Ledningssystemet\Ledningssystemet\Models\RiskLevel':
-            case 'Ledningssystemet\Ledningssystemet\Models\Tag':
-            case 'Ledningssystemet\Ledningssystemet\Models\RiskProjectType':
-            case 'Ledningssystemet\Ledningssystemet\Models\RiskProjectTypeRiskTemplate':
-            case 'Ledningssystemet\Ledningssystemet\Models\FormTemplate':
-            case 'Ledningssystemet\Ledningssystemet\Models\GhgCategory':
-            case 'Ledningssystemet\Ledningssystemet\Models\GhgConversionFactor':
+            case 'ActivityFlowTemplateItem':
+            case 'AvailabilityClass':
+            case 'ConfidentialityClass':
+            case 'IntegrityClass':
+            case 'ConsequenceLevel':
+            case 'Department':
+            case 'ProbabilityLevel':
+            case 'RiskLevel':
+            case 'Tag':
+            case 'RiskProjectType':
+            case 'RiskProjectTypeRiskTemplate':
+            case 'FormTemplate':
+            case 'GhgCategory':
+            case 'GhgConversionFactor':
                return $user->hasAnyPermission(['managementtools.edit']);
 
-            case 'Ledningssystemet\Ledningssystemet\Models\ConfidentialityGround':
-            case 'Ledningssystemet\Ledningssystemet\Models\Diary':
+            case 'ConfidentialityGround':
+            case 'Diary':
                return (!config('ledningssystemet.disable_archival') && $user->hasAnyPermission(['managementtools.edit']));
 
-            case 'Ledningssystemet\Ledningssystemet\Models\LibraryDocument':
+            case 'LibraryDocument':
                return $user->hasAnyPermission(['managementtools.edit']);
 
-            case 'Ledningssystemet\Ledningssystemet\Models\Role':
+            case 'Role':
                return (!config('ledningssystemet.disable_staff')) && $user->hasAnyPermission(['managementtools.edit']);
 
-            case 'Ledningssystemet\Ledningssystemet\Models\SubjectCategory':
-            case 'Ledningssystemet\Ledningssystemet\Models\DataCategory':
-            case 'Ledningssystemet\Ledningssystemet\Models\LegalBasis':
-            case 'Ledningssystemet\Ledningssystemet\Models\RecipientCategory':
+            case 'SubjectCategory':
+            case 'DataCategory':
+            case 'LegalBasis':
+            case 'RecipientCategory':
                return (!config('ledningssystemet.disable_gdpr')) && $user->hasAnyPermission(['managementtools.edit']);
 
-            case 'Ledningssystemet\Ledningssystemet\Models\SupplierCategory':
-            case 'Ledningssystemet\Ledningssystemet\Models\SupplierRequirement':
+            case 'SupplierCategory':
+            case 'SupplierRequirement':
                return (!config('ledningssystemet.disable_supplier')) && $user->hasAnyPermission(['managementtools.edit']);
 
-            case 'Ledningssystemet\Ledningssystemet\Models\SustainabilityAspect':
-            case 'Ledningssystemet\Ledningssystemet\Models\SustainabilityMetric':
-            case 'Ledningssystemet\Ledningssystemet\Models\SustainabilityMetricLevel':
-            case 'Ledningssystemet\Ledningssystemet\Models\ActivityFlowTemplate':
+            case 'SustainabilityAspect':
+            case 'SustainabilityMetric':
+            case 'SustainabilityMetricLevel':
+            case 'ActivityFlowTemplate':
 
                return $user->hasAnyPermission(['managementtools.edit']);
 
-            case 'Ledningssystemet\Ledningssystemet\Models\User':
-            case 'Ledningssystemet\Ledningssystemet\Models\Site':
-            case 'Ledningssystemet\Ledningssystemet\Models\AccessGroup':
-            case 'Ledningssystemet\Ledningssystemet\Models\PersonalAccessToken':
+            case 'User':
+            case 'Site':
+            case 'AccessGroup':
+            case 'PersonalAccessToken':
                return $user->hasAnyPermission(['systemadministrator.edit']);
 
-            case 'Ledningssystemet\Ledningssystemet\Models\ProcessPerformanceMetric':
-            case 'Ledningssystemet\Ledningssystemet\Models\ProcessPerformanceMetricReport':
+            case 'ProcessPerformanceMetric':
+            case 'ProcessPerformanceMetricReport':
                return $user->hasAnyPermission(['processmetrics.edit']);
 
-            case 'Ledningssystemet\Ledningssystemet\Models\Objective':
-            case 'Ledningssystemet\Ledningssystemet\Models\ObjectiveProcessPerformanceMetric':
+            case 'Objective':
+            case 'ObjectiveProcessPerformanceMetric':
                return $user->hasAnyPermission(['objectives.edit']);
 
 
-            case 'Ledningssystemet\Ledningssystemet\Models\Employee':
+            case 'Employee':
                return (!config('ledningssystemet.disable_staff')) && $user->hasAnyPermission(['employeemanagement.edit', 'subordinateemployeemenagement.edit']);
 
-            case 'Ledningssystemet\Ledningssystemet\Models\EmployeeRole':
-            case 'Ledningssystemet\Ledningssystemet\Models\Qualification':
-            case 'Ledningssystemet\Ledningssystemet\Models\QualificationRole':
-            case 'Ledningssystemet\Ledningssystemet\Models\RoleCompetence':
+            case 'EmployeeRole':
+            case 'Qualification':
+            case 'QualificationRole':
+            case 'RoleCompetence':
                return (!config('ledningssystemet.disable_staff')) && $user->hasAnyPermission(['employeemanagement.edit']);
 
-            case 'Ledningssystemet\Ledningssystemet\Models\QualificationUser':
-            case 'Ledningssystemet\Ledningssystemet\Models\Competence':
-            case 'Ledningssystemet\Ledningssystemet\Models\CompetenceLevel':
+            case 'QualificationUser':
+            case 'Competence':
+            case 'CompetenceLevel':
             {
                if(config('ledningssystemet.disable_staff')) return false;
 
@@ -684,42 +705,42 @@ class AppServiceProvider extends ServiceProvider
                   return false;
 
                if(is_string($model))
-                  return ('Ledningssystemet\Ledningssystemet\Models\Competence' != $model);
+                  return ('Competence' != $model);
 
                return ($model->user_id && \Ledningssystemet\Ledningssystemet\Models\User::where('id', $model->user_id)->where('manager_user_id', $user->id)->exists());
             }
 
-            case 'Ledningssystemet\Ledningssystemet\Models\ProcessSustainabilityAspect':
+            case 'ProcessSustainabilityAspect':
                return $user->hasAnyPermission(['sustainabilityaspects.edit']);
 
-            case 'Ledningssystemet\Ledningssystemet\Models\Chemical':
+            case 'Chemical':
                return $user->hasAnyPermission(['chemicalregister.edit']);
 
-            case 'Ledningssystemet\Ledningssystemet\Models\Activity':
+            case 'Activity':
                return true;
 
-            case 'Ledningssystemet\Ledningssystemet\Models\ActivityFlow':
+            case 'ActivityFlow':
                return $user->hasAnyPermission(['managementtools.edit']);
 
-            case 'Ledningssystemet\Ledningssystemet\Models\Agreement':
+            case 'Agreement':
                return $user->hasAnyPermission(['agreements.edit']);
 
-            case 'Ledningssystemet\Ledningssystemet\Models\CustomProperty':
+            case 'CustomProperty':
                return $user->hasAnyPermission(['systemadministrator.edit']);
 
-            case 'Ledningssystemet\Ledningssystemet\Models\UserNotificationChannel':
-            case 'Ledningssystemet\Ledningssystemet\Models\ObjectMessage':
-            case 'Ledningssystemet\Ledningssystemet\Models\ControlAction':
-            case 'Ledningssystemet\Ledningssystemet\Models\File':
-            case 'Ledningssystemet\Ledningssystemet\Models\Relation':
+            case 'UserNotificationChannel':
+            case 'ObjectMessage':
+            case 'ControlAction':
+            case 'File':
+            case 'Relation':
                return true;
 
-            case 'Ledningssystemet\Ledningssystemet\Models\Form':
-            case 'Ledningssystemet\Ledningssystemet\Models\FormRelation':
+            case 'Form':
+            case 'FormRelation':
                return $user->hasAnyPermission(['forms.edit']);
 
-            case 'Ledningssystemet\Ledningssystemet\Models\GhgFactor':
-            case 'Ledningssystemet\Ledningssystemet\Models\GhgFactorReport':
+            case 'GhgFactor':
+            case 'GhgFactorReport':
                return $user->hasAnyPermission(['ghg.edit']);
 
          }
@@ -736,39 +757,46 @@ class AppServiceProvider extends ServiceProvider
          if(!is_string($model) && property_exists($model, 'responsible_id') && ($user->id == $model->responsible_id))
             return true;
 
-         switch (is_string($model) ? $model : get_class($model)) {
-            case 'Ledningssystemet\Ledningssystemet\Models\Customer':
+         $modelClass = is_string($model) ? $model : get_class($model);
+
+         // Remove any namespace declaration from the modelClass
+         if(str_contains($modelClass, '\\')) {
+            $modelClass = substr($modelClass, strrpos($modelClass, '\\') + 1);
+         }
+
+         switch ($modelClass) {
+            case 'Customer':
                return $user->hasAnyPermission(['customers.edit']);
 
-            case 'Ledningssystemet\Ledningssystemet\Models\ComplianceEvaluation':
-            case 'Ledningssystemet\Ledningssystemet\Models\ComplianceEvaluationRequirementFinding':
-            case 'Ledningssystemet\Ledningssystemet\Models\ComplianceEvaluationRequirement':
-            case 'Ledningssystemet\Ledningssystemet\Models\ComplianceEvaluationRequirementSource':
+            case 'ComplianceEvaluation':
+            case 'ComplianceEvaluationRequirementFinding':
+            case 'ComplianceEvaluationRequirement':
+            case 'ComplianceEvaluationRequirementSource':
                return $user->hasAnyPermission(['complianceevaluations.edit']);
 
-            case 'Ledningssystemet\Ledningssystemet\Models\Requirement':
-            case 'Ledningssystemet\Ledningssystemet\Models\RequirementSource':
+            case 'Requirement':
+            case 'RequirementSource':
                return $user->hasAnyPermission(['requirements.edit']);
 
-            case 'Ledningssystemet\Ledningssystemet\Models\Process':
-            case 'Ledningssystemet\Ledningssystemet\Models\ProcessActivity':
-            case 'Ledningssystemet\Ledningssystemet\Models\ProcessHref':
+            case 'Process':
+            case 'ProcessActivity':
+            case 'ProcessHref':
                return $user->hasAnyPermission(['processes.edit']);
 
-            case 'Ledningssystemet\Ledningssystemet\Models\InformationType':
+            case 'InformationType':
                return $user->hasAnyPermission(['processes.edit']);
 
-            case 'Ledningssystemet\Ledningssystemet\Models\Asset':
+            case 'Asset':
                return $user->hasAnyPermission(['processes.edit']);
 
-            case 'Ledningssystemet\Ledningssystemet\Models\Supplier':
+            case 'Supplier':
                return (!config('ledningssystemet.disable_supplier')) && $user->hasAnyPermission(['suppliers.edit']);
 
-            case 'Ledningssystemet\Ledningssystemet\Models\Control':
+            case 'Control':
                return $user->hasAnyPermission(['controls.edit']);
 
 
-            case 'Ledningssystemet\Ledningssystemet\Models\Risk':
+            case 'Risk':
                if (is_string($model) && $user->hasAnyPermission(['riskdepartment.edit', 'riskall.edit', 'riskadministrator.edit']))
                   return true;
 
@@ -798,7 +826,7 @@ class AppServiceProvider extends ServiceProvider
                }
                return false;
 
-            case 'Ledningssystemet\Ledningssystemet\Models\RiskProject':
+            case 'RiskProject':
                if (is_string($model))
                   return true;
 
@@ -811,97 +839,97 @@ class AppServiceProvider extends ServiceProvider
 
                return false;
 
-            case 'Ledningssystemet\Ledningssystemet\Models\Finding':
+            case 'Finding':
                return (!config('ledningssystemet.disable_finding')) && $user->hasAnyPermission(['findings.edit']);
 
-            case 'Ledningssystemet\Ledningssystemet\Models\Incident':
-            case 'Ledningssystemet\Ledningssystemet\Models\IncidentLog':
+            case 'Incident':
+            case 'IncidentLog':
                return $user->hasAnyPermission(['incidents.edit']);
 
-            case 'Ledningssystemet\Ledningssystemet\Models\ActivityFlowTemplateItem':
-            case 'Ledningssystemet\Ledningssystemet\Models\AvailabilityClass':
-            case 'Ledningssystemet\Ledningssystemet\Models\ConfidentialityClass':
-            case 'Ledningssystemet\Ledningssystemet\Models\IntegrityClass':
-            case 'Ledningssystemet\Ledningssystemet\Models\ConsequenceLevel':
-            case 'Ledningssystemet\Ledningssystemet\Models\Department':
-            case 'Ledningssystemet\Ledningssystemet\Models\ProbabilityLevel':
-            case 'Ledningssystemet\Ledningssystemet\Models\RiskLevel':
-            case 'Ledningssystemet\Ledningssystemet\Models\Tag':
-            case 'Ledningssystemet\Ledningssystemet\Models\RiskProjectType':
-            case 'Ledningssystemet\Ledningssystemet\Models\RiskProjectTypeRiskTemplate':
-            case 'Ledningssystemet\Ledningssystemet\Models\FormTemplate':
+            case 'ActivityFlowTemplateItem':
+            case 'AvailabilityClass':
+            case 'ConfidentialityClass':
+            case 'IntegrityClass':
+            case 'ConsequenceLevel':
+            case 'Department':
+            case 'ProbabilityLevel':
+            case 'RiskLevel':
+            case 'Tag':
+            case 'RiskProjectType':
+            case 'RiskProjectTypeRiskTemplate':
+            case 'FormTemplate':
                return $user->hasAnyPermission(['managementtools.edit']);
 
-            case 'Ledningssystemet\Ledningssystemet\Models\GhgCategory':
-            case 'Ledningssystemet\Ledningssystemet\Models\GhgConversionFactor':
+            case 'GhgCategory':
+            case 'GhgConversionFactor':
                return $user->hasAnyPermission(['managementtools.edit']);
 
-            case 'Ledningssystemet\Ledningssystemet\Models\ConfidentialityGround':
-            case 'Ledningssystemet\Ledningssystemet\Models\Diary':
+            case 'ConfidentialityGround':
+            case 'Diary':
                return (!config('ledningssystemet.disable_archival') && $user->hasAnyPermission(['managementtools.edit']));
 
-            case 'Ledningssystemet\Ledningssystemet\Models\LibraryDocument':
+            case 'LibraryDocument':
                if(is_string($model))
                   return $user->hasAnyPermission(['managementtools.edit']);
 
                return ($user->hasAnyPermission(['managementtools.edit']) ||
                       ($user->id == $model->responsible_user_id));
 
-            case 'Ledningssystemet\Ledningssystemet\Models\DocumentVersion':
+            case 'DocumentVersion':
                if(is_string($model))
                   return $user->hasAnyPermission(['managementtools.edit']);
                else
                   return ($user->hasAnyPermission(['managementtools.edit']) || ($model->int_library_document->responsible_user_id == auth()->user()->id));
 
-            case 'Ledningssystemet\Ledningssystemet\Models\Role':
+            case 'Role':
                return (!config('ledningssystemet.disable_staff')) && $user->hasAnyPermission(['managementtools.edit']);
 
-            case 'Ledningssystemet\Ledningssystemet\Models\SubjectCategory':
-            case 'Ledningssystemet\Ledningssystemet\Models\DataCategory':
-            case 'Ledningssystemet\Ledningssystemet\Models\LegalBasis':
-            case 'Ledningssystemet\Ledningssystemet\Models\RecipientCategory':
+            case 'SubjectCategory':
+            case 'DataCategory':
+            case 'LegalBasis':
+            case 'RecipientCategory':
                return (!config('ledningssystemet.disable_gdpr')) && $user->hasAnyPermission(['managementtools.edit']);
 
-            case 'Ledningssystemet\Ledningssystemet\Models\SupplierCategory':
-            case 'Ledningssystemet\Ledningssystemet\Models\SupplierRequirement':
+            case 'SupplierCategory':
+            case 'SupplierRequirement':
                return (!config('ledningssystemet.disable_supplier')) && $user->hasAnyPermission(['managementtools.edit', 'suppliers.edit']);
 
-            case 'Ledningssystemet\Ledningssystemet\Models\SustainabilityAspect':
-            case 'Ledningssystemet\Ledningssystemet\Models\SustainabilityMetric':
-            case 'Ledningssystemet\Ledningssystemet\Models\SustainabilityMetricLevel':
+            case 'SustainabilityAspect':
+            case 'SustainabilityMetric':
+            case 'SustainabilityMetricLevel':
                return $user->hasAnyPermission(['managementtools.edit']);
 
-            case 'Ledningssystemet\Ledningssystemet\Models\User':
-            case 'Ledningssystemet\Ledningssystemet\Models\Site':
-            case 'Ledningssystemet\Ledningssystemet\Models\AccessGroup':
-            case 'Ledningssystemet\Ledningssystemet\Models\PersonalAccessToken':
+            case 'User':
+            case 'Site':
+            case 'AccessGroup':
+            case 'PersonalAccessToken':
                return $user->hasAnyPermission(['systemadministrator.edit']);
 
-            case 'Ledningssystemet\Ledningssystemet\Models\ProcessPerformanceMetric':
-            case 'Ledningssystemet\Ledningssystemet\Models\ProcessPerformanceMetricReport':
+            case 'ProcessPerformanceMetric':
+            case 'ProcessPerformanceMetricReport':
                return $user->hasAnyPermission(['processmetrics.edit']);
 
-            case 'Ledningssystemet\Ledningssystemet\Models\Objective':
+            case 'Objective':
                if(is_string($model))
                   return $user->hasAnyPermission(['objectives.edit']);
                else
                   return (null == $model->archived_at) && $user->hasAnyPermission(['objectives.edit']);
 
-            case 'Ledningssystemet\Ledningssystemet\Models\ObjectiveProcessPerformanceMetric':
+            case 'ObjectiveProcessPerformanceMetric':
                return $user->hasAnyPermission(['objectives.edit']);
 
-            case 'Ledningssystemet\Ledningssystemet\Models\Employee':
+            case 'Employee':
                return (!config('ledningssystemet.disable_staff')) && $user->hasAnyPermission(['employeemanagement.edit', 'subordinateemployeemenagement.edit']);
 
-            case 'Ledningssystemet\Ledningssystemet\Models\EmployeeRole':
-            case 'Ledningssystemet\Ledningssystemet\Models\Qualification':
-            case 'Ledningssystemet\Ledningssystemet\Models\QualificationRole':
-            case 'Ledningssystemet\Ledningssystemet\Models\RoleCompetence':
+            case 'EmployeeRole':
+            case 'Qualification':
+            case 'QualificationRole':
+            case 'RoleCompetence':
                return (!config('ledningssystemet.disable_staff')) && $user->hasAnyPermission(['employeemanagement.edit']);
 
-            case 'Ledningssystemet\Ledningssystemet\Models\QualificationUser':
-            case 'Ledningssystemet\Ledningssystemet\Models\CompetenceLevel':
-            case 'Ledningssystemet\Ledningssystemet\Models\Competence':
+            case 'QualificationUser':
+            case 'CompetenceLevel':
+            case 'Competence':
             {
                if(config('ledningssystemet.disable_staff')) return false;
 
@@ -914,7 +942,7 @@ class AppServiceProvider extends ServiceProvider
                if(is_string($model))
                   return true;
 
-               if(('Ledningssystemet\Ledningssystemet\Models\Competence' == get_class($model)) && request()->has('user_id'))
+               if(('Competence' == get_class($model)) && request()->has('user_id'))
                    return (\Ledningssystemet\Ledningssystemet\Models\User::where('id', request()->get('user_id'))->where('manager_user_id', $user->id)->exists());
 
                return ($model->user_id && \Ledningssystemet\Ledningssystemet\Models\User::where('id', $model->user_id)->where('manager_user_id', $user->id)->exists());
@@ -922,57 +950,57 @@ class AppServiceProvider extends ServiceProvider
 
 
 
-            case 'Ledningssystemet\Ledningssystemet\Models\ProcessSustainabilityAspect':
+            case 'ProcessSustainabilityAspect':
                return $user->hasAnyPermission(['sustainabilityaspects.edit']);
 
-            case 'Ledningssystemet\Ledningssystemet\Models\Chemical':
+            case 'Chemical':
                return $user->hasAnyPermission(['chemicalregister.edit']);
 
             // Authorization handled by models themselves
-            case 'Ledningssystemet\Ledningssystemet\Models\Activity':
-            case 'Ledningssystemet\Ledningssystemet\Models\ActivityFlow':
+            case 'Activity':
+            case 'ActivityFlow':
                if (is_string($model))
                   return true;
 
                return (($model->responsible_user_id == $user->id) || $user->hasAnyPermission(['managementtools.edit']));
 
-            case 'Ledningssystemet\Ledningssystemet\Models\ControlAction':
+            case 'ControlAction':
                if (is_string($model))
                   return true;
 
                return ($model->responsible_id == $user->id);
 
-            case 'Ledningssystemet\Ledningssystemet\Models\ActivityFlowTemplate':
+            case 'ActivityFlowTemplate':
                return $user->hasAnyPermission(['managementtools.edit']);
 
 
-            case 'Ledningssystemet\Ledningssystemet\Models\UserNotificationChannel':
+            case 'UserNotificationChannel':
                if (is_string($model))
                   return true;
 
                return (($model->user_id == $user->id) || $user->hasAnyPermission(['systemadministrator.edit']));
 
-            case 'Ledningssystemet\Ledningssystemet\Models\File':
+            case 'File':
                if (is_string($model))
                   return true;
 
                return $user->can('update', $model->obj());
 
-            case 'Ledningssystemet\Ledningssystemet\Models\Agreement':
+            case 'Agreement':
                return $user->hasAnyPermission(['agreements.edit']);
 
-            case 'Ledningssystemet\Ledningssystemet\Models\CustomProperty':
+            case 'CustomProperty':
                return $user->hasAnyPermission(['systemadministrator.edit']);
 
-            case 'Ledningssystemet\Ledningssystemet\Models\Form':
-            case 'Ledningssystemet\Ledningssystemet\Models\FormRelation':
+            case 'Form':
+            case 'FormRelation':
                return $user->hasAnyPermission(['forms.edit']);
 
-            case 'Ledningssystemet\Ledningssystemet\Models\Relation':
+            case 'Relation':
                return $user->can('update', self::resolveObject($model));
 
-            case 'Ledningssystemet\Ledningssystemet\Models\GhgFactor':
-            case 'Ledningssystemet\Ledningssystemet\Models\GhgFactorReport':
+            case 'GhgFactor':
+            case 'GhgFactorReport':
                return $user->hasAnyPermission(['ghg.edit']);
 
          }
@@ -987,107 +1015,114 @@ class AppServiceProvider extends ServiceProvider
             return $user->can('update', $model);
          }
 
-         switch (is_string($model) ? $model : get_class($model)) {
+         $modelClass = is_string($model) ? $model : get_class($model);
+
+         // Remove any namespace declaration from the modelClass
+         if(str_contains($modelClass, '\\')) {
+            $modelClass = substr($modelClass, strrpos($modelClass, '\\') + 1);
+         }
+
+         switch ($modelClass) {
             /* If a user can update, then it can delete for most objects */
-            case 'Ledningssystemet\Ledningssystemet\Models\Customer':
-            case 'Ledningssystemet\Ledningssystemet\Models\ComplianceEvaluation':
-            case 'Ledningssystemet\Ledningssystemet\Models\ComplianceEvaluationRequirementFinding':
-            case 'Ledningssystemet\Ledningssystemet\Models\ComplianceEvaluationRequirement':
-            case 'Ledningssystemet\Ledningssystemet\Models\Requirement':
-            case 'Ledningssystemet\Ledningssystemet\Models\RequirementSource':
-            case 'Ledningssystemet\Ledningssystemet\Models\Process':
-            case 'Ledningssystemet\Ledningssystemet\Models\ProcessActivity':
-            case 'Ledningssystemet\Ledningssystemet\Models\ProcessHref':
-            case 'Ledningssystemet\Ledningssystemet\Models\Supplier':
-            case 'Ledningssystemet\Ledningssystemet\Models\Control':
-            case 'Ledningssystemet\Ledningssystemet\Models\Incident':
-            case 'Ledningssystemet\Ledningssystemet\Models\IncidentLog':
-            case 'Ledningssystemet\Ledningssystemet\Models\Finding':
-            case 'Ledningssystemet\Ledningssystemet\Models\RiskProject':
-            case 'Ledningssystemet\Ledningssystemet\Models\ActivityFlowTemplateItem':
-            case 'Ledningssystemet\Ledningssystemet\Models\AvailabilityClass':
-            case 'Ledningssystemet\Ledningssystemet\Models\ConfidentialityClass':
-            case 'Ledningssystemet\Ledningssystemet\Models\ConsequenceLevel':
-            case 'Ledningssystemet\Ledningssystemet\Models\Department':
-            case 'Ledningssystemet\Ledningssystemet\Models\ProbabilityLevel':
-            case 'Ledningssystemet\Ledningssystemet\Models\RiskLevel':
-            case 'Ledningssystemet\Ledningssystemet\Models\Tag':
-            case 'Ledningssystemet\Ledningssystemet\Models\Role':
-            case 'Ledningssystemet\Ledningssystemet\Models\SubjectCategory':
-            case 'Ledningssystemet\Ledningssystemet\Models\DataCategory':
-            case 'Ledningssystemet\Ledningssystemet\Models\IntegrityClass':
-            case 'Ledningssystemet\Ledningssystemet\Models\LegalBasis':
-            case 'Ledningssystemet\Ledningssystemet\Models\RecipientCategory':
-            case 'Ledningssystemet\Ledningssystemet\Models\SupplierCategory':
-            case 'Ledningssystemet\Ledningssystemet\Models\SupplierRequirement':
-            case 'Ledningssystemet\Ledningssystemet\Models\SustainabilityAspect':
-            case 'Ledningssystemet\Ledningssystemet\Models\SustainabilityMetric':
-            case 'Ledningssystemet\Ledningssystemet\Models\SustainabilityMetricLevel':
-            case 'Ledningssystemet\Ledningssystemet\Models\User':
-            case 'Ledningssystemet\Ledningssystemet\Models\AccessGroup':
-            case 'Ledningssystemet\Ledningssystemet\Models\PersonalAccessToken':
-            case 'Ledningssystemet\Ledningssystemet\Models\ProcessPerformanceMetric':
-            case 'Ledningssystemet\Ledningssystemet\Models\ProcessPerformanceMetricReport':
-            case 'Ledningssystemet\Ledningssystemet\Models\Objective':
-            case 'Ledningssystemet\Ledningssystemet\Models\ObjectiveProcessPerformanceMetric':
-            case 'Ledningssystemet\Ledningssystemet\Models\EmployeeRole':
-            case 'Ledningssystemet\Ledningssystemet\Models\Qualification':
-            case 'Ledningssystemet\Ledningssystemet\Models\QualificationRole':
-            case 'Ledningssystemet\Ledningssystemet\Models\QualificationUser':
-            case 'Ledningssystemet\Ledningssystemet\Models\RoleCompetence':
-            case 'Ledningssystemet\Ledningssystemet\Models\Competence':
-            case 'Ledningssystemet\Ledningssystemet\Models\CompetenceLevel':
-            case 'Ledningssystemet\Ledningssystemet\Models\ProcessSustainabilityAspect':
-            case 'Ledningssystemet\Ledningssystemet\Models\Chemical':
-            case 'Ledningssystemet\Ledningssystemet\Models\ActivityFlow':
-            case 'Ledningssystemet\Ledningssystemet\Models\Activity':
-            case 'Ledningssystemet\Ledningssystemet\Models\UserNotificationChannel':
-            case 'Ledningssystemet\Ledningssystemet\Models\ActivityFlowTemplate':
-            case 'Ledningssystemet\Ledningssystemet\Models\ControlAction':
-            case 'Ledningssystemet\Ledningssystemet\Models\Site':
-            case 'Ledningssystemet\Ledningssystemet\Models\RiskProjectType':
-            case 'Ledningssystemet\Ledningssystemet\Models\RiskProjectTypeRiskTemplate':
-            case 'Ledningssystemet\Ledningssystemet\Models\Agreement':
-            case 'Ledningssystemet\Ledningssystemet\Models\ConfidentialityGround':
-            case 'Ledningssystemet\Ledningssystemet\Models\Diary':
-            case 'Ledningssystemet\Ledningssystemet\Models\CustomProperty':
-            case 'Ledningssystemet\Ledningssystemet\Models\FormTemplate':
-            case 'Ledningssystemet\Ledningssystemet\Models\Form':
-            case 'Ledningssystemet\Ledningssystemet\Models\FormRelation':
-            case 'Ledningssystemet\Ledningssystemet\Models\Relation':
-            case 'Ledningssystemet\Ledningssystemet\Models\GhgCategory':
-            case 'Ledningssystemet\Ledningssystemet\Models\GhgConversionFactor':
-            case 'Ledningssystemet\Ledningssystemet\Models\GhgFactor':
-            case 'Ledningssystemet\Ledningssystemet\Models\GhgFactorReport':
+            case 'Customer':
+            case 'ComplianceEvaluation':
+            case 'ComplianceEvaluationRequirementFinding':
+            case 'ComplianceEvaluationRequirement':
+            case 'Requirement':
+            case 'RequirementSource':
+            case 'Process':
+            case 'ProcessActivity':
+            case 'ProcessHref':
+            case 'Supplier':
+            case 'Control':
+            case 'Incident':
+            case 'IncidentLog':
+            case 'Finding':
+            case 'RiskProject':
+            case 'ActivityFlowTemplateItem':
+            case 'AvailabilityClass':
+            case 'ConfidentialityClass':
+            case 'ConsequenceLevel':
+            case 'Department':
+            case 'ProbabilityLevel':
+            case 'RiskLevel':
+            case 'Tag':
+            case 'Role':
+            case 'SubjectCategory':
+            case 'DataCategory':
+            case 'IntegrityClass':
+            case 'LegalBasis':
+            case 'RecipientCategory':
+            case 'SupplierCategory':
+            case 'SupplierRequirement':
+            case 'SustainabilityAspect':
+            case 'SustainabilityMetric':
+            case 'SustainabilityMetricLevel':
+            case 'User':
+            case 'AccessGroup':
+            case 'PersonalAccessToken':
+            case 'ProcessPerformanceMetric':
+            case 'ProcessPerformanceMetricReport':
+            case 'Objective':
+            case 'ObjectiveProcessPerformanceMetric':
+            case 'EmployeeRole':
+            case 'Qualification':
+            case 'QualificationRole':
+            case 'QualificationUser':
+            case 'RoleCompetence':
+            case 'Competence':
+            case 'CompetenceLevel':
+            case 'ProcessSustainabilityAspect':
+            case 'Chemical':
+            case 'ActivityFlow':
+            case 'Activity':
+            case 'UserNotificationChannel':
+            case 'ActivityFlowTemplate':
+            case 'ControlAction':
+            case 'Site':
+            case 'RiskProjectType':
+            case 'RiskProjectTypeRiskTemplate':
+            case 'Agreement':
+            case 'ConfidentialityGround':
+            case 'Diary':
+            case 'CustomProperty':
+            case 'FormTemplate':
+            case 'Form':
+            case 'FormRelation':
+            case 'Relation':
+            case 'GhgCategory':
+            case 'GhgConversionFactor':
+            case 'GhgFactor':
+            case 'GhgFactorReport':
                return $user->can('update', $model);
 
             // Information types and assets that are connected to a process cannot be deleted
-            case 'Ledningssystemet\Ledningssystemet\Models\InformationType':
+            case 'InformationType':
                return ($user->can('update', $model) && !count($model->int_processes()));
 
-            case 'Ledningssystemet\Ledningssystemet\Models\Asset':
+            case 'Asset':
                return ($user->can('update', $model) && !$model->int_processes()->count());
 
-            case 'Ledningssystemet\Ledningssystemet\Models\Risk':
+            case 'Risk':
                if ($user->hasAnyPermission(['riskadministrator.edit'])) // If user is admin, then user may delete any risk
                   return true;
 
                return $user->can('update', $model);
 
 
-            case 'Ledningssystemet\Ledningssystemet\Models\ObjectMessage':
+            case 'ObjectMessage':
                return $user->can('update', self::resolveObject($model));
 
-            case 'Ledningssystemet\Ledningssystemet\Models\File':
+            case 'File':
                if (is_string($model))
                   return true;
 
                return $user->can('update', $model->obj());
 
-            case 'Ledningssystemet\Ledningssystemet\Models\LibraryDocument':
+            case 'LibraryDocument':
                return $user->hasAnyPermission(['managementtools.edit']);
 
-            case 'Ledningssystemet\Ledningssystemet\Models\DocumentVersion':
+            case 'DocumentVersion':
                if(is_string($model))
                   return $user->hasAnyPermission(['managementtools.edit']);
                else
