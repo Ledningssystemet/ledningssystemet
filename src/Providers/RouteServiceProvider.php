@@ -43,11 +43,11 @@ class RouteServiceProvider extends ServiceProvider
             // (e.g. by the proprietary customer application), base_path()
             // resolves to the *host* application's root, which does not
             // have these route files.
-            Route::middleware(['api', 'jsononly', 'auth:sanctum', 'usersenabled'])
+            Route::middleware(['api', 'jsononly', 'auth:sanctum', 'usersenabled', 'mfa.enforced'])
                 ->prefix('api')
                 ->group(__DIR__ . '/../../routes/api.php');
 
-            Route::middleware(['web', 'usersenabled'])
+            Route::middleware(['web', 'usersenabled', 'mfa.enforced'])
                 ->group(__DIR__ . '/../../routes/web.php');
         });
     }

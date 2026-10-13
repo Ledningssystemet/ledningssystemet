@@ -99,7 +99,10 @@ class ProcessController extends Controller
    {
       // Fetch process
       $process = \Ledningssystemet\Ledningssystemet\Models\Process::findOrFail($request->id);
-      
+
+      // Authorize access before returning process or related database data
+      $this->authorize('view', $process);
+
       // If there is no bpmn-file, use an empty one
       $bpmn = $process->bpmn;
       if("" == $process->bpmn)
