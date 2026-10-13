@@ -699,6 +699,19 @@ class Process extends Model
         return $this->belongsToMany(ProcessPerformanceMetric::class);
     }
 
+    private static function xpathLiteral(string $value): string
+    {
+        if (! str_contains($value, "'")) {
+            return "'".$value."'";
+        }
+
+        if (! str_contains($value, '"')) {
+            return '"'.$value.'"';
+        }
+
+        return "concat('".implode("', \"'\", '", explode("'", $value))."')";
+    }
+
     /**
      * Rename callback used for updating references in BPMN chart when objects are renamed
      */
@@ -712,53 +725,27 @@ class Process extends Model
         $bpmn = $this->bpmn ? simplexml_load_string($this->bpmn) : null;
         $publishedbpmn = $this->publishedbpmn ? simplexml_load_string($this->publishedbpmn) : null;
 
+        $elementtype = match (true) {
+            $object instanceof Asset => 'dataStoreReference',
+            $object instanceof InformationType => 'dataObjectReference',
+            $object instanceof Process => 'subProcess',
+            default => throw new \Exception(__('Renaming objects of type :type is not supported', ['type' => $object::class])),
+        };
+
+        // Both the draft and the published chart are updated. The object may exist in only one of them
         $hitcount = 0;
-        switch ($object::class) {
-            case 'Ledningssystemet\Ledningssystemet\Models\Asset':
-                if ($publishedbpmn) {
-                    foreach ($publishedbpmn->xpath('//bpmn:dataStoreReference[@name="'.str_replace('"', '&quot;', $oldname).'"]/@name') as $node) {
-                        $node[0] = $newname;
-                        $hitcount++;
-                    }
-                }
+        foreach ([$bpmn, $publishedbpmn] as $chart) {
+            if (! $chart) {
+                continue;
+            }
 
-                if ($bpmn) {
-                    foreach ($bpmn->xpath('//bpmn:dataStoreReference[@name="'.str_replace('"', '\\"', $oldname).'"]/@name') as $node) {
-                        $node[0] = $newname;
-                    }
-                }
-                break;
-            case 'Ledningssystemet\Ledningssystemet\Models\InformationType':
-                if ($publishedbpmn) {
-                    foreach ($publishedbpmn->xpath('//bpmn:dataObjectReference[@name="'.str_replace('"', '&quot;', $oldname).'"]/@name') as $node) {
-                        $node[0] = $newname;
-                        $hitcount++;
-                    }
-                }
-
-                if ($bpmn) {
-                    foreach ($bpmn->xpath('//bpmn:dataObjectReference[@name="'.str_replace('"', '\\"', $oldname).'"]/@name') as $node) {
-                        $node[0] = $newname;
-                    }
-                }
-                break;
-            case 'Ledningssystemet\Ledningssystemet\Models\Process':
-                if ($publishedbpmn) {
-                    foreach ($publishedbpmn->xpath('//bpmn:subProcess[@name="'.str_replace('"', '&quot;', $oldname).'"]/@name') as $node) {
-                        $node[0] = $newname;
-                        $hitcount++;
-                    }
-                }
-
-                if ($bpmn) {
-                    foreach ($bpmn->xpath('//bpmn:subProcess[@name="'.str_replace('"', '\\"', $oldname).'"]/@name') as $node) {
-                        $node[0] = $newname;
-                    }
-                }
-                break;
-            default:
-                throw new \Exception(__('Renaming objects of type :type is not supported', ['type' => $object::class]));
+            $chart->registerXPathNamespace('bpmn', 'http://www.omg.org/spec/BPMN/20100524/MODEL');
+            foreach ($chart->xpath('//bpmn:'.$elementtype.'[@name='.self::xpathLiteral($oldname).']/@name') as $node) {
+                $node[0] = $newname;
+                $hitcount++;
+            }
         }
+
         if ($hitcount == 0) {
             throw new \Exception(__('Failed to find any references to the renamed object in the BPMN chart'));
         }
