@@ -3,6 +3,7 @@
 namespace Tests\Unit;
 
 use Illuminate\Config\Repository;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Facade;
 use Illuminate\Support\Facades\Log;
@@ -172,14 +173,11 @@ class FormControllerUploadTest extends TestCase
                 return 'draft';
             }
 
-            public function int_relations(): mixed
+            public HasManyThrough $relationStub;
+
+            public function int_relations(): HasManyThrough
             {
-                return new class {
-                    public function pluck($column)
-                    {
-                        return collect(['a@example.test', 'a@example.test', '']);
-                    }
-                };
+                return $this->relationStub;
             }
 
             public function save(array $options = [])
@@ -189,6 +187,9 @@ class FormControllerUploadTest extends TestCase
                 return true;
             }
         };
+        $relations = $this->createMock(HasManyThrough::class);
+        $relations->method('__call')->with('pluck', ['email'])->willReturn(collect(['a@example.test', 'a@example.test', '']));
+        $form->relationStub = $relations;
         $form->id = 42;
         $form->name = 'Form';
         $form->formdata = json_encode(['form_items' => []]);
