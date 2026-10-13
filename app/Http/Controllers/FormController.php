@@ -47,11 +47,45 @@ class FormController extends Controller
          'due' => $this->form->due,
       ]);
 
-      $creationdata = FormController::exchangeProxyRequest('POST', '/ledningssystemet/forms', ['form' => $formdata]);
-      $this->form->server_form_id = $creationdata['id'];
+      $serverFormId = $this->submitToProxy($formdata);
+      $this->form->server_form_id = $serverFormId;
       $this->form->uploaded_at = now();
       $this->form->downloaded_at = null;
       $this->form->save();
+   }
+
+   // Sends the form to the exchange proxy and returns the server side form id. Aborts with a sanitized message on failure
+   protected function submitToProxy(array $formdata): int{
+      if(null == config('ledningssystemet.exchangeproxy_url') || null == config('ledningssystemet.exchangeproxy_token'))
+      {
+         \Log::error('Form upload failed', ['form_id' => $this->form->id ?? null, 'reason' => 'proxy_not_configured']);
+         abort(503, __("Cannot upload this form since the exchange proxy is not configured. Contact your administrator"));
+      }
+
+      $reference = (string) \Illuminate\Support\Str::uuid();
+
+      try {
+         $creationdata = static::exchangeProxyRequest('POST', '/ledningssystemet/forms', ['form' => $formdata]);
+      } catch (\Throwable $e) {
+         $context = ['form_id' => $this->form->id ?? null, 'reference' => $reference, 'reason' => 'proxy_request_failed', 'exception' => get_class($e)];
+         if($e instanceof \GuzzleHttp\Exception\RequestException && $e->hasResponse())
+            $context['status'] = $e->getResponse()->getStatusCode();
+
+         \Log::error('Form upload failed', $context);
+         abort(503, __("Cannot upload this form since the exchange proxy could not be reached or returned an error. Try again later or contact your administrator. Reference: :reference", ['reference' => $reference]));
+      }
+
+      $id = is_array($creationdata) ? ($creationdata['id'] ?? null) : null;
+      if(is_string($id) && ctype_digit($id))
+         $id = (int) $id;
+
+      if(!is_int($id) || $id < 1)
+      {
+         \Log::error('Form upload failed', ['form_id' => $this->form->id ?? null, 'reference' => $reference, 'reason' => 'invalid_proxy_response']);
+         abort(502, __("Cannot upload this form since the exchange proxy returned an invalid response. Contact your administrator. Reference: :reference", ['reference' => $reference]));
+      }
+
+      return $id;
    }
 
    public function recall(){
@@ -165,7 +199,7 @@ class FormController extends Controller
    }
 
    // This function performs REST-calls to an external form proxy
-   private static function exchangeProxyRequest($method, $url, $data = [], $headers = []){
+   protected static function exchangeProxyRequest($method, $url, $data = [], $headers = []){
       $server = config('ledningssystemet.exchangeproxy_url');
       $bearerToken = config('ledningssystemet.exchangeproxy_token');
 
@@ -182,6 +216,8 @@ class FormController extends Controller
       $client = new \GuzzleHttp\Client();
       $requestOptions = [
          'headers' => $headers,
+         'connect_timeout' => 10,
+         'timeout' => 30,
       ];
 
       if(strtoupper($method) === 'GET') {
