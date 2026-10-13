@@ -29,6 +29,10 @@ class RequireMfaEnforcement
             return $next($request);
         }
 
+        if ($request->expectsJson()) {
+            abort(403);
+        }
+
         return redirect()->route('mfa.enforcement');
     }
 }

@@ -285,7 +285,7 @@ $process = (request()->has('process')) ? \Ledningssystemet\Ledningssystemet\Mode
                });
             }
             
-            $('div.processdescription').html(data.description);
+            $('div.processdescription').text(data.description);
          });
       }
       

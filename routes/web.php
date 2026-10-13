@@ -52,7 +52,7 @@ Route::group(['namespace' => 'Ledningssystemet\Ledningssystemet\Http\Controllers
    });
 
    // Authenticated routes
-   Route::group(['middleware' => ['auth', 'authproxy']], function()
+   Route::group(['middleware' => ['auth', 'authproxy', 'mfa.enforced']], function()
    {
      if(config('ledningssystemet.mfa_enabled') && config('ledningssystemet.mfa_enforced'))
      {
