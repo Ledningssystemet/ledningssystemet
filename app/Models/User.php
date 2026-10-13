@@ -2,6 +2,7 @@
 
 namespace Ledningssystemet\Ledningssystemet\Models;
 
+use Illuminate\Support\Facades\Log;
 use Ledningssystemet\Ledningssystemet\Traits\HasCustomProperties;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Database\Eloquent\Builder;
@@ -595,7 +596,7 @@ static::creating(function ($model) {
     */
    public function resetpasssword()
    {
-      Log::info('Password reset requested for '.$this->email.' using mailer '.config('mail.default'));
+      \Illuminate\Support\Facades\Log::info('Password reset requested for '.$this->email.' using mailer '.config('mail.default'));
       $status = \Illuminate\Support\Facades\Password::broker()->sendResetLink(['email' => $this->email]);
 
       if('passwords.sent' !== $status) {
