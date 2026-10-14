@@ -2,6 +2,8 @@
 namespace Ledningssystemet\Ledningssystemet\Traits;
 
 use Ledningssystemet\Ledningssystemet\Models\CustomPropertyObject;
+use Ledningssystemet\Ledningssystemet\Models\ActivityLog;
+use Ledningssystemet\Ledningssystemet\Models\Asset;
 use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Ledningssystemet\Ledningssystemet\Models\CustomProperty;
 use Illuminate\Database\Query\JoinClause;
@@ -14,6 +16,7 @@ trait HasCustomProperties {
    // Per-model instance cache for decoded custom property values.
    protected bool $customPropertyValueMapLoaded = false;
    protected array $customPropertyValueMap = [];
+   protected array $customPropertyAuditChanges = [];
 
    // Per-request cache for custom property definitions per context class.
    protected static array $customPropertiesForContext = [];
@@ -137,6 +140,7 @@ trait HasCustomProperties {
    public static function bootHasCustomProperties()
    {
       static::saving(function ($model) {
+         $model->customPropertyAuditChanges = [];
          $props = [];
          $validators = [];
          $noneset = true;
@@ -198,22 +202,45 @@ trait HasCustomProperties {
             Validator::make($props, $validators)->validate();
 
             // Save all custom properties for this object
-            foreach (static::getCustomProperties() as $prop) DB::table('custom_property_object')->updateOrInsert(
-               [
-                  'object_id' => $model->id,
-                  'object_type' => $model::class,
-                  'custom_property_id' => $prop->id,
-               ],
-               [
-                  'value' => json_encode($props['customproperty_' . $prop->id]),
-               ]
-            );
+            foreach (static::getCustomProperties() as $prop) {
+               $value = json_encode($props['customproperty_' . $prop->id]);
+               if($model instanceof Asset && $model->exists)
+               {
+                  $oldValue = DB::table('custom_property_object')
+                     ->where('object_id', $model->id)
+                     ->where('object_type', $model::class)
+                     ->where('custom_property_id', $prop->id)
+                     ->value('value');
+                  $oldValue = null === $oldValue ? null : json_decode($oldValue, true);
+                  $newValue = json_decode($value, true);
+                  if($oldValue !== $newValue)
+                     $model->customPropertyAuditChanges[$prop->name] = ['old' => $oldValue, 'new' => $newValue];
+               }
+
+               DB::table('custom_property_object')->updateOrInsert(
+                  [
+                 'object_id' => $model->id,
+                 'object_type' => $model::class,
+                 'custom_property_id' => $prop->id,
+                  ],
+                  [
+                     'value' => $value,
+                  ]
+               );
+            }
 
             // Ensure fresh values after write in the same request lifecycle.
             $model->customPropertyValueMapLoaded = false;
             $model->customPropertyValueMap = [];
             unset(self::$customPropertyValueMapsByClass[$model::class][$model->id]);
          }
+      });
+
+      static::saved(function ($model) {
+         if($model instanceof Asset && [] !== $model->customPropertyAuditChanges)
+            ActivityLog::addChanges($model->customPropertyAuditChanges, $model);
+
+         $model->customPropertyAuditChanges = [];
       });
 
       static::deleted(function ($model) {

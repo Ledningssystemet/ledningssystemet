@@ -5,6 +5,7 @@
 namespace Ledningssystemet\Ledningssystemet\Providers;
 
 use Ledningssystemet\Ledningssystemet\Models\ActivityLog;
+use Ledningssystemet\Ledningssystemet\Models\Asset;
 use Ledningssystemet\Ledningssystemet\Providers\FortifyServiceProvider;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
@@ -116,7 +117,9 @@ class AppServiceProvider extends ServiceProvider
             if('updated_at' == $dirtyField)
                continue;
 
-            $modified[$dirtyField] = true;
+            $modified[$dirtyField] = $model instanceof Asset
+               ? ['old' => $model->getOriginal($dirtyField), 'new' => $model->getAttribute($dirtyField)]
+               : true;
          }
 
          if(0 === count($modified))

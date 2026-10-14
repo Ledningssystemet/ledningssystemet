@@ -6,6 +6,8 @@ use Ledningssystemet\Ledningssystemet\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Ledningssystemet\Ledningssystemet\Models\User;
 use Ledningssystemet\Ledningssystemet\Models\Tag;
+use Ledningssystemet\Ledningssystemet\Models\Asset;
+use Ledningssystemet\Ledningssystemet\Models\ActivityLog;
 
 class TagController extends Controller
 {
@@ -120,11 +122,21 @@ class TagController extends Controller
         }
      }
      
+     $before = $modelobj instanceof Asset
+        ? $modelobj->tags()->orderBy('tags.id')->get(['tags.id', 'tags.name'])->map(fn ($tag) => ['id' => (int) $tag->id, 'name' => $tag->name])->all()
+        : [];
+
      // Sync tags
      $modelobj->tags()->sync($tags);
 
      // Get tags
      $currentTags = $modelobj->tags()->get();
+     if($modelobj instanceof Asset)
+     {
+        $after = $currentTags->sortBy('id')->map(fn ($tag) => ['id' => (int) $tag->id, 'name' => $tag->name])->values()->all();
+        if($before !== $after)
+           ActivityLog::addChanges([__('Tags') => ['old' => $before, 'new' => $after]], $modelobj);
+     }
 
      $retobj = [];
      foreach($currentTags as $tag)

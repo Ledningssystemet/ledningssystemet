@@ -7,6 +7,7 @@ use Ledningssystemet\Ledningssystemet\Traits\HasCustomProperties;
 use Ledningssystemet\Ledningssystemet\Traits\HasMessages;
 use Ledningssystemet\Ledningssystemet\Traits\HasNotifications;
 use Ledningssystemet\Ledningssystemet\Traits\HasTags;
+use Ledningssystemet\Ledningssystemet\Models\ActivityLog;
 use Graphp\Graph\Graph;
 use Graphp\GraphViz\GraphViz;
 use Illuminate\Database\Eloquent\Builder;
@@ -219,7 +220,19 @@ class Asset extends Model
 
     public function setInformationtypesAttribute($value)
     {
-        $this->syncRelationAttribute('informationtypes', fn ($model) => $model->int_information_types()->sync(($value != null) ? $value : []));
+        $this->syncRelationAttribute('informationtypes', function ($model) use ($value) {
+            $relatedItems = fn () => $model->int_information_types()
+                ->orderBy('information_types.id')
+                ->get(['information_types.id', 'information_types.name'])
+                ->map(fn ($item) => ['id' => (int) $item->id, 'name' => $item->name])
+                ->all();
+            $before = $relatedItems();
+            $model->int_information_types()->sync(($value != null) ? $value : []);
+            $after = $relatedItems();
+
+            if($before !== $after)
+               ActivityLog::addChanges([__('Information types') => ['old' => $before, 'new' => $after]], $model);
+        });
     }
 
     public function getProcessesAttribute()
@@ -870,6 +883,10 @@ class Asset extends Model
             'description' => request()->input('description', ''),
             'updated_at' => date('Y-m-d H:i:s'),
         ];
+        $existing = $this->int_depending_assets()->where('assets.id', $asset->id)->first();
+        $pivotFields = ['inherit_confidentiality', 'inherit_integrity', 'inherit_availability', 'description'];
+        $before = $existing ? array_intersect_key($existing->pivot->toArray(), array_flip($pivotFields)) : null;
+        $after = array_intersect_key($data, array_flip($pivotFields));
 
         if (request()->has('id')) {
             // Update existing relation
@@ -879,6 +896,9 @@ class Asset extends Model
             $data['created_at'] = date('Y-m-d H:i:s');
             $this->int_depending_assets()->attach($asset->id, $data);
         }
+
+        if($before !== $after)
+           ActivityLog::addChanges([__('Dependency to :asset', ['asset' => $asset->name]) => ['old' => $before, 'new' => $after]], $this);
     }
 
     /**
@@ -891,7 +911,21 @@ class Asset extends Model
             abort(403);
         }
 
-        DB::table('asset_asset_dependancy')->where('id', request()->input('id', -1))->delete();
+        $pivot = DB::table('asset_asset_dependancy')
+            ->where('id', request()->input('id', -1))
+            ->where('dependant_asset_id', $this->id)
+            ->first();
+        if(null !== $pivot)
+        {
+            $asset = Asset::find($pivot->depending_asset_id);
+            $before = array_intersect_key((array) $pivot, array_flip([
+                'inherit_confidentiality', 'inherit_integrity', 'inherit_availability', 'description',
+            ]));
+            DB::table('asset_asset_dependancy')->where('id', $pivot->id)->delete();
+
+            if(null !== $asset)
+               ActivityLog::addChanges([__('Dependency to :asset', ['asset' => $asset->name]) => ['old' => $before, 'new' => null]], $this);
+        }
     }
 
     /**

@@ -130,10 +130,16 @@ class ActivityLog extends Activity
 
             if(null != $this->modified)
             {
+               $modified = json_decode($this->modified, true);
                $historyText .= ', '.__('changed').' ';
-               $items = array_keys(json_decode($this->modified, true));
+               $items = array_keys($modified);
                for($i = 0; $i < count($items); $i++)
-                  $historyText .= (($i > 0) ? (($i < (count($items) - 1)) ? ', ' : ' '.__('and').' ') : '').__($items[$i]);
+               {
+                  $item = $items[$i];
+                  $historyText .= (($i > 0) ? (($i < (count($items) - 1)) ? ', ' : ' '.__('and').' ') : '').__($item);
+                  if(is_array($modified[$item]) && array_key_exists('old', $modified[$item]) && array_key_exists('new', $modified[$item]))
+                     $historyText .= ' '.__('changed from').' '.$this->formatAuditValue($modified[$item]['old']).' '.__('to').' '.$this->formatAuditValue($modified[$item]['new']);
+               }
             }
 
             break;
@@ -148,6 +154,20 @@ class ActivityLog extends Activity
       }
 
       return $historyText;
+   }
+
+   private function formatAuditValue($value): string
+   {
+      if(null === $value)
+         return __('None');
+
+      if(is_bool($value))
+         return $value ? 'true' : 'false';
+
+      if(is_array($value) || is_object($value))
+         return json_encode($value, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?: '';
+
+      return (string) $value;
    }
 
    public static function index(User $user)
@@ -204,5 +224,28 @@ class ActivityLog extends Activity
          $builder->causedBy($causer);
 
       $builder->log('message');
+   }
+
+   public static function addChanges(array $changes, $obj): void
+   {
+      if([] === $changes)
+         return;
+
+      $causer = Auth::user();
+      $createdBy = ((null != $causer) && (null != $causer->name)) ? $causer->name : 'SYSTEM';
+
+      $builder = activity('model-history')
+         ->performedOn($obj)
+         ->event('updated')
+         ->withProperties([
+            'action' => 'U',
+            'created_by' => $createdBy,
+            'modified' => $changes,
+         ]);
+
+      if(null != $causer)
+         $builder->causedBy($causer);
+
+      $builder->log('updated');
    }
 }
