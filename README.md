@@ -19,6 +19,17 @@ See our training videos for more examples: https://support.ledningssystemet.se/k
 
 See [INSTALL.md](INSTALL.md) for installation instructions.
 
+## API documentation
+
+Authenticated API users can retrieve the Swagger 2.0 specification with
+`GET /api/v1/swagger`, using `Authorization: Bearer <token>` and
+`Accept: application/json`. No system administrator permission is required.
+This endpoint also accepts the browser's login session, even without
+`Referer` or `Origin` headers. This explicit session support is limited to Swagger;
+authentication for other API endpoints is unchanged.
+The Swagger UI remains available to system administrators at `/systemadmin/swagger`
+and loads the specification from the API endpoint.
+
 ## User role attributes
 
 The `User` model and user API use `org_roles` for organizational roles, with

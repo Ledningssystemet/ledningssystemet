@@ -6,6 +6,7 @@ use Ledningssystemet\Ledningssystemet\Http\Controllers\Api\DataProcessingTableCo
 use Ledningssystemet\Ledningssystemet\Http\Controllers\Api\DocumentManagementTableController;
 use Ledningssystemet\Ledningssystemet\Http\Controllers\Api\LegacyTableController;
 use Ledningssystemet\Ledningssystemet\Http\Controllers\Api\ReportCentralController;
+use Ledningssystemet\Ledningssystemet\Http\Controllers\Api\SwaggerController;
 use Ledningssystemet\Ledningssystemet\Http\Controllers\Api\TableController;
 use Ledningssystemet\Ledningssystemet\Http\Controllers\Api\TagController;
 use Ledningssystemet\Ledningssystemet\Http\Controllers\DocumentController;
@@ -30,6 +31,11 @@ use Illuminate\Support\Facades\Route;
 
 // API v1 routes
 Route::prefix('v1')->group(function () {
+
+    Route::get('/swagger', [SwaggerController::class, 'index'])
+        ->middleware('web')
+        ->withoutMiddleware(\Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class)
+        ->name('api.v1.swagger');
 
     /* Status controller routes */
     Route::get('/getstatus', function () {
