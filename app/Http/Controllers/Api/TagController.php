@@ -9,19 +9,16 @@ use Ledningssystemet\Ledningssystemet\Models\Tag;
 class TagController extends Controller
 {
    /**
-    * Resolve taggable models from either supported model namespace.
+    * Resolve a taggable model from the application model namespace.
     */
    private function resolveTaggableModel(string $modelname): string
    {
      if(str_contains($modelname, '\\'))
         abort(404, __('Could not find the requested item'));
 
-     foreach(['Ledningssystemet\\Ledningssystemet\\Models\\', 'App\\Models\\'] as $namespace)
-     {
-        $classname = $namespace.$modelname;
-        if(class_exists($classname) && is_subclass_of($classname, Model::class) && method_exists($classname, 'tags'))
-           return $classname;
-     }
+     $classname = 'Ledningssystemet\\Ledningssystemet\\Models\\'.$modelname;
+     if(class_exists($classname) && is_subclass_of($classname, Model::class) && method_exists($classname, 'tags'))
+        return $classname;
 
      abort(404, __('Could not find the requested item'));
    }

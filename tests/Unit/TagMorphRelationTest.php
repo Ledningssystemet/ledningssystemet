@@ -3,25 +3,13 @@
 namespace Tests\Unit;
 
 use Illuminate\Support\Facades\DB;
+use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Ledningssystemet\Ledningssystemet\Models\Asset;
-use Ledningssystemet\Ledningssystemet\Support\TagMorphType;
 use Tests\TestCase;
 
-class TagNamespaceCompatibilityTest extends TestCase
+class TagMorphRelationTest extends TestCase
 {
-    public function testBothModelNamespacesResolveToTheAvailableModel(): void
-    {
-        $this->assertSame(
-            Asset::class,
-            TagMorphType::resolve('App\\Models\\Asset'),
-        );
-        $this->assertSame(
-            Asset::class,
-            TagMorphType::resolve(Asset::class),
-        );
-    }
-
-    public function testTagRelationQueriesBothNamespaceTypes(): void
+    public function testTagRelationUsesOnlyTheModelsMorphType(): void
     {
         $databaseConfig = config('database');
         config([
@@ -40,11 +28,12 @@ class TagNamespaceCompatibilityTest extends TestCase
             $asset->setRawAttributes(['id' => 1]);
             $relation = $asset->tags();
 
-            $this->assertContains('App\\Models\\Asset', $relation->getBindings());
-            $this->assertContains(Asset::class, $relation->getBindings());
+            $this->assertInstanceOf(MorphToMany::class, $relation);
+            $this->assertContains($asset->getMorphClass(), $relation->getBindings());
+            $this->assertNotContains('App\\Models\\Asset', $relation->getBindings());
             $this->assertStringContainsString('object_tags_type', $relation->toSql());
-            $this->assertContains('App\\Models\\Asset', $relation->newPivotQuery()->getBindings());
-            $this->assertContains(Asset::class, $relation->newPivotQuery()->getBindings());
+            $this->assertContains($asset->getMorphClass(), $relation->newPivotQuery()->getBindings());
+            $this->assertNotContains('App\\Models\\Asset', $relation->newPivotQuery()->getBindings());
         } finally {
             DB::purge('sqlite');
             config(['database' => $databaseConfig]);

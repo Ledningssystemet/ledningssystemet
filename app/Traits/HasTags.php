@@ -2,15 +2,14 @@
 namespace Ledningssystemet\Ledningssystemet\Traits;
 
 use Ledningssystemet\Ledningssystemet\Models\Tag;
-use Ledningssystemet\Ledningssystemet\Relations\NamespaceTolerantMorphToMany;
-use Ledningssystemet\Ledningssystemet\Support\TagMorphType;
+use Illuminate\Database\Eloquent\Relations\MorphToMany;
 
 trait HasTags
 {
     public static function allUsedTags()
     {
         return Tag::leftJoin('object_tags', 'object_tags.tag_id', '=', 'tags.id')
-            ->whereIn('object_tags.object_tags_type', TagMorphType::forModel(static::class))
+            ->where('object_tags.object_tags_type', (new static)->getMorphClass())
             ->select(['tags.*'])
             ->distinct()
             ->orderBy('tags.name')
@@ -19,22 +18,9 @@ trait HasTags
             ->setAppends([]);
     }
 
-    public function tags(): NamespaceTolerantMorphToMany
+    public function tags(): MorphToMany
     {
-        $related = $this->newRelatedInstance(Tag::class);
-
-        return (new NamespaceTolerantMorphToMany(
-            $related->newQuery(),
-            $this,
-            'object_tags',
-            'object_tags',
-            'object_tags_id',
-            'tag_id',
-            $this->getKeyName(),
-            $related->getKeyName(),
-            'tags',
-            false,
-            TagMorphType::forModel($this),
-        ))->withPivot('tag_id');
+        return $this->morphToMany(Tag::class, 'object_tags', 'object_tags', 'object_tags_id', 'tag_id')
+            ->withPivot('tag_id');
     }
 }
