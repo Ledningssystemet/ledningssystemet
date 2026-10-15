@@ -121,7 +121,7 @@ $(function(){
          },
          departments: {
             title: '{{ __('Departments') }}',
-            create: false,
+            create: @php echo(config('ledningssystemet.graph_departments_assignusers') ? "false" : "true"); @endphp,
             edit: @php echo(config('ledningssystemet.graph_departments_assignusers') ? "false" : "true"); @endphp,
             list: true,
             multiple: true,
@@ -161,7 +161,7 @@ $(function(){
             }
          },
 @endif
-         accessgroups: {
+         access_groups: {
             title: '{{ __('Access groups') }}',
             create: true,
             edit: true,
@@ -403,22 +403,6 @@ $(function(){
             }
          }
       },
-      formCreated: function(event, data) {
-         if(!data || !data.record || !data.record.external_id || !data.form)
-            return;
-         
-         $(data.form).find('[name]').each(function(){
-            switch($(this).prop('name')){
-               case 'manager_user_id':
-               case 'departments[]':
-               case 'roles[]':
-               case 'accessgroups[]':
-                  break;
-               default:
-                  $(this).closest('.jtable-input-field-container').remove();               
-            }
-         });
-      }
    });
    $('#tableContainer').jtable('load');      
 });

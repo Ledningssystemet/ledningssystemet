@@ -161,4 +161,10 @@ class Relation extends Model
       ];
    }
 
+
+   // Get related item object
+   public function int_relation() : MorphTo
+   {
+      return $this->morphTo('relation', 'relation_type', 'relation_id');
+   }
 }

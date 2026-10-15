@@ -561,7 +561,10 @@ class AppServiceProvider extends ServiceProvider
                return $user->hasAnyPermission(['forms.edit']);
 
             case 'Relation':
-               return $user->can('view', self::resolveObject($model));
+               if(is_string($model))
+                  return true;
+
+               return $user->can('view', $model->int_relation);
 
             case 'GhgFactor':
             case 'GhgFactorReport':
@@ -997,7 +1000,7 @@ class AppServiceProvider extends ServiceProvider
                return $user->hasAnyPermission(['forms.edit']);
 
             case 'Relation':
-               return $user->can('update', self::resolveObject($model));
+               return $user->can('update', $model->int_relation);
 
             case 'GhgFactor':
             case 'GhgFactorReport':

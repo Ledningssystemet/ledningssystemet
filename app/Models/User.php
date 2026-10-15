@@ -77,7 +77,7 @@ static::creating(function ($model) {
    protected $appends = [
       'access',
       'departments',
-//      'roles',
+      'roles',
       'status',
       'direct_reports',
       'activitiescount',
@@ -92,6 +92,7 @@ static::creating(function ($model) {
       'process_performance_metricscount',
       'riskscount',
       'supplierscount',
+      'access_groups',
    ];
 
    public function getAccessAttribute($user = null)
@@ -130,19 +131,32 @@ static::creating(function ($model) {
       $this->syncRelationAttribute('departments', fn ($model) => $model->int_departments()->sync($value));
    }
    
-//   public function getRolesAttribute()
-//   {
-//      $retval = [];
-//      foreach($this->int_roles as $obj)
-//         $retval[] = array('id' => $obj->id, 'name' => $obj->name);
-//      return $retval;
-//   }
-//
-//   public function setRolesAttribute($value)
-//   {
-//      $this->int_roles()->sync($value);
-//   }
-   
+   public function getRolesAttribute()
+   {
+      $retval = [];
+      foreach($this->int_roles as $obj)
+         $retval[] = array('id' => $obj->id, 'name' => $obj->name);
+      return $retval;
+   }
+
+   public function setRolesAttribute($value)
+   {
+      $this->syncRelationAttribute('roles', fn ($model) => $model->int_roles()->sync($value));
+   }
+
+
+   public function getAccessGroupsAttribute()
+   {
+      $retval = [];
+      foreach($this->int_access_groups as $obj)
+         $retval[] = array('id' => $obj->id, 'name' => $obj->name);
+      return $retval;
+   }
+
+   public function setAccessGroupsAttribute($value)
+   {
+      $this->syncRelationAttribute('access_groups', fn ($model) => $model->int_access_groups()->sync($value));
+   }
    public function getDirectReportsAttribute()
    {
       $retval = [];
@@ -223,7 +237,7 @@ static::creating(function ($model) {
       'external_id',
       'title',
       'departments',
-//      'roles',
+      'roles',
       'status',
       'manager_user_id',
       'direct_reports',
@@ -239,6 +253,7 @@ static::creating(function ($model) {
       'riskscount',
       'supplierscount',
       'last_login_at',
+      'access_groups',
    ];
 
    
@@ -253,8 +268,9 @@ static::creating(function ($model) {
       'email',
       'password',
       'enabled',
-//      'roles',
+      'roles',
       'departments',
+      'access_groups',
       'manager_user_id',
    ];
 
@@ -425,6 +441,9 @@ static::creating(function ($model) {
     */
    public function int_reporting_users($depth=null) {
       $retval = [];
+      if(1 > $this->id)
+         return $retval;
+
       foreach(User::where('manager_user_id', $this->id)->get() as $obj)
       {
          $retval[$obj->id] = $obj;
@@ -434,7 +453,7 @@ static::creating(function ($model) {
                $retval[$subobj->id] = $subobj;
          }
       }
-      
+
       return $retval;
    }
 
@@ -442,17 +461,16 @@ static::creating(function ($model) {
     * Get a list of potential managers (i.e. without causing circular reference)
     */
    public function int_potential_managers() {
-      return Cache::rememberForever('User.int_potential_managers.'.$this->id, function(){
-         $reports = $this->int_reporting_users();
-         $retval = [];
-         foreach(User::get() as $obj)
-         {
-            if(($obj->id != $this->id) && !array_key_exists($obj->id, $reports))
-               $retval[$obj->id] = $obj;
-         }
-         
-         return $retval;
-      });
+      $reports = $this->int_reporting_users();
+
+      $retval = [];
+      foreach(User::get() as $obj)
+      {
+         if(($obj->id != $this->id) && !array_key_exists($obj->id, $reports))
+            $retval[$obj->id] = $obj;
+      }
+
+      return $retval;
    }
    
    /**
