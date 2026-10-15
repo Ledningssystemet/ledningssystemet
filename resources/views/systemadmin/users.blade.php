@@ -140,7 +140,7 @@ $(function(){
             }
          },
 @if(!config('ledningssystemet.disable_staff'))
-         roles: {
+         org_roles: {
             title: '{{ __('Roles') }}',
             create: true,
             edit: true,

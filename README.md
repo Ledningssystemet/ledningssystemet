@@ -19,6 +19,14 @@ See our training videos for more examples: https://support.ledningssystemet.se/k
 
 See [INSTALL.md](INSTALL.md) for installation instructions.
 
+## User role attributes
+
+The `User` model and user API use `org_roles` for organizational roles, with
+`id`/`name` pairs when reading and role IDs when writing. These still use the
+existing `int_roles()` relation and `role_user` pivot table; no database migration
+is needed. The `roles` relation is reserved for Spatie permission roles (access
+groups).
+
 ## License
 
 Ledningssystemet is licensed under the [GNU Affero General Public License v3.0 or later](https://www.gnu.org/licenses/agpl-3.0.html). If you modify and run the software as a network service, you must make the corresponding source code available to its users under the same license.

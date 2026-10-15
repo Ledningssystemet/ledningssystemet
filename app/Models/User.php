@@ -77,7 +77,7 @@ static::creating(function ($model) {
    protected $appends = [
       'access',
       'departments',
-      'roles',
+      'org_roles',
       'status',
       'direct_reports',
       'activitiescount',
@@ -131,7 +131,7 @@ static::creating(function ($model) {
       $this->syncRelationAttribute('departments', fn ($model) => $model->int_departments()->sync($value));
    }
    
-   public function getRolesAttribute()
+   public function getOrgRolesAttribute()
    {
       $retval = [];
       foreach($this->int_roles as $obj)
@@ -139,9 +139,9 @@ static::creating(function ($model) {
       return $retval;
    }
 
-   public function setRolesAttribute($value)
+   public function setOrgRolesAttribute($value)
    {
-      $this->syncRelationAttribute('roles', fn ($model) => $model->int_roles()->sync($value));
+      $this->syncRelationAttribute('org_roles', fn ($model) => $model->int_roles()->sync($value));
    }
 
 
@@ -237,7 +237,7 @@ static::creating(function ($model) {
       'external_id',
       'title',
       'departments',
-      'roles',
+      'org_roles',
       'status',
       'manager_user_id',
       'direct_reports',
@@ -268,7 +268,7 @@ static::creating(function ($model) {
       'email',
       'password',
       'enabled',
-      'roles',
+      'org_roles',
       'departments',
       'access_groups',
       'manager_user_id',

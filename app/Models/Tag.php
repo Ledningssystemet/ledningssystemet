@@ -17,6 +17,7 @@ use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\DB;
+use Ledningssystemet\Ledningssystemet\Support\TagMorphType;
 
 class Tag extends Model
 {
@@ -64,7 +65,14 @@ class Tag extends Model
    {
       $retval = "";
       foreach(DB::table('object_tags')->where('tag_id', $this->id)->groupBy('object_tags_type')->select(DB::raw('count(*) as rowcount, object_tags_type'))->get() as $item)
-         $retval .= (("" != $retval) ? "\r\n" : "").$item->rowcount." ".$item->object_tags_type::getPrettyName();
+      {
+         $class = TagMorphType::resolve($item->object_tags_type);
+         $name = $class && method_exists($class, 'getPrettyName')
+            ? $class::getPrettyName()
+            : class_basename($item->object_tags_type);
+
+         $retval .= (("" != $retval) ? "\r\n" : "").$item->rowcount." ".$name;
+      }
 
       return $retval;
    }

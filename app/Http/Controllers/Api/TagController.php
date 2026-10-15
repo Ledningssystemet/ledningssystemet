@@ -3,21 +3,35 @@
 namespace Ledningssystemet\Ledningssystemet\Http\Controllers\Api;
 
 use Ledningssystemet\Ledningssystemet\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use Ledningssystemet\Ledningssystemet\Models\User;
+use Illuminate\Database\Eloquent\Model;
 use Ledningssystemet\Ledningssystemet\Models\Tag;
 
 class TagController extends Controller
 {
    /**
+    * Resolve taggable models from either supported model namespace.
+    */
+   private function resolveTaggableModel(string $modelname): string
+   {
+     if(str_contains($modelname, '\\'))
+        abort(404, __('Could not find the requested item'));
+
+     foreach(['Ledningssystemet\\Ledningssystemet\\Models\\', 'App\\Models\\'] as $namespace)
+     {
+        $classname = $namespace.$modelname;
+        if(class_exists($classname) && is_subclass_of($classname, Model::class) && method_exists($classname, 'tags'))
+           return $classname;
+     }
+
+     abort(404, __('Could not find the requested item'));
+   }
+
+   /**
     * Get tags.
     */
    public function getTags($modelname, $id)
    {
-     // Check if model exist
-     $classname = !str_contains($modelname, '\\') && is_subclass_of('Ledningssystemet\\Ledningssystemet\\Models\\'.$modelname, \Illuminate\Database\Eloquent\Model::class) ? 'Ledningssystemet\\Ledningssystemet\\Models\\'.$modelname : null;
-     if(! $classname)
-      abort(404, __('Could not find the requested item'));
+     $classname = $this->resolveTaggableModel($modelname);
       
      // Ensure requested object exist
      $modelobj = $classname::findOrFail($id);
@@ -47,10 +61,7 @@ class TagController extends Controller
     */
    public function getAllTags($modelname, $id)
    {
-     // Check if model exist
-     $classname = !str_contains($modelname, '\\') && is_subclass_of('Ledningssystemet\\Ledningssystemet\\Models\\'.$modelname, \Illuminate\Database\Eloquent\Model::class) ? 'Ledningssystemet\\Ledningssystemet\\Models\\'.$modelname : null;
-     if(! $classname)
-      abort(404, __('Could not find the requested item'));
+     $classname = $this->resolveTaggableModel($modelname);
       
      // Ensure requested object exist
      $modelobj = $classname::findOrFail($id);
@@ -83,10 +94,7 @@ class TagController extends Controller
     */
    public function setTags($modelname, $id)
    {
-     // Check if model exist
-     $classname = !str_contains($modelname, '\\') && is_subclass_of('Ledningssystemet\\Ledningssystemet\\Models\\'.$modelname, \Illuminate\Database\Eloquent\Model::class) ? 'Ledningssystemet\\Ledningssystemet\\Models\\'.$modelname : null;
-     if(! $classname)
-        abort(404, __('Could not find the requested item'));
+     $classname = $this->resolveTaggableModel($modelname);
      
      // Get object
      $modelobj = $classname::findOrFail($id);
