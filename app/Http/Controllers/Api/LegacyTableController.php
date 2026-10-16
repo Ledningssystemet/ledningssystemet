@@ -30,6 +30,12 @@ class LegacyTableController extends Controller
          abort(403);
       }
 
+      if (!request()->filled('per_page')) {
+         request()->merge([
+            'per_page' => request()->filled('pageSize') ? request()->query('pageSize') : 10000,
+         ]);
+      }
+
       // Perform index
       $retval = $classname::index(request()->user());
 
