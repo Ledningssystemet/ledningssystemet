@@ -317,7 +317,7 @@ $(function(){
          showHistory: showHistoryField('Supplier', $('#tableContainer')),          
          showMessages: showMessagesField('Supplier', $('#tableContainer')),
 @if(Gate::allows('index', 'Ledningssystemet\Ledningssystemet\\Models\\Risk'))
-         showRisks: showRisks('Supplier', $('#tableContainer'),  @if(auth()->user()->can('useai')) true @else false @endif,@if(auth()->user()->can('delete', 'Ledningssystemet\Ledningssystemet\\Models\\Risk')) true @else false @endif ),
+         showRisks: showRisks('Supplier', $('#tableContainer'), @if(auth()->user()->can('delete', 'Ledningssystemet\Ledningssystemet\\Models\\Risk')) true @else false @endif ),
 @endif
 @if(Auth::user()->can('index', \Ledningssystemet\Ledningssystemet\Models\Finding::class))
          showFindings: showFindings('Supplier', $('#tableContainer')),

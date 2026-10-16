@@ -734,7 +734,7 @@ window.showFindings = function(modeltype, parentContainer)
    };
 }
 
-window.showRisks = function(modeltype, parentContainer, ai=false, allowdelete=false)
+window.showRisks = function(modeltype, parentContainer, allowdelete=false)
 {
    return  {
    title: '',
@@ -773,26 +773,6 @@ window.showRisks = function(modeltype, parentContainer, ai=false, allowdelete=fa
                messages: {
                   addNewRecord: translateString('Add new risk'),
                },
-               toolbar: (ai) ? {
-                     items: [
-                        {
-                           icon: 'support_agent',
-                           cssClass: 'btn btn-primary btn-sm mx-2 text-white',
-                           text: translateString('AI Risk identification'),
-                           click: function (buttonContainer) {
-                              var jtableContainer = $(buttonContainer).closest('.jtable-child-table-container');
-                              ajaxPost('/api/v1/ai/riskidentification', { context_type: 'Ledningssystemet\Ledningssystemet\\Models\\'+modeltype.split('\\').slice(-1)[0], context_id: sourcedata.record.id }, function(aidata, textStatus, jqXHR){
-                                 if(null == aidata.riskcount)
-                                    showDialog(translateString("AI Risk identification"), translateString("No response was received from AI agent"));
-                                 else {
-                                    jtableContainer.jtable('reload');
-                                 }
-                              });
-
-                              return false;
-                           }
-                        }]
-                  } : {},
                tableId: 'child-risks',
                paging: true,
                fields: {

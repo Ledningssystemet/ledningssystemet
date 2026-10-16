@@ -57,15 +57,4 @@ return [
    'graph_groupsync_path' => env('GRAPH_GROUPSYNC_PATH', ''),
    'graph_groupsync_filter' => env('GRAPH_GROUPSYNC_FILTER', ''),
 
-   // OpenAI / AI assistant settings
-   'openai_endpoint' => env('OPENAI_ENDPOINT'),
-   'openai_api_key' => env('OPENAI_API_KEY'),
-   'openai_model' => env('OPENAI_MODEL'),
-   'openai_frequency_penalty' => env('OPENAI_FREQUENCY_PENALTY'),
-   'openai_presence_penalty' => env('OPENAI_PRESENCE_PENALTY'),
-   'openai_temperature' => env('OPENAI_TEMPERATURE'),
-   'openai_top_p' => env('OPENAI_TOP_P'),
-   'openai_max_completion_tokens' => env('OPENAI_MAX_COMPLETION_TOKENS'),
-   'ai_chat_enabled' => env('AI_CHAT_ENABLED', false),
-   'ai_chat_name' => env('AI_CHAT_NAME'),
 ];

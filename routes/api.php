@@ -1,6 +1,5 @@
 <?php
 
-use Ledningssystemet\Ledningssystemet\Http\Controllers\Api\AIController;
 use Ledningssystemet\Ledningssystemet\Http\Controllers\Api\AssessmentSettingsController;
 use Ledningssystemet\Ledningssystemet\Http\Controllers\Api\DataProcessingTableController;
 use Ledningssystemet\Ledningssystemet\Http\Controllers\Api\DocumentManagementTableController;
@@ -186,61 +185,6 @@ Route::prefix('v1/listsources')->group(function () {
         }
 
         return json_encode($retval);
-    });
-});
-
-/* AI */
-Route::prefix('v1/ai')->group(function () {
-    // Stateless chat (one question -> one answer)
-    Route::post('/chat/stream', function () {
-        return (new AIController)::chatSendStream(null);
-    });
-
-    // Get risk
-    Route::post('/risk', function () {
-        return (new AIController)::getRiskAnalysis();
-    });
-
-    // Get risk consequence
-    Route::post('/requirementsource', function () {
-        return (new AIController)::getRequirementSourceAnalysis();
-    });
-
-    // Get finding
-    Route::post('/finding', function () {
-        return (new AIController)::getFindingAnalysis();
-    });
-
-    // Get control
-    Route::post('/control', function () {
-        return (new AIController)::getControlAnalysis();
-    });
-
-    // Get document
-    Route::post('/document', function () {
-        return (new AIController)::getDocument();
-    });
-
-    // Risk identification
-    Route::post('/riskidentification', function () {
-        $contextType = request()->input('context_type');
-        $contextClass = is_string($contextType)
-            ? (str_contains($contextType, '\\') ? $contextType : 'Ledningssystemet\\Ledningssystemet\\Models\\'.$contextType)
-            : null;
-        if (!is_string($contextClass) || !str_starts_with($contextClass, 'Ledningssystemet\\Ledningssystemet\\Models\\') || !is_subclass_of($contextClass, \Illuminate\Database\Eloquent\Model::class)) {
-            $contextClass = null;
-        }
-        if (! $contextClass) {
-            abort(404);
-        }
-
-        if (intval(request()->input('context_id', -1)) <= 0) {
-            abort(404);
-        }
-
-        $contextobj = $contextClass::findOrFail(request()->input('context_id'));
-
-        return (new AIController)::getRiskSuggestions($contextobj);
     });
 });
 

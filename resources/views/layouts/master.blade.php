@@ -25,9 +25,6 @@
 
          <div data-ui-slot="layout.after-footer"></div>
 
-         <!-- AI chat widget -->
-         @include('layouts.aichat')
-
          <div data-ui-slot="layout.end"></div>
       </div>      
 @endsection

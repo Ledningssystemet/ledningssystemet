@@ -146,11 +146,6 @@ class AppServiceProvider extends ServiceProvider
          }
       });
 
-      // AI-features
-      Gate::define('useai', function (User $user) {
-         return (config('ledningssystemet.openai_endpoint') && $user->hasAnyPermission(['ai.edit']));
-      });
-
       Gate::define('publishdocument', function (User $user, $document) {
          if(is_string($document))
             return $user->hasAnyPermission(['documentpublisher.edit']);

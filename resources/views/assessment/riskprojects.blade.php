@@ -216,35 +216,6 @@ $(function(){
                return $('<hr />'); 
             }
          },
-@if(auth()->user()->can('useai'))
-         ai_agent: {
-            title: '',
-            type: 'command',
-            create: false,
-            edit: false,
-            list: true,
-            footer: true,
-            display: function(data) {
-               var retobj = $('<div />');
-               retobj.append($('<button />')
-                  .addClass('btn btn-primary btn-sm text-light')
-                  .text('{{ __('AI Risk identification') }}')
-                  .prepend($('<span>support_agent</span>')
-                     .addClass('material-symbols-rounded'))
-                  .click(function(){
-                     ajaxPost('/api/v1/ai/riskidentification', { context_type: 'Ledningssystemet\Ledningssystemet\\Models\\RiskProject', context_id: data.record.id }, function(aidata, textStatus, jqXHR){
-                        if(null == aidata.riskcount)
-                           showDialog('{{ __("AI Risk identification") }}', '{{ __("No response was received from AI agent") }}');
-                        else
-                           showDialog('{{ __("AI Risk identification") }}', aidata.riskcount+' {{ __("new risks were identified") }}');
-                     });
-
-                     return false;
-                  }));
-               return retobj;
-            }
-         },
-@endif
          risks: {
             title: '',
             type: 'command',

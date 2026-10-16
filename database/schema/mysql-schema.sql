@@ -183,24 +183,6 @@ CONSTRAINT `agreements_responsible_user_id_foreign` FOREIGN KEY (`responsible_us
 CONSTRAINT `agreements_supplier_id_foreign` FOREIGN KEY (`supplier_id`) REFERENCES `suppliers` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_swedish_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `ai_queries`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8mb4 */;
-CREATE TABLE `ai_queries` (
-`id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-`context` varchar(255) NOT NULL,
-`user_id` bigint(20) unsigned DEFAULT NULL,
-`model` varchar(255) NOT NULL,
-`prompt_tokens` bigint(20) unsigned NOT NULL,
-`completion_tokens` bigint(20) unsigned NOT NULL,
-`total_tokens` bigint(20) unsigned NOT NULL,
-`created_at` timestamp NULL DEFAULT NULL,
-`updated_at` timestamp NULL DEFAULT NULL,
-PRIMARY KEY (`id`),
-KEY `aq_ui` (`user_id`),
-CONSTRAINT `aq_ui` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_swedish_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `asset_asset_dependancy`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8mb4 */;
@@ -2289,7 +2271,6 @@ INSERT INTO `permissions` VALUES
 (29,'incidents.read','web',NOW(),NOW()),
 (30,'incidents.edit','web',NOW(),NOW()),
 (31,'documentpublisher.edit','web',NOW(),NOW()),
-(32,'ai.edit','web',NOW(),NOW()),
 (33,'findings.read','web',NOW(),NOW()),
 (34,'findings.edit','web',NOW(),NOW()),
 (35,'docmgmtplan.read','web',NOW(),NOW()),

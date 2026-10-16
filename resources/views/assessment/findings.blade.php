@@ -286,43 +286,6 @@ if(!config('ledningssystemet.disable_supplier'))
                return $('<hr />');
             }
          },
-@if(auth()->user()->can('useai'))
-         ai_agent: {
-            title: '',
-            type: 'textarea',
-            create: false,
-            edit: false,
-            list: true,
-            footer: true,
-            display: function(data) {
-               var retobj = $('<div />');
-               retobj.append($('<button />')
-                  .addClass('btn btn-primary btn-sm text-light')
-                  .text('{{ __('Get AI opinion') }}')
-                  .prepend($('<span>support_agent</span>')
-                     .addClass('material-symbols-rounded'))
-                  .click(function(){
-                     var aiFeedbackContainer = $(this).siblings('.ai-agent-feedback');
-                     ajaxPost('/api/v1/ai/finding', { finding_id: $(this).closest('.jtable-data-row').attr('data-record-key') }, function(aidata, textStatus, jqXHR){
-                        if(null == aidata.retval)
-                           aiFeedbackContainer.text('{{ __("No response was received from AI agent") }}');
-                        else
-                           aiFeedbackContainer.text(aidata.retval);
-
-                        aiFeedbackContainer.show();
-                     });
-
-                     return false;
-                  }));
-
-               retobj.append($('<div />')
-                  .addClass('ai-agent-feedback')
-                  .css({ 'display': 'none' }));
-
-               return retobj;
-            }
-         },
-@endif
 @if(Auth::user()->can('update', \Ledningssystemet\Ledningssystemet\Models\Finding::class))
          commands: {
             sorting: false,

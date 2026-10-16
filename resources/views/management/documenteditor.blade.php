@@ -30,16 +30,6 @@ if(request()->has('json'))
 ?>
 @extends('layouts.master')
 @section('container')
-<style>
-   .ai-agent {
-      margin: 20px 0 20px 0;
-      max-width: 800px;
-      padding: 10px;
-      border: 1px solid #aaaaaa;
-      background-color: var(--bs-light);
-      border-radius: 10px;
-   }
-</style>
 <script>
    var isDirty = false;
 
@@ -117,43 +107,6 @@ if(request()->has('json'))
    }
 </script>
 <h1>{{ __("Edit") }} {{ $document->int_library_document->name }} v{{ $document->major_version  }}.{{ $document->minor_version }}</h1>
-@if($allowedit && auth()->user()->can('useai'))
-   <script>
-      function runAiInstruction(){
-         var aiInstruction = $('#ai-instruction').val();
-         if(aiInstruction.length == 0)
-            return;
-
-         $('#editorJscontainer').documentEditor('save', {
-            success: function(data){
-               ajaxPost('/api/v1/ai/document', { instructions: aiInstruction, document: data }, function(aidata, textStatus, jqXHR){
-                  if(null == aidata.retval)
-                     showDialog('{{ __("No response was received from AI agent") }}');
-                  else
-                  {
-                     var document = aidata.retval;
-                     normalizeBlocks(document.blocks);
-                     $("#editorJscontainer").documentEditor('load', {
-                        doc: document,
-                        change: setDirtyFlag,
-                     });
-
-                     setDirtyFlag();
-                  }
-               });
-            }
-         });
-      }
-   </script>
-   <div class="ai-agent">
-      <h3>{{ __("AI agent") }}</h3>
-      <div class="mb-3">
-         <label class="form-label">{{ __("AI agent instructions") }}</label>
-         <textarea id="ai-instruction" class="form-control" rows="3" placeholder="{{ __("Provide instructions for your AI assistant here") }}"></textarea>
-      </div>
-      <button class="btn btn-primary btn-sm text-light mb-3" onclick="runAiInstruction();"><span class="material-symbols-rounded">support_agent</span>{{ __("Run AI instruction") }}</button>
-   </div>
-@endif
 @if($allowedit)
 <div class="mb-3">
    <label class="form-label">{{ __("Approver") }}</label>

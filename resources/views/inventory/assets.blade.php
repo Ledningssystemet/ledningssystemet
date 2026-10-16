@@ -461,8 +461,7 @@
                showHistory: showHistoryField('Asset', $('#tableContainer')),
                showMessages: showMessagesField('Asset', $('#tableContainer')),
                @if(Gate::allows('index', 'Ledningssystemet\Ledningssystemet\\Models\\Risk'))
-               showRisks: showRisks('Asset', $('#tableContainer'), @if(auth()->user()->can('useai')) true
-               @else false @endif,
+               showRisks: showRisks('Asset', $('#tableContainer'),
                @if(auth()->user()->can('delete', 'Ledningssystemet\Ledningssystemet\\Models\\Risk')) true @else false @endif ),
                @endif
                   @if(Gate::allows('index', 'Ledningssystemet\Ledningssystemet\\Models\\Finding'))
