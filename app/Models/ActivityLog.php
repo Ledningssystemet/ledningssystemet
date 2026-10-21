@@ -167,7 +167,6 @@ class ActivityLog extends Activity
       $returnCollection = static::query()
          ->where('subject_type', $obj::class)
          ->where('subject_id', $obj->id)
-         ->where('log_name', 'model-history')
          ->orderBy('updated_at', 'desc');
 
       if(request()->input('hidechecked', 0) && (new static())->status)
