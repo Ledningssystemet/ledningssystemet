@@ -4,6 +4,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 ENV NVM_DIR=/root/.nvm
 ENV NODE_VERSION=26
 
+
 # Install runtime dependencies
 RUN apt-get update && apt-get install -y \
     php8.5 \
