@@ -84,7 +84,7 @@ class MailSendstatus extends Command
             \Ledningssystemet\Ledningssystemet\Models\Chemical::class,
          ],
          'Assess and mitigate' => [
-            \Ledningssystemet\Ledningssystemet\Models\RiskProject::class,
+            \Ledningssystemet\Ledningssystemet\Models\Project::class,
             \Ledningssystemet\Ledningssystemet\Models\Risk::class,
             \Ledningssystemet\Ledningssystemet\Models\ComplianceEvaluation::class,
             \Ledningssystemet\Ledningssystemet\Models\Finding::class,

@@ -63,6 +63,15 @@ $(function(){
          </a>
       </li>
 @endif
+      @if(request()->user()->can('index', Ledningssystemet\Ledningssystemet\Models\Project::class))
+         <li class="nav-item" id="nav-project">
+            <a class="nav-link" href="/projects">
+               <div class="nav-item-status"></div>
+               <span class="nav-icon material-symbols-rounded">order_approve</span>
+               {{ __("Projects") }}
+            </a>
+         </li>
+      @endif
       <div data-ui-slot="sidebar.groups.top"></div>
       <li class="nav-group">
          <a class="nav-link nav-group-toggle collapsed" data-bs-toggle="collapse" role="button" href="#mycontributions-menu">
@@ -239,15 +248,6 @@ $(function(){
          </a>
          <ul class="nav-group-items collapse" id="assessment-menu" data-bs-parent="#sidebar">
             <div data-ui-slot="sidebar.groups.assessment.top"></div>
-@if(request()->user()->can('index', Ledningssystemet\Ledningssystemet\Models\RiskProject::class))
-            <li class="nav-item" id="nav-riskproject">
-               <a class="nav-link" href="/assessment/riskprojects">
-                  <div class="nav-item-status"></div>
-                  <span class="nav-icon material-symbols-rounded">order_approve</span>
-                  {{ __("Risk projects") }}
-               </a>
-            </li>
-@endif            
 @if(request()->user()->can('index', Ledningssystemet\Ledningssystemet\Models\Risk::class))
             <li class="nav-item" id="nav-risk">
                <a class="nav-link" href="/assessment/riskregister">
@@ -423,12 +423,12 @@ $(function(){
                </a>
             </li>
 @endif
-@if(request()->user()->can('create', Ledningssystemet\Ledningssystemet\Models\RiskProjectType::class))
-            <li class="nav-item" id="nav-riskprojecttype">
-               <a class="nav-link" href="/management/riskprojecttypes">
+@if(request()->user()->can('create', Ledningssystemet\Ledningssystemet\Models\ProjectType::class))
+            <li class="nav-item" id="nav-projecttype">
+               <a class="nav-link" href="/management/projecttypes">
                   <div class="nav-item-status"></div>
                   <span class="nav-icon material-symbols-rounded">warning</span>
-                  {{ __("Risk project types") }}
+                  {{ __("Project types") }}
                </a>
             </li>
 @endif

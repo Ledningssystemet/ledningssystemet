@@ -15,14 +15,14 @@
          });
 
          $query->when(function ($q) use ($attributes) {
-            if ($attributes->has('risk_project_id') && (0 < intval($attributes->get('risk_project_id')))) {
-               $rp = \Ledningssystemet\Ledningssystemet\Models\RiskProject::find(intval($attributes->get('risk_project_id')));
+            if ($attributes->has('project_id') && (0 < intval($attributes->get('project_id')))) {
+               $rp = \Ledningssystemet\Ledningssystemet\Models\Project::find(intval($attributes->get('project_id')));
                if (!auth()->user()->can('view', $rp))
                   abort(403);
 
-               $q->where('risk_project_id', intval($attributes->get('risk_project_id')));
+               $q->where('project_id', intval($attributes->get('project_id')));
             } else
-               $q->whereNull('risk_project_id');
+               $q->whereNull('project_id');
          });
 
          $query

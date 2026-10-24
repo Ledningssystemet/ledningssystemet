@@ -21,10 +21,10 @@ use Ledningssystemet\Ledningssystemet\Traits\HasMessages;
 use Ledningssystemet\Ledningssystemet\Http\Controllers\UserNotificationController;
 use Illuminate\Support\Facades\DB;
 
-class RiskProjectType extends Model
+class ProjectType extends Model
 {
    
-   public static function getPrettyName($plural = false){ if($plural) { return __("Risk project types"); } else { return __("Risk project type"); }}
+   public static function getPrettyName($plural = false){ if($plural) { return __("Project types"); } else { return __("Project type"); }}
 
    /* Retrieve status for the entire collection of objects */
    public static function getItemsStatus($department = null, $user = null, $personalOnly = false)
@@ -140,6 +140,11 @@ class RiskProjectType extends Model
      */
    public function int_risk_templates() : HasMany
    {
-       return $this->hasMany(RiskProjectTypeRiskTemplate::class, 'risk_project_type_id');
+       return $this->hasMany(ProjectTypeRiskTemplate::class, 'project_type_id');
    }   
+
+   public function int_projects() : HasMany
+   {
+       return $this->hasMany(Project::class, 'project_type_id');
+   }
 }

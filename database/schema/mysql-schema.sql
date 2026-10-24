@@ -496,20 +496,20 @@ CONSTRAINT `control_requirements_control_id_foreign` FOREIGN KEY (`control_id`) 
 CONSTRAINT `control_requirements_requirement_id_foreign` FOREIGN KEY (`requirement_id`) REFERENCES `requirements` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_swedish_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `control_risk_project_type_risk_template`;
+DROP TABLE IF EXISTS `control_project_type_risk_template`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8mb4 */;
-CREATE TABLE `control_risk_project_type_risk_template` (
+CREATE TABLE `control_project_type_risk_template` (
 	   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
 	   `control_id` bigint(20) unsigned NOT NULL,
-	   `risk_project_type_risk_template_id` bigint(20) unsigned NOT NULL,
+	   `project_type_risk_template_id` bigint(20) unsigned NOT NULL,
 	   `created_at` timestamp NULL DEFAULT NULL,
 	   `updated_at` timestamp NULL DEFAULT NULL,
 	   PRIMARY KEY (`id`),
 	   KEY `crptrt_ci` (`control_id`),
-	   KEY `crptrt_rptrti` (`risk_project_type_risk_template_id`),
+	   KEY `crptrt_rptrti` (`project_type_risk_template_id`),
 	   CONSTRAINT `crptrt_ci` FOREIGN KEY (`control_id`) REFERENCES `controls` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-	   CONSTRAINT `crptrt_rptrti` FOREIGN KEY (`risk_project_type_risk_template_id`) REFERENCES `risk_project_type_risk_templates` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+	   CONSTRAINT `crptrt_rptrti` FOREIGN KEY (`project_type_risk_template_id`) REFERENCES `project_type_risk_templates` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_swedish_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `control_risks`;
@@ -1687,13 +1687,13 @@ CREATE TABLE `risk_levels` (
 PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_swedish_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `risk_project_type_risk_templates`;
+DROP TABLE IF EXISTS `project_type_risk_templates`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8mb4 */;
-CREATE TABLE `risk_project_type_risk_templates` (
+CREATE TABLE `project_type_risk_templates` (
 `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
 `name` varchar(255) NOT NULL,
-`risk_project_type_id` bigint(20) unsigned DEFAULT NULL,
+`project_type_id` bigint(20) unsigned DEFAULT NULL,
 `scenariodescription` text DEFAULT NULL,
 `consequencedescription` text DEFAULT NULL,
 `probability_id` bigint(20) unsigned DEFAULT NULL,
@@ -1701,18 +1701,18 @@ CREATE TABLE `risk_project_type_risk_templates` (
 `created_at` timestamp NULL DEFAULT NULL,
 `updated_at` timestamp NULL DEFAULT NULL,
 PRIMARY KEY (`id`),
-KEY `rptrt_rpti_fk` (`risk_project_type_id`),
+KEY `rptrt_rpti_fk` (`project_type_id`),
 KEY `rptrt_pi_fk` (`probability_id`),
 KEY `rptrt_ci_fk` (`consequence_id`),
 CONSTRAINT `rptrt_ci_fk` FOREIGN KEY (`consequence_id`) REFERENCES `consequence_levels` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
 CONSTRAINT `rptrt_pi_fk` FOREIGN KEY (`probability_id`) REFERENCES `probability_levels` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
-CONSTRAINT `rptrt_rpti_fk` FOREIGN KEY (`risk_project_type_id`) REFERENCES `risk_project_types` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+CONSTRAINT `rptrt_rpti_fk` FOREIGN KEY (`project_type_id`) REFERENCES `project_types` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_swedish_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `risk_project_types`;
+DROP TABLE IF EXISTS `project_types`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8mb4 */;
-CREATE TABLE `risk_project_types` (
+CREATE TABLE `project_types` (
 `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
 `name` varchar(255) NOT NULL,
 `description` text NOT NULL,
@@ -1721,26 +1721,26 @@ CREATE TABLE `risk_project_types` (
 PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_swedish_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `risk_project_user`;
+DROP TABLE IF EXISTS `project_user`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8mb4 */;
-CREATE TABLE `risk_project_user` (
+CREATE TABLE `project_user` (
 `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-`risk_project_id` bigint(20) unsigned NOT NULL,
+`project_id` bigint(20) unsigned NOT NULL,
 `user_id` bigint(20) unsigned NOT NULL,
 `created_at` timestamp NULL DEFAULT NULL,
 `updated_at` timestamp NULL DEFAULT NULL,
 PRIMARY KEY (`id`),
-KEY `risk_project_user_risk_project_id_foreign` (`risk_project_id`),
-KEY `risk_project_user_user_id_foreign` (`user_id`),
-CONSTRAINT `risk_project_user_risk_project_id_foreign` FOREIGN KEY (`risk_project_id`) REFERENCES `risk_projects` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-CONSTRAINT `risk_project_user_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+KEY `project_user_project_id_foreign` (`project_id`),
+KEY `project_user_user_id_foreign` (`user_id`),
+CONSTRAINT `project_user_project_id_foreign` FOREIGN KEY (`project_id`) REFERENCES `projects` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+CONSTRAINT `project_user_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_swedish_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `risk_projects`;
+DROP TABLE IF EXISTS `projects`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8mb4 */;
-CREATE TABLE `risk_projects` (
+CREATE TABLE `projects` (
 `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
 `name` varchar(255) NOT NULL,
 `scopedescription` text DEFAULT NULL,
@@ -1752,14 +1752,14 @@ CREATE TABLE `risk_projects` (
 `archived_at` timestamp NULL DEFAULT NULL,
 `created_at` timestamp NULL DEFAULT NULL,
 `updated_at` timestamp NULL DEFAULT NULL,
-`risk_project_type_id` bigint(20) unsigned DEFAULT NULL,
+`project_type_id` bigint(20) unsigned DEFAULT NULL,
 PRIMARY KEY (`id`),
-KEY `risk_projects_responsible_user_id_foreign` (`responsible_user_id`),
-KEY `risk_projects_department_id_foreign` (`department_id`),
-KEY `rp_rpti_fk` (`risk_project_type_id`),
-CONSTRAINT `risk_projects_department_id_foreign` FOREIGN KEY (`department_id`) REFERENCES `departments` (`id`) ON UPDATE CASCADE,
-CONSTRAINT `risk_projects_responsible_user_id_foreign` FOREIGN KEY (`responsible_user_id`) REFERENCES `users` (`id`) ON UPDATE CASCADE,
-CONSTRAINT `rp_rpti_fk` FOREIGN KEY (`risk_project_type_id`) REFERENCES `risk_project_types` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
+KEY `projects_responsible_user_id_foreign` (`responsible_user_id`),
+KEY `projects_department_id_foreign` (`department_id`),
+KEY `rp_rpti_fk` (`project_type_id`),
+CONSTRAINT `projects_department_id_foreign` FOREIGN KEY (`department_id`) REFERENCES `departments` (`id`) ON UPDATE CASCADE,
+CONSTRAINT `projects_responsible_user_id_foreign` FOREIGN KEY (`responsible_user_id`) REFERENCES `users` (`id`) ON UPDATE CASCADE,
+CONSTRAINT `rp_rpti_fk` FOREIGN KEY (`project_type_id`) REFERENCES `project_types` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_swedish_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `risks`;
@@ -1784,7 +1784,7 @@ CREATE TABLE `risks` (
 `probability_id` bigint(20) unsigned DEFAULT NULL,
 `consequence_id` bigint(20) unsigned DEFAULT NULL,
 `assessmentcomment` text DEFAULT NULL,
-`risk_project_id` bigint(20) unsigned DEFAULT NULL,
+`project_id` bigint(20) unsigned DEFAULT NULL,
 `post_probability_id` bigint(20) unsigned DEFAULT NULL,
 `post_consequence_id` bigint(20) unsigned DEFAULT NULL,
 PRIMARY KEY (`id`),
@@ -1795,7 +1795,7 @@ KEY `risks_replacedby_id_foreign` (`replacedby_id`),
 KEY `risks_created_by_foreign` (`created_by`),
 KEY `risks_probability_id_foreign` (`probability_id`),
 KEY `risks_consequence_id_foreign` (`consequence_id`),
-KEY `risks_risk_project_id_foreign` (`risk_project_id`),
+KEY `risks_project_id_foreign` (`project_id`),
 KEY `risks_post_probability_id_foreign` (`post_probability_id`),
 KEY `risks_post_consequence_id_foreign` (`post_consequence_id`),
 CONSTRAINT `risks_consequence_id_foreign` FOREIGN KEY (`consequence_id`) REFERENCES `consequence_levels` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
@@ -1806,7 +1806,7 @@ CONSTRAINT `risks_post_probability_id_foreign` FOREIGN KEY (`post_probability_id
 CONSTRAINT `risks_probability_id_foreign` FOREIGN KEY (`probability_id`) REFERENCES `probability_levels` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
 CONSTRAINT `risks_replacedby_id_foreign` FOREIGN KEY (`replacedby_id`) REFERENCES `risks` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
 CONSTRAINT `risks_replacing_id_foreign` FOREIGN KEY (`replacing_id`) REFERENCES `risks` (`id`) ON UPDATE CASCADE,
-CONSTRAINT `risks_risk_project_id_foreign` FOREIGN KEY (`risk_project_id`) REFERENCES `risk_projects` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+CONSTRAINT `risks_project_id_foreign` FOREIGN KEY (`project_id`) REFERENCES `projects` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
 CONSTRAINT `risks_riskowner_id_foreign` FOREIGN KEY (`riskowner_id`) REFERENCES `users` (`id`) ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_swedish_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;

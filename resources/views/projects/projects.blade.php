@@ -1,4 +1,4 @@
-@php if(Auth::user()->cannot('index', \Ledningssystemet\Ledningssystemet\Models\RiskProject::class)) abort(403); @endphp
+@php if(Auth::user()->cannot('index', \Ledningssystemet\Ledningssystemet\Models\Project::class)) abort(403); @endphp
 @extends('layouts.master')
 
 @section('container')
@@ -11,13 +11,13 @@ $(function(){
       sorting: false,
       defaultSorting: 'name ASC',
       searchfield: true,
-      tableId: 'riskprojects',
+      tableId: 'projects',
       openChildAsAccordion: true,
       bootstrap: true,
       accordion: true,
-      title: '{{ __("Risk projects") }}',
+      title: '{{ __("Projects") }}',
       messages: {
-         addNewRecord: '{{ __('Add new risk project') }}',
+         addNewRecord: '{{ __('Add new project') }}',
       },
       filter: {
          responsible_user_id: {
@@ -26,7 +26,7 @@ $(function(){
             default: 0,
             options: [
                { value: 0, text: '{{ __('Show all') }}' },
-                  @foreach(\Ledningssystemet\Ledningssystemet\Models\User::leftJoin('risk_projects', 'risk_projects.responsible_user_id', '=', 'users.id')->whereNotNull('risk_projects.id')->select('users.*')->distinct()->orderBy('users.name')->select(['users.id', 'users.name'])->get()->each->setAppends([]) as $obj)
+                  @foreach(\Ledningssystemet\Ledningssystemet\Models\User::leftJoin('projects', 'projects.responsible_user_id', '=', 'users.id')->whereNotNull('projects.id')->select('users.*')->distinct()->orderBy('users.name')->select(['users.id', 'users.name'])->get()->each->setAppends([]) as $obj)
                { value: {{ $obj->id }}, text: <?php echo(json_encode($obj->name)); ?> },
                @endforeach
             ]
@@ -41,18 +41,18 @@ $(function(){
             type: 'checkbox',
             value: '1',
             checked: false,
-            text: '{{ __('Show only my risk projects') }}',
+            text: '{{ __('Show only my projects') }}',
          },
       },
       actions: {
-@if(Auth::user()->can('index', \Ledningssystemet\Ledningssystemet\Models\RiskProject::class))
-         listAction: '/api/v1/items/RiskProject',
+@if(Auth::user()->can('index', \Ledningssystemet\Ledningssystemet\Models\Project::class))
+         listAction: '/api/v1/items/Project',
 @endif         
-@if(Auth::user()->can('create', \Ledningssystemet\Ledningssystemet\Models\RiskProject::class))
-         createAction: '/api/v1/items/RiskProject',
+@if(Auth::user()->can('create', \Ledningssystemet\Ledningssystemet\Models\Project::class))
+         createAction: '/api/v1/items/Project',
 @endif         
-@if(Auth::user()->can('update', \Ledningssystemet\Ledningssystemet\Models\RiskProject::class))
-         updateAction: '/api/v1/items/RiskProject',
+@if(Auth::user()->can('update', \Ledningssystemet\Ledningssystemet\Models\Project::class))
+         updateAction: '/api/v1/items/Project',
 @endif         
       },
       fields: {
@@ -62,14 +62,14 @@ $(function(){
             create: false,
             edit: false,
          },
-         risk_project_type_id: {
-            title: '{{ __('Risk project type') }}',
+         project_type_id: {
+            title: '{{ __('Project type') }}',
             create: true,
             edit: false,
             list: false,
             options: [
                { Value: null, DisplayText: '{{ __("None") }}' },
-@foreach(Ledningssystemet\Ledningssystemet\Models\RiskProjectType::orderBy('name')->select(['id', 'name'])->get()->each->setAppends([]) as $obj)
+@foreach(Ledningssystemet\Ledningssystemet\Models\ProjectType::orderBy('name')->select(['id', 'name'])->get()->each->setAppends([]) as $obj)
                { Value: {{$obj->id}}, DisplayText: <?php echo(json_encode($obj->name)); ?> },
 @endforeach
             ]
@@ -195,7 +195,7 @@ $(function(){
             edit: true,
             list: true,
             required: false,
-            tooltip: '{{ __("Desribe what scope of the risk project") }}',
+            tooltip: '{{ __("Describe project scope") }}',
             listClass: 'd-inline-block col-12 col-md-6',
          },
          purposedescription: {
@@ -233,7 +233,7 @@ $(function(){
                   
                var actions = {};
                
-               actions.listAction ='/api/v1/items/Risk?risk_project_id='+sourcedata.record.id;
+               actions.listAction ='/api/v1/items/Risk?project_id='+sourcedata.record.id;
                if(!sourcedata.record.archived_at)
                {
                   actions.createAction = '/api/v1/items/Risk';
@@ -279,7 +279,7 @@ $(function(){
                               );
                         },
                         formCreated: function(event, data){
-                           $(data.form).append($('<input type="hidden" id="Edit-risk_project_id" name="risk_project_id" value="'+sourcedata.record.id+'" />'));
+                           $(data.form).append($('<input type="hidden" id="Edit-project_id" name="project_id" value="'+sourcedata.record.id+'" />'));
                         },
                         recordDeleted: function(event, data){
                            $('#tableContainer').jtable('reloadProperty', $(event.target).closest('.jtable-data-row'), ['name', 'risk_distribution']);
@@ -298,8 +298,8 @@ $(function(){
                return retobj;
             }
          },         
-         showHistory: showHistoryField('RiskProject', $('#tableContainer')),          
-         showMessages: showMessagesField('RiskProject', $('#tableContainer')),
+         showHistory: showHistoryField('Project', $('#tableContainer')),          
+         showMessages: showMessagesField('Project', $('#tableContainer')),
          exportxlsx: {
             edit: false,
             create: false,
@@ -312,7 +312,7 @@ $(function(){
                   .append($('<span />')
                      .addClass('material-symbols-rounded')
                      .text('download'))
-                  .attr('href', '/api/v1/ReportCentral/RiskProject/'+data.record.id);
+                  .attr('href', '/api/v1/ReportCentral/Project/'+data.record.id);
 
                return retobj;
             }
@@ -337,7 +337,7 @@ $(function(){
                      if(data.record.archived_at)
                      {
                         confirmDialog('{{ __("Unarchive project") }}', '{{ __("By unarchiving this project, risk management will be continued.") }}', function(formdata){
-                           ajaxPost('/api/v1/items/RiskProject/'+data.record.id+'/unarchive', {}, function(){
+                           ajaxPost('/api/v1/items/Project/'+data.record.id+'/unarchive', {}, function(){
                               $('#tableContainer').jtable('reload');
                            });
                         }, { warning: true });
@@ -345,7 +345,7 @@ $(function(){
                      else
                      {
                         confirmDialog('{{ __("Archive project") }}', '{{ __("By archiving this project, you claim that no more risk management is to be done regarding this project. Risks will not be re-opened for assessment.") }}', function(formdata){
-                           ajaxPost('/api/v1/items/RiskProject/'+data.record.id+'/archive', {}, function(){
+                           ajaxPost('/api/v1/items/Project/'+data.record.id+'/archive', {}, function(){
                               $('#tableContainer').jtable('reload');
                            });
                         }, { warning: true });
@@ -372,8 +372,8 @@ $(function(){
                      .addClass('material-symbols-rounded')
                      .text('delete'))
                   .on('click', function(){
-                     confirmDialog('{{ __("Detach risks and delete project") }}', '{{ __("The risk project will be deleted but the risks will remain in the risk list as other risks without any relation to the project in which they were created") }}', function(formdata){
-                        ajaxPost('/api/v1/items/RiskProject/'+data.record.id+'/detachanddelete', {}, function(){
+                     confirmDialog('{{ __("Detach risks and delete project") }}', '{{ __("The project will be deleted but the risks will remain in the risk list as other risks without any relation to the project in which they were created") }}', function(formdata){
+                        ajaxPost('/api/v1/items/Project/'+data.record.id+'/detachanddelete', {}, function(){
                               $('#tableContainer').jtable('reload');
                            });
                      }, { warning: true });
@@ -400,7 +400,7 @@ $(function(){
                      .text('delete'))
                   .on('click', function(){
                      confirmDialog('{{ __("Delete project") }}', '{{ __("The risks related to the project will also be deleted") }}', function(formdata){
-                        ajaxPost('/api/v1/items/RiskProject/'+data.record.id+'/deleteproject', {}, function(){
+                        ajaxPost('/api/v1/items/Project/'+data.record.id+'/deleteproject', {}, function(){
                               $('#tableContainer').jtable('reload');
                            });
                      }, { warning: true });

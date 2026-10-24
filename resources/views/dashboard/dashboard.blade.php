@@ -66,7 +66,7 @@
                <div class="col col-12 col-md-6">
                   <div class="department-container-header">{{ __("Assess and mitigate") }}</div>
                   <div class="container status-container">
-@foreach(array_merge(\Ledningssystemet\Ledningssystemet\Models\RiskProject::getItemsStatus($department), \Ledningssystemet\Ledningssystemet\Models\Risk::getItemsStatus($department), \Ledningssystemet\Ledningssystemet\Models\ComplianceEvaluation::getItemsStatus($department), \Ledningssystemet\Ledningssystemet\Models\Finding::getItemsStatus($department), \Ledningssystemet\Ledningssystemet\Models\Incident::getItemsStatus($department), \Ledningssystemet\Ledningssystemet\Models\ControlAction::getItemsStatus($department)) as $issue)
+@foreach(array_merge(\Ledningssystemet\Ledningssystemet\Models\Project::getItemsStatus($department), \Ledningssystemet\Ledningssystemet\Models\Risk::getItemsStatus($department), \Ledningssystemet\Ledningssystemet\Models\ComplianceEvaluation::getItemsStatus($department), \Ledningssystemet\Ledningssystemet\Models\Finding::getItemsStatus($department), \Ledningssystemet\Ledningssystemet\Models\Incident::getItemsStatus($department), \Ledningssystemet\Ledningssystemet\Models\ControlAction::getItemsStatus($department)) as $issue)
                <div class="container status-item">
                   <span class="badge bg-{{ $issue['level'] }}">{{ $issue['count'] }}</span>
 @if($issue['url'])

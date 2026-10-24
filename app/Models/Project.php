@@ -24,11 +24,11 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Query\JoinClause;
 use Ledningssystemet\Ledningssystemet\Models\Concerns\DefersRelationAttributeSync;
 
-class RiskProject extends Model
+class Project extends Model
 {
    use DefersRelationAttributeSync, HasTags, HasMessages;
 
-   public static function getPrettyName($plural = false){ if($plural) { return __("Risk projects"); } else { return __("Risk project"); }}
+   public static function getPrettyName($plural = false){ if($plural) { return __("Projects"); } else { return __("Project"); }}
 
    /* Retrieve status for the entire collection of objects */
    public static function getItemsStatus($department = null, $user = null, $personalOnly = false)
@@ -39,24 +39,24 @@ class RiskProject extends Model
          return [];
      
      // Don't report if user cannot perform any changes anyway
-      if((null != $user) && $user->cannot('update', RiskProject::class))
+      if((null != $user) && $user->cannot('update', Project::class))
          return [];
       
-      $count = RiskProject::whereNull('responsible_user_id')->count();
+      $count = Project::whereNull('responsible_user_id')->count();
       if(!$personalOnly && ($count > 0))
-         $retval[] = ['level' => 'danger', 'count' => $count, 'text' => RiskProject::getPrettyName($count > 1).' '.__("without assignment"), 'url' => ((($user != null) && $user->can('index',  get_called_class())) || (($user == null) && (null != auth()->user()) && (auth()->user()->can('index', get_called_class())))) ? url()->query('/assessment/riskprojects') : null];
+         $retval[] = ['level' => 'danger', 'count' => $count, 'text' => Project::getPrettyName($count > 1).' '.__("without assignment"), 'url' => ((($user != null) && $user->can('index',  get_called_class())) || (($user == null) && (null != auth()->user()) && (auth()->user()->can('index', get_called_class())))) ? url()->query('/assessment/projects') : null];
       
       if($user)
       {
-         $count = RiskProject::where('responsible_user_id', $user->id)->whereNull('archived_at')->count();
+         $count = Project::where('responsible_user_id', $user->id)->whereNull('archived_at')->count();
          if($count > 0)
-            $retval[] = ['level' => 'info', 'count' => $count, 'text' => RiskProject::getPrettyName($count > 1).' '.__("ongoing"), 'url' => ((($user != null) && $user->can('index',  get_called_class())) || (($user == null) && (null != auth()->user()) && (auth()->user()->can('index', get_called_class())))) ? url()->query('/assessment/riskprojects') : null];
+            $retval[] = ['level' => 'info', 'count' => $count, 'text' => Project::getPrettyName($count > 1).' '.__("ongoing"), 'url' => ((($user != null) && $user->can('index',  get_called_class())) || (($user == null) && (null != auth()->user()) && (auth()->user()->can('index', get_called_class())))) ? url()->query('/assessment/projects') : null];
       }
 
-      // Get number of ongoing projects that have risks that has not been approved
-      $rpsPendingAssessment = $user ? Risk::leftJoin('risk_projects', 'risk_projects.id', '=', 'risks.risk_project_id')->whereNotNull('risks.risk_project_id')->where('risk_projects.responsible_user_id', $user->id)->whereNull('risks.assessed_at')->pluck('risks.risk_project_id')->unique()->count() : Risk::whereNotNull('risk_project_id')->whereNull('assessed_at')->pluck('risks.risk_project_id')->unique()->count();
-      if($rpsPendingAssessment)
-         $retval[] = ['level' => $user ? 'danger' : 'warning', 'count' => $rpsPendingAssessment, 'text' => RiskProject::getPrettyName($count > 1).' '.__("with pending risk assessments"), 'url' => ((($user != null) && $user->can('index',  get_called_class())) || (($user == null) && (null != auth()->user()) && (auth()->user()->can('index', get_called_class())))) ? url()->query('/assessment/riskprojects') : null];
+      // Get number of ongoing projects that have risks that have not been approved
+      $projectsPendingAssessment = $user ? Risk::leftJoin('projects', 'projects.id', '=', 'risks.project_id')->whereNotNull('risks.project_id')->where('projects.responsible_user_id', $user->id)->whereNull('risks.assessed_at')->pluck('risks.project_id')->unique()->count() : Risk::whereNotNull('project_id')->whereNull('assessed_at')->pluck('risks.project_id')->unique()->count();
+      if($projectsPendingAssessment)
+         $retval[] = ['level' => $user ? 'danger' : 'warning', 'count' => $projectsPendingAssessment, 'text' => Project::getPrettyName($projectsPendingAssessment > 1).' '.__("with pending risk assessments"), 'url' => ((($user != null) && $user->can('index',  get_called_class())) || (($user == null) && (null != auth()->user()) && (auth()->user()->can('index', get_called_class())))) ? url()->query('/assessment/projects') : null];
 
       return $retval;
    }
@@ -76,9 +76,9 @@ class RiskProject extends Model
       
       static::created(function ($model) {
          // If based on template, create risks
-         if(null != $model->risk_project_type_id)
+         if(null != $model->project_type_id)
          {
-            foreach(RiskProjectTypeRiskTemplate::where('risk_project_type_id', $model->risk_project_type_id)->get() as $templateObj)
+            foreach(ProjectTypeRiskTemplate::where('project_type_id', $model->project_type_id)->get() as $templateObj)
             {
                $risk = new Risk;
                $risk->name = $templateObj->name;
@@ -89,7 +89,7 @@ class RiskProject extends Model
                $risk->updated_at = $risk->created_at;
                $risk->probability_id = $templateObj->probability_id;
                $risk->consequence_id = $templateObj->consequence_id;
-               $risk->risk_project_id = $model->id;
+               $risk->project_id = $model->id;
                $risk->riskowner_id = $model->responsible_user_id;
                $risk->save();
 
@@ -174,7 +174,7 @@ class RiskProject extends Model
    }
 
    public function getRiskdistributionAttribute(){
-      return Cache::rememberForever('RiskProject.riskdistribution.'.$this->id, function() {
+      return Cache::rememberForever('Project.riskdistribution.'.$this->id, function() {
          $riskdistribution = [];
 
          foreach ($this
@@ -235,7 +235,7 @@ class RiskProject extends Model
       'start_date',
       'end_date',
       'users',
-      'risk_project_type_id',
+      'project_type_id',
       'status',
       'riskcount',
       'riskdistribution',
@@ -257,7 +257,7 @@ class RiskProject extends Model
       'responsible_user_id',
       'end_date',
       'users',
-      'risk_project_type_id',
+      'project_type_id',
    ];
 
 
@@ -297,9 +297,9 @@ class RiskProject extends Model
             if((null != $user) &&
                !$user->hasAnyPermission(['riskadministrator.edit']))
             {
-               $userprojs = DB::table('risk_project_user')->where('user_id', $user->id)->pluck('risk_project_user.risk_project_id')->toArray();
+               $userprojs = DB::table('project_user')->where('user_id', $user->id)->pluck('project_user.project_id')->toArray();
                $query->where('responsible_user_id', $user->id)
-               ->orWhereIn('risk_projects.id', $userprojs);
+               ->orWhereIn('projects.id', $userprojs);
             }
          })
          ->when((0 == request()->input('showarchived', 0)), function (Builder $query) use($user) { 
@@ -333,7 +333,7 @@ class RiskProject extends Model
          'name' => 'required',
          'department_id' => 'nullable|exists:Ledningssystemet\Ledningssystemet\Models\Department,id',
          'responsible_user_id' => 'nullable|exists:Ledningssystemet\Ledningssystemet\Models\User,id',
-         'risk_project_type_id' => 'nullable|exists:Ledningssystemet\Ledningssystemet\Models\RiskProjectType,id',
+         'project_type_id' => 'nullable|exists:Ledningssystemet\Ledningssystemet\Models\ProjectType,id',
       ];
    }
 
@@ -346,12 +346,17 @@ class RiskProject extends Model
    }   
    
     /**
-     * Get the risks
+     * Get the risks associated with this project
      */
    public function int_risks() : HasMany
    {
-       return $this->hasMany(Risk::class, 'risk_project_id');
+       return $this->hasMany(Risk::class, 'project_id');
    }   
+
+   public function int_project_type() : BelongsTo
+   {
+       return $this->belongsTo(ProjectType::class, 'project_type_id');
+   }
    
    /**
     * Archive
@@ -422,8 +427,8 @@ class RiskProject extends Model
       foreach($this->int_risks as $risk)
       {
          // Add note
-         ActivityLog::addMessage(__("This risk was created in risk project")." ".$this->name." ".__("but was detached from the project prior to project deletion"), $risk);
-         $risk->risk_project_id = null;
+         ActivityLog::addMessage(__("This risk was created in project")." ".$this->name." ".__("but was detached from the project prior to project deletion"), $risk);
+         $risk->project_id = null;
          $risk->save();
       }
       

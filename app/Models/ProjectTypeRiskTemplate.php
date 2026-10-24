@@ -24,12 +24,12 @@ use Ledningssystemet\Ledningssystemet\Traits\HasNotifications;
 use Ledningssystemet\Ledningssystemet\Http\Controllers\UserNotificationController;
 use Ledningssystemet\Ledningssystemet\Models\Concerns\DefersRelationAttributeSync;
 
-class RiskProjectTypeRiskTemplate extends Model
+class ProjectTypeRiskTemplate extends Model
 {
    use DefersRelationAttributeSync;
 
    
-   public static function getPrettyName($plural = false){ if($plural) { return __("Risk project type risk templates"); } else { return __("Risk project type risk template"); }}
+   public static function getPrettyName($plural = false){ if($plural) { return __("Risk templates for project types"); } else { return __("Risk template for project type"); }}
 
    /* Retrieve status for the entire collection of objects */
    public static function getItemsStatus($department = null, $user = null, $personalOnly = false)
@@ -75,7 +75,7 @@ class RiskProjectTypeRiskTemplate extends Model
 
    public function getControlsAttribute()
    {
-      return Cache::rememberForever('RiskProjectTypeRiskTemplate.getRiskControlsAttribute.'.$this->id, function(){
+      return Cache::rememberForever('ProjectTypeRiskTemplate.getRiskControlsAttribute.'.$this->id, function(){
          $retval = [];
          foreach($this->int_controls as $obj)
             $retval[] = array('id' => $obj->id, 'name' => $obj->name);
@@ -101,7 +101,7 @@ class RiskProjectTypeRiskTemplate extends Model
       'probability_id',
       'consequence_id',
       'status',
-      'risk_project_type_id',
+      'project_type_id',
       'controls',
    ];
 
@@ -118,7 +118,7 @@ class RiskProjectTypeRiskTemplate extends Model
       'consequencedescription',
       'probability_id',
       'consequence_id',
-      'risk_project_type_id',
+      'project_type_id',
       'controls',
    ];
 
@@ -143,7 +143,7 @@ class RiskProjectTypeRiskTemplate extends Model
     */
    public static function index(User $user)
    {
-      return (__CLASS__)::where('risk_project_type_id', request()->input('risk_project_type_id'))
+      return (__CLASS__)::where('project_type_id', request()->input('project_type_id'))
          ->when((request()->has('search') && ("" != trim(request()->input('search')))), function (Builder $query) {
             $query->where('name', 'LIKE', '%'.request()->input('search').'%')
                    ->orWhere('scenariodescription', 'LIKE', '%'.request()->input('search').'%')
@@ -168,7 +168,7 @@ class RiskProjectTypeRiskTemplate extends Model
          'name' => 'required',
          'probability_id' => 'nullable|exists:Ledningssystemet\Ledningssystemet\Models\ProbabilityLevel,id',
          'consequence_id' => 'nullable|exists:Ledningssystemet\Ledningssystemet\Models\ConsequenceLevel,id',
-         'risk_project_type_id' => 'nullable|exists:Ledningssystemet\Ledningssystemet\Models\RiskProjectType,id',
+         'project_type_id' => 'nullable|exists:Ledningssystemet\Ledningssystemet\Models\ProjectType,id',
       ];
    }
 
@@ -190,11 +190,11 @@ class RiskProjectTypeRiskTemplate extends Model
     }   
     
     /**
-     * Get the risk project
+     * Get the project type
      */
-    public function int_risk_project_type() : BelongsTo
+    public function int_project_type() : BelongsTo
     {
-       return $this->belongsTo(RiskProjectType::class, 'risk_project_type_id');
+       return $this->belongsTo(ProjectType::class, 'project_type_id');
     }
    
    /**
@@ -210,7 +210,7 @@ class RiskProjectTypeRiskTemplate extends Model
     */
    public function int_controls() : BelongsToMany
    {
-      return $this->belongsToMany(Control::class, 'control_risk_project_type_risk_template', 'risk_project_type_risk_template_id', 'control_id');
+      return $this->belongsToMany(Control::class, 'control_project_type_risk_template', 'project_type_risk_template_id', 'control_id');
    }
 
 }

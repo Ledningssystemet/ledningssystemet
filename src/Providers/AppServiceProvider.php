@@ -213,15 +213,15 @@ class AppServiceProvider extends ServiceProvider
             case 'Control':
                return $user->hasAnyPermission(['controls.read', 'controls.edit']);
 
-            case 'RiskProject':
-               // User may view risk projects if the are part of one or have the correct access rights
+            case 'Project':
+               // Users may view projects they participate in or have permission to manage.
                if($user->hasAnyPermission(['riskdepartment.edit', 'riskall.edit', 'riskadministrator.edit']))
                   return true;
 
-               if(\Ledningssystemet\Ledningssystemet\Models\RiskProject::where('responsible_user_id', $user->id)->exists())
+               if(\Ledningssystemet\Ledningssystemet\Models\Project::where('responsible_user_id', $user->id)->exists())
                   return true;
 
-               if(\Ledningssystemet\Ledningssystemet\Models\RiskProject::whereHas('int_users', function($q) use ($user) {
+               if(\Ledningssystemet\Ledningssystemet\Models\Project::whereHas('int_users', function($q) use ($user) {
                   $q->where('users.id', $user->id);
                })->exists())
                   return true;
@@ -229,7 +229,7 @@ class AppServiceProvider extends ServiceProvider
                return false;
 
             case 'Risk':
-               return ((0 < intval(request()->input('risk_project_id', '0'))) || $user->hasAnyPermission(['riskdepartment.edit', 'riskall.edit', 'riskadministrator.edit']));
+               return ((0 < intval(request()->input('project_id', '0'))) || $user->hasAnyPermission(['riskdepartment.edit', 'riskall.edit', 'riskadministrator.edit']));
 
             case 'Finding':
                return (\Ledningssystemet\Ledningssystemet\Support\Modules::active('finding')) && $user->hasAnyPermission(['findings.read', 'findings.edit']);
@@ -248,8 +248,8 @@ class AppServiceProvider extends ServiceProvider
             case 'ProbabilityLevel':
             case 'RiskLevel':
             case 'Tag':
-            case 'RiskProjectType':
-            case 'RiskProjectTypeRiskTemplate':
+            case 'ProjectType':
+            case 'ProjectTypeRiskTemplate':
             case 'GhgCategory':
             case 'GhgConversionFactor':
                return $user->hasAnyPermission(['managementtools.edit']);
@@ -418,31 +418,31 @@ class AppServiceProvider extends ServiceProvider
                   return $user->hasAnyPermission(['riskdepartment.edit', 'riskall.edit', 'riskadministrator.edit']);
 
 
-               if (null == $model->risk_project_id) {
+               if (null == $model->project_id) {
                   if ($user->hasAnyPermission(['riskadministrator.edit', 'riskall.edit'])) // If user is admin or have riskall privilege, then user may view any risk
                      return true;
                   if ((null != $model->riskowner_id) && ($model->riskowner_id == $user->id)) // If user is risk owner, then user is allowed to view this risk
                      return true;
                   if ($user->hasAnyPermission(['riskdepartment.edit']) && ($user->int_departments()->where('departments.id', $model->department_id)->exists()))
                      return true;
-               } else // Risk project risk
+               } else // Risk associated with a project
                {
                   if ($user->hasAnyPermission(['riskadministrator.edit'])) // If user is admin, then user may view any risk
                      return true;
-                  if ($model->int_risk_project->responsible_user_id == $user->id) // If user is responsible, then user may view the risk project
+                  if ($model->int_project->responsible_user_id == $user->id) // Project owners may view its risks.
                      return true;
-                  if (false !== array_search($user->id, $model->int_risk_project->int_users()->pluck('users.id')->all()))
+                  if (false !== array_search($user->id, $model->int_project->int_users()->pluck('users.id')->all()))
                      return true;
                }
 
                return false;
 
-            case 'RiskProject':
-               if ($user->hasAnyPermission(['riskadministrator.edit'])) // If user is admin, then user may view any risk project
+            case 'Project':
+               if ($user->hasAnyPermission(['riskadministrator.edit'])) // Risk administrators may view any project.
                   return true;
-               if ($model->responsible_user_id == $user->id) // If user is responsible, then user may view the risk project
+               if ($model->responsible_user_id == $user->id) // Project owners may view the project.
                   return true;
-               if (false !== array_search($user->id, $model->int_users()->pluck('users.id')->all()))  // If user is a participant, then user may view the risk project
+               if (false !== array_search($user->id, $model->int_users()->pluck('users.id')->all()))  // Participants may view the project.
                   return true;
 
                return false;
@@ -465,8 +465,8 @@ class AppServiceProvider extends ServiceProvider
             case 'ProbabilityLevel':
             case 'RiskLevel':
             case 'Tag':
-            case 'RiskProjectType':
-            case 'RiskProjectTypeRiskTemplate':
+            case 'ProjectType':
+            case 'ProjectTypeRiskTemplate':
             case 'GhgCategory':
             case 'GhgConversionFactor':
                return $user->hasAnyPermission(['managementtools.edit']);
@@ -636,7 +636,7 @@ class AppServiceProvider extends ServiceProvider
             case 'Risk':
                return true;
 
-            case 'RiskProject':
+            case 'Project':
                return $user->hasAnyPermission(['riskdepartment.edit', 'riskall.edit', 'riskadministrator.edit']);
 
             case 'Finding':
@@ -655,8 +655,8 @@ class AppServiceProvider extends ServiceProvider
             case 'ProbabilityLevel':
             case 'RiskLevel':
             case 'Tag':
-            case 'RiskProjectType':
-            case 'RiskProjectTypeRiskTemplate':
+            case 'ProjectType':
+            case 'ProjectTypeRiskTemplate':
             case 'FormTemplate':
             case 'GhgCategory':
             case 'GhgConversionFactor':
@@ -824,7 +824,7 @@ class AppServiceProvider extends ServiceProvider
                else if(is_string($model))
                   return false;
 
-               if (null == $model->risk_project_id) {
+               if (null == $model->project_id) {
                   if ($user->hasAnyPermission(['riskadministrator.edit', 'riskall.edit'])) // If user is admin or have riskall privilege, then user may edit any risk
                      return true;
 
@@ -833,29 +833,29 @@ class AppServiceProvider extends ServiceProvider
 
                   if ($user->hasAnyPermission(['riskdepartment.edit']) && ($user->int_departments()->where('departments.id', $model->department_id)->exists()))
                      return true;
-               } else // Risk project risk
+               } else // Risk associated with a project
                {
                   if ($user->hasAnyPermission(['riskadministrator.edit'])) // If user is admin, then user may edit any risk
                      return true;
 
-                  if ($model->int_risk_project->responsible_user_id == $user->id) // If user is responsible for the risk project, then user may edit the risk
+                  if ($model->int_project->responsible_user_id == $user->id) // Project owners may edit associated risks.
                      return true;
 
-                  // If user is part of for the risk project, then user may edit the risk
-                  if (false !== array_search($user->id, $model->int_risk_project->int_users()->pluck('users.id')->all()))
+                  // Project participants may edit associated risks.
+                  if (false !== array_search($user->id, $model->int_project->int_users()->pluck('users.id')->all()))
                      return true;
                }
                return false;
 
-            case 'RiskProject':
+            case 'Project':
                if (is_string($model))
                   return true;
 
 
-               if ($user->hasAnyPermission(['riskadministrator.edit'])) // If user is admin, then user may edit any risk project
+               if ($user->hasAnyPermission(['riskadministrator.edit'])) // Risk administrators may edit any project.
                   return true;
 
-               if ($model->responsible_user_id == $user->id) // If user is responsible, then user may edit the risk project
+               if ($model->responsible_user_id == $user->id) // Project owners may edit the project.
                   return true;
 
                return false;
@@ -876,8 +876,8 @@ class AppServiceProvider extends ServiceProvider
             case 'ProbabilityLevel':
             case 'RiskLevel':
             case 'Tag':
-            case 'RiskProjectType':
-            case 'RiskProjectTypeRiskTemplate':
+            case 'ProjectType':
+            case 'ProjectTypeRiskTemplate':
             case 'FormTemplate':
                return $user->hasAnyPermission(['managementtools.edit']);
 
@@ -1059,7 +1059,7 @@ class AppServiceProvider extends ServiceProvider
             case 'Incident':
             case 'IncidentLog':
             case 'Finding':
-            case 'RiskProject':
+            case 'Project':
             case 'ActivityFlowTemplateItem':
             case 'AvailabilityClass':
             case 'ConfidentialityClass':
@@ -1101,8 +1101,8 @@ class AppServiceProvider extends ServiceProvider
             case 'ActivityFlowTemplate':
             case 'ControlAction':
             case 'Site':
-            case 'RiskProjectType':
-            case 'RiskProjectTypeRiskTemplate':
+            case 'ProjectType':
+            case 'ProjectTypeRiskTemplate':
             case 'Agreement':
             case 'ConfidentialityGround':
             case 'Diary':

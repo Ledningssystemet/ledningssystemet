@@ -510,7 +510,7 @@ class ReportCentralController extends Controller
       ];
       
       // Create data object
-      foreach(\Ledningssystemet\Ledningssystemet\Models\Risk::whereNull('replacedby_id')->whereNull('risk_project_id')->orderBy('id', 'desc')->get() as $obj)
+      foreach(\Ledningssystemet\Ledningssystemet\Models\Risk::whereNull('replacedby_id')->whereNull('project_id')->orderBy('id', 'desc')->get() as $obj)
       {
          $objdata = $obj->toArray();
          
@@ -643,12 +643,12 @@ class ReportCentralController extends Controller
 
 
    /**
-    * Generate risk project
+    * Generate project risk report
     */
-   public static function RiskProject($id)
+   public static function Project($id)
    {
-      $riskproject = \Ledningssystemet\Ledningssystemet\Models\RiskProject::findOrFail($id);
-      if(!auth()->user()->can('view', $riskproject))
+      $project = \Ledningssystemet\Ledningssystemet\Models\Project::findOrFail($id);
+      if(!auth()->user()->can('view', $project))
          abort(403);
 
       $data = [
@@ -659,7 +659,7 @@ class ReportCentralController extends Controller
       ];
 
       // Create data object
-      foreach($riskproject->int_risks()->whereNull('replacedby_id')->orderBy('id', 'desc')->get() as $obj)
+      foreach($project->int_risks()->whereNull('replacedby_id')->orderBy('id', 'desc')->get() as $obj)
       {
          $objdata = $obj->toArray();
 
@@ -698,7 +698,12 @@ class ReportCentralController extends Controller
          $data['risks'][] = $objdata;
       }
 
-      ReportCentralController::GenerateExcel('Risks_'.config('app.locale', 'en'), 'RiskProject', $data);
+      ReportCentralController::GenerateExcel('Risks_'.config('app.locale', 'en'), 'Project', $data);
+   }
+
+   public static function RiskProject($id)
+   {
+      return self::Project($id);
    }
 
 }

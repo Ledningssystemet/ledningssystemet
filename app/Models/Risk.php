@@ -42,8 +42,8 @@ class Risk extends Model
          return [];
       
       $count = ((null == $department) ? 
-            Risk::whereNull('riskowner_id')->whereNull('assessed_at')->whereNull('replacedby_id')->whereNull('risk_project_id')->count() : 
-            Risk::whereNull('riskowner_id')->whereNull('assessed_at')->whereNull('replacedby_id')->where('department_id', $department->id)->whereNull('risk_project_id')->count()
+            Risk::whereNull('riskowner_id')->whereNull('assessed_at')->whereNull('replacedby_id')->whereNull('project_id')->count() :
+            Risk::whereNull('riskowner_id')->whereNull('assessed_at')->whereNull('replacedby_id')->where('department_id', $department->id)->whereNull('project_id')->count()
          );
       if(!$personalOnly && $count)
          $retval[] = ['level' => 'danger', 'count' => $count, 'text' => Risk::getPrettyName($count > 1).' '.__("without an assigned risk owner"), 'url' => ((($user != null) && $user->can('index',  get_called_class())) || (($user == null) && (null != auth()->user()) && (auth()->user()->can('index', get_called_class())))) ? url()->query('/assessment/riskregister') : null];
@@ -51,13 +51,13 @@ class Risk extends Model
       $count = (null == $user) ?
          (
             (null == $department) ?
-               Risk::whereNull('assessed_at')->whereNull('replacedby_id')->whereNull('risk_project_id')->count() :
-               Risk::where('department_id', $department->id)->whereNull('assessed_at')->whereNull('replacedby_id')->whereNull('risk_project_id')->count()
+               Risk::whereNull('assessed_at')->whereNull('replacedby_id')->whereNull('project_id')->count() :
+               Risk::where('department_id', $department->id)->whereNull('assessed_at')->whereNull('replacedby_id')->whereNull('project_id')->count()
          ) :
          (
             (null == $department) ?
-               Risk::whereNull('assessed_at')->where('riskowner_id', $user->id)->whereNull('replacedby_id')->whereNull('risk_project_id')->count() :
-               Risk::whereNull('assessed_at')->whereNull('replacedby_id')->where('department_id', $department->id)->where('riskowner_id', $user->id)->whereNull('risk_project_id')->count());
+               Risk::whereNull('assessed_at')->where('riskowner_id', $user->id)->whereNull('replacedby_id')->whereNull('project_id')->count() :
+               Risk::whereNull('assessed_at')->whereNull('replacedby_id')->where('department_id', $department->id)->where('riskowner_id', $user->id)->whereNull('project_id')->count());
 
       if($count)
          $retval[] = ['level' => $user ? 'danger' : 'warning', 'count' => $count, 'text' => Risk::getPrettyName($count > 1).' '.__("pending assessment"), 'url' => ((($user != null) && $user->can('index',  get_called_class())) || (($user == null) && (null != auth()->user()) && (auth()->user()->can('index', get_called_class())))) ? url()->query('/assessment/riskregister') : null];
@@ -78,10 +78,10 @@ class Risk extends Model
          Validator::make($model->toArray(), $model->getValidationRules())->validate();
          
          // If part of a project, make sure project is not archived
-         if(null != $model->risk_project_id)
+         if(null != $model->project_id)
          {
-            if(null != $model->int_risk_project->archived_at)
-               abort(400, __("You cannot modify any risks for an archived risk project"));
+            if(null != $model->int_project->archived_at)
+               abort(400, __("You cannot modify any risks for an archived project"));
          }
       });
 static::creating(function ($model) {
@@ -97,10 +97,10 @@ static::creating(function ($model) {
                abort(400, __("You cannot delete an assessed risk"));
             
             // If part of a project, make sure project is not archived
-            if(null != $model->risk_project_id)
+            if(null != $model->project_id)
             {
-               if(null != $model->int_risk_project->archived_at)
-                  abort(400, __("You cannot delete a risk for an archived risk project"));
+               if(null != $model->int_project->archived_at)
+                  abort(400, __("You cannot delete a risk for an archived project"));
             }
          }
       });
@@ -117,18 +117,18 @@ static::creating(function ($model) {
             }
          }
 
-         if($model->risk_project_id)
-            ActivityLog::addMessage(__("The risk RISK-") . $model->id . " " . __("was deleted by") . " " . ((null == auth()->user()) ? "SYSTEM" : auth()->user()->name), $model->int_risk_project);
+         if($model->project_id)
+            ActivityLog::addMessage(__("The risk RISK-") . $model->id . " " . __("was deleted by") . " " . ((null == auth()->user()) ? "SYSTEM" : auth()->user()->name), $model->int_project);
       });
 
       static::created(function ($model) {
-         if($model->risk_project_id)
-            ActivityLog::addMessage(__("The risk RISK-") . $model->id . " " . __("was added by") . " " . ((null == auth()->user()) ? "SYSTEM" : auth()->user()->name), $model->int_risk_project);
+         if($model->project_id)
+            ActivityLog::addMessage(__("The risk RISK-") . $model->id . " " . __("was added by") . " " . ((null == auth()->user()) ? "SYSTEM" : auth()->user()->name), $model->int_project);
       });
 
       static::updated(function ($model) {
-         if($model->risk_project_id)
-            ActivityLog::addMessage(__("The risk RISK-") . $model->id . " " . __("was updated by") . " " . ((null == auth()->user()) ? "SYSTEM" : auth()->user()->name), $model->int_risk_project);
+         if($model->project_id)
+            ActivityLog::addMessage(__("The risk RISK-") . $model->id . " " . __("was updated by") . " " . ((null == auth()->user()) ? "SYSTEM" : auth()->user()->name), $model->int_project);
 
       });
    }
@@ -169,10 +169,10 @@ static::creating(function ($model) {
       if(null === $this->riskowner_id)
          return ['icon' => 'report', 'level' => 'danger', 'text' => __("This risk has not been assigned to a riskowner")];
 
-      // If part of a risk project, ensure that the assigned risk owner is part of the project
-      if(null != $this->risk_project_id)
+      // If part of a project, ensure that the assigned risk owner is a project member
+      if(null != $this->project_id)
       {
-         $proj = $this->int_risk_project;
+         $proj = $this->int_project;
          if(null != $proj)
          {
             $isProjectMember = ($this->riskowner_id == $proj->responsible_user_id);
@@ -184,7 +184,7 @@ static::creating(function ($model) {
             }
 
             if(!$isProjectMember)
-               return ['icon' => 'report', 'level' => 'danger', 'text' => __("The assigned risk owner is not part of the risk project and will not be able to see or assess this risk")];
+               return ['icon' => 'report', 'level' => 'danger', 'text' => __("The assigned risk owner is not part of the project and will not be able to see or assess this risk")];
          }
       }
       
@@ -458,7 +458,7 @@ static::creating(function ($model) {
       'scenariodescription_pretty',
       'consequencedescription_pretty',
       'assessmentcomment',
-      'risk_project_id',
+      'project_id',
       'tags',
       'messagecount',
       'risk_level',
@@ -482,7 +482,7 @@ static::creating(function ($model) {
       'context',
       'risk_controls',
       'assessmentcomment',
-      'risk_project_id',
+      'project_id',
    ];
 
 
@@ -510,12 +510,12 @@ static::creating(function ($model) {
     */
    public static function index(User $user)
    {
-      // Check if user is allowed to access risk project before listing any risks
+      // Check if user is allowed to access the project before listing its risks
       if((null != $user) &&
          (!$user->hasAnyPermission(['riskadministrator.edit', ''])) &&
-         (0 < intval(request()->input('risk_project_id', '0'))))
+         (0 < intval(request()->input('project_id', '0'))))
       {
-         $proj = RiskProject::findOrFail(intval(request()->input('risk_project_id')));
+         $proj = Project::findOrFail(intval(request()->input('project_id')));
          if(($proj->responsible_user_id != $user->id) &&
             (false === array_search($user->id, $proj->int_users()->pluck('users.id')->toArray())))
             abort(403);
@@ -595,7 +595,7 @@ static::creating(function ($model) {
             }
             
             // Authorization
-            if((0 >= intval(request()->input('risk_project_id', '0'))) && !$user->hasAnyPermission(['riskadministrator.edit', 'riskall.edit']))
+            if((0 >= intval(request()->input('project_id', '0'))) && !$user->hasAnyPermission(['riskadministrator.edit', 'riskall.edit']))
             {
                $query->where(function (Builder $subquery) use($user) {
                   $subquery->where('riskowner_id', $user->id);
@@ -619,10 +619,10 @@ static::creating(function ($model) {
          
          })
          ->where(function (Builder $query){
-            if(0 < intval(request()->input('risk_project_id', '0')))
-               $query->where('risk_project_id',request()->input('risk_project_id'));
+            if(0 < intval(request()->input('project_id', '0')))
+               $query->where('project_id',request()->input('project_id'));
             else
-               $query->whereNull('risk_project_id');
+               $query->whereNull('project_id');
 
          })
          ->when((0 < intval(request()->input('tag_id', 0))), function (Builder $query) {
@@ -641,8 +641,8 @@ static::creating(function ($model) {
             'tags',
             'int_probability:id,name,ordinal',
             'int_consequence:id,name,ordinal',
-            'int_risk_project:id,responsible_user_id',
-            'int_risk_project.int_users:id',
+            'int_project:id,responsible_user_id',
+            'int_project.int_users:id',
          ])
          ->withCount('messages')
          ->orderBy('name');
@@ -689,7 +689,7 @@ static::creating(function ($model) {
          'riskowner_id' => 'nullable|exists:Ledningssystemet\Ledningssystemet\Models\User,id',
          'probability_id' => 'nullable|exists:Ledningssystemet\Ledningssystemet\Models\ProbabilityLevel,id',
          'consequence_id' => 'nullable|exists:Ledningssystemet\Ledningssystemet\Models\ConsequenceLevel,id',
-         'risk_project_id' => 'nullable|exists:Ledningssystemet\Ledningssystemet\Models\RiskProject,id',
+         'project_id' => 'nullable|exists:Ledningssystemet\Ledningssystemet\Models\Project,id',
       ];
    }
 
@@ -751,11 +751,11 @@ static::creating(function ($model) {
     }
     
     /**
-     * Get the risk project
+     * Get the project
      */
-    public function int_risk_project() : BelongsTo
+    public function int_project() : BelongsTo
     {
-       return $this->belongsTo(RiskProject::class, 'risk_project_id');
+       return $this->belongsTo(Project::class, 'project_id');
     }
    
    /**
@@ -911,17 +911,17 @@ static::creating(function ($model) {
    public function detach()
    {
       // Ensure that the risk is not already detached
-      if(null == $this->risk_project_id)
-         abort(400, __('The risk is not part of a risk project'));
+      if(null == $this->project_id)
+         abort(400, __('The risk is not part of a project'));
       
       // Ensure correct authorization
       if(!request()->user()->hasAnyPermission(['riskadministrator.edit']) &&
-         !request()->user()->can('update', $this->int_risk_project))
+         !request()->user()->can('update', $this->int_project))
          abort(403);
       
       // Add note
-      ActivityLog::addMessage(__("This risk was created in risk project")." ".$this->int_risk_project->name." ".__("but was detached from the project"), $this);
-      $this->risk_project_id = null;
+      ActivityLog::addMessage(__("This risk was created in project")." ".$this->int_project->name." ".__("but was detached from the project"), $this);
+      $this->project_id = null;
       $this->save();
    }   
 
@@ -960,7 +960,7 @@ static::creating(function ($model) {
     */
    public static function autoAssignRiskOwners()
    {
-      foreach(Risk::whereNull('riskowner_id')->whereNull('replacedby_id')->whereNull('risk_project_id')->whereRaw('created_at=updated_at')->get() as $risk)
+      foreach(Risk::whereNull('riskowner_id')->whereNull('replacedby_id')->whereNull('project_id')->whereRaw('created_at=updated_at')->get() as $risk)
       {
          // Fetch related context object
          $contextobj = null;

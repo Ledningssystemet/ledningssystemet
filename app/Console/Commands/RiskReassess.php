@@ -34,8 +34,8 @@ class RiskReassess extends Command
           if(null == $risklevel)
              continue;
           
-          // Skip if part of an archived risk project
-          if((null !== $risk->risk_project_id) && (null !== $risk->int_risk_project->archived_at))
+          // Skip if part of an archived project
+          if((null !== $risk->project_id) && (null !== $risk->int_project->archived_at))
              continue;
 
           if(0 < count($risk->int_control_actions))

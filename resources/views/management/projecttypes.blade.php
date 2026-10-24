@@ -7,7 +7,7 @@
 
 $(function(){
    $('#tableContainer').jtable({
-      title: '{{ __("Risk project types") }}',
+      title: '{{ __("Project types") }}',
       bootstrap: true,
       accordion: true,
       searchfield: true,
@@ -15,10 +15,10 @@ $(function(){
          addNewRecord: '{{ __('Add new type') }}',
       },
       actions: {
-         listAction: '/api/v1/items/RiskProjectType',
-         createAction: '/api/v1/items/RiskProjectType',
-         updateAction: '/api/v1/items/RiskProjectType',
-         deleteAction: '/api/v1/items/RiskProjectType',
+         listAction: '/api/v1/items/ProjectType',
+         createAction: '/api/v1/items/ProjectType',
+         updateAction: '/api/v1/items/ProjectType',
+         deleteAction: '/api/v1/items/ProjectType',
       },
       fields: {
          id: {
@@ -75,13 +75,13 @@ $(function(){
                         bootstrap: true,
                         accordion: false,
                         actions: {
-                           listAction: '/api/v1/items/RiskProjectTypeRiskTemplate?risk_project_type_id='+sourcedata.record.id,
-                           updateAction: '/api/v1/items/RiskProjectTypeRiskTemplate',
-                           createAction: '/api/v1/items/RiskProjectTypeRiskTemplate',
-                           deleteAction: '/api/v1/items/RiskProjectTypeRiskTemplate',
+                           listAction: '/api/v1/items/ProjectTypeRiskTemplate?project_type_id='+sourcedata.record.id,
+                           updateAction: '/api/v1/items/ProjectTypeRiskTemplate',
+                           createAction: '/api/v1/items/ProjectTypeRiskTemplate',
+                           deleteAction: '/api/v1/items/ProjectTypeRiskTemplate',
                         },
                         fields: {
-                           risk_project_type_id: {
+                           project_type_id: {
                               type: 'hidden',
                               create: true,
                               defaultValue: sourcedata.record.id,

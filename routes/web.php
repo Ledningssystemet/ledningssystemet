@@ -71,7 +71,12 @@ Route::group(['namespace' => 'Ledningssystemet\Ledningssystemet\Http\Controllers
       * Dashboard
       */
       Route::get('/dashboard', function() { return view('dashboard.dashboard'); }); // Dashboard
-      
+
+      /**
+       * Projects
+       */
+      Route::get('/projects', function() { return view('projects.projects'); }); // Display projects
+
       /**
       * User
       */
@@ -120,7 +125,6 @@ Route::group(['namespace' => 'Ledningssystemet\Ledningssystemet\Http\Controllers
       /**
       * Assessment routes
       */
-      Route::get('/assessment/riskprojects', function() { return view('assessment.riskprojects'); }); // Display risk projects
       Route::get('/assessment/riskregister', function() { return view('assessment.riskregister'); }); // Display risk register
       Route::get('/assessment/findings', function() { return view('assessment.findings'); }); // Display findings
       Route::get('/assessment/incidents', function() { return view('assessment.incidents'); }); // Display incidents
@@ -163,7 +167,8 @@ Route::group(['namespace' => 'Ledningssystemet\Ledningssystemet\Http\Controllers
       Route::get('/management/assessment', function() { return view('management.assessment'); }); // Display assessment settings
       Route::get('/management/tags', function() { return view('management.tags'); }); // Display tags
       Route::get('/management/suppliercategories', function() { return view('management.suppliercategories'); }); // Display supplier categories
-      Route::get('/management/riskprojecttypes', function() { return view('management.riskprojecttypes'); }); // Display risk project types
+      Route::get('/management/projecttypes', function() { return view('management.projecttypes'); }); // Display project types
+      Route::redirect('/management/riskprojecttypes', '/management/projecttypes', 302);
 
       if(config('ledningssystemet.exchangeproxy_url')) {
          Route::get('/management/formtemplates', function () {
