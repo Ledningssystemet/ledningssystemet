@@ -230,7 +230,7 @@ class ReportCentralController extends Controller
        usort($applicablecontrols, function($a, $b) { return strcasecmp($a['name'], $b['name']); });
 
        $data['controls'] = $applicablecontrols;
-       ReportCentralController::GenerateExcel('SoA_' . config('ledningssystemet.locale', 'en'), 'Statement of Applicability', $data);
+       ReportCentralController::GenerateExcel('SoA_' . config('app.locale', 'en'), 'Statement of Applicability', $data);
     }
     /**
      * Generate information types list
@@ -270,7 +270,7 @@ class ReportCentralController extends Controller
          $data['informationtypes'][] = $objdata;
       }
       
-      ReportCentralController::GenerateExcel('InformationTypes_'.config('ledningssystemet.locale', 'en'), 'Information types', $data);
+      ReportCentralController::GenerateExcel('InformationTypes_'.config('app.locale', 'en'), 'Information types', $data);
     }
 
 
@@ -324,7 +324,7 @@ class ReportCentralController extends Controller
          $data['assets'][] = $objdata;
       }
       
-      ReportCentralController::GenerateExcel('Assets_'.config('ledningssystemet.locale', 'en'), 'Assets', $data);
+      ReportCentralController::GenerateExcel('Assets_'.config('app.locale', 'en'), 'Assets', $data);
     }
 
 
@@ -366,7 +366,7 @@ class ReportCentralController extends Controller
       }
 
       
-      ReportCentralController::GenerateExcel('Suppliers_'.config('ledningssystemet.locale', 'en'), 'Suppliers', $data);
+      ReportCentralController::GenerateExcel('Suppliers_'.config('app.locale', 'en'), 'Suppliers', $data);
     }    
     
    /**
@@ -377,7 +377,7 @@ class ReportCentralController extends Controller
       $obj = \Ledningssystemet\Ledningssystemet\Models\ComplianceEvaluation::findOrFail($id);
       Gate::authorize('view', $obj);
       
-      $phpWord = new \PhpOffice\PhpWord\TemplateProcessor(__DIR__.'/../../../../resources/templates/ComplianceEvaluation_'.config('ledningssystemet.locale', 'en').'.docx');
+      $phpWord = new \PhpOffice\PhpWord\TemplateProcessor(__DIR__.'/../../../../resources/templates/ComplianceEvaluation_'.config('app.locale', 'en').'.docx');
       
       // Replace all attributes
       $attrs = $obj->getOriginal();
@@ -550,7 +550,7 @@ class ReportCentralController extends Controller
       }
 
       
-      ReportCentralController::GenerateExcel('Risks_'.config('ledningssystemet.locale', 'en'), 'Risks', $data);
+      ReportCentralController::GenerateExcel('Risks_'.config('app.locale', 'en'), 'Risks', $data);
     }    
 
 
@@ -592,7 +592,7 @@ class ReportCentralController extends Controller
          $data['controls'][] = $objdata;
       }
       
-      ReportCentralController::GenerateExcel('Controls_'.config('ledningssystemet.locale', 'en'), 'Controls', $data);
+      ReportCentralController::GenerateExcel('Controls_'.config('app.locale', 'en'), 'Controls', $data);
     }
 
    /**
@@ -638,7 +638,7 @@ class ReportCentralController extends Controller
          $data['informationtypes'][] = $objdata;
       }
 
-      ReportCentralController::GenerateExcel('DocumentManagementPlan_'.config('ledningssystemet.locale', 'en'), 'InformationHandlingPlan', $data);
+      ReportCentralController::GenerateExcel('DocumentManagementPlan_'.config('app.locale', 'en'), 'InformationHandlingPlan', $data);
    }
 
 
@@ -698,7 +698,7 @@ class ReportCentralController extends Controller
          $data['risks'][] = $objdata;
       }
 
-      ReportCentralController::GenerateExcel('Risks_'.config('ledningssystemet.locale', 'en'), 'RiskProject', $data);
+      ReportCentralController::GenerateExcel('Risks_'.config('app.locale', 'en'), 'RiskProject', $data);
    }
 
 }

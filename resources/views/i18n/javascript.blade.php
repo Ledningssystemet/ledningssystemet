@@ -1,5 +1,7 @@
 <?php
-   $path = resource_path().'/lang/'.config('ledningssystemet.locale', 'en').'.json';
+   $langfile = '/lang/'.config('app.locale', 'en').'.json';
+   $path = base_path($langfile);
+   echo(' // Path: '.$path."\r\n");
    echo("window.translations = [\r\n");
    if(file_exists($path))
    {

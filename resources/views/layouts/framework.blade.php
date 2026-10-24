@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="{{ config('ledningssystemet.locale', 'en') }}">
+<html lang="{{ config('app.locale', 'en') }}">
    <head>
       <base href="./">
       <meta charset="utf-8">
@@ -17,8 +17,8 @@
       <script src="/vendors/simplebar/js/simplebar.min.js"></script>
       <script src="/vendors/jquery/js/jquery.min.js"></script>
       <script src="/vendors/select2/js/select2.min.js"></script>
-@if(file_exists(public_path().'/vendors/select2/js/i18n/'.config('ledningssystemet.locale', 'en').'.js'))      
-      <script src="/vendors/select2/js/i18n/{{config('ledningssystemet.locale', 'en')}}.js"></script>
+@if(file_exists(public_path().'/vendors/select2/js/i18n/'.config('app.locale', 'en').'.js'))
+      <script src="/vendors/select2/js/i18n/{{config('app.locale', 'en')}}.js"></script>
 @endif         
       
       <script src="/vendors/chart.js/js/chart.min.js"></script>
