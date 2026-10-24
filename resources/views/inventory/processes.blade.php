@@ -24,7 +24,7 @@
                      'isstartprocess',
                   ]
                },
-                  @if(!config('ledningssystemet.disable_gdpr'))
+                  @if(\Ledningssystemet\Ledningssystemet\Support\Modules::active('gdpr'))
                {
                   'name': '{{ __("Data privacy") }}',
                   'fields': [
@@ -185,7 +185,7 @@
                      1: '{{ __("Yes") }}',
                   }
                },
-               @if(!config('ledningssystemet.disable_gdpr'))
+               @if(\Ledningssystemet\Ledningssystemet\Support\Modules::active('gdpr'))
                dataprocessor: {
                   title: '{{ __('Is data processor for customers') }}',
                   list: false,
@@ -384,7 +384,7 @@
                                     edit: true,
                                     type: 'textarea',
                                  },
-                                 @if(!config('ledningssystemet.disable_staff'))
+                                 @if(\Ledningssystemet\Ledningssystemet\Support\Modules::active('staff'))
                                  accountable_role_id: {
                                     title: '{{ __('Accountable role') }}',
                                     width: '20%',
@@ -432,7 +432,7 @@
                                     }
                                  },
                                  @endif
-                                    @if(!config('ledningssystemet.disable_supplier'))
+                                    @if(\Ledningssystemet\Ledningssystemet\Support\Modules::active('supplier'))
                                  process_activity_suppliers: {
                                     title: '{{ __('Outsourcing supplier(s)') }}',
                                     width: '20%',

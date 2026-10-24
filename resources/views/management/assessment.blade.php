@@ -401,7 +401,7 @@ $(function(){
    });
    $('#availabilityContainer').jtable('load');        
 
-@if(!config('ledningssystemet.disable_gdpr'))
+@if(\Ledningssystemet\Ledningssystemet\Support\Modules::active('gdpr'))
          
    $('#dataCategoryContainer').jtable({
       messages: {
@@ -998,7 +998,7 @@ $(function(){
    });
    $('#ghgConversionCategoriesContainer').jtable('load');
 
-   @if(!config('ledningssystemet.disable_archival'))
+   @if(\Ledningssystemet\Ledningssystemet\Support\Modules::active('archival'))
 
     $('#diariesContainer').jtable({
         messages: {
@@ -1399,7 +1399,7 @@ function saveclassificationsettings()
   <li class="nav-item" role="presentation">
     <button class="nav-link" id="infoclassingtab" data-bs-toggle="tab" data-bs-target="#infoclassingtabcontent" type="button" role="tab" aria-controls="infoclassingtab" aria-selected="true">{{ __("Information classification") }}</button>
   </li>
-@if(!config('ledningssystemet.disable_gdpr'))
+@if(\Ledningssystemet\Ledningssystemet\Support\Modules::active('gdpr'))
   <li class="nav-item" role="presentation">
     <button class="nav-link" id="dataprivacytab" data-bs-toggle="tab" data-bs-target="#dataprivacytabcontent" type="button" role="tab" aria-controls="dataprivacytab" aria-selected="true">{{ __("Data privacy") }}</button>
   </li>
@@ -1407,7 +1407,7 @@ function saveclassificationsettings()
   <li class="nav-item" role="presentation">
     <button class="nav-link" id="sustainabilitysettingstab" data-bs-toggle="tab" data-bs-target="#sustainabilitysettingstabcontent" type="button" role="tab" aria-controls="sustainabilitysettingstab" aria-selected="true">{{ __("Sustainability settings") }}</button>
   </li>
-@if(!config('ledningssystemet.disable_archival'))
+@if(\Ledningssystemet\Ledningssystemet\Support\Modules::active('archival'))
   <li class="nav-item" role="presentation">
     <button class="nav-link" id="archivesettingstab" data-bs-toggle="tab" data-bs-target="#archivesettingstabcontent" type="button" role="tab" aria-controls="archivesettingstab" aria-selected="true">{{ __("Archival settings") }}</button>
   </li>
@@ -1443,7 +1443,7 @@ function saveclassificationsettings()
       <h2 style="margin-top: 50px;">{{ __("Availability levels") }}</h2>
       <div id="availabilityContainer"></div>
   </div>
-@if(!config('ledningssystemet.disable_gdpr'))
+@if(\Ledningssystemet\Ledningssystemet\Support\Modules::active('gdpr'))
   <div class="tab-pane fade show" id="dataprivacytabcontent" role="tabpanel" style="margin-top: 20px;" aria-labelledby="dataprivacytab">
       <h2>{{ __("Data categories") }}</h2>
       <div id="dataCategoryContainer"></div>
@@ -1465,7 +1465,7 @@ function saveclassificationsettings()
 
      <div style="margin-top: 50px;" id="ghgConversionCategoriesContainer"></div>
   </div>
-@if(!config('ledningssystemet.disable_archival'))
+@if(\Ledningssystemet\Ledningssystemet\Support\Modules::active('archival'))
   <div class="tab-pane fade show" id="archivesettingstabcontent" role="tabpanel" style="margin-top: 20px;" aria-labelledby="archivesettingstab">
       <h2>{{ __("Confidentiality grounds") }}</h2>
       <div id="confidentialityGroundsContainer"></div>

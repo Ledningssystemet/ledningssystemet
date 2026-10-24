@@ -71,7 +71,7 @@ $(function(){
          </a>
          <ul class="nav-group-items collapse" id="mycontributions-menu" data-bs-parent="#sidebar">
             <div data-ui-slot="sidebar.groups.mycontributions.top"></div>
-         @if(!config('ledningssystemet.disable_staff'))
+         @if(\Ledningssystemet\Ledningssystemet\Support\Modules::active('staff'))
             <li class="nav-item" id="nav-me">
                <a class="nav-link" href="/user/me">
                   <div class="nav-item-status"></div>
@@ -126,7 +126,7 @@ $(function(){
                </a>
             </li>
 @endif            
-@if(request()->user()->can('index', Ledningssystemet\Ledningssystemet\Models\Process::class))
+@if(\Ledningssystemet\Ledningssystemet\Support\Modules::active('processes') && request()->user()->can('index', Ledningssystemet\Ledningssystemet\Models\Process::class))
             <li class="nav-item" id="nav-process">
                <a class="nav-link" href="/inventory/processes">
                   <div class="nav-item-status"></div>
@@ -162,7 +162,7 @@ $(function(){
                </a>
             </li>
 @endif            
-@if(request()->user()->can('index', Ledningssystemet\Ledningssystemet\Models\Supplier::class))
+@if(\Ledningssystemet\Ledningssystemet\Support\Modules::active('supplier') && request()->user()->can('index', Ledningssystemet\Ledningssystemet\Models\Supplier::class))
             <li class="nav-item" id="nav-supplier">
                <a class="nav-link" href="/inventory/suppliers">
                   <div class="nav-item-status"></div>
@@ -207,7 +207,7 @@ $(function(){
                </a>
             </li>
 @endif
-@if(!config('ledningssystemet.disable_archival'))
+@if(\Ledningssystemet\Ledningssystemet\Support\Modules::active('archival'))
         @if(request()->user()->canAny(['docmgmtplan.read']))
             <li class="nav-item" id="nav-docmgmtplan">
                 <a class="nav-link" href="/inventory/docmgmtplan">
@@ -218,7 +218,7 @@ $(function(){
             </li>
         @endif
     @endif
-@if(!config('ledningssystemet.disable_gdpr'))
+@if(\Ledningssystemet\Ledningssystemet\Support\Modules::active('gdpr'))
 @if(request()->user()->canAny(['processingregister.read','processingregister.edit']))
             <li class="nav-item" id="nav-processingregister">
                <a class="nav-link" href="/inventory/dataprocessingregister">
@@ -266,7 +266,7 @@ $(function(){
                </a>
             </li>
 @endif            
-@if(request()->user()->can('index', Ledningssystemet\Ledningssystemet\Models\Finding::class))
+@if(\Ledningssystemet\Ledningssystemet\Support\Modules::active('finding') && request()->user()->can('index', Ledningssystemet\Ledningssystemet\Models\Finding::class))
             <li class="nav-item" id="nav-finding">
                <a class="nav-link" href="/assessment/findings">
                   <div class="nav-item-status"></div>
@@ -321,7 +321,7 @@ $(function(){
                </a>
             </li>
 @endif            
-@if(request()->user()->can('index', Ledningssystemet\Ledningssystemet\Models\ProcessPerformanceMetric::class))
+@if(\Ledningssystemet\Ledningssystemet\Support\Modules::active('processes') && request()->user()->can('index', Ledningssystemet\Ledningssystemet\Models\ProcessPerformanceMetric::class))
             <li class="nav-item" id="nav-processperformancemetric">
                <a class="nav-link" href="/measure/processperformancemetrics">
                   <div class="nav-item-status"></div>
@@ -330,7 +330,7 @@ $(function(){
                </a>
             </li>
 @endif            
-@if(request()->user()->can('index', Ledningssystemet\Ledningssystemet\Models\Objective::class))
+@if(\Ledningssystemet\Ledningssystemet\Support\Modules::active('processes') && request()->user()->can('index', Ledningssystemet\Ledningssystemet\Models\Objective::class))
             <li class="nav-item" id="nav-objective">
                <a class="nav-link" href="/measure/objectives">
                   <div class="nav-item-status"></div>
@@ -339,7 +339,7 @@ $(function(){
                </a>
             </li>
 @endif
-@if(request()->user()->can('index', Ledningssystemet\Ledningssystemet\Models\GhgFactor::class))
+@if(\Ledningssystemet\Ledningssystemet\Support\Modules::active('processes') && request()->user()->can('index', Ledningssystemet\Ledningssystemet\Models\GhgFactor::class))
             <li class="nav-item" id="nav-ghgcalculator">
                <a class="nav-link" href="/measure/ghgcalculator">
                   <div class="nav-item-status"></div>
@@ -359,7 +359,7 @@ $(function(){
          </a>
          <ul class="nav-group-items collapse" id="employee-menu" data-bs-parent="#sidebar">
             <div data-ui-slot="sidebar.groups.employee.top"></div>
-@if(request()->user()->can('create', Ledningssystemet\Ledningssystemet\Models\Employee::class))
+@if(\Ledningssystemet\Ledningssystemet\Support\Modules::active('staff') && request()->user()->can('create', Ledningssystemet\Ledningssystemet\Models\Employee::class))
             <li class="nav-item" id="nav-employee">
                <a class="nav-link" href="/staff/employees">
                   <div class="nav-item-status"></div>
@@ -368,7 +368,7 @@ $(function(){
                </a>
             </li>
 @endif
-@if(request()->user()->can('create', Ledningssystemet\Ledningssystemet\Models\EmployeeRole::class))
+@if(\Ledningssystemet\Ledningssystemet\Support\Modules::active('staff') && request()->user()->can('create', Ledningssystemet\Ledningssystemet\Models\EmployeeRole::class))
             <li class="nav-item" id="nav-employeerole">
                <a class="nav-link" href="/staff/roles">
                   <div class="nav-item-status"></div>
@@ -377,7 +377,7 @@ $(function(){
                </a>
             </li>
 @endif
-@if(request()->user()->can('create', Ledningssystemet\Ledningssystemet\Models\Qualification::class))
+@if(\Ledningssystemet\Ledningssystemet\Support\Modules::active('staff') && request()->user()->can('create', Ledningssystemet\Ledningssystemet\Models\Qualification::class))
             <li class="nav-item" id="nav-qualification">
                <a class="nav-link" href="/staff/qualifications">
                   <div class="nav-item-status"></div>
@@ -386,7 +386,7 @@ $(function(){
                </a>
             </li>
 @endif
-@if(request()->user()->can('create', Ledningssystemet\Ledningssystemet\Models\Competence::class))
+@if(\Ledningssystemet\Ledningssystemet\Support\Modules::active('staff') && request()->user()->can('create', Ledningssystemet\Ledningssystemet\Models\Competence::class))
             <li class="nav-item" id="nav-competence">
                <a class="nav-link" href="/staff/competence">
                   <div class="nav-item-status"></div>
@@ -488,6 +488,15 @@ $(function(){
          </a>
          <ul class="nav-group-items collapse" id="systemsettings-menu" data-bs-parent="#sidebar">
             <div data-ui-slot="sidebar.groups.systemsettings.top"></div>
+@can('manage-system-settings')
+            <li class="nav-item" id="nav-modules">
+               <a class="nav-link" href="{{ route('systemadmin.settings') }}">
+                  <div class="nav-item-status"></div>
+                  <span class="nav-icon material-symbols-rounded">toggle_on</span>
+                  {{ __("General settings") }}
+               </a>
+            </li>
+@endcan
 @if(request()->user()->can('create', Ledningssystemet\Ledningssystemet\Models\User::class))
             <li class="nav-item" id="nav-user">
                <a class="nav-link" href="/systemadmin/users">
@@ -515,7 +524,7 @@ $(function(){
                </a>
             </li>
 @endif            
-@if(request()->user()->can('create', Ledningssystemet\Ledningssystemet\Models\Role::class))
+@if(\Ledningssystemet\Ledningssystemet\Support\Modules::active('staff') && request()->user()->can('create', Ledningssystemet\Ledningssystemet\Models\Role::class))
             <li class="nav-item" id="nav-role">
                <a class="nav-link" href="/systemadmin/roles">
                   <div class="nav-item-status"></div>

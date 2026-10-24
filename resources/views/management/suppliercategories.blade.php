@@ -1,4 +1,4 @@
-@php if(config('ledningssystemet.disable_supplier')) abort(404); @endphp
+@php if(\Ledningssystemet\Ledningssystemet\Support\Modules::inactive('supplier')) abort(404); @endphp
 @php if(!Auth::user()->canAny(['managementtools.edit'])) abort(403); @endphp
 @extends('layouts.master')
 

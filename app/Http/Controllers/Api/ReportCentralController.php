@@ -316,7 +316,7 @@ class ReportCentralController extends Controller
          $objdata['rpo'] = $objdata['rpo'] ? $objdata['rpo'].' '.__("hours") : "";
          $objdata['site'] = (null != $obj->site_id) ? $obj->int_site->name : "";
          
-         if(!config('ledningssystemet.disable_supplier'))
+         if(\Ledningssystemet\Ledningssystemet\Support\Modules::active('supplier'))
             $objdata['supplier'] = $obj->int_supplier ?  $obj->int_supplier->name : "";
 
          

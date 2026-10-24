@@ -16,6 +16,7 @@ use Ledningssystemet\Ledningssystemet\Models\RiskLevel;
 use Ledningssystemet\Ledningssystemet\Models\User;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Route;
+use Ledningssystemet\Ledningssystemet\Http\Middleware\ModuleEnabled;
 
 /*
 |--------------------------------------------------------------------------
@@ -41,7 +42,7 @@ Route::prefix('v1')->group(function () {
         return StatusController::getStatus();
     });
 
-    if (! config('ledningssystemet.disable_gdpr')) {
+    Route::middleware(ModuleEnabled::class.':gdpr')->group(function () {
         /* Data processing register routes */
         Route::get('/processDataProcessingRegister/controller', function () {
             return DataProcessingTableController::getControllerItems();
@@ -52,16 +53,16 @@ Route::prefix('v1')->group(function () {
         Route::get('/processDataProcessingRegister/processorcustomer', function () {
             return DataProcessingTableController::getProcessorItems(true);
         });
-    }
+    });
 
-    if (! config('ledningssystemet.disable_archival')) {
+    Route::middleware(ModuleEnabled::class.':archival')->group(function () {
         /* Data processing register routes */
         Route::get('/documentManagementPlan', function () {
             return DocumentManagementTableController::getItems();
         });
-    }
+    });
 
-    if (! config('ledningssystemet.disable_processes')) {
+    Route::middleware(ModuleEnabled::class.':processes')->group(function () {
         // Download
         Route::get('/LibraryDocument/{document}/download', function (LibraryDocument $document) {
             if ($document->contentlength == 0) {
@@ -72,7 +73,7 @@ Route::prefix('v1')->group(function () {
             header('Content-Length: '.$document->contentlength);
             exit($document->filecontent);
         })->where('document', '\d+')->withoutMiddleware(['jsononly']);
-    }
+    });
 
     /* Report central routes */
     Route::get('/ReportCentral/{reporttype}/{id}', function ($reporttype, $objid) {

@@ -387,7 +387,7 @@
                      return $('<hr />');
                   }
                },
-               @if(!config('ledningssystemet.disable_supplier'))
+               @if(\Ledningssystemet\Ledningssystemet\Support\Modules::active('supplier'))
                supplier_id: {
                   title: '{{ __('Supplier') }}',
                   list: true,

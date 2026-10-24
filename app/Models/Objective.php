@@ -31,7 +31,7 @@ class Objective extends Model
    /* Retrieve status for the entire collection of objects */
    public static function getItemsStatus($department = null, $user = null, $personalOnly = false)
    {
-      if(config('ledningssystemet.disable_processes'))
+      if(\Ledningssystemet\Ledningssystemet\Support\Modules::inactive('processes'))
          return [];
       
       $retval = [];

@@ -1,4 +1,4 @@
-@php if(config('ledningssystemet.disable_archival') || config('ledningssystemet.disable_archival')) abort(404); @endphp
+@php if(\Ledningssystemet\Ledningssystemet\Support\Modules::inactive('archival') || \Ledningssystemet\Ledningssystemet\Support\Modules::inactive('archival')) abort(404); @endphp
 @php if(!request()->user()->canAny(['docmgmtplan.read', 'docmgmtplan.edit'])) abort(403);  @endphp
 @extends('layouts.master')
 

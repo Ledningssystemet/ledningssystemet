@@ -1,4 +1,11 @@
-﻿{
+{
+    "Modules": "Modules",
+    "Features": "Features",
+    "Privacy": "Privacy",
+    "Staff": "Staff",
+    "Enabled modules apply to all users. Disabling a module does not delete its data.": "Enabled modules apply to all users. Disabling a module does not delete its data.",
+    "General settings": "General settings",
+    "System settings saved.": "System settings saved.",
     "If an account exists for that email address, we have sent a password reset link to it.":  "If an account exists for that email address, we have sent a password reset link to it.",
     "due":  "due",
     "more than":  "more than",

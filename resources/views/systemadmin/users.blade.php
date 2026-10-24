@@ -81,7 +81,7 @@ $(function(){
             options: {0: '{{ __("No") }}', 1: '{{ __("Yes") }}'},
             listClass: 'd-inline-block col-6 col-md-4',
          },
-@if(!config('ledningssystemet.disable_staff'))
+@if(\Ledningssystemet\Ledningssystemet\Support\Modules::active('staff'))
          manager_user_id: {
             title: '{{ __('Manager') }}',
             create: true,
@@ -139,7 +139,7 @@ $(function(){
                return $('<hr />'); 
             }
          },
-@if(!config('ledningssystemet.disable_staff'))
+@if(\Ledningssystemet\Ledningssystemet\Support\Modules::active('staff'))
          org_roles: {
             title: '{{ __('Roles') }}',
             create: true,
@@ -173,7 +173,7 @@ $(function(){
 @endforeach
             ]
          },
-@if(!config('ledningssystemet.disable_staff'))
+@if(\Ledningssystemet\Ledningssystemet\Support\Modules::active('staff'))
          hr3: {
             list: true,
             edit: false,
@@ -309,7 +309,7 @@ $(function(){
                            .append($('<select id="risks-user" name="risks" class="form-select form-select-sm" required="true" />'));
                      }
 
-@if(!config('ledningssystemet.disable_supplier'))
+@if(\Ledningssystemet\Ledningssystemet\Support\Modules::active('supplier'))
                      if(data.record.supplierscount)
                      {
                         $('<div />')

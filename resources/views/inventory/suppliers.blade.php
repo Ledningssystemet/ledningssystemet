@@ -79,7 +79,7 @@ $(function(){
                'external_supplier_id',
             ]
          },
-            @if(!config('ledningssystemet.disable_gdpr'))
+            @if(\Ledningssystemet\Ledningssystemet\Support\Modules::active('gdpr'))
          {
             'name': '{{ __("Data privacy") }}',
             'fields': [
@@ -210,7 +210,7 @@ $(function(){
             list: true,
             required: false,
          },
-@if(!config('ledningssystemet.disable_gdpr'))
+@if(\Ledningssystemet\Ledningssystemet\Support\Modules::active('gdpr'))
          dataprocessor: {
             title: '{{ __('Is data processor') }}',
             create: true,

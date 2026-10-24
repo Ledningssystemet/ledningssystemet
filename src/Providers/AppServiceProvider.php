@@ -16,6 +16,10 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Validator;
 use Ledningssystemet\Ledningssystemet\Models\User;
+use Laravel\Pennant\Feature;
+use Laravel\Pennant\PennantServiceProvider;
+use Ledningssystemet\Ledningssystemet\Support\Modules;
+use Ledningssystemet\Ledningssystemet\Support\SystemSettings;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -27,6 +31,12 @@ class AppServiceProvider extends ServiceProvider
    public function register()
    {
       $this->app->register(FortifyServiceProvider::class);
+      $this->app->register(PennantServiceProvider::class);
+      config(['pennant.stores.ledningssystemet' => [
+         'driver' => 'database',
+         'connection' => null,
+         'table' => 'system_settings',
+      ]]);
    }
 
    protected static function shouldSkipGlobalHistory(Model $model): bool
@@ -77,6 +87,19 @@ class AppServiceProvider extends ServiceProvider
     */
    public function boot(): void
    {
+      foreach (array_keys(Modules::LABELS) as $module) {
+         Feature::store('ledningssystemet')->define($module, function () use ($module): never {
+            throw new \LogicException("Missing module setting [{$module}]. Run database migrations.");
+         });
+      }
+
+      Gate::define('manage-system-settings', fn (User $user) => $user->hasPermissionTo('systemadministrator.edit'));
+      foreach (array_keys(SystemSettings::CONTACT_FIELDS) as $name) {
+         Feature::store('ledningssystemet')->define($name, function () use ($name): never {
+            throw new \LogicException("Missing system setting [{$name}]. Run database migrations.");
+         });
+      }
+
       /* Register event listener for cache flush on database modification, except for session update.
          This is a very ugly, yet powerful, way of at least making sure that any cached data is valid
       */
@@ -185,7 +208,7 @@ class AppServiceProvider extends ServiceProvider
                return $user->hasAnyPermission(['processes.read', 'processes.edit']);
 
             case 'Supplier':
-               return (!config('ledningssystemet.disable_supplier')) && $user->hasAnyPermission(['suppliers.read', 'suppliers.edit']);
+               return (\Ledningssystemet\Ledningssystemet\Support\Modules::active('supplier')) && $user->hasAnyPermission(['suppliers.read', 'suppliers.edit']);
 
             case 'Control':
                return $user->hasAnyPermission(['controls.read', 'controls.edit']);
@@ -209,7 +232,7 @@ class AppServiceProvider extends ServiceProvider
                return ((0 < intval(request()->input('risk_project_id', '0'))) || $user->hasAnyPermission(['riskdepartment.edit', 'riskall.edit', 'riskadministrator.edit']));
 
             case 'Finding':
-               return (!config('ledningssystemet.disable_finding')) && $user->hasAnyPermission(['findings.read', 'findings.edit']);
+               return (\Ledningssystemet\Ledningssystemet\Support\Modules::active('finding')) && $user->hasAnyPermission(['findings.read', 'findings.edit']);
 
             case 'Incident':
             case 'IncidentLog':
@@ -233,7 +256,7 @@ class AppServiceProvider extends ServiceProvider
 
             case 'ConfidentialityGround':
             case 'Diary':
-               return (!config('ledningssystemet.disable_archival') && $user->hasAnyPermission(['managementtools.edit']));
+               return (\Ledningssystemet\Ledningssystemet\Support\Modules::active('archival') && $user->hasAnyPermission(['managementtools.edit']));
 
             case 'LibraryDocument':
             case 'DocumentVersion':
@@ -241,17 +264,17 @@ class AppServiceProvider extends ServiceProvider
             return true;
 
             case 'Role':
-               return (!config('ledningssystemet.disable_staff')) && $user->hasAnyPermission(['managementtools.edit']);
+               return (\Ledningssystemet\Ledningssystemet\Support\Modules::active('staff')) && $user->hasAnyPermission(['managementtools.edit']);
 
             case 'SubjectCategory':
             case 'DataCategory':
             case 'LegalBasis':
             case 'RecipientCategory':
-               return (!config('ledningssystemet.disable_gdpr')) && $user->hasAnyPermission(['managementtools.edit']);
+               return (\Ledningssystemet\Ledningssystemet\Support\Modules::active('gdpr')) && $user->hasAnyPermission(['managementtools.edit']);
 
             case 'SupplierCategory':
             case 'SupplierRequirement':
-               return (!config('ledningssystemet.disable_supplier')) && $user->hasAnyPermission(['managementtools.edit', 'suppliers.read', 'suppliers.edit']);
+               return (\Ledningssystemet\Ledningssystemet\Support\Modules::active('supplier')) && $user->hasAnyPermission(['managementtools.edit', 'suppliers.read', 'suppliers.edit']);
 
             case 'SustainabilityAspect':
             case 'SustainabilityMetric':
@@ -274,18 +297,18 @@ class AppServiceProvider extends ServiceProvider
 
 
             case 'Employee':
-               return (!config('ledningssystemet.disable_staff')) && $user->hasAnyPermission(['employeemanagement.edit', 'subordinateemployeemenagement.edit']);
+               return (\Ledningssystemet\Ledningssystemet\Support\Modules::active('staff')) && $user->hasAnyPermission(['employeemanagement.edit', 'subordinateemployeemenagement.edit']);
 
             case 'EmployeeRole':
             case 'Qualification':
             case 'QualificationRole':
             case 'RoleCompetence':
-               return (!config('ledningssystemet.disable_staff')) && $user->hasAnyPermission(['employeemanagement.edit']);
+               return (\Ledningssystemet\Ledningssystemet\Support\Modules::active('staff')) && $user->hasAnyPermission(['employeemanagement.edit']);
 
             case 'QualificationUser':
             case 'UserCompetence':
             {
-               if(config('ledningssystemet.disable_staff')) return false;
+               if(\Ledningssystemet\Ledningssystemet\Support\Modules::inactive('staff')) return false;
 
                if(is_string($model) && $user->hasAnyPermission(['employeemanagement.edit', 'subordinateemployeemenagement.edit']))
                   return true;
@@ -384,7 +407,7 @@ class AppServiceProvider extends ServiceProvider
                return $user->hasAnyPermission(['processes.read', 'processes.edit']);
 
             case 'Supplier':
-               return (!config('ledningssystemet.disable_supplier')) && $user->hasAnyPermission(['suppliers.read', 'suppliers.edit']);
+               return (\Ledningssystemet\Ledningssystemet\Support\Modules::active('supplier')) && $user->hasAnyPermission(['suppliers.read', 'suppliers.edit']);
 
             case 'Control':
                return $user->hasAnyPermission(['controls.read', 'controls.edit']);
@@ -425,7 +448,7 @@ class AppServiceProvider extends ServiceProvider
                return false;
 
             case 'Finding':
-               return (!config('ledningssystemet.disable_finding')) && $user->hasAnyPermission(['findings.read', 'findings.edit']);
+               return (\Ledningssystemet\Ledningssystemet\Support\Modules::active('finding')) && $user->hasAnyPermission(['findings.read', 'findings.edit']);
 
             case 'Incident':
             case 'IncidentLog':
@@ -450,7 +473,7 @@ class AppServiceProvider extends ServiceProvider
 
             case 'ConfidentialityGround':
             case 'Diary':
-               return (!config('ledningssystemet.disable_archival') && $user->hasAnyPermission(['managementtools.edit']));
+               return (\Ledningssystemet\Ledningssystemet\Support\Modules::active('archival') && $user->hasAnyPermission(['managementtools.edit']));
 
             case 'LibraryDocument':
                return true;
@@ -462,17 +485,17 @@ class AppServiceProvider extends ServiceProvider
                   return (($user->id == $model->approver_id) || ($user->id == $model->int_library_document->responsible_user_id) || $user->hasAnyPermission(['managementtools.edit']));
 
             case 'Role':
-               return (!config('ledningssystemet.disable_staff')) && $user->hasAnyPermission(['managementtools.edit']);
+               return (\Ledningssystemet\Ledningssystemet\Support\Modules::active('staff')) && $user->hasAnyPermission(['managementtools.edit']);
 
             case 'SubjectCategory':
             case 'DataCategory':
             case 'LegalBasis':
             case 'RecipientCategory':
-               return (!config('ledningssystemet.disable_gdpr')) && $user->hasAnyPermission(['managementtools.edit']);
+               return (\Ledningssystemet\Ledningssystemet\Support\Modules::active('gdpr')) && $user->hasAnyPermission(['managementtools.edit']);
 
             case 'SupplierCategory':
             case 'SupplierRequirement':
-               return (!config('ledningssystemet.disable_supplier')) && $user->hasAnyPermission(['managementtools.edit', 'suppliers.read', 'suppliers.edit']);
+               return (\Ledningssystemet\Ledningssystemet\Support\Modules::active('supplier')) && $user->hasAnyPermission(['managementtools.edit', 'suppliers.read', 'suppliers.edit']);
 
             case 'SustainabilityAspect':
             case 'SustainabilityMetric':
@@ -495,18 +518,18 @@ class AppServiceProvider extends ServiceProvider
 
 
             case 'Employee':
-               return (!config('ledningssystemet.disable_staff')) && $user->hasAnyPermission(['employeemanagement.edit', 'subordinateemployeemenagement.edit']);
+               return (\Ledningssystemet\Ledningssystemet\Support\Modules::active('staff')) && $user->hasAnyPermission(['employeemanagement.edit', 'subordinateemployeemenagement.edit']);
 
             case 'EmployeeRole':
             case 'Qualification':
             case 'QualificationRole':
             case 'RoleCompetence':
-               return (!config('ledningssystemet.disable_staff')) && $user->hasAnyPermission(['employeemanagement.edit']);
+               return (\Ledningssystemet\Ledningssystemet\Support\Modules::active('staff')) && $user->hasAnyPermission(['employeemanagement.edit']);
 
             case 'QualificationUser':
             case 'UserCompetence':
             {
-               if(config('ledningssystemet.disable_staff')) return false;
+               if(\Ledningssystemet\Ledningssystemet\Support\Modules::inactive('staff')) return false;
 
                if($user->hasAnyPermission(['employeemanagement.edit']))
                   return true;
@@ -605,7 +628,7 @@ class AppServiceProvider extends ServiceProvider
                return $user->hasAnyPermission(['processes.edit']);
 
             case 'Supplier':
-               return (!config('ledningssystemet.disable_supplier')) && $user->hasAnyPermission(['suppliers.edit']);
+               return (\Ledningssystemet\Ledningssystemet\Support\Modules::active('supplier')) && $user->hasAnyPermission(['suppliers.edit']);
 
             case 'Control':
                return $user->hasAnyPermission(['controls.edit']);
@@ -617,7 +640,7 @@ class AppServiceProvider extends ServiceProvider
                return $user->hasAnyPermission(['riskdepartment.edit', 'riskall.edit', 'riskadministrator.edit']);
 
             case 'Finding':
-               return (!config('ledningssystemet.disable_finding'));
+               return (\Ledningssystemet\Ledningssystemet\Support\Modules::active('finding'));
 
             case 'Incident':
             case 'IncidentLog':
@@ -641,23 +664,23 @@ class AppServiceProvider extends ServiceProvider
 
             case 'ConfidentialityGround':
             case 'Diary':
-               return (!config('ledningssystemet.disable_archival') && $user->hasAnyPermission(['managementtools.edit']));
+               return (\Ledningssystemet\Ledningssystemet\Support\Modules::active('archival') && $user->hasAnyPermission(['managementtools.edit']));
 
             case 'LibraryDocument':
                return $user->hasAnyPermission(['managementtools.edit']);
 
             case 'Role':
-               return (!config('ledningssystemet.disable_staff')) && $user->hasAnyPermission(['managementtools.edit']);
+               return (\Ledningssystemet\Ledningssystemet\Support\Modules::active('staff')) && $user->hasAnyPermission(['managementtools.edit']);
 
             case 'SubjectCategory':
             case 'DataCategory':
             case 'LegalBasis':
             case 'RecipientCategory':
-               return (!config('ledningssystemet.disable_gdpr')) && $user->hasAnyPermission(['managementtools.edit']);
+               return (\Ledningssystemet\Ledningssystemet\Support\Modules::active('gdpr')) && $user->hasAnyPermission(['managementtools.edit']);
 
             case 'SupplierCategory':
             case 'SupplierRequirement':
-               return (!config('ledningssystemet.disable_supplier')) && $user->hasAnyPermission(['managementtools.edit']);
+               return (\Ledningssystemet\Ledningssystemet\Support\Modules::active('supplier')) && $user->hasAnyPermission(['managementtools.edit']);
 
             case 'SustainabilityAspect':
             case 'SustainabilityMetric':
@@ -682,19 +705,19 @@ class AppServiceProvider extends ServiceProvider
 
 
             case 'Employee':
-               return (!config('ledningssystemet.disable_staff')) && $user->hasAnyPermission(['employeemanagement.edit', 'subordinateemployeemenagement.edit']);
+               return (\Ledningssystemet\Ledningssystemet\Support\Modules::active('staff')) && $user->hasAnyPermission(['employeemanagement.edit', 'subordinateemployeemenagement.edit']);
 
             case 'EmployeeRole':
             case 'Qualification':
             case 'QualificationRole':
             case 'RoleCompetence':
-               return (!config('ledningssystemet.disable_staff')) && $user->hasAnyPermission(['employeemanagement.edit']);
+               return (\Ledningssystemet\Ledningssystemet\Support\Modules::active('staff')) && $user->hasAnyPermission(['employeemanagement.edit']);
 
             case 'QualificationUser':
             case 'Competence':
             case 'CompetenceLevel':
             {
-               if(config('ledningssystemet.disable_staff')) return false;
+               if(\Ledningssystemet\Ledningssystemet\Support\Modules::inactive('staff')) return false;
 
                if($user->hasAnyPermission(['employeemanagement.edit']))
                   return true;
@@ -788,7 +811,7 @@ class AppServiceProvider extends ServiceProvider
                return $user->hasAnyPermission(['processes.edit']);
 
             case 'Supplier':
-               return (!config('ledningssystemet.disable_supplier')) && $user->hasAnyPermission(['suppliers.edit']);
+               return (\Ledningssystemet\Ledningssystemet\Support\Modules::active('supplier')) && $user->hasAnyPermission(['suppliers.edit']);
 
             case 'Control':
                return $user->hasAnyPermission(['controls.edit']);
@@ -838,7 +861,7 @@ class AppServiceProvider extends ServiceProvider
                return false;
 
             case 'Finding':
-               return (!config('ledningssystemet.disable_finding')) && $user->hasAnyPermission(['findings.edit']);
+               return (\Ledningssystemet\Ledningssystemet\Support\Modules::active('finding')) && $user->hasAnyPermission(['findings.edit']);
 
             case 'Incident':
             case 'IncidentLog':
@@ -864,7 +887,7 @@ class AppServiceProvider extends ServiceProvider
 
             case 'ConfidentialityGround':
             case 'Diary':
-               return (!config('ledningssystemet.disable_archival') && $user->hasAnyPermission(['managementtools.edit']));
+               return (\Ledningssystemet\Ledningssystemet\Support\Modules::active('archival') && $user->hasAnyPermission(['managementtools.edit']));
 
             case 'LibraryDocument':
                if(is_string($model))
@@ -880,17 +903,17 @@ class AppServiceProvider extends ServiceProvider
                   return ($user->hasAnyPermission(['managementtools.edit']) || ($model->int_library_document->responsible_user_id == auth()->user()->id));
 
             case 'Role':
-               return (!config('ledningssystemet.disable_staff')) && $user->hasAnyPermission(['managementtools.edit']);
+               return (\Ledningssystemet\Ledningssystemet\Support\Modules::active('staff')) && $user->hasAnyPermission(['managementtools.edit']);
 
             case 'SubjectCategory':
             case 'DataCategory':
             case 'LegalBasis':
             case 'RecipientCategory':
-               return (!config('ledningssystemet.disable_gdpr')) && $user->hasAnyPermission(['managementtools.edit']);
+               return (\Ledningssystemet\Ledningssystemet\Support\Modules::active('gdpr')) && $user->hasAnyPermission(['managementtools.edit']);
 
             case 'SupplierCategory':
             case 'SupplierRequirement':
-               return (!config('ledningssystemet.disable_supplier')) && $user->hasAnyPermission(['managementtools.edit', 'suppliers.edit']);
+               return (\Ledningssystemet\Ledningssystemet\Support\Modules::active('supplier')) && $user->hasAnyPermission(['managementtools.edit', 'suppliers.edit']);
 
             case 'SustainabilityAspect':
             case 'SustainabilityMetric':
@@ -917,19 +940,19 @@ class AppServiceProvider extends ServiceProvider
                return $user->hasAnyPermission(['objectives.edit']);
 
             case 'Employee':
-               return (!config('ledningssystemet.disable_staff')) && $user->hasAnyPermission(['employeemanagement.edit', 'subordinateemployeemenagement.edit']);
+               return (\Ledningssystemet\Ledningssystemet\Support\Modules::active('staff')) && $user->hasAnyPermission(['employeemanagement.edit', 'subordinateemployeemenagement.edit']);
 
             case 'EmployeeRole':
             case 'Qualification':
             case 'QualificationRole':
             case 'RoleCompetence':
-               return (!config('ledningssystemet.disable_staff')) && $user->hasAnyPermission(['employeemanagement.edit']);
+               return (\Ledningssystemet\Ledningssystemet\Support\Modules::active('staff')) && $user->hasAnyPermission(['employeemanagement.edit']);
 
             case 'QualificationUser':
             case 'CompetenceLevel':
             case 'Competence':
             {
-               if(config('ledningssystemet.disable_staff')) return false;
+               if(\Ledningssystemet\Ledningssystemet\Support\Modules::inactive('staff')) return false;
 
                if($user->hasAnyPermission(['employeemanagement.edit']))
                   return true;

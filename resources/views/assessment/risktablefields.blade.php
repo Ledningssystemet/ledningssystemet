@@ -94,7 +94,7 @@
       echo("{ Value: 'InformationType_".$obj->id."', DisplayText: ".json_encode($obj->name)." },\r\n");
    echo("]},\r\n");
 
-   if(!config('ledningssystemet.disable_supplier'))
+   if(\Ledningssystemet\Ledningssystemet\Support\Modules::active('supplier'))
    {
       // Suppliers
       echo("{ Label: '".__('Supplier')."', Children: [\r\n");

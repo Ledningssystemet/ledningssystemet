@@ -5,20 +5,6 @@ return [
    'application_name' => env('APP_NAME', 'Ledningssystemet.se'),
    'application_url' => env('APP_URL', 'https://ledningssystemet.se'),
 
-   // Contact details and privacy contact information
-   'contact_name' => env('CONTACT_NAME', 'Admin'),
-   'contact_email' => env('CONTACT_EMAIL', 'support@ledningssystemet.se'),
-   'data_privacy_contact_name' => env('COMPANY_DATA_PRIVACY_CONTACT_NAME', ''),
-   'data_privacy_contact_email' => env('COMPANY_DATA_PRIVACY_CONTACT_EMAIL', ''),
-
-   // Feature toggles for demo and optional modules
-   'disable_staff' => env('DISABLE_STAFF', false),
-   'disable_processes' => env('DISABLE_PROCESSES', false),
-   'disable_finding' => env('DISABLE_FINDING', false),
-   'disable_supplier' => env('DISABLE_SUPPLIER', false),
-   'disable_gdpr' => env('DISABLE_GDPR', false),
-   'disable_archival' => env('DISABLE_ARCHIVAL', true),
-
    // Microsoft Exchange / mail integration configuration
    'exchangeproxy_url' => env('EXCHANGEPROXY_URL'),
    'exchangeproxy_token' => env('EXCHANGEPROXY_TOKEN'),

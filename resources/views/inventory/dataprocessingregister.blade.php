@@ -1,4 +1,4 @@
-@php if(config('ledningssystemet.disable_gdpr')) abort(404); @endphp
+@php if(\Ledningssystemet\Ledningssystemet\Support\Modules::inactive('gdpr')) abort(404); @endphp
 @php if(!request()->user()->canAny(['processingregister.read', 'processingregister.edit'])) abort(403);  @endphp
 @extends('layouts.master')
 
@@ -389,7 +389,7 @@ $(function(){
                return '<hr />';
             }
          },
-@if(!config('ledningssystemet.disable_supplier'))
+@if(\Ledningssystemet\Ledningssystemet\Support\Modules::active('supplier'))
          processors: {
             title: '{{__("Data processors")}}',
             listClass: 'd-inline-block col-12 col-md-4',
@@ -641,20 +641,20 @@ $(function(){
 <div class="tab-content" id="tabContents">
   <div class="tab-pane fade show active" id="datacontrollertabcontent" role="tabpanel" aria-labelledby="datacontrollertab">
       <div class="">{{ __("Data controller") }}: <span style="font-weight: 600;">{{ config('ledningssystemet.company_name') }}</span></div>
-      <div class="">{{ __("Data controller contact") }}: <span style="font-weight: 600;">{{ config('ledningssystemet.data_privacy_contact_name').' ('.config('ledningssystemet.data_privacy_contact_email').')' }}</span></div>
+      <div class="">{{ __("Data controller contact") }}: <span style="font-weight: 600;">{{ \Ledningssystemet\Ledningssystemet\Support\SystemSettings::value('data_privacy_contact_name').' ('.\Ledningssystemet\Ledningssystemet\Support\SystemSettings::value('data_privacy_contact_email').')' }}</span></div>
       
       <div id="tableContainerController" class=""></div>
   </div>
   <div class="tab-pane fade show" id="dataprocessortabbcontent" role="tabpanel" aria-labelledby="dataprocessortab">
       <div class="">{{ __("Data processor") }}: <span style="font-weight: 600;">{{ config('ledningssystemet.company_name') }}</span></div>
-      <div class="">{{ __("Data processor contact") }}: <span style="font-weight: 600;">{{ config('ledningssystemet.data_privacy_contact_name').' ('.config('ledningssystemet.data_privacy_contact_email').')' }}</span></div>
+      <div class="">{{ __("Data processor contact") }}: <span style="font-weight: 600;">{{ \Ledningssystemet\Ledningssystemet\Support\SystemSettings::value('data_privacy_contact_name').' ('.\Ledningssystemet\Ledningssystemet\Support\SystemSettings::value('data_privacy_contact_email').')' }}</span></div>
       
       <div id="tableContainerProcessor" class=""></div>
   </div>
   
   <div class="tab-pane fade show" id="dataprocessorcustomertabbcontent" role="tabpanel" aria-labelledby="dataprocessorcustomertab">
       <div class="">{{ __("Data processor") }}: <span style="font-weight: 600;">{{ config('ledningssystemet.company_name') }}</span></div>
-      <div class="">{{ __("Data processor contact") }}: <span style="font-weight: 600;">{{ config('ledningssystemet.data_privacy_contact_name').' ('.config('ledningssystemet.data_privacy_contact_email').')' }}</span></div>
+      <div class="">{{ __("Data processor contact") }}: <span style="font-weight: 600;">{{ \Ledningssystemet\Ledningssystemet\Support\SystemSettings::value('data_privacy_contact_name').' ('.\Ledningssystemet\Ledningssystemet\Support\SystemSettings::value('data_privacy_contact_email').')' }}</span></div>
       
       <div id="tableContainerProcessorCustomer" class=""></div>
   </div>

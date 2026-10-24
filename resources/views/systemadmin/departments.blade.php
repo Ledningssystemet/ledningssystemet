@@ -179,7 +179,7 @@ $(function(){
                if(data.record.departmentriskcount)
                   retval.append($('<div />').text(data.record.departmentriskcount+' {{ __("Risks (including replaced risks)") }}'));
                
-@if(!config('ledningssystemet.disable_finding'))
+@if(\Ledningssystemet\Ledningssystemet\Support\Modules::active('finding'))
                if(data.record.departmentfindingcount)
                   retval.append($('<div />').text(data.record.departmentfindingcount+' {{ __("Findings") }}'));
 @endif               

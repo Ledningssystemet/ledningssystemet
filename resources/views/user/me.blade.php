@@ -257,7 +257,7 @@ $missingQualifications = $user->int_mandatory_qualifications()->whereNull('finis
       </div>
 @endif
 
-@if(!config('ledningssystemet.disable_supplier'))
+@if(\Ledningssystemet\Ledningssystemet\Support\Modules::active('supplier'))
 @if(0 < count($supplier))
       <div class="col col-12 col-md-6 infocontainer">
          <h2>{{ __("Suppliers") }}</h2>

@@ -166,7 +166,7 @@ $(function(){
                      }));
                }  
 
-@if(!config('ledningssystemet.disable_supplier'))
+@if(\Ledningssystemet\Ledningssystemet\Support\Modules::active('supplier'))
                if(data.record.suppliers.length)
                {
                   retval.append($('<div />')

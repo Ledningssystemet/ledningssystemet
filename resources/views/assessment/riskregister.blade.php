@@ -56,7 +56,7 @@ $(function(){
                { value: 'Process', text: '{{ __("Processes") }}' },
                { value: 'Asset', text: '{{ __("Assets") }}' },
                { value: 'InformationType', text: '{{ __("Information types") }}' },
-@if(!config('ledningssystemet.disable_supplier'))
+@if(\Ledningssystemet\Ledningssystemet\Support\Modules::active('supplier'))
                { value: 'Supplier', text: '{{ __("Suppliers") }}' },
 @endif
                { value: 'ProcessActivity', text: '{{ __("Process activities") }}' },

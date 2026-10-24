@@ -200,7 +200,7 @@ class Process extends Model
 
     public function getUndecidedcountAttribute()
     {
-        if (config('ledningssystemet.disable_staff')) {
+        if (\Ledningssystemet\Ledningssystemet\Support\Modules::inactive('staff')) {
             return 0;
         }
 
@@ -417,7 +417,7 @@ class Process extends Model
         $responsibleUserId = intval(request()->input('responsible_user_id', 0));
         $id = intval(request()->input('id', 0));
         $hideChecked = (bool) request()->input('hidechecked', 0);
-        $disableStaff = config('ledningssystemet.disable_staff');
+        $disableStaff = \Ledningssystemet\Ledningssystemet\Support\Modules::inactive('staff');
 
         $hasCustomPropertyFilter = count(array_filter(
             array_keys(request()->all()),

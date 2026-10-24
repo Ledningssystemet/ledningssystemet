@@ -36,7 +36,7 @@
                      'retention',
                   ]
                },
-                  @if(!config('ledningssystemet.disable_gdpr'))
+                  @if(\Ledningssystemet\Ledningssystemet\Support\Modules::active('gdpr'))
                {
                   'name': '{{ __("Data privacy") }}',
                   'fields': [
@@ -48,7 +48,7 @@
                   ]
                },
                   @endif
-                  @if(!config('ledningssystemet.disable_archival'))
+                  @if(\Ledningssystemet\Ledningssystemet\Support\Modules::active('archival'))
                {
                   'name': '{{ __("Archival") }}',
                   'fields': [
@@ -293,7 +293,7 @@
                      return retobj;
                   }
                },
-               @if(!config('ledningssystemet.disable_gdpr'))
+               @if(\Ledningssystemet\Ledningssystemet\Support\Modules::active('gdpr'))
                data_subject_categories: {
                   title: '{{ __('Data subject categories') }}',
                   list: false,
@@ -373,7 +373,7 @@
                      return retobj;
                   }
                },
-               @if(!config('ledningssystemet.disable_archival'))
+               @if(\Ledningssystemet\Ledningssystemet\Support\Modules::active('archival'))
                hr3: {
                   list: true,
                   edit: false,

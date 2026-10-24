@@ -26,7 +26,7 @@ class CompetenceLevel extends Model
    /* Retrieve status for the entire collection of objects */
    public static function getItemsStatus($department = null, $user = null, $personalOnly = false)
    {
-      if(config('ledningssystemet.disable_staff'))
+      if(\Ledningssystemet\Ledningssystemet\Support\Modules::inactive('staff'))
          return [];
       
       $retval = [];

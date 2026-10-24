@@ -19,6 +19,28 @@ See our training videos for more examples: https://support.ledningssystemet.se/k
 
 See [INSTALL.md](INSTALL.md) for installation instructions.
 
+## System settings
+
+System administrators manage Staff, Processes, Findings, Suppliers, GDPR and
+Archival, as well as the data protection contact's name and email address, under
+**System settings > General settings** (`/systemadmin/settings`).
+Settings apply to the entire installation and are persisted by Laravel Pennant
+in `system_settings`, using its dedicated `ledningssystemet` store and null scope.
+Disabling a module does not delete its data.
+
+Run `php artisan migrate --force` during deployment, before serving requests.
+The migration imports the installation's existing `DISABLE_STAFF`,
+`DISABLE_PROCESSES`, `DISABLE_FINDING`, `DISABLE_SUPPLIER`, `DISABLE_GDPR` and
+`DISABLE_ARCHIVAL` values from the environment / `.env`, including when
+configuration is cached. Keep those values available until the migration has
+run. Without explicit values, all modules except Archival start enabled.
+The same migration imports `COMPANY_DATA_PRIVACY_CONTACT_NAME` and
+`COMPANY_DATA_PRIVACY_CONTACT_EMAIL`, defaulting to empty strings if unset.
+After migration, these environment variables and the old `disable_*` and
+`data_privacy_contact_*` configuration keys are no longer used and can be removed.
+The processing register reads its contact details from the database. Changes in the
+administration page take effect without rebuilding configuration or route caches.
+
 ## API documentation
 
 Authenticated API users can retrieve the Swagger 2.0 specification with

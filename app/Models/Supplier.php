@@ -34,7 +34,7 @@ class Supplier extends Model
     /* Retrieve status for the entire collection of objects */
     public static function getItemsStatus($department = null, $user = null, $personalOnly = false)
     {
-        if (config('ledningssystemet.disable_supplier')) {
+        if (\Ledningssystemet\Ledningssystemet\Support\Modules::inactive('supplier')) {
             return [];
         }
 

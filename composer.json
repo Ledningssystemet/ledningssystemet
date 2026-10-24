@@ -12,6 +12,7 @@
         "guzzlehttp/guzzle": "^7.2",
         "laravel/fortify": "^1.28",
         "laravel/framework": "^13.0",
+        "laravel/pennant": "^1.0",
         "laravel/sanctum": "^4.0",
         "laravel/socialite": "^5.30",
         "laravel/tinker": "^3.0",

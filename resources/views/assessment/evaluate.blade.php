@@ -149,7 +149,7 @@ $(function(){
                      .val(data.record.note)
                   )
                );
-@if(!config('ledningssystemet.disable_finding'))
+@if(\Ledningssystemet\Ledningssystemet\Support\Modules::active('finding'))
                
                var findingButton = $('<button />')
                   .addClass('btn btn-sm btn-outline-primary btn-findings')
