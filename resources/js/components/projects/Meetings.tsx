@@ -8,7 +8,7 @@ import { Badge, Btn, Card, Input, Label, Options, SectionTitle, Select } from '.
 type MeetingValues = Pick<Meeting, 'name' | 'date' | 'location' | 'agenda'>;
 type MeetingDraft = {
     values: MeetingValues;
-    agenda_template_id: number | null;
+    project_meeting_agenda_template_id: number | null;
     include_follow_up: boolean;
     follow_up_meeting_id: number | null;
 };
@@ -37,7 +37,7 @@ export function NewMeetingSetup({ project, onPrepared, onCancel }: {
             ...(include && agenda.follow_up_section ? [agenda.follow_up_section] : []),
             ...(templateId ? agenda.sections : [newAgendaItem()]),
         ] },
-        agenda_template_id: Number(templateId) || null,
+        project_meeting_agenda_template_id: Number(templateId) || null,
         include_follow_up: include,
         follow_up_meeting_id: agenda.previous_meeting?.id ?? null,
     });
@@ -54,7 +54,7 @@ export function NewMeetingSetup({ project, onPrepared, onCancel }: {
         </div> : <form onSubmit={async event => {
             event.preventDefault(); setBusy(true); setError(null);
             try {
-                const response = await action('Project', project.id, 'meetingagenda', { date, agenda_template_id: Number(templateId) || null });
+                const response = await action('Project', project.id, 'meetingagenda', { date, project_meeting_agenda_template_id: Number(templateId) || null });
                 const agenda: MeetingAgendaPreview = response.data;
                 if (agenda.previous_meeting) setPreview(agenda);
                 else prepare(agenda, false);
@@ -62,8 +62,8 @@ export function NewMeetingSetup({ project, onPrepared, onCancel }: {
             finally { setBusy(false); }
         }}><fieldset disabled={busy || !!error}>
             <Label text={t('Date')}><Input type="date" required value={date} onChange={event => setDate(event.target.value)} /></Label>
-            <Label text={t('Standard agenda')}><Select value={templateId} onChange={event => setTemplateId(event.target.value)}>
-                <option value="">{t('Without standard agenda')}</option><Options items={templates} empty={false} />
+            <Label text={t('Meeting agenda')}><Select value={templateId} onChange={event => setTemplateId(event.target.value)}>
+                <option value="">{t('Without meeting agenda')}</option><Options items={templates} empty={false} />
             </Select></Label>
             <Btn type="submit">{t('Continue')}</Btn>
         </fieldset></form>}
@@ -276,7 +276,7 @@ export function Meetings({ project, config, onDirty, onActivityChanged, initialL
                 onSave={(values, complete) => run(() => {
                     const payload = { ...values, project_id: project.id, ...(complete ? { completed_at: new Date().toISOString() } : {}) };
                     return selected === 'new' ? create('ProjectMeeting', {
-                        ...payload, agenda_template_id: draft?.agenda_template_id ?? null,
+                        ...payload, project_meeting_agenda_template_id: draft?.project_meeting_agenda_template_id ?? null,
                         include_follow_up: draft?.include_follow_up ?? false, follow_up_meeting_id: draft?.follow_up_meeting_id ?? null,
                     }) : update('ProjectMeeting', selected.id, { ...payload, revision: selected.revision });
                 })}

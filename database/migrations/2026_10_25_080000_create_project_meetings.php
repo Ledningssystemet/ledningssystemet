@@ -9,19 +9,18 @@ return new class extends Migration {
    {
       Schema::create('project_meeting_agenda_templates', function (Blueprint $table): void {
          $table->id();
-         $table->foreignId('project_type_id')->constrained('project_types')->cascadeOnDelete();
          $table->string('name');
          $table->timestamps();
       });
 
-      Schema::create('project_type_meeting_agenda_items', function (Blueprint $table): void {
+      Schema::create('project_meeting_agenda_template_items', function (Blueprint $table): void {
          $table->id();
-         $table->foreignId('agenda_template_id')->constrained('project_meeting_agenda_templates')->cascadeOnDelete()->name('fk_ptmai_ati');
+         $table->foreignId('project_meeting_agenda_template_id')->constrained('project_meeting_agenda_templates')->cascadeOnDelete()->name('fk_ptmai_ati');
          $table->string('name');
          $table->text('description')->nullable();
          $table->unsignedInteger('ordinal')->default(0);
          $table->timestamps();
-         $table->index(['agenda_template_id', 'ordinal'])->name('idx_ptmai_ati');
+         $table->index(['project_meeting_agenda_template_id', 'ordinal'])->name('idx_ptmai_ati');
       });
 
       Schema::create('project_meetings', function (Blueprint $table): void {
@@ -32,7 +31,7 @@ return new class extends Migration {
          $table->string('location')->nullable();
          $table->json('agenda');
          $table->unsignedInteger('revision')->default(0);
-         $table->foreignId('agenda_template_id')->nullable()->constrained('project_meeting_agenda_templates')->nullOnDelete();
+         $table->foreignId('project_meeting_agenda_template_id')->nullable()->constrained('project_meeting_agenda_templates')->nullOnDelete();
          $table->foreignId('previous_meeting_id')->nullable()->constrained('project_meetings')->nullOnDelete();
          $table->timestamp('completed_at')->nullable();
          $table->timestamps();
@@ -56,7 +55,7 @@ return new class extends Migration {
    {
       Schema::dropIfExists('project_meeting_mentions');
       Schema::dropIfExists('project_meetings');
-      Schema::dropIfExists('project_type_meeting_agenda_items');
+      Schema::dropIfExists('project_meeting_agenda_template_items');
       Schema::dropIfExists('project_meeting_agenda_templates');
    }
 };

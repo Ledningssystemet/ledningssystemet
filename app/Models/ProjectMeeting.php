@@ -18,11 +18,11 @@ class ProjectMeeting extends Model
 
     protected ?int $followUpMeetingId = null;
 
-    protected $attributes = ['agenda' => '[]', 'revision' => 0, 'location' => null, 'completed_at' => null, 'agenda_template_id' => null, 'previous_meeting_id' => null];
+    protected $attributes = ['agenda' => '[]', 'revision' => 0, 'location' => null, 'completed_at' => null, 'project_meeting_agenda_template_id' => null, 'previous_meeting_id' => null];
 
-    protected $fillable = ['project_id', 'name', 'date', 'location', 'agenda', 'revision', 'completed_at', 'agenda_template_id', 'include_follow_up', 'follow_up_meeting_id'];
+    protected $fillable = ['project_id', 'name', 'date', 'location', 'agenda', 'revision', 'completed_at', 'project_meeting_agenda_template_id', 'include_follow_up', 'follow_up_meeting_id'];
 
-    protected $visible = ['id', 'project_id', 'name', 'date', 'location', 'agenda', 'revision', 'completed_at', 'access', 'created_at', 'updated_at', 'agenda_template_id', 'previous_meeting_id'];
+    protected $visible = ['id', 'project_id', 'name', 'date', 'location', 'agenda', 'revision', 'completed_at', 'access', 'created_at', 'updated_at', 'project_meeting_agenda_template_id', 'previous_meeting_id'];
 
     protected $casts = ['agenda' => 'array', 'revision' => 'integer'];
 
@@ -43,7 +43,7 @@ class ProjectMeeting extends Model
             'agenda' => 'present|array',
             'revision' => 'required|integer|min:0',
             'completed_at' => 'nullable|date',
-            'agenda_template_id' => 'nullable|integer|exists:project_meeting_agenda_templates,id',
+            'project_meeting_agenda_template_id' => 'nullable|integer|exists:project_meeting_agenda_templates,id',
         ];
     }
 
@@ -55,7 +55,7 @@ class ProjectMeeting extends Model
             abort_if($project->archived_at, 422, __('You cannot modify meetings for an archived project'));
             abort_if($this->exists && $this->isDirty('project_id'), 422, __('The project of a meeting cannot be changed'));
             if ($this->exists) {
-                abort_if($this->isDirty('agenda_template_id') || $this->includeFollowUp !== null || $this->followUpMeetingId !== null, 422, __('The meeting agenda source cannot be changed'));
+                abort_if($this->isDirty('project_meeting_agenda_template_id') || $this->includeFollowUp !== null || $this->followUpMeetingId !== null, 422, __('The meeting agenda source cannot be changed'));
                 if (request()->isMethod('PATCH')) {
                     Validator::make(request()->all(), ['revision' => 'required|integer|min:0'])->validate();
                 }
@@ -68,8 +68,8 @@ class ProjectMeeting extends Model
             $required = $this->exists
                 ? array_values(array_filter($current->agenda, fn (array $section) => in_array($section['source'] ?? 'custom', ['template', 'followup'], true)))
                 : [];
-            if (! $this->exists && $this->agenda_template_id !== null) {
-                $template = ProjectMeetingAgenda::forProject($project, $this->date, (int) $this->agenda_template_id);
+            if (! $this->exists && $this->project_meeting_agenda_template_id !== null) {
+                $template = ProjectMeetingAgenda::forProject($project, $this->date, (int) $this->project_meeting_agenda_template_id);
                 $required = $template['sections'];
                 $previousId = $template['previous_meeting']['id'] ?? null;
                 abort_unless($this->followUpMeetingId === $previousId, 409, __('The previous meeting has changed. Reload the agenda.'));

@@ -108,7 +108,7 @@ test('creation explicitly asks about follow-up before preparing the new meeting 
     const markup = renderToStaticMarkup(tree);
     assert.match(markup, /role="dialog"|Previous construction meeting|Include follow-up|Continue without follow-up/);
     button(tree, 'Include follow-up').props.onClick();
-    assert.equal(draft.agenda_template_id, 9);
+    assert.equal(draft.project_meeting_agenda_template_id, 9);
     assert.equal(draft.follow_up_meeting_id, 3);
     assert.equal(draft.include_follow_up, true);
     assert.deepEqual(JSON.parse(JSON.stringify(draft.values.agenda)), [preview.follow_up_section, ...preview.sections]);
@@ -140,7 +140,7 @@ test('preparing an agenda calls the project preview action, not meeting creation
     await nodes(tree).find(node => node.type === 'form').props.onSubmit({ preventDefault() {} });
     assert.equal(requests.length, 1);
     assert.equal(requests[0].url, '/api/v1/crud/Project/7/meetingagenda');
-    assert.deepEqual(JSON.parse(requests[0].data), { date: '2026-10-25', agenda_template_id: 9 });
+    assert.deepEqual(JSON.parse(requests[0].data), { date: '2026-10-25', project_meeting_agenda_template_id: 9 });
     assert.deepEqual(changes.find(change => change.index === 3).value, preview);
 });
 
@@ -371,7 +371,7 @@ test('new meeting saves include the selected agenda and explicit follow-up decis
         return { data: request.method === 'post' ? { id: 10 } : [], status: 200, statusText: 'OK', headers: {}, config: request };
     };
     const values = { name: 'Construction meeting', date: '2026-10-25', location: null, agenda: [preview.follow_up_section, ...preview.sections] };
-    const draft = { values, agenda_template_id: 9, include_follow_up: true, follow_up_meeting_id: 3 };
+    const draft = { values, project_meeting_agenda_template_id: 9, include_follow_up: true, follow_up_meeting_id: 3 };
     const { Meetings } = await components('Meetings', {
         states: [[], [], 'new', draft, false, false, null, 0],
     });
@@ -380,7 +380,7 @@ test('new meeting saves include the selected agenda and explicit follow-up decis
     assert.equal(await editor.props.onSave(values, false), true);
     const saved = requests.find(request => request.method === 'post');
     assert.equal(saved.url, '/api/v1/crud/ProjectMeeting');
-    assert.deepEqual(JSON.parse(saved.data), { ...values, project_id: 7, agenda_template_id: 9, include_follow_up: true, follow_up_meeting_id: 3 });
+    assert.deepEqual(JSON.parse(saved.data), { ...values, project_id: 7, project_meeting_agenda_template_id: 9, include_follow_up: true, follow_up_meeting_id: 3 });
 });
 
 test('activities created from an unsaved meeting update the shared project state without remounting the draft', async () => {

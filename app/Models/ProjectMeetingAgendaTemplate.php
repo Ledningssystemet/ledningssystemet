@@ -3,15 +3,14 @@
 namespace Ledningssystemet\Ledningssystemet\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\Validator;
 
 class ProjectMeetingAgendaTemplate extends Model
 {
-    protected $fillable = ['project_type_id', 'name'];
+    protected $fillable = ['name'];
 
-    protected $visible = ['id', 'project_type_id', 'name', 'access'];
+    protected $visible = ['id', 'name', 'access'];
 
     protected $appends = ['access'];
 
@@ -22,12 +21,12 @@ class ProjectMeetingAgendaTemplate extends Model
 
     public static function getPrettyName($plural = false)
     {
-        return $plural ? __('Standard agendas') : __('Standard agenda');
+        return $plural ? __('Meeting agendas') : __('Meeting agenda');
     }
 
     public function getValidationRules(): array
     {
-        return ['project_type_id' => 'required|integer|exists:project_types,id', 'name' => 'required|string|max:255'];
+        return ['name' => 'required|string|max:255'];
     }
 
     public function getAccessAttribute(): ?array
@@ -39,16 +38,12 @@ class ProjectMeetingAgendaTemplate extends Model
 
     public static function index(User $user)
     {
-        return self::where('project_type_id', request()->input('project_type_id'))->orderBy('name')->paginate(request()->query('per_page'));
+        return self::orderBy('name')->paginate(request()->query('per_page'));
     }
 
     public function int_items(): HasMany
     {
-        return $this->hasMany(ProjectTypeMeetingAgendaItem::class, 'agenda_template_id')->orderBy('ordinal')->orderBy('id');
+        return $this->hasMany(ProjectMeetingAgendaTemplateItem::class, 'project_meeting_agenda_template_id')->orderBy('ordinal')->orderBy('id');
     }
 
-    public function int_project_type(): BelongsTo
-    {
-        return $this->belongsTo(ProjectType::class, 'project_type_id');
-    }
 }

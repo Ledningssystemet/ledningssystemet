@@ -82,27 +82,28 @@ participants can read them. Archived projects and completed meetings cannot be
 modified, including through the API. Completing a meeting saves and locks it.
 Updates must include the last received `revision`; stale saves return HTTP 409.
 
-Under **Project types > Standard agendas**, administrators with
-`managementtools.edit` can configure multiple named standard agendas per project
-type, each with ordered mandatory points and descriptions. New meetings can use
-one of these agendas or start without a template. Template points are snapshotted
+Under **Coordination > Meeting agendas**, administrators with
+`managementtools.edit` can configure named meeting agendas with ordered
+mandatory points and descriptions. Agendas are available to every project,
+regardless of project type. New meetings can use one of these agendas or start
+without a template. Template points are snapshotted
 when the meeting is saved and cannot be removed, renamed or changed into custom
 points, including via the API. Notes, activity links and point ordering remain
 editable until completion. Later template edits/deletions do not modify existing
 meeting documents.
 
-Before preparing a meeting from a standard agenda, the interface asks whether to
+Before preparing a meeting from a meeting agenda, the interface asks whether to
 include follow-up when a previous meeting exists in the same project using that
 same agenda. The previous meeting is the latest by date (then ID), no later than
 the new meeting date. Accepting adds a mandatory follow-up point containing links
 to its still-open project activities and a link to that meeting. Declining omits
 the point. The server requires an explicit choice and rejects stale previews.
 `Project/{id}/meetingagenda` returns the available agendas and, given `date` and
-`agenda_template_id`, the proposed mandatory points and previous meeting.
-Creating `ProjectMeeting` with `agenda_template_id` submits these points,
+`project_meeting_agenda_template_id`, the proposed mandatory points and previous
+meeting. Creating `ProjectMeeting` with `project_meeting_agenda_template_id` submits these points,
 `include_follow_up` and the preview's `follow_up_meeting_id`. Templates and their
 items are stored in `project_meeting_agenda_templates` and
-`project_type_meeting_agenda_items`.
+`project_meeting_agenda_template_items`.
 
 Type `@` in a section to mention a project participant or the project owner.
 Type `/` to link an existing project activity or create a new one; already linked

@@ -236,7 +236,7 @@ class AppServiceProvider extends ServiceProvider
             case 'ProjectType':
             case 'ProjectTypeRiskTemplate':
             case 'ProjectMeetingAgendaTemplate':
-            case 'ProjectTypeMeetingAgendaItem':
+            case 'ProjectMeetingAgendaTemplateItem':
             case 'GhgCategory':
             case 'GhgConversionFactor':
                return $user->hasAnyPermission(['managementtools.edit']);
@@ -434,7 +434,7 @@ class AppServiceProvider extends ServiceProvider
             case 'ProjectType':
             case 'ProjectTypeRiskTemplate':
             case 'ProjectMeetingAgendaTemplate':
-            case 'ProjectTypeMeetingAgendaItem':
+            case 'ProjectMeetingAgendaTemplateItem':
             case 'GhgCategory':
             case 'GhgConversionFactor':
                return $user->hasAnyPermission(['managementtools.edit']);
@@ -628,7 +628,7 @@ class AppServiceProvider extends ServiceProvider
             case 'ProjectType':
             case 'ProjectTypeRiskTemplate':
             case 'ProjectMeetingAgendaTemplate':
-            case 'ProjectTypeMeetingAgendaItem':
+            case 'ProjectMeetingAgendaTemplateItem':
             case 'FormTemplate':
             case 'GhgCategory':
             case 'GhgConversionFactor':
@@ -828,7 +828,7 @@ class AppServiceProvider extends ServiceProvider
             case 'ProjectType':
             case 'ProjectTypeRiskTemplate':
             case 'ProjectMeetingAgendaTemplate':
-            case 'ProjectTypeMeetingAgendaItem':
+            case 'ProjectMeetingAgendaTemplateItem':
             case 'FormTemplate':
                return $user->hasAnyPermission(['managementtools.edit']);
 
@@ -1062,7 +1062,7 @@ class AppServiceProvider extends ServiceProvider
             case 'ProjectType':
             case 'ProjectTypeRiskTemplate':
             case 'ProjectMeetingAgendaTemplate':
-            case 'ProjectTypeMeetingAgendaItem':
+            case 'ProjectMeetingAgendaTemplateItem':
             case 'Agreement':
             case 'ConfidentialityGround':
             case 'Diary':

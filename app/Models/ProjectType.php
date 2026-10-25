@@ -148,8 +148,4 @@ class ProjectType extends Model
        return $this->hasMany(Project::class, 'project_type_id');
    }
 
-   public function int_meeting_agendas() : HasMany
-   {
-       return $this->hasMany(ProjectMeetingAgendaTemplate::class, 'project_type_id')->orderBy('name');
-   }
 }

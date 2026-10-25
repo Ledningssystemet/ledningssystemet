@@ -30,7 +30,9 @@ class ProjectModelNamesTest extends TestCase
         $this->assertSame('project_types', $projectType->getTable());
         $this->assertSame('project_type_risk_templates', $template->getTable());
         $this->assertSame('project_user', $project->int_users()->getTable());
-        $this->assertSame('control_project_type_risk_template', $template->int_controls()->getTable());
+        $this->assertNotContains('controls', $template->getFillable());
+        $this->assertNotContains('controls', $template->getVisible());
+        $this->assertFalse(method_exists($template, 'int_controls'));
         $this->assertSame('project_id', $risk->int_project()->getForeignKeyName());
         $this->assertSame('project_id', $project->int_risks()->getForeignKeyName());
         $this->assertSame('project_type_id', $project->int_project_type()->getForeignKeyName());

@@ -432,6 +432,15 @@ $(function(){
                </a>
             </li>
 @endif
+@if(request()->user()->can('create', Ledningssystemet\Ledningssystemet\Models\ProjectMeetingAgendaTemplate::class))
+            <li class="nav-item" id="nav-meetingagendatemplate">
+               <a class="nav-link" href="/management/meetingagendatemplates">
+                  <div class="nav-item-status"></div>
+                  <span class="nav-icon material-symbols-rounded">format_list_bulleted</span>
+                  {{ __("Meeting agendas") }}
+               </a>
+            </li>
+@endif
 @if(request()->user()->can('create', Ledningssystemet\Ledningssystemet\Models\Activity::class))
             <li class="nav-item" id="nav-activity">
                <a class="nav-link" href="/management/activities">

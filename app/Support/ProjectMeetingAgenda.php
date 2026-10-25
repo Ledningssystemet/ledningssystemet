@@ -7,26 +7,24 @@ use Illuminate\Validation\ValidationException;
 use Ledningssystemet\Ledningssystemet\Models\Project;
 use Ledningssystemet\Ledningssystemet\Models\ProjectMeeting;
 use Ledningssystemet\Ledningssystemet\Models\ProjectMeetingAgendaTemplate;
-use Ledningssystemet\Ledningssystemet\Models\ProjectTypeMeetingAgendaItem;
+use Ledningssystemet\Ledningssystemet\Models\ProjectMeetingAgendaTemplateItem;
 
 class ProjectMeetingAgenda
 {
     public static function forProject(Project $project, string $date, ?int $templateId = null): array
     {
-        $templates = $project->project_type_id
-            ? ProjectMeetingAgendaTemplate::where('project_type_id', $project->project_type_id)->orderBy('name')->get()
-            : collect();
+        $templates = ProjectMeetingAgendaTemplate::orderBy('name')->get();
         if ($templateId !== null && ! $templates->contains('id', $templateId)) {
-            throw ValidationException::withMessages(['agenda_template_id' => __('Select an agenda belonging to the project type')]);
+            throw ValidationException::withMessages(['project_meeting_agenda_template_id' => __('Select a valid meeting agenda template')]);
         }
         $sections = [];
         if ($templateId !== null) {
-            foreach (ProjectTypeMeetingAgendaItem::where('agenda_template_id', $templateId)->orderBy('ordinal')->orderBy('id')->get() as $item) {
+            foreach (ProjectMeetingAgendaTemplateItem::where('project_meeting_agenda_template_id', $templateId)->orderBy('ordinal')->orderBy('id')->get() as $item) {
                 $sections[] = self::section('template-'.$item->id, $item->name, 'template', $item->description ?? '');
             }
         }
         $previous = $templateId !== null ? ProjectMeeting::where('project_id', $project->id)
-            ->where('agenda_template_id', $templateId)
+            ->where('project_meeting_agenda_template_id', $templateId)
             ->where('date', '<=', $date)->orderByDesc('date')->orderByDesc('id')->first() : null;
         $followUp = null;
         if ($previous) {

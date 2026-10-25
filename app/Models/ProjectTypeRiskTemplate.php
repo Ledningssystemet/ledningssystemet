@@ -10,24 +10,19 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOneThrough;
 use Illuminate\Database\Eloquent\Relations\HasManyThrough;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Database\Eloquent\Relations\MorphOne;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Ledningssystemet\Ledningssystemet\Traits\HasTags;
 use Ledningssystemet\Ledningssystemet\Traits\HasMessages;
 use Ledningssystemet\Ledningssystemet\Traits\HasNotifications;
 use Ledningssystemet\Ledningssystemet\Http\Controllers\UserNotificationController;
-use Ledningssystemet\Ledningssystemet\Models\Concerns\DefersRelationAttributeSync;
 
 class ProjectTypeRiskTemplate extends Model
 {
-   use DefersRelationAttributeSync;
-
    
    public static function getPrettyName($plural = false){ if($plural) { return __("Risk templates for project types"); } else { return __("Risk template for project type"); }}
 
@@ -59,7 +54,6 @@ class ProjectTypeRiskTemplate extends Model
     */
    protected $appends = [
       'access',
-      'controls',
    ];
 
    public function getAccessAttribute($user = null)
@@ -73,20 +67,6 @@ class ProjectTypeRiskTemplate extends Model
       return ['create' => $user->can('create', $this), 'read' => $user->can('view', $this), 'update' => $user->can('update', $this), 'delete' => $user->can('delete', $this)];
    }
 
-   public function getControlsAttribute()
-   {
-      return Cache::rememberForever('ProjectTypeRiskTemplate.getRiskControlsAttribute.'.$this->id, function(){
-         $retval = [];
-         foreach($this->int_controls as $obj)
-            $retval[] = array('id' => $obj->id, 'name' => $obj->name);
-         return $retval;
-      });
-   }
-
-   public function setControlsAttribute($value)
-   {
-      $this->syncRelationAttribute('controls', fn ($model) => $model->int_controls()->sync($value));
-   }
    /**
     * The attributes that shall be visible during serialization.
     */
@@ -102,7 +82,6 @@ class ProjectTypeRiskTemplate extends Model
       'consequence_id',
       'status',
       'project_type_id',
-      'controls',
    ];
 
    
@@ -119,7 +98,6 @@ class ProjectTypeRiskTemplate extends Model
       'probability_id',
       'consequence_id',
       'project_type_id',
-      'controls',
    ];
 
 
@@ -204,13 +182,5 @@ class ProjectTypeRiskTemplate extends Model
     {
       return RiskLevel::getRisklevel($this->int_probability, $this->int_consequence);
     }
-
-   /**
-    * Get the controls associated with the risk
-    */
-   public function int_controls() : BelongsToMany
-   {
-      return $this->belongsToMany(Control::class, 'control_project_type_risk_template', 'project_type_risk_template_id', 'control_id');
-   }
 
 }

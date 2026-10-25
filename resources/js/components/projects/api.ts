@@ -117,7 +117,7 @@ export type Meeting = {
     agenda: AgendaItem[];
     revision: number;
     completed_at: string | null;
-    agenda_template_id: Id | null;
+    project_meeting_agenda_template_id: Id | null;
     previous_meeting_id: Id | null;
     access: Pick<Access, 'read' | 'update' | 'delete'>;
 };

@@ -168,6 +168,7 @@ Route::group(['namespace' => 'Ledningssystemet\Ledningssystemet\Http\Controllers
       Route::get('/management/tags', function() { return view('management.tags'); }); // Display tags
       Route::get('/management/suppliercategories', function() { return view('management.suppliercategories'); }); // Display supplier categories
       Route::get('/management/projecttypes', function() { return view('management.projecttypes'); }); // Display project types
+      Route::get('/management/meetingagendatemplates', function() { return view('management.meetingagendatemplates'); }); // Display meeting agenda templates
       Route::redirect('/management/riskprojecttypes', '/management/projecttypes', 302);
 
       if(config('ledningssystemet.exchangeproxy_url')) {

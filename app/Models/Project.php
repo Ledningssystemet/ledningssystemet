@@ -62,7 +62,6 @@ class Project extends Model
                $risk->riskowner_id = $model->responsible_user_id;
                $risk->save();
 
-               $risk->int_controls()->sync($templateObj->int_controls()->pluck('controls.id')->toArray());
             }
          }
       });
@@ -355,10 +354,10 @@ class Project extends Model
        abort_unless(auth()->user()->can('view', $this), 403);
        $data = Validator::make(request()->all(), [
            'date' => 'required|date_format:Y-m-d',
-           'agenda_template_id' => 'nullable|integer|min:1',
+           'project_meeting_agenda_template_id' => 'nullable|integer|min:1',
        ])->validate();
 
-       return \Ledningssystemet\Ledningssystemet\Support\ProjectMeetingAgenda::forProject($this, $data['date'], isset($data['agenda_template_id']) ? (int) $data['agenda_template_id'] : null);
+       return \Ledningssystemet\Ledningssystemet\Support\ProjectMeetingAgenda::forProject($this, $data['date'], isset($data['project_meeting_agenda_template_id']) ? (int) $data['project_meeting_agenda_template_id'] : null);
    }
 
    public function int_project_type() : BelongsTo

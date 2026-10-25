@@ -14,7 +14,7 @@ use Ledningssystemet\Ledningssystemet\Models\Project;
 use Ledningssystemet\Ledningssystemet\Models\ProjectMeeting;
 use Ledningssystemet\Ledningssystemet\Models\ProjectMeetingAgendaTemplate;
 use Ledningssystemet\Ledningssystemet\Models\ProjectMeetingMention;
-use Ledningssystemet\Ledningssystemet\Models\ProjectTypeMeetingAgendaItem;
+use Ledningssystemet\Ledningssystemet\Models\ProjectMeetingAgendaTemplateItem;
 use Ledningssystemet\Ledningssystemet\Models\User;
 use Ledningssystemet\Ledningssystemet\Support\MeetingDocument;
 use Ledningssystemet\Ledningssystemet\Support\ProjectMeetingAgenda;
@@ -346,11 +346,9 @@ class ProjectMeetingTest extends TestCase
 
     private function template(string $name = 'Construction'): ProjectMeetingAgendaTemplate
     {
-        DB::table('project_types')->insertOrIgnore(['id' => 1, 'name' => 'Construction']);
-        DB::table('projects')->where('id', 1)->update(['project_type_id' => 1]);
-        $template = ProjectMeetingAgendaTemplate::create(['project_type_id' => 1, 'name' => $name]);
-        ProjectTypeMeetingAgendaItem::create(['agenda_template_id' => $template->id, 'name' => 'Safety', 'description' => 'Review incidents', 'ordinal' => 2]);
-        ProjectTypeMeetingAgendaItem::create(['agenda_template_id' => $template->id, 'name' => 'Opening', 'ordinal' => 1]);
+        $template = ProjectMeetingAgendaTemplate::create(['name' => $name]);
+        ProjectMeetingAgendaTemplateItem::create(['project_meeting_agenda_template_id' => $template->id, 'name' => 'Safety', 'description' => 'Review incidents', 'ordinal' => 2]);
+        ProjectMeetingAgendaTemplateItem::create(['project_meeting_agenda_template_id' => $template->id, 'name' => 'Opening', 'ordinal' => 1]);
 
         return $template;
     }
@@ -360,7 +358,7 @@ class ProjectMeetingTest extends TestCase
         $preview = ProjectMeetingAgenda::forProject(Project::findOrFail(1), $date, $template->id);
 
         return ProjectMeeting::create([
-            'project_id' => 1, 'agenda_template_id' => $template->id, 'name' => $template->name, 'date' => $date,
+            'project_id' => 1, 'project_meeting_agenda_template_id' => $template->id, 'name' => $template->name, 'date' => $date,
             'follow_up_meeting_id' => $preview['previous_meeting']['id'] ?? null, 'include_follow_up' => $followUp,
             'agenda' => [...($followUp && $preview['follow_up_section'] ? [$preview['follow_up_section']] : []), ...$preview['sections']],
         ]);
@@ -374,7 +372,7 @@ class ProjectMeetingTest extends TestCase
         $this->assertCount(2, $preview['templates']);
         $this->assertSame(['Opening', 'Safety'], array_column($preview['sections'], 'title'));
         $meeting = $this->fromTemplate($template);
-        $this->assertSame($template->id, $meeting->agenda_template_id);
+        $this->assertSame($template->id, $meeting->project_meeting_agenda_template_id);
         $this->assertSame('template', $meeting->agenda[0]['source']);
         $this->assertNull(ProjectMeetingAgenda::forProject(Project::findOrFail(1), '2026-10-26', $other->id)['previous_meeting']);
         $required = $meeting->agenda;
@@ -386,10 +384,10 @@ class ProjectMeetingTest extends TestCase
         ] as $agenda) {
             $this->assertValidation(fn () => $meeting->fresh()->update(['agenda' => $agenda]));
         }
-        ProjectTypeMeetingAgendaItem::where('agenda_template_id', $template->id)->update(['name' => 'Changed template']);
+        ProjectMeetingAgendaTemplateItem::where('project_meeting_agenda_template_id', $template->id)->update(['name' => 'Changed template']);
         $meeting->update(['agenda' => array_reverse($required)]);
         $this->assertSame(['Safety', 'Opening'], array_column($meeting->fresh()->agenda, 'title'));
-        $this->assertHttp(422, fn () => $meeting->update(['agenda_template_id' => $other->id]));
+        $this->assertHttp(422, fn () => $meeting->update(['project_meeting_agenda_template_id' => $other->id]));
     }
 
     public function test_meeting_follow_up_uses_same_agenda_and_only_open_activities_with_explicit_confirmation(): void
@@ -402,13 +400,13 @@ class ProjectMeetingTest extends TestCase
         $first->update(['agenda' => $agenda]);
         $this->fromTemplate($this->template('Different agenda'), '2026-10-26');
         $project = Project::findOrFail(1);
-        $this->request('POST', ['date' => '2026-10-27', 'agenda_template_id' => $template->id]);
+        $this->request('POST', ['date' => '2026-10-27', 'project_meeting_agenda_template_id' => $template->id]);
         $preview = (new TableController)->customAction('Project', 1, 'meetingagenda')->getData(true);
         $this->assertSame($first->id, $preview['previous_meeting']['id']);
         $this->assertSame([1], $preview['follow_up_section']['activity_ids']);
         $this->assertSame($first->id, $preview['follow_up_section']['previous_meeting_id']);
         $payload = [
-            'project_id' => 1, 'agenda_template_id' => $template->id, 'name' => 'Next', 'date' => '2026-10-27',
+            'project_id' => 1, 'project_meeting_agenda_template_id' => $template->id, 'name' => 'Next', 'date' => '2026-10-27',
             'agenda' => $preview['sections'], 'follow_up_meeting_id' => $first->id,
         ];
         $this->assertHttp(422, fn () => ProjectMeeting::create($payload));
@@ -424,26 +422,21 @@ class ProjectMeetingTest extends TestCase
         $this->assertNull(ProjectMeetingAgenda::forProject($project, '2026-10-24', $template->id)['previous_meeting']);
     }
 
-    public function test_meeting_template_preview_and_creation_reject_wrong_project_type_and_stale_previous_meeting(): void
+    public function test_meeting_templates_are_available_to_all_projects_and_stale_previews_are_rejected(): void
     {
         $template = $this->template();
         $preview = ProjectMeetingAgenda::forProject(Project::findOrFail(1), '2026-10-26', $template->id);
         $this->fromTemplate($template);
         $this->assertHttp(409, fn () => ProjectMeeting::create([
-            'project_id' => 1, 'agenda_template_id' => $template->id, 'name' => 'Stale preview',
+            'project_id' => 1, 'project_meeting_agenda_template_id' => $template->id, 'name' => 'Stale preview',
             'date' => '2026-10-26', 'agenda' => $preview['sections'], 'include_follow_up' => false,
         ]));
-        DB::table('project_types')->insert(['id' => 2, 'name' => 'Other']);
-        $wrong = ProjectMeetingAgendaTemplate::create(['project_type_id' => 2, 'name' => 'Wrong project type']);
-        $this->assertValidation(fn () => ProjectMeetingAgenda::forProject(Project::findOrFail(1), '2026-10-26', $wrong->id));
-        $this->assertValidation(fn () => ProjectMeeting::create([
-            'project_id' => 1, 'agenda_template_id' => $wrong->id, 'name' => 'Wrong', 'date' => '2026-10-26',
-        ]));
+        $this->assertContains($template->id, array_column(ProjectMeetingAgenda::forProject(Project::findOrFail(2), '2026-10-26')['templates'], 'id'));
         $this->asUser(3);
         $this->request('POST', ['date' => '2026-10-26']);
         $this->assertHttp(403, fn () => (new TableController)->customAction('Project', 1, 'meetingagenda'));
         $this->assertFalse(Gate::allows('create', ProjectMeetingAgendaTemplate::class));
-        $this->assertFalse(Gate::allows('create', ProjectTypeMeetingAgendaItem::class));
+        $this->assertFalse(Gate::allows('create', ProjectMeetingAgendaTemplateItem::class));
     }
 
     public function test_meeting_template_deletion_preserves_existing_required_points_and_schema_rolls_back(): void
@@ -451,42 +444,57 @@ class ProjectMeetingTest extends TestCase
         $template = $this->template();
         $meeting = $this->fromTemplate($template);
         $template->delete();
-        $this->assertNull($meeting->fresh()->agenda_template_id);
+        $this->assertNull($meeting->fresh()->project_meeting_agenda_template_id);
         $this->assertCount(2, $meeting->fresh()->agenda);
         $this->assertValidation(fn () => $meeting->fresh()->update(['agenda' => []]));
-        $this->assertSame(0, ProjectTypeMeetingAgendaItem::count());
-        $migration = require base_path('database/migrations/2026_10_25_083000_create_project_meeting_agenda_templates.php');
+        $this->assertSame(0, ProjectMeetingAgendaTemplateItem::count());
+        $migration = require base_path('database/migrations/2026_10_25_080000_create_project_meetings.php');
         $migration->down();
         $this->assertFalse(Schema::hasTable('project_meeting_agenda_templates'));
-        $this->assertFalse(Schema::hasColumn('project_meetings', 'agenda_template_id'));
+        $this->assertFalse(Schema::hasColumn('project_meetings', 'project_meeting_agenda_template_id'));
         $migration->up();
         $this->assertTrue(Schema::hasTable('project_meeting_agenda_templates'));
     }
 
     public function test_meeting_agenda_configuration_uses_existing_admin_permissions_and_filtered_legacy_api(): void
     {
-        DB::table('project_types')->insert([['id' => 1, 'name' => 'Construction'], ['id' => 2, 'name' => 'Other']]);
         $this->administrator = true;
         $controller = new LegacyTableController;
-        $this->request('POST', ['project_type_id' => 1, 'name' => 'Construction meeting']);
+        $this->request('POST', ['name' => 'Construction meeting']);
         $template = $controller->create('ProjectMeetingAgendaTemplate')->getData(true);
-        $this->request('POST', ['agenda_template_id' => $template['id'], 'name' => 'Safety', 'ordinal' => '2']);
-        $item = $controller->create('ProjectTypeMeetingAgendaItem')->getData(true);
+        $this->request('POST', ['project_meeting_agenda_template_id' => $template['id'], 'name' => 'Safety', 'ordinal' => '2']);
+        $item = $controller->create('ProjectMeetingAgendaTemplateItem')->getData(true);
         $this->assertSame(2, $item['ordinal']);
-        $this->request('POST', ['agenda_template_id' => $template['id'], 'name' => 'Opening', 'ordinal' => 1]);
-        $controller->create('ProjectTypeMeetingAgendaItem');
-        $this->request('GET', ['agenda_template_id' => $template['id']]);
-        $rows = $controller->index('ProjectTypeMeetingAgendaItem')->getData(true);
+        $this->request('POST', ['project_meeting_agenda_template_id' => $template['id'], 'name' => 'Opening', 'ordinal' => 1]);
+        $controller->create('ProjectMeetingAgendaTemplateItem');
+        $this->request('GET', ['project_meeting_agenda_template_id' => $template['id']]);
+        $rows = $controller->index('ProjectMeetingAgendaTemplateItem')->getData(true);
         $this->assertSame(['Opening', 'Safety'], array_column($rows['data'], 'name'));
-        ProjectMeetingAgendaTemplate::create(['project_type_id' => 2, 'name' => 'Other type meeting']);
+        $second = ProjectMeetingAgendaTemplate::create(['name' => 'Another agenda']);
         $this->request('GET', ['project_type_id' => 1]);
         $rows = $controller->index('ProjectMeetingAgendaTemplate')->getData(true);
-        $this->assertSame([$template['id']], array_column($rows['data'], 'id'));
-        $this->assertValidation(fn () => ProjectTypeMeetingAgendaItem::findOrFail($item['id'])->update(['name' => '']));
-        $this->assertValidation(fn () => ProjectTypeMeetingAgendaItem::findOrFail($item['id'])->update(['ordinal' => -1]));
+        $this->assertSame([$template['id'], $second->id], array_column($rows['data'], 'id'));
+        $this->assertValidation(fn () => ProjectMeetingAgendaTemplateItem::findOrFail($item['id'])->update(['name' => '']));
+        $this->assertValidation(fn () => ProjectMeetingAgendaTemplateItem::findOrFail($item['id'])->update(['ordinal' => -1]));
         $this->administrator = false;
         $this->request('POST');
         $this->assertHttp(403, fn () => $controller->delete('ProjectMeetingAgendaTemplate', $template['id']));
+    }
+
+    public function test_meeting_agenda_items_are_added_at_the_end_and_can_be_reordered_after_another_item(): void
+    {
+        $this->administrator = true;
+        $template = ProjectMeetingAgendaTemplate::create(['name' => 'Planning']);
+        $opening = ProjectMeetingAgendaTemplateItem::create(['project_meeting_agenda_template_id' => $template->id, 'name' => 'Opening']);
+        $discussion = ProjectMeetingAgendaTemplateItem::create(['project_meeting_agenda_template_id' => $template->id, 'name' => 'Discussion']);
+        $closing = ProjectMeetingAgendaTemplateItem::create(['project_meeting_agenda_template_id' => $template->id, 'name' => 'Closing']);
+        $this->assertSame([2, 4, 6], [$opening->ordinal, $discussion->ordinal, $closing->ordinal]);
+
+        $this->request('POST', ['after' => $opening->id]);
+        $closing->reorder();
+
+        $ordered = ProjectMeetingAgendaTemplateItem::where('project_meeting_agenda_template_id', $template->id)->orderBy('ordinal')->pluck('name', 'ordinal')->all();
+        $this->assertSame([0 => 'Opening', 2 => 'Closing', 4 => 'Discussion'], $ordered);
     }
 
     public function test_meeting_writable_participants_can_create_and_update_template_meetings(): void
