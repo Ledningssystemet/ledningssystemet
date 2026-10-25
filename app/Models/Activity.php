@@ -69,6 +69,34 @@ class Activity extends Model
    public static function boot()
    {
       parent::boot();
+
+      static::saving(function ($model) {
+         $user = auth()->user();
+         $originalProjectId = $model->getOriginal('project_id');
+         if (!$model->project_id) {
+            if ($user && $originalProjectId) {
+               $originalProject = Project::find($originalProjectId);
+               if ($originalProject && !$user->can('update', $originalProject))
+                  abort(403);
+            }
+            return;
+         }
+
+         $project = $model->int_project;
+         if (!$project)
+            abort(404);
+
+         if ($user && !$user->can('view', $project))
+            abort(403);
+         if ($project->archived_at)
+            abort(400, __("You cannot modify activities for an archived project"));
+
+         if ($user && $originalProjectId && (int) $originalProjectId !== (int) $model->project_id) {
+            $originalProject = Project::find($originalProjectId);
+            if ($originalProject && !$user->can('update', $originalProject))
+               abort(403);
+         }
+      });
       
       static::saved(function ($model) {
          // Check if pending activities need to start when this activity is finished
@@ -100,6 +128,9 @@ class Activity extends Model
       static::deleting(function ($model) {
          if($model->activity_flow_id)
             abort(400, __("You may not delete an activity that is part of an activity flow"));
+
+         if ($model->project_id && $model->int_project?->archived_at)
+            abort(400, __("You cannot delete activities for an archived project"));
       });
    }
    
@@ -135,6 +166,9 @@ class Activity extends Model
       if(!$this->responsible_user_id)
          return ['icon' => 'warning', 'level' => 'danger', 'text' => __("A responsible user has not been assigned")];
       
+      if(!$this->due)
+         return ['icon' => 'pending_actions', 'level' => 'info', 'text' => ''];
+
       if((strtotime($this->due) < time()) && (null != request()->user()) && ($this->responsible_user_id == request()->user()->id))
          return ['icon' => 'warning', 'level' => 'danger', 'text' => __("Activitiy is overdue")];
          
@@ -176,6 +210,8 @@ class Activity extends Model
       'created_at',
       'updated_at',
       'responsible_user_id',
+      'project_id',
+      'estimated_cost',
       'messagecount',
       'intervaltypetext',
       'activity_flow_id',
@@ -194,8 +230,10 @@ class Activity extends Model
       'name',
       'description',
       'responsible_user_id',
+      'project_id',
+      'estimated_cost',
       'due',
-      'finished_at',
+      'completed_at',
       'intervalnum',
       'intervaltype'
    ];
@@ -254,7 +292,9 @@ class Activity extends Model
       return [
          'name' => ['required'],
          'responsible_user_id' => 'nullable|exists:users,id',
-         'due' => 'required',
+         'project_id' => 'nullable|exists:projects,id',
+         'estimated_cost' => 'sometimes|nullable|numeric|min:0',
+         'due' => 'nullable|date',
          'intervalnum' => 'sometimes|numeric|min:0|max:999',
       ];
    }
@@ -263,6 +303,11 @@ class Activity extends Model
    {
       return $this->belongsTo(User::class, 'responsible_user_id');
    }   
+
+   public function int_project() : BelongsTo
+   {
+      return $this->belongsTo(Project::class, 'project_id');
+   }
     
    public function int_activity_flow() : BelongsTo
    {

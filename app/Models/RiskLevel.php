@@ -48,6 +48,7 @@ class RiskLevel extends Model
     */
    protected $appends = [
       'access',
+      'risk_mappings',
    ];
 
    public function getAccessAttribute($user = null)
@@ -72,6 +73,7 @@ class RiskLevel extends Model
       'description',
       'ordinal',
       'color',
+      'risk_mappings',
       'created_at',
       'updated_at',
       'reassessment_days_withoutplans',
@@ -153,6 +155,17 @@ class RiskLevel extends Model
          return RiskLevel::findOrFail($mappings[0]->risk_level_id);
       });
    }
-}
 
+   public function getRiskMappingsAttribute(): array
+   {
+      return DB::table('risk_level_mappings')
+         ->where('risk_level_id', $this->id)
+         ->get(['probability_level_id', 'consequence_level_id'])
+         ->map(fn ($mapping) => [
+            'probability_level_id' => $mapping->probability_level_id,
+            'consequence_level_id' => $mapping->consequence_level_id,
+         ])
+         ->all();
+   }
+}
 

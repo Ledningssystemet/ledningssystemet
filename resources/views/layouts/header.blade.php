@@ -8,6 +8,7 @@
       </a>
       <ul class="header-nav header-nav-userinfo-container me-4">
          <div data-ui-slot="header.before-report"></div>
+         <project-mentions></project-mentions>
          <button class="btn btn-sm btn-outline-light link-white user-report-observation" onClick='userReportObservation(@php echo(json_encode(DB::table('departments')->orderBy('name')->select(['id','name'])->get())); @endphp, @php echo(\Ledningssystemet\Ledningssystemet\Support\Modules::inactive('finding') ? 'false' : 'true'); @endphp )'>
             <span class="material-symbols-rounded">report</span>
             <span class="button-text">

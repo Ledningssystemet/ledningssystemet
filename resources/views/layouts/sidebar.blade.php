@@ -63,7 +63,7 @@ $(function(){
          </a>
       </li>
 @endif
-      @if(request()->user()->can('index', Ledningssystemet\Ledningssystemet\Models\Project::class))
+      @if(request()->user()->can('viewAny', Ledningssystemet\Ledningssystemet\Models\Project::class))
          <li class="nav-item" id="nav-project">
             <a class="nav-link" href="/projects">
                <div class="nav-item-status"></div>

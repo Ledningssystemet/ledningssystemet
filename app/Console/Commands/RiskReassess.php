@@ -3,6 +3,8 @@
 namespace Ledningssystemet\Ledningssystemet\Console\Commands;
 
 use Illuminate\Console\Command;
+use Ledningssystemet\Ledningssystemet\Models\ProjectRisk;
+use Ledningssystemet\Ledningssystemet\Models\Risk;
 
 class RiskReassess extends Command
 {
@@ -27,45 +29,37 @@ class RiskReassess extends Command
      */
     public function handle()
     {
-       // Output
-       foreach(\Ledningssystemet\Ledningssystemet\Models\Risk::whereNotNull('assessed_at')->whereNull('replacedby_id')->get() as $risk)
-       {
-          $risklevel = $risk->int_risklevel();
-          if(null == $risklevel)
-             continue;
-          
-          // Skip if part of an archived project
-          if((null !== $risk->project_id) && (null !== $risk->int_project->archived_at))
-             continue;
-
-          if(0 < count($risk->int_control_actions))
-          {
-             // Have planned actions and this is to be reassessed
-             if(0 < $risklevel->reassessment_days_withplans)
-             {
-                $duetime = strtotime('+'.$risklevel->reassessment_days_withplans.' DAYS', strtotime($risk->assessed_at));
-                if($duetime < time())
-                {
-                   $risk->replace(__("more than")." ".$risklevel->reassessment_days_withplans." ".__("days have passed since last assessment"));
-                   $this->info("Risk ".$risk->name." was opened for reassessment due to having plans and it was due time for reassessment");
-                }
-             }
-          }
-          else
-          {
-             // No planned actions
-             if(0 < $risklevel->reassessment_days_withoutplans)
-             {
-                $duetime = strtotime('+'.$risklevel->reassessment_days_withoutplans.' DAYS', strtotime($risk->assessed_at));
-                if($duetime < time())
-                {
-                   $risk->replace(__("more than")." ".$risklevel->reassessment_days_withoutplans." ".__("days have passed since last assessment"));
-                   $this->info("Risk ".$risk->name." was opened for reassessment due to not having plans but it was due time for reassessment");
-                }
-             }
-             
-          }
+       foreach (Risk::whereNotNull('assessed_at')->whereNull('replacedby_id')->get() as $risk) {
+          $this->reassessRisk($risk, $risk->int_control_actions()->exists());
        }
+
+       foreach (ProjectRisk::whereNotNull('assessed_at')
+          ->whereHas('int_project', fn ($query) => $query->whereNull('archived_at'))
+          ->get() as $risk) {
+          $this->reassessRisk(
+             $risk,
+             $risk->int_activities()->exists(),
+          );
+       }
+
        return Command::SUCCESS;
+    }
+
+    private function reassessRisk(Risk|ProjectRisk $risk, bool $hasPlans): void
+    {
+       $riskLevel = $risk->int_risklevel();
+       if (!$riskLevel) {
+          return;
+       }
+
+       $days = $hasPlans
+          ? $riskLevel->reassessment_days_withplans
+          : $riskLevel->reassessment_days_withoutplans;
+       if ($days <= 0 || strtotime("+{$days} DAYS", strtotime($risk->assessed_at)) >= time()) {
+          return;
+       }
+
+       $risk->replace(__('more than') . ' ' . $days . ' ' . __('days have passed since last assessment'));
+       $this->info("Risk {$risk->name} was opened for reassessment due to its reassessment interval");
     }
 }

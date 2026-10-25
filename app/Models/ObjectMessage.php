@@ -54,6 +54,10 @@ class ObjectMessage extends Model
          
          if(request()->user()->cannot('view', $obj))
             abort(403);
+
+         $project = $obj instanceof Project ? $obj : (($obj instanceof ProjectRisk || $obj instanceof ProjectActivity) ? $obj->int_project : null);
+         if ($project && !$project->canWrite(request()->user()))
+            abort(403);
          
          Validator::make($model->toArray(), $model->getValidationRules())->validate();
       });

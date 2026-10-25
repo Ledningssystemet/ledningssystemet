@@ -45,26 +45,25 @@ function FactorConfigRow({
         : null;
 
     return (
-        <div className="border rounded-3 p-3 mb-3" style={{ background: '#fff' }}>
+        <div className="ghg-factor-row">
             <div className="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-2">
                 <div>
-                    <div style={{ fontWeight: 700, fontSize: '0.95rem' }}>{factor.name}</div>
-                    <div className="text-muted" style={{ fontSize: '0.78rem' }}>
+                    <div className="ghg-item-title">{factor.name}</div>
+                    <div className="ghg-detail">
                         {category?.name ?? '—'} · {conversionFactor?.name ?? '—' } · {factor.is_activity_based ? t('Activity based') : t('Spend based')}
                     </div>
                     <div
-                        className="rounded-2 px-3 py-2 mt-2"
-                        style={{ background: '#e8f2ec', border: '1px solid #c9dfd2' }}
+                        className="ghg-contribution"
                     >
-                        <div style={{ fontSize: '0.72rem', fontWeight: 700, letterSpacing: '0.05em', color: '#2a7a4f' }}>
+                        <div className="ghg-detail">
                             {t('CO₂e contribution')}
                         </div>
-                        <div style={{ fontSize: '1.35rem', fontWeight: 800, lineHeight: 1.1, color: '#1e4d3a' }}>
+                        <div className="ghg-contribution-value">
                             {fmtEmission(emissionCo2e)}
                         </div>
                     </div>
                 </div>
-                <div className="d-inline-flex gap-2">
+                <div className="d-inline-flex flex-wrap gap-2">
                     {isManual && (
                        <button
                          type="button"
@@ -91,7 +90,7 @@ function FactorConfigRow({
                 </div>
             </div>
 
-            <div className="row g-2" style={{ fontSize: '0.82rem' }}>
+            <div className="row g-2">
                 <div className="col-12 col-md-4">
                     <div className="text-muted">{t('Description')}</div>
                     <div style={{ whiteSpace: 'pre-wrap' }}>{factor.description ? factor.description : '—'}</div>
@@ -173,11 +172,11 @@ function AddFactorForm({ scope, factors, conversionFactors, categories, processM
     };
 
     return (
-        <div className="p-3 border rounded-3 mt-2" style={{ background: '#f8faf9' }}>
-            {err && <div className="alert alert-danger py-2 mb-2" style={{ fontSize: '0.83rem' }}>{err}</div>}
+        <div className="ghg-form-panel mt-2">
+            {err && <div className="alert alert-danger py-2 mb-2">{err}</div>}
             {!hasAnySelectableOptions ? (
                 <>
-                    <p className="mb-2 text-muted" style={{ fontSize: '0.85rem' }}>
+                    <p className="mb-2 text-muted">
                         {t('No conversion factors are configured for this scope. Configure GHG categories and conversion factors in the settings.')}
                     </p>
                     <button type="button" className="btn btn-sm btn-outline-secondary" onClick={onCancel}>{t('Cancel')}</button>
@@ -186,7 +185,7 @@ function AddFactorForm({ scope, factors, conversionFactors, categories, processM
                 <form onSubmit={handleSubmit}>
                     <div className="row g-2 align-items-start">
                         <div className="col-12 col-md-3">
-                            <label className="form-label" style={{ fontSize: '0.78rem', fontWeight: 600 }}>{t('Category')}</label>
+                            <label className="form-label">{t('Category')}</label>
                             <select className="form-select form-select-sm" value={categoryId} onChange={handleCategoryChange} required>
                                 <option value="">{t('Select category…')}</option>
                                 {scopeCategories.map(category => (
@@ -195,9 +194,9 @@ function AddFactorForm({ scope, factors, conversionFactors, categories, processM
                             </select>
                         </div>
                         <div className="col-12 col-md-3">
-                            <label className="form-label" style={{ fontSize: '0.78rem', fontWeight: 600 }}>{t('Conversion factor')}</label>
+                            <label className="form-label">{t('Conversion factor')}</label>
                             {factorOptions.length === 0 && categoryId ? (
-                                <p className="mb-0 text-muted" style={{ fontSize: '0.8rem', paddingTop: '0.3rem' }}>
+                                <p className="mb-0 pt-1 text-muted">
                                     {t('No conversion factors configured for this category.')}
                                 </p>
                             ) : (
@@ -218,7 +217,7 @@ function AddFactorForm({ scope, factors, conversionFactors, categories, processM
                             )}
                         </div>
                         <div className="col-12 col-md-3">
-                            <label className="form-label" style={{ fontSize: '0.78rem', fontWeight: 600 }}>{t('Factor name')}</label>
+                            <label className="form-label">{t('Factor name')}</label>
                             <input
                                 type="text"
                                 className="form-control form-control-sm"
@@ -230,7 +229,7 @@ function AddFactorForm({ scope, factors, conversionFactors, categories, processM
                             />
                         </div>
                         <div className="col-12 col-md-3">
-                            <label className="form-label" style={{ fontSize: '0.78rem', fontWeight: 600 }}>{t('Data source')}</label>
+                            <label className="form-label">{t('Data source')}</label>
                             <select
                                 className="form-select form-select-sm"
                                 value={dataSourceKey}
@@ -244,7 +243,7 @@ function AddFactorForm({ scope, factors, conversionFactors, categories, processM
                             </select>
                         </div>
                         <div className="col-12 col-md-6">
-                            <label className="form-label" style={{ fontSize: '0.78rem', fontWeight: 600 }}>{t('Description')}</label>
+                            <label className="form-label">{t('Description')}</label>
                             <textarea
                                 className="form-control form-control-sm"
                                 value={factorDescription}
@@ -254,7 +253,7 @@ function AddFactorForm({ scope, factors, conversionFactors, categories, processM
                             />
                         </div>
                         <div className="col-12 col-md-3">
-                            <label className="form-label" style={{ fontSize: '0.78rem', fontWeight: 600 }}>{t('Postprocessing function')}</label>
+                            <label className="form-label">{t('Postprocessing function')}</label>
                             <select
                                 className="form-select form-select-sm"
                                 value={postprocessingFunction}
@@ -268,8 +267,7 @@ function AddFactorForm({ scope, factors, conversionFactors, categories, processM
                         <div className="col-12 d-flex flex-wrap justify-content-end gap-2 mt-2">
                             <button
                                 type="submit"
-                                className="btn btn-sm"
-                                style={{ background: '#1e4d3a', color: '#fff' }}
+                                className="btn btn-sm btn-primary"
                                 disabled={saving || !selectedFactorOption}
                             >
                                 {saving ? '…' : t('Add')}
@@ -322,12 +320,12 @@ function EditFactorForm({ factor, conversionFactors, processMetrics, onSave, onC
     };
 
     return (
-        <div className="p-3 border rounded-3 mt-3" style={{ background: '#f8faf9' }}>
-            {err && <div className="alert alert-danger py-2 mb-2" style={{ fontSize: '0.83rem' }}>{err}</div>}
+        <div className="ghg-form-panel mt-3">
+            {err && <div className="alert alert-danger py-2 mb-2">{err}</div>}
             <form onSubmit={handleSubmit}>
                 <div className="row g-2 align-items-start">
                     <div className="col-12 col-md-3">
-                        <label className="form-label" style={{ fontSize: '0.78rem', fontWeight: 600 }}>{t('Conversion factor')}</label>
+                        <label className="form-label">{t('Conversion factor')}</label>
                         <input
                             type="text"
                             className="form-control form-control-sm"
@@ -336,7 +334,7 @@ function EditFactorForm({ factor, conversionFactors, processMetrics, onSave, onC
                         />
                     </div>
                     <div className="col-12 col-md-3">
-                        <label className="form-label" style={{ fontSize: '0.78rem', fontWeight: 600 }}>{t('Type')}</label>
+                        <label className="form-label">{t('Type')}</label>
                         <input
                             type="text"
                             className="form-control form-control-sm"
@@ -345,7 +343,7 @@ function EditFactorForm({ factor, conversionFactors, processMetrics, onSave, onC
                         />
                     </div>
                     <div className="col-12 col-md-3">
-                        <label className="form-label" style={{ fontSize: '0.78rem', fontWeight: 600 }}>{t('Factor name')}</label>
+                        <label className="form-label">{t('Factor name')}</label>
                         <input
                             type="text"
                             className="form-control form-control-sm"
@@ -355,7 +353,7 @@ function EditFactorForm({ factor, conversionFactors, processMetrics, onSave, onC
                         />
                     </div>
                     <div className="col-12 col-md-3">
-                        <label className="form-label" style={{ fontSize: '0.78rem', fontWeight: 600 }}>{t('Data source')}</label>
+                        <label className="form-label">{t('Data source')}</label>
                         <select
                             className="form-select form-select-sm"
                             value={dataSourceKey}
@@ -369,7 +367,7 @@ function EditFactorForm({ factor, conversionFactors, processMetrics, onSave, onC
                         </select>
                     </div>
                     <div className="col-12 col-md-6">
-                        <label className="form-label" style={{ fontSize: '0.78rem', fontWeight: 600 }}>{t('Description')}</label>
+                        <label className="form-label">{t('Description')}</label>
                         <textarea
                             className="form-control form-control-sm"
                             value={factorDescription}
@@ -378,7 +376,7 @@ function EditFactorForm({ factor, conversionFactors, processMetrics, onSave, onC
                         />
                     </div>
                     <div className="col-12 col-md-3">
-                        <label className="form-label" style={{ fontSize: '0.78rem', fontWeight: 600 }}>{t('Postprocessing function')}</label>
+                        <label className="form-label">{t('Postprocessing function')}</label>
                         <select
                             className="form-select form-select-sm"
                             value={postprocessingFunction}
@@ -392,8 +390,7 @@ function EditFactorForm({ factor, conversionFactors, processMetrics, onSave, onC
                     <div className="col-12 d-flex flex-wrap justify-content-end gap-2 mt-2">
                         <button
                             type="submit"
-                            className="btn btn-sm"
-                            style={{ background: '#1e4d3a', color: '#fff' }}
+                            className="btn btn-sm btn-primary"
                             disabled={saving || factorName.trim() === ''}
                         >
                             {saving ? '…' : t('Save factor')}
@@ -507,24 +504,24 @@ function ManualReportForm({ factor, reports, conversionFactors, onAdd, onUpdate,
     };
 
     return (
-        <div className="p-3 border rounded-3 mt-3" style={{ background: '#f8faf9' }}>
+        <div className="ghg-form-panel mt-3">
             <div className="d-flex justify-content-between align-items-center mb-2">
-                <h6 className="mb-0" style={{ fontWeight: 700 }}>{t('Manual reports')}</h6>
+                <h6 className="ghg-section-title">{t('Manual reports')}</h6>
                 <button type="button" className="btn btn-sm btn-outline-secondary" onClick={onCancel}>
                     {t('Close')}
                 </button>
             </div>
-            {err && <div className="alert alert-danger py-2 mb-2" style={{ fontSize: '0.83rem' }}>{err}</div>}
+            {err && <div className="alert alert-danger py-2 mb-2">{err}</div>}
 
             {manualReports.length === 0 ? (
-                <div className="text-muted mb-3" style={{ fontSize: '0.83rem' }}>
+                <div className="text-muted mb-3">
                     {t('No manual reports yet. Add the first report below.')}
                 </div>
             ) : (
                 <div className="mb-3 d-flex flex-column gap-2">
                     {manualReports.map(report => (
-                        <div key={report.id} className="border rounded-3 p-2" style={{ background: '#fff' }}>
-                            <div className="row g-2 align-items-end" style={{ fontSize: '0.83rem' }}>
+                        <div key={report.id} className="ghg-report-row">
+                            <div className="row g-2 align-items-end">
                                 <div className="col-12 col-md-3">
                                     <div className="text-muted">{t('Amount')}</div>
                                     <div style={{ fontWeight: 600 }}>
@@ -562,7 +559,7 @@ function ManualReportForm({ factor, reports, conversionFactors, onAdd, onUpdate,
                             {editingReportId === report.id && (
                                 <form className="row g-2 align-items-end mt-2 pt-2 border-top" onSubmit={handleEditSubmit}>
                                     <div className="col-12 col-md-4">
-                                        <label className="form-label" style={{ fontSize: '0.78rem', fontWeight: 600 }}>
+                                        <label className="form-label">
                                             {t('Amount')}{unit ? ` (${unit})` : ''}
                                         </label>
                                         <input
@@ -576,7 +573,7 @@ function ManualReportForm({ factor, reports, conversionFactors, onAdd, onUpdate,
                                         />
                                     </div>
                                     <div className="col-12 col-md-4">
-                                        <label className="form-label" style={{ fontSize: '0.78rem', fontWeight: 600 }}>{t('Date')}</label>
+                                        <label className="form-label">{t('Date')}</label>
                                         <input
                                             type="date"
                                             className="form-control form-control-sm"
@@ -586,7 +583,7 @@ function ManualReportForm({ factor, reports, conversionFactors, onAdd, onUpdate,
                                         />
                                     </div>
                                     <div className="col-12 col-md-4">
-                                        <label className="form-label" style={{ fontSize: '0.78rem', fontWeight: 600 }}>{t('Comment')}</label>
+                                        <label className="form-label">{t('Comment')}</label>
                                         <input
                                             type="text"
                                             className="form-control form-control-sm"
@@ -597,8 +594,7 @@ function ManualReportForm({ factor, reports, conversionFactors, onAdd, onUpdate,
                                     <div className="col-12 d-flex justify-content-end gap-2">
                                         <button
                                             type="submit"
-                                            className="btn btn-sm"
-                                            style={{ background: '#1e4d3a', color: '#fff' }}
+                                            className="btn btn-sm btn-primary"
                                             disabled={savingEditId === report.id}
                                         >
                                             {savingEditId === report.id ? '…' : t('Save report')}
@@ -621,7 +617,7 @@ function ManualReportForm({ factor, reports, conversionFactors, onAdd, onUpdate,
             <form onSubmit={handleAddSubmit}>
                 <div className="row g-2 align-items-end">
                     <div className="col-12 col-md-4">
-                        <label className="form-label" style={{ fontSize: '0.78rem', fontWeight: 600 }}>
+                        <label className="form-label">
                             {t('Amount')}{unit ? ` (${unit})` : ''}
                         </label>
                         <input
@@ -636,7 +632,7 @@ function ManualReportForm({ factor, reports, conversionFactors, onAdd, onUpdate,
                         />
                     </div>
                     <div className="col-12 col-md-4">
-                        <label className="form-label" style={{ fontSize: '0.78rem', fontWeight: 600 }}>{t('Date')}</label>
+                        <label className="form-label">{t('Date')}</label>
                         <input
                             type="date"
                             className="form-control form-control-sm"
@@ -646,7 +642,7 @@ function ManualReportForm({ factor, reports, conversionFactors, onAdd, onUpdate,
                         />
                     </div>
                     <div className="col-12 col-md-4">
-                        <label className="form-label" style={{ fontSize: '0.78rem', fontWeight: 600 }}>{t('Comment')}</label>
+                        <label className="form-label">{t('Comment')}</label>
                         <input
                             type="text"
                             className="form-control form-control-sm"
@@ -657,8 +653,7 @@ function ManualReportForm({ factor, reports, conversionFactors, onAdd, onUpdate,
                     <div className="col-12 d-flex justify-content-end gap-2 mt-2">
                         <button
                             type="submit"
-                            className="btn btn-sm"
-                            style={{ background: '#1e4d3a', color: '#fff' }}
+                            className="btn btn-sm btn-primary"
                             disabled={adding}
                         >
                             {adding ? '…' : t('Add report')}
@@ -733,17 +728,16 @@ export function ScopeSection({
     };
 
     return (
-        <div className="card border-0 shadow-sm rounded-3 mb-4 p-4">
-            <h5 className="mb-1" style={{ fontWeight: 700 }}>
-                <span className="material-symbols-rounded me-2 align-middle" style={{ fontSize: '1.1rem', color: '#1e4d3a', verticalAlign: 'middle' }}>info</span>
+        <div className="ghg-card">
+            <h5 className="ghg-section-title mb-1">
+                <span className="material-symbols-rounded ghg-icon me-2" aria-hidden="true">info</span>
                 {t(meta.key)}
             </h5>
-            <p className="mb-3" style={{ fontSize: '0.85rem', color: '#2a7a4f' }}>{t(meta.desc)}</p>
+            <p className="text-muted mb-3">{t(meta.desc)}</p>
 
             {scopeFactors.length === 0 ? (
                 <div
-                    className="d-flex align-items-center justify-content-center rounded-3 mb-3"
-                    style={{ background: '#f8faf9', border: '1px solid #e2ebe6', minHeight: 64, color: '#5a7a6a', fontSize: '0.87rem' }}
+                    className="ghg-empty-state mb-3"
                 >
                     {t('No factors configured yet. Add the first factor below.')}
                 </div>
@@ -800,11 +794,10 @@ export function ScopeSection({
             ) : (
                 <button
                     type="button"
-                    className="btn btn-sm btn-outline-secondary d-inline-flex align-items-center gap-1 mt-2"
-                    style={{ width: 'fit-content', fontSize: '0.85rem' }}
+                    className="btn btn-sm btn-primary d-inline-flex align-items-center gap-1 mt-2"
                     onClick={() => setShowAddFactorForm(true)}
                 >
-                    <span className="material-symbols-rounded" style={{ fontSize: '1rem' }}>add</span>
+                    <span className="material-symbols-rounded ghg-icon text-white" aria-hidden="true">add</span>
                     {t('Add factor')}
                 </button>
             )}

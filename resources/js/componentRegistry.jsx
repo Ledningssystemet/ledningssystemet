@@ -3,12 +3,16 @@ import ReactDOM from 'react-dom/client';
 import { GhgCalculator } from '@components/ghgcalculator/index.jsx';
 import { FormBuilder, FormViewer } from '@components/formbuilder/index.jsx';
 import { AuthApp } from '@components/auth/AuthApp.jsx';
+import { Projects } from '@components/projects/index.tsx';
+import { ProjectMentions } from '@components/projects/ProjectMentions.tsx';
 
 const registry = {
     'ghg-calculator': GhgCalculator,
     'form-builder': FormBuilder,
     'form-viewer': FormViewer,
     'auth-app': AuthApp,
+    'projects-module': Projects,
+    'project-mentions': ProjectMentions,
 };
 
 /**

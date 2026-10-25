@@ -30,37 +30,6 @@ class Project extends Model
 
    public static function getPrettyName($plural = false){ if($plural) { return __("Projects"); } else { return __("Project"); }}
 
-   /* Retrieve status for the entire collection of objects */
-   public static function getItemsStatus($department = null, $user = null, $personalOnly = false)
-   {
-      $retval = [];
-
-      if(null != $department)
-         return [];
-     
-     // Don't report if user cannot perform any changes anyway
-      if((null != $user) && $user->cannot('update', Project::class))
-         return [];
-      
-      $count = Project::whereNull('responsible_user_id')->count();
-      if(!$personalOnly && ($count > 0))
-         $retval[] = ['level' => 'danger', 'count' => $count, 'text' => Project::getPrettyName($count > 1).' '.__("without assignment"), 'url' => ((($user != null) && $user->can('index',  get_called_class())) || (($user == null) && (null != auth()->user()) && (auth()->user()->can('index', get_called_class())))) ? url()->query('/assessment/projects') : null];
-      
-      if($user)
-      {
-         $count = Project::where('responsible_user_id', $user->id)->whereNull('archived_at')->count();
-         if($count > 0)
-            $retval[] = ['level' => 'info', 'count' => $count, 'text' => Project::getPrettyName($count > 1).' '.__("ongoing"), 'url' => ((($user != null) && $user->can('index',  get_called_class())) || (($user == null) && (null != auth()->user()) && (auth()->user()->can('index', get_called_class())))) ? url()->query('/assessment/projects') : null];
-      }
-
-      // Get number of ongoing projects that have risks that have not been approved
-      $projectsPendingAssessment = $user ? Risk::leftJoin('projects', 'projects.id', '=', 'risks.project_id')->whereNotNull('risks.project_id')->where('projects.responsible_user_id', $user->id)->whereNull('risks.assessed_at')->pluck('risks.project_id')->unique()->count() : Risk::whereNotNull('project_id')->whereNull('assessed_at')->pluck('risks.project_id')->unique()->count();
-      if($projectsPendingAssessment)
-         $retval[] = ['level' => $user ? 'danger' : 'warning', 'count' => $projectsPendingAssessment, 'text' => Project::getPrettyName($projectsPendingAssessment > 1).' '.__("with pending risk assessments"), 'url' => ((($user != null) && $user->can('index',  get_called_class())) || (($user == null) && (null != auth()->user()) && (auth()->user()->can('index', get_called_class())))) ? url()->query('/assessment/projects') : null];
-
-      return $retval;
-   }
-
    /**
     * Bootstrap any application services.
     *
@@ -71,7 +40,8 @@ class Project extends Model
       parent::boot();
       
       static::creating(function ($model) {
-         $model->start_date = date("Y-m-d");
+         if (!$model->start_date)
+            $model->start_date = date("Y-m-d");
       });
       
       static::created(function ($model) {
@@ -80,9 +50,8 @@ class Project extends Model
          {
             foreach(ProjectTypeRiskTemplate::where('project_type_id', $model->project_type_id)->get() as $templateObj)
             {
-               $risk = new Risk;
+               $risk = new ProjectRisk;
                $risk->name = $templateObj->name;
-               $risk->department_id = $model->department_id;
                $risk->scenariodescription = $templateObj->scenariodescription;
                $risk->consequencedescription = $templateObj->consequencedescription;
                $risk->created_at = date("Y-m-d H:i:s");
@@ -92,8 +61,6 @@ class Project extends Model
                $risk->project_id = $model->id;
                $risk->riskowner_id = $model->responsible_user_id;
                $risk->save();
-
-               // Create control mappings
 
                $risk->int_controls()->sync($templateObj->int_controls()->pluck('controls.id')->toArray());
             }
@@ -108,8 +75,8 @@ class Project extends Model
       'access',
       'status',
       'users',
+      'responsible_user_name',
       'riskcount',
-      'riskactioncount',
       'riskdistribution',
       'maxrisklevel',
    ];
@@ -122,9 +89,16 @@ class Project extends Model
       if(null == $user)
          return null;
 
-      return ['create' => $user->can('create', $this), 'read' => $user->can('view', $this), 'update' => $user->can('update', $this), 'delete' => $user->can('delete', $this)];
+      return ['create' => $user->can('create', $this), 'read' => $user->can('view', $this), 'update' => $user->can('update', $this), 'delete' => $user->can('delete', $this), 'write' => $this->canWrite($user), 'manageparticipants' => $this->responsible_user_id == $user->id];
    }
 
+   public function canWrite(User $user): bool
+   {
+      if ($this->responsible_user_id == $user->id)
+         return true;
+
+      return $this->int_users()->where('users.id', $user->id)->wherePivot('readonly', false)->exists();
+   }
    
    public function getStatusAttribute()
    {
@@ -159,13 +133,36 @@ class Project extends Model
    {
       $retval = [];
       foreach($this->int_users as $obj)
-         $retval[] = array('id' => $obj->id, 'name' => $obj->name);
+         $retval[] = array('id' => $obj->id, 'name' => $obj->name, 'readonly' => (bool) $obj->pivot->readonly);
       return $retval;
    }
-   
-   public function setUsersAttribute($value)
+
+   public function getResponsibleUserNameAttribute(): ?string
    {
-      $this->syncRelationAttribute('users', fn ($model) => $model->int_users()->sync($value));
+      return $this->int_responsible_user?->name;
+   }
+   
+   public function updateparticipants(): void
+   {
+      if (request()->user()->id != $this->responsible_user_id)
+         abort(403);
+
+      $data = Validator::make(request()->all(), [
+         'users' => 'present|array',
+         'users.*.id' => ['required', 'integer', 'distinct', 'exists:users,id', Rule::notIn([$this->responsible_user_id])],
+         'users.*.readonly' => 'required|boolean',
+      ])->validate();
+
+      $participants = [];
+      foreach ($data['users'] as $participant)
+         $participants[$participant['id']] = ['readonly' => (bool) $participant['readonly']];
+
+      DB::transaction(function () use ($participants): void {
+         $this->int_users()->sync($participants);
+         $this->touch();
+         ActivityLog::addMessage(__("Project participants were updated"), $this);
+      });
+      $this->unsetRelation('int_users');
    }
 
    public function getRiskcountAttribute()
@@ -178,11 +175,11 @@ class Project extends Model
          $riskdistribution = [];
 
          foreach ($this
-                     ->int_risks()->whereNull('replacedby_id')->whereNotNull('assessed_at')
+                     ->int_risks()->whereNotNull('assessed_at')
                      ->join('risk_level_mappings', function (JoinClause $join) {
                         $join
-                           ->on('risk_level_mappings.probability_level_id', '=', 'risks.probability_id')
-                           ->on('risk_level_mappings.consequence_level_id', '=', 'risks.consequence_id');
+                           ->on('risk_level_mappings.probability_level_id', '=', 'project_risks.probability_id')
+                           ->on('risk_level_mappings.consequence_level_id', '=', 'project_risks.consequence_id');
                      })
                      ->join('risk_levels', 'risk_levels.id', '=', 'risk_level_mappings.risk_level_id')
                      ->groupBy(['risk_level_mappings.probability_level_id', 'risk_level_mappings.consequence_level_id', 'risk_levels.id', 'risk_levels.ordinal', 'risk_levels.color', 'risk_levels.name'])
@@ -196,11 +193,11 @@ class Project extends Model
 
    public function getMaxrisklevelAttribute(){
       $highestRisk = $this
-                        ->int_risks()->whereNull('replacedby_id')->whereNotNull('assessed_at')
+                        ->int_risks()->whereNotNull('assessed_at')
                         ->join('risk_level_mappings', function (JoinClause $join) {
                            $join
-                              ->on('risk_level_mappings.probability_level_id', '=', 'risks.probability_id')
-                              ->on('risk_level_mappings.consequence_level_id', '=', 'risks.consequence_id');
+                              ->on('risk_level_mappings.probability_level_id', '=', 'project_risks.probability_id')
+                              ->on('risk_level_mappings.consequence_level_id', '=', 'project_risks.consequence_id');
                         })
                         ->join('risk_levels', 'risk_levels.id', '=', 'risk_level_mappings.risk_level_id')
                         ->orderBy('risk_levels.ordinal', 'desc')
@@ -225,10 +222,9 @@ class Project extends Model
       'access',
       'id',
       'name',
-      'department_id',
-      'scopedescription',
-      'purposedescription',
+      'description',
       'responsible_user_id',
+      'responsible_user_name',
       'created_at',
       'updated_at',
       'archived_at',
@@ -251,12 +247,10 @@ class Project extends Model
     */
    protected $fillable = [
       'name',
-      'department_id',
-      'scopedescription',
-      'purposedescription',
+      'description',
       'responsible_user_id',
+      'start_date',
       'end_date',
-      'users',
       'project_type_id',
    ];
 
@@ -275,50 +269,31 @@ class Project extends Model
    public $actions = [
       'archive',
       'unarchive',
-      'detachanddelete',
-      'deleteproject'
+      'updateparticipants',
+      'deleteproject',
+      'meetingagenda',
    ];
    
-   
-   /**
-    * Index-function used for fetching multiple items via API
-    */
-   public static function index(User $user)
+
+   public function scopeVisibleTo(Builder $query, User $user): Builder
    {
-      $returnCollection = (__CLASS__)::where(function (Builder $query) {
-           $query->when((request()->has('search') && ("" != trim(request()->input('search')))), function (Builder $query) {
-               $query->where('name', 'LIKE', '%'.request()->input('search').'%')
-                  ->orWhere('scopedescription', 'LIKE', '%'.request()->input('search').'%')
-                  ->orWhere('purposedescription', 'LIKE', '%'.request()->input('search').'%');
+      $query->with('int_responsible_user:id,name');
+
+      if ($user->hasAnyPermission(['superadmin.edit'])) {
+         return $query;
+      }
+
+      return $query->where(function (Builder $query) use ($user) {
+         $query->where('responsible_user_id', $user->id)
+            ->orWhereHas('int_users', function (Builder $query) use ($user) {
+               $query->where('users.id', $user->id);
             });
-         })
-         ->where(function (Builder $query) use($user) {
-            // Authorization
-            if((null != $user) &&
-               !$user->hasAnyPermission(['riskadministrator.edit']))
-            {
-               $userprojs = DB::table('project_user')->where('user_id', $user->id)->pluck('project_user.project_id')->toArray();
-               $query->where('responsible_user_id', $user->id)
-               ->orWhereIn('projects.id', $userprojs);
-            }
-         })
-         ->when((0 == request()->input('showarchived', 0)), function (Builder $query) use($user) { 
-            $query->whereNull('archived_at');
-         })
-         ->when((1 == intval(request()->input('showmyonly', 0))), function (Builder $query) {
-            $query->where('responsible_user_id',auth()->user()->id);
-         })
-         ->when(0 < intval(request()->input('responsible_user_id', 0)), function (Builder $query) {
-            $query->where('responsible_user_id', intval(request()->input('responsible_user_id', 0)));
-         })
-         ->when(0 < intval(request()->input('id', 0)), function (Builder $query) {
-            $query->where((new (__CLASS__))->getTable().'.id', intval(request()->input('id', 0)));
-         })
-         ->orderBy('name');
-         
-      if(request()->input('hidechecked', 0) && (new (__CLASS__))->status)  { return $returnCollection->get()->filter(function($item) { return ($item->status['level'] != 'info'); }); }
-         
-      return $returnCollection->paginate(request()->query('per_page'));
+      });
+   }
+
+   public function getAuthorizationFields(): array
+   {
+      return ['id', 'responsible_user_id'];
    }
    
     
@@ -331,9 +306,11 @@ class Project extends Model
    {
       return [
          'name' => 'required',
-         'department_id' => 'nullable|exists:Ledningssystemet\Ledningssystemet\Models\Department,id',
+         'description' => 'nullable|string',
          'responsible_user_id' => 'nullable|exists:Ledningssystemet\Ledningssystemet\Models\User,id',
          'project_type_id' => 'nullable|exists:Ledningssystemet\Ledningssystemet\Models\ProjectType,id',
+         'start_date' => 'required|date',
+         'end_date' => 'nullable|date|after_or_equal:start_date',
       ];
    }
 
@@ -342,16 +319,47 @@ class Project extends Model
      */
    public function int_users() : BelongsToMany
    {
-       return $this->belongsToMany(User::class);
+       return $this->belongsToMany(User::class)->withPivot('readonly');
    }   
+
+   public function int_responsible_user() : BelongsTo
+   {
+       return $this->belongsTo(User::class, 'responsible_user_id');
+   }
    
     /**
      * Get the risks associated with this project
      */
    public function int_risks() : HasMany
    {
-       return $this->hasMany(Risk::class, 'project_id');
+       return $this->hasMany(ProjectRisk::class, 'project_id');
    }   
+
+   public function int_activities() : HasMany
+   {
+       return $this->hasMany(ProjectActivity::class, 'project_id');
+   }
+
+   public function int_work_packages() : HasMany
+   {
+       return $this->hasMany(ProjectWorkPackage::class, 'project_id');
+   }
+
+   public function int_meetings() : HasMany
+   {
+       return $this->hasMany(ProjectMeeting::class, 'project_id');
+   }
+
+   public function meetingagenda(): array
+   {
+       abort_unless(auth()->user()->can('view', $this), 403);
+       $data = Validator::make(request()->all(), [
+           'date' => 'required|date_format:Y-m-d',
+           'agenda_template_id' => 'nullable|integer|min:1',
+       ])->validate();
+
+       return \Ledningssystemet\Ledningssystemet\Support\ProjectMeetingAgenda::forProject($this, $data['date'], isset($data['agenda_template_id']) ? (int) $data['agenda_template_id'] : null);
+   }
 
    public function int_project_type() : BelongsTo
    {
@@ -376,10 +384,9 @@ class Project extends Model
       {
          if(null == $risk->assessed_at)
             abort(400, __("There are risks that has not been assessed"));
-         
-         if($risk->int_control_actions()->whereNull('finished_at')->exists())
-            abort(400, __("There are risks with un-finished control activities"));
       }
+      if ($this->int_activities()->whereNull('completed_at')->exists())
+         abort(400, __("There are risks with un-finished control activities"));
       
       $this->archived_at = date("Y-m-d H:i:s");
       $this->save();
@@ -408,31 +415,10 @@ class Project extends Model
    public function deleteproject()
    {
       // Ensure correct authorization
-      if(request()->user()->hasAnyPermission(['riskadministrator.edit']) ||
-         request()->user()->can('update', $this))
+      if(!request()->user()->can('update', $this))
+         abort(403);
       
       $this->delete();
    }
    
-   /**
-    * Detach risks and delete project
-    */
-   public function detachanddelete()
-   {
-      // Ensure correct authorization
-      if(request()->user()->hasAnyPermission(['riskadministrator.edit']) ||
-         request()->user()->can('update', $this))
-      
-      // Detach risks
-      foreach($this->int_risks as $risk)
-      {
-         // Add note
-         ActivityLog::addMessage(__("This risk was created in project")." ".$this->name." ".__("but was detached from the project prior to project deletion"), $risk);
-         $risk->project_id = null;
-         $risk->save();
-      }
-      
-      $this->delete();
-   }
-
 }

@@ -473,7 +473,7 @@ if($issue->due < date("Y-m-d"))
             <div class="d-block">
                <div class="container-header"><span class="material-symbols-rounded">frame_inspect</span>{{ __("Assess and mitigate") }}</div>
                <div class="status-container">
-      @foreach(array_merge(\Ledningssystemet\Ledningssystemet\Models\Project::getItemsStatus(null, auth()->user(), true), \Ledningssystemet\Ledningssystemet\Models\Risk::getItemsStatus(null, auth()->user(), true), \Ledningssystemet\Ledningssystemet\Models\ComplianceEvaluation::getItemsStatus(null, auth()->user(), true), \Ledningssystemet\Ledningssystemet\Models\Finding::getItemsStatus(null, auth()->user(), true), \Ledningssystemet\Ledningssystemet\Models\Incident::getItemsStatus(null, auth()->user(), true)) as $issue)
+      @foreach(array_merge(\Ledningssystemet\Ledningssystemet\Models\Risk::getItemsStatus(null, auth()->user(), true), \Ledningssystemet\Ledningssystemet\Models\ComplianceEvaluation::getItemsStatus(null, auth()->user(), true), \Ledningssystemet\Ledningssystemet\Models\Finding::getItemsStatus(null, auth()->user(), true), \Ledningssystemet\Ledningssystemet\Models\Incident::getItemsStatus(null, auth()->user(), true)) as $issue)
                   <div class="status-item">
                      <span class="badge bg-{{ $issue['level'] }}"></span>
                      <span class="count">{{ $issue['count'] }}</span>

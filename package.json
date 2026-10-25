@@ -9,7 +9,7 @@
         "./components/*": "./resources/js/components/*"
     },
     "scripts": {
-        "dev:app": "php artisan serve --port=8000",
+        "dev:app": "php artisan serve --port=8010",
         "dev:frontend": "vite",
         "dev": "concurrently \"npm run dev:app\" \"npm run dev:frontend\"  \"php artisan queue:work --queue=high,default,low\"",
         "build": "vite build  --emptyOutDir"
@@ -55,6 +55,10 @@
         "@radix-ui/react-radio-group": "^1.4.7",
         "@radix-ui/react-select": "^2.3.7",
         "@radix-ui/react-tooltip": "^1.2.16",
+        "@tiptap/core": "^3.32.0",
+        "@tiptap/extension-mention": "^3.0.0",
+        "@tiptap/react": "^3.0.0",
+        "@tiptap/starter-kit": "^3.0.0",
         "axios": "^1.7.4",
         "bootstrap": "^5.3.8",
         "bpmn-js": "^18.27.0",

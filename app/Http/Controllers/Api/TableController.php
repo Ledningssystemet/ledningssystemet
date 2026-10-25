@@ -30,12 +30,8 @@ class TableController extends Controller
       if (! $classname)
          abort(404);
 
-      // Ensure index function exist
-      if (!method_exists($classname, 'index'))
-         abort(404);
-
       // Ensure user have correct access
-      if (!Gate::allows('index', $classname)) {
+      if (!Gate::allows('viewAny', $classname) && !Gate::allows('index', $classname)) {
          abort(403);
       }
 
@@ -43,7 +39,12 @@ class TableController extends Controller
       self::applyQueryableFieldSelection($requestedFieldSelection);
 
       // Perform index using query parameters for filtering/sorting/search/pagination
-      $queryBuilder = QueryBuilder::for($classname::query())
+      $query = $classname::query();
+      if (method_exists($classname, 'scopeVisibleTo')) {
+         $query->visibleTo(request()->user());
+      }
+
+      $queryBuilder = QueryBuilder::for($query)
          ->allowedFilters(...(
             method_exists($classname, 'getAllowedFilters')
                ? $classname::getAllowedFilters()
@@ -275,6 +276,13 @@ class TableController extends Controller
 
       $appends = (new $classname())->getAppends();
       $queryableFields = array_values(array_diff($visibleFields, $appends));
+      $model = new $classname();
+      if (method_exists($model, 'getAuthorizationFields')) {
+         $queryableFields = array_values(array_unique([
+            ...$queryableFields,
+            ...$model->getAuthorizationFields(),
+         ]));
+      }
 
       return [
          'table' => $table,

@@ -404,6 +404,21 @@ class ControlAction extends Model
     */
    protected $casts = [
    ];
+
+   public static function getAllowedFilters(): array
+   {
+      return [
+         ...array_map(
+            fn ($field) => \Spatie\QueryBuilder\AllowedFilter::exact($field),
+            ['id', 'control_id', 'responsible_id']
+         ),
+         ...array_map(
+            fn ($field) => \Spatie\QueryBuilder\AllowedFilter::partial($field),
+            ['name', 'description', 'due', 'finished_at', 'created_at', 'updated_at', 'estimated_cost']
+         ),
+         \Spatie\QueryBuilder\AllowedFilter::exact('risk_id', 'int_risks.id'),
+      ];
+   }
     
    /**
     * Index-function used for fetching multiple items via API

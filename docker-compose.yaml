@@ -6,7 +6,7 @@ services:
     build: .
     ports:
       - "8010:80"
-    restart: unless-stopped
+    restart: no
     volumes:
       - "C:/Program Files/MariaDB 12.0/cert/ca-cert.pem:/var/www/html/storage/sql-ca.pem:ro"
       - ./docker-env:/var/www/html/.env:ro

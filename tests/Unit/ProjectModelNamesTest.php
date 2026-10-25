@@ -3,19 +3,28 @@
 namespace Tests\Unit;
 
 use Ledningssystemet\Ledningssystemet\Models\Project;
+use Ledningssystemet\Ledningssystemet\Models\ProjectRisk;
 use Ledningssystemet\Ledningssystemet\Models\ProjectType;
 use Ledningssystemet\Ledningssystemet\Models\ProjectTypeRiskTemplate;
-use Ledningssystemet\Ledningssystemet\Models\Risk;
 use Tests\TestCase;
 
 class ProjectModelNamesTest extends TestCase
 {
+    public function testProjectExcelExportsAreUnavailable(): void
+    {
+        $controller = \Ledningssystemet\Ledningssystemet\Http\Controllers\Api\ReportCentralController::class;
+
+        $this->assertFalse(method_exists($controller, 'Project'));
+        $this->assertFalse(method_exists($controller, 'RiskProject'));
+        $this->assertTrue(method_exists($controller, 'Risks'));
+    }
+
     public function testRenamedModelsUseProjectTablesAndRelations(): void
     {
         $project = new Project;
         $projectType = new ProjectType;
         $template = new ProjectTypeRiskTemplate;
-        $risk = new Risk;
+        $risk = new ProjectRisk;
 
         $this->assertSame('projects', $project->getTable());
         $this->assertSame('project_types', $projectType->getTable());

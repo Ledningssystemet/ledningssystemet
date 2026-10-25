@@ -3,17 +3,17 @@ import { t } from './t.js';
 
 function FactorValue({ label, factor, sourceunit, datasource, datasourceUrl }) {
     return (
-        <div style={{ textAlign: 'right' }}>
-            <span style={{ fontWeight: 700, fontSize: '0.85rem' }}>
+        <div className="ghg-factor-value">
+            <span className="ghg-factor-amount">
                 {Number(factor).toLocaleString('sv-SE')}{' '}
-                <span style={{ fontWeight: 400, fontSize: '0.75rem', color: '#888' }}>
+                <span className="ghg-detail">
                     kg/{sourceunit ?? ''}
                 </span>
             </span>
             {datasource && (
-                <div style={{ fontSize: '0.7rem', color: '#888' }}>
+                <div className="ghg-detail">
                     {datasourceUrl ? (
-                        <a href={datasourceUrl} target="_blank" rel="noreferrer noopener" style={{ color: 'inherit' }}>
+                        <a href={datasourceUrl} target="_blank" rel="noreferrer noopener">
                             {datasource}
                         </a>
                     ) : (
@@ -21,7 +21,7 @@ function FactorValue({ label, factor, sourceunit, datasource, datasourceUrl }) {
                     )}
                 </div>
             )}
-            <div style={{ fontSize: '0.7rem', color: '#5a7a6a', fontStyle: 'italic' }}>{label}</div>
+            <div className="ghg-detail">{label}</div>
         </div>
     );
 }
@@ -32,17 +32,16 @@ function FactorCard({ cf }) {
 
     return (
         <div className="col-12 col-md-6">
-            <div className="d-flex flex-column p-3 rounded-3 mb-2 h-100" style={{ background: '#fff', border: '1px solid #e2ebe6' }}>
-                <div style={{ minWidth: 0 }}>
-                    <div style={{ fontWeight: 600, fontSize: '0.85rem' }}>{cf.name}</div>
+            <div className="ghg-reference-card h-100">
+                <div>
+                    <div className="ghg-item-title">{cf.name}</div>
                     {(cf.activity_datasource_name || cf.spend_datasource_name) && !hasActivity && !hasSpend && (
-                        <div style={{ fontSize: '0.75rem', color: '#5a7a6a' }}>
+                        <div className="ghg-detail">
                             {cf.activity_datasource_url || cf.spend_datasource_url ? (
                                 <a
                                     href={cf.activity_datasource_url ?? cf.spend_datasource_url}
                                     target="_blank"
                                     rel="noreferrer noopener"
-                                    style={{ color: 'inherit' }}
                                 >
                                     {cf.activity_datasource_name ?? cf.spend_datasource_name}
                                 </a>
@@ -51,7 +50,7 @@ function FactorCard({ cf }) {
                             )}
                         </div>
                     )}
-                    <div style={{ fontSize: '0.75rem', color: '#5a7a6a' }}>
+                    <div className="ghg-detail">
                         {cf.description ?? cf.description}
                     </div>
                 </div>
@@ -87,10 +86,10 @@ function CategoryGroup({ category, conversionFactors }) {
     if (catCfs.length === 0) return null;
 
     return (
-        <div className="mb-4">
-            <div style={{ fontWeight: 700, fontSize: '0.9rem', marginBottom: 2 }}>{category.name}</div>
+        <div className="ghg-reference-category">
+            <div className="ghg-item-title">{category.name}</div>
             {category.description && (
-                <div style={{ fontSize: '0.8rem', color: '#5a7a6a', marginBottom: 10 }}>{category.description}</div>
+                <div className="ghg-detail mb-2">{category.description}</div>
             )}
             <div className="row g-2">
                 {catCfs.map(cf => <FactorCard key={cf.id} cf={cf} />)}
@@ -103,26 +102,24 @@ export function EmissionFactorList({ conversionFactors, categories }) {
     const [open, setOpen] = useState(true);
 
     return (
-        <div className="card border-0 shadow-sm rounded-3 mb-4" style={{ background: '#f0f4f1' }}>
+        <div className="ghg-card ghg-reference">
             <button
                 type="button"
-                className="btn d-flex align-items-center justify-content-between w-100 p-4 border-0"
+                className="ghg-reference-toggle"
                 onClick={() => setOpen(o => !o)}
                 aria-expanded={open}
             >
-                <div>
-                    <div style={{ fontWeight: 700, fontSize: '1rem', textAlign: 'left' }}>{ t("Available emission factors") }</div>
-                </div>
+                <span className="ghg-section-title">{ t("Available emission factors") }</span>
                 <span
-                    className="material-symbols-rounded"
-                    style={{ fontSize: '1.4rem', color: '#1e4d3a', transition: 'transform 0.2s', transform: open ? 'rotate(180deg)' : 'rotate(0deg)' }}
+                    className="material-symbols-rounded ghg-reference-chevron"
+                    aria-hidden="true"
                 >
                     expand_more
                 </span>
             </button>
 
             {open && (
-                <div className="px-4 pb-4">
+                <div className="ghg-reference-body">
                     {(() => {
                         const categoryIds = new Set(categories.map(c => c.id));
                         const configured = conversionFactors.filter(
@@ -130,7 +127,7 @@ export function EmissionFactorList({ conversionFactors, categories }) {
                         );
                         if (configured.length === 0) {
                             return (
-                                <p className="text-muted" style={{ fontSize: '0.85rem' }}>
+                                <p className="text-muted mb-0">
                                     {t("No emission factors are available for this scope")}.
                                 </p>
                             );

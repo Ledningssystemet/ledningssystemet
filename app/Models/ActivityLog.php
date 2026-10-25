@@ -50,6 +50,17 @@ class ActivityLog extends Activity
       return [];
    }
 
+   public static function getAllowedFilters(): array
+   {
+      return [
+         \Spatie\QueryBuilder\AllowedFilter::exact('id'),
+         \Spatie\QueryBuilder\AllowedFilter::exact('object_id', 'subject_id'),
+         \Spatie\QueryBuilder\AllowedFilter::exact('object_type', 'subject_type'),
+         \Spatie\QueryBuilder\AllowedFilter::partial('created_at'),
+         \Spatie\QueryBuilder\AllowedFilter::partial('updated_at'),
+      ];
+   }
+
    public function getAccessAttribute($user = null)
    {
       if(null == $user)
@@ -111,10 +122,15 @@ class ActivityLog extends Activity
    public function getModifiedAttribute()
    {
       $properties = $this->properties ?? [];
-      if(!is_array($properties) || !array_key_exists('modified', $properties))
-         return null;
 
-      return json_encode($properties['modified']);
+      // Try to json_decode the modified property if it exists and is a string
+      if(is_array($properties) && array_key_exists('modified', $properties) && is_string($properties['modified'])) {
+         $decodedModified = json_decode($properties['modified'], true);
+         if (json_last_error() === JSON_ERROR_NONE) {
+            return json_encode($decodedModified);
+         }
+      }
+      return $properties['modified'] ?? null;
    }
 
    public function getTextAttribute()
@@ -123,31 +139,26 @@ class ActivityLog extends Activity
       switch($this->action)
       {
          case 'C':
-            $historyText = __('The item was created');
-            break;
+            return __('The item was created');
+
          case 'U':
             $historyText = __('The item was updated');
 
             if(null != $this->modified)
-            {
-               $historyText .= ', '.__('changed').' ';
-               $items = array_keys(json_decode($this->modified, true));
-               for($i = 0; $i < count($items); $i++)
-                  $historyText .= (($i > 0) ? (($i < (count($items) - 1)) ? ', ' : ' '.__('and').' ') : '').__($items[$i]);
-            }
+               $historyText .= ":\r\n".implode("\r\n", array_map(function($key, $value) {
+                  return "✓ ".$key;
+               }, array_keys($this->modified), $this->modified));
 
-            break;
+            return $historyText;
+
          case 'D':
-            $historyText = __('The item was deleted');
-            break;
+            return __('The item was deleted');
+
          case 'M':
-            $historyText = __(json_decode($this->modified, true));
-            break;
-         default:
-            $historyText = '';
+            return $this->modified;
       }
 
-      return $historyText;
+      return null;
    }
 
    public static function index(User $user)

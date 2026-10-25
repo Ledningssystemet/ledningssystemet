@@ -510,7 +510,7 @@ class ReportCentralController extends Controller
       ];
       
       // Create data object
-      foreach(\Ledningssystemet\Ledningssystemet\Models\Risk::whereNull('replacedby_id')->whereNull('project_id')->orderBy('id', 'desc')->get() as $obj)
+      foreach(\Ledningssystemet\Ledningssystemet\Models\Risk::whereNull('replacedby_id')->orderBy('id', 'desc')->get() as $obj)
       {
          $objdata = $obj->toArray();
          
@@ -523,7 +523,7 @@ class ReportCentralController extends Controller
          $objdata['probability'] = $obj->int_probability? $obj->int_probability->name : "";
          $objdata['consequence'] = $obj->int_consequence ? $obj->int_consequence->name : "";
          $objdata['risklevel'] = $obj->int_risklevel() ? $obj->int_risklevel()->name : "";
-         $objdata['department'] = $obj->int_department ? $obj->int_department->name : "";
+         $objdata['department'] = $obj->int_department?->name ?? "";
          $objdata['context'] = '';
          if($obj->context_type && $obj->context_id)
          {
@@ -641,69 +641,5 @@ class ReportCentralController extends Controller
       ReportCentralController::GenerateExcel('DocumentManagementPlan_'.config('app.locale', 'en'), 'InformationHandlingPlan', $data);
    }
 
-
-   /**
-    * Generate project risk report
-    */
-   public static function Project($id)
-   {
-      $project = \Ledningssystemet\Ledningssystemet\Models\Project::findOrFail($id);
-      if(!auth()->user()->can('view', $project))
-         abort(403);
-
-      $data = [
-         'company' => [['name' => config('ledningssystemet.company_name', ''), 'uid' => config('ledningssystemet.company_uid', '')]],
-         'date' => date("Y-m-d"),
-         'time' => date("H:i:s"),
-         'risks' => [],
-      ];
-
-      // Create data object
-      foreach($project->int_risks()->whereNull('replacedby_id')->orderBy('id', 'desc')->get() as $obj)
-      {
-         $objdata = $obj->toArray();
-
-         $objdata['controls'] = "";
-
-         foreach($obj->int_controls()->whereNull('controls.not_applicable_at')->get() as $control)
-            $objdata['controls'] .= (("" != $objdata['controls']) ? "\r\n" : "").$control->name;
-
-         $objdata['riskowner'] = $obj->int_riskowner ? $obj->int_riskowner->name : "";
-         $objdata['probability'] = $obj->int_probability? $obj->int_probability->name : "";
-         $objdata['consequence'] = $obj->int_consequence ? $obj->int_consequence->name : "";
-         $objdata['risklevel'] = $obj->int_risklevel() ? $obj->int_risklevel()->name : "";
-         $objdata['department'] = $obj->int_department ? $obj->int_department->name : "";
-         $objdata['context'] = '';
-         if($obj->context_type && $obj->context_id)
-         {
-            $contextType = $obj->context_type;
-            $contextClass = is_string($contextType) ? (str_contains($contextType, '\\') ? $contextType : 'Ledningssystemet\\Ledningssystemet\\Models\\'.$contextType) : null;
-            if (!is_string($contextClass) || !str_starts_with($contextClass, 'Ledningssystemet\\Ledningssystemet\\Models\\') || !is_subclass_of($contextClass, \Illuminate\Database\Eloquent\Model::class)) {
-               $contextClass = null;
-            }
-            $contextobj = $contextClass ? $contextClass::find($obj->context_id) : null;
-            if(null != $contextobj)
-               $objdata['context'] = $contextobj->name;
-         }
-         $objdata['assessmentstatus'] = (null != $obj->assessed_at) ? __("Assessed") : __("Pending assessment");
-         $objdata['updated'] = date("Y-m-d", strtotime($obj->updated_at));
-
-         $objdata['controlactions'] = "";
-
-         foreach($obj->int_control_actions as $controlaction)
-            $objdata['controlactions'] .= (("" != $objdata['controlactions']) ? "\r\n" : "").$controlaction->name.' ('.((null == $controlaction->finished_at) ? __("Pending") : __("Finished")).')';
-
-
-
-         $data['risks'][] = $objdata;
-      }
-
-      ReportCentralController::GenerateExcel('Risks_'.config('app.locale', 'en'), 'Project', $data);
-   }
-
-   public static function RiskProject($id)
-   {
-      return self::Project($id);
-   }
 
 }

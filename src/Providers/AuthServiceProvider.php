@@ -2,8 +2,17 @@
 
 namespace Ledningssystemet\Ledningssystemet\Providers;
 
-use Illuminate\Support\Facades\Gate;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
+use Ledningssystemet\Ledningssystemet\Models\Project;
+use Ledningssystemet\Ledningssystemet\Models\ProjectActivity;
+use Ledningssystemet\Ledningssystemet\Models\ProjectMeeting;
+use Ledningssystemet\Ledningssystemet\Models\ProjectMeetingMention;
+use Ledningssystemet\Ledningssystemet\Models\ProjectRisk;
+use Ledningssystemet\Ledningssystemet\Models\ProjectWorkPackage;
+use Ledningssystemet\Ledningssystemet\Policies\ProjectActivityPolicy;
+use Ledningssystemet\Ledningssystemet\Policies\ProjectItemPolicy;
+use Ledningssystemet\Ledningssystemet\Policies\ProjectMeetingMentionPolicy;
+use Ledningssystemet\Ledningssystemet\Policies\ProjectPolicy;
 
 class AuthServiceProvider extends ServiceProvider
 {
@@ -13,8 +22,15 @@ class AuthServiceProvider extends ServiceProvider
      * @var array<class-string, class-string>
      */
     protected $policies = [
+        /* Project module */
+        Project::class => ProjectPolicy::class,
+        ProjectActivity::class => ProjectActivityPolicy::class,
+        ProjectMeeting::class => ProjectItemPolicy::class,
+        ProjectMeetingMention::class => ProjectMeetingMentionPolicy::class,
+        ProjectRisk::class => ProjectItemPolicy::class,
+        ProjectWorkPackage::class => ProjectItemPolicy::class,
     ];
-    
+
     /**
      * Register any authentication / authorization services.
      *
@@ -22,6 +38,6 @@ class AuthServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-      $this->registerPolicies();
+        $this->registerPolicies();
     }
 }

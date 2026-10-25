@@ -9,26 +9,19 @@ export function SummaryCards({ factors, conversionFactors, categories }) {
     const scope3 = calcTotalByScope(factors, conversionFactors, categories, 3);
 
     const cards = [
-        { label: t('TOTAL'), value: fmtEmission(total), sub: 'kg CO₂e', dark: true },
-        { label: t('SCOPE 1'), value: fmtEmission(scope1), sub: t('Direct emissions'), dark: false },
-        { label: t('SCOPE 2'), value: fmtEmission(scope2), sub: t('Energy'), dark: false },
-        { label: t('SCOPE 3'), value: fmtEmission(scope3), sub: t('Value chain'), dark: false },
+        { label: t('TOTAL'), value: fmtEmission(total), sub: 'kg CO₂e', total: true },
+        { label: t('SCOPE 1'), value: fmtEmission(scope1), sub: t('Direct emissions') },
+        { label: t('SCOPE 2'), value: fmtEmission(scope2), sub: t('Energy') },
+        { label: t('SCOPE 3'), value: fmtEmission(scope3), sub: t('Value chain') },
     ];
 
     return (
-        <div className="row g-3 mb-4">
+        <div className="ghg-stats">
             {cards.map((card) => (
-                <div key={card.label} className="col-6 col-md-3">
-                    <div
-                        className="card h-100 border-0 shadow-sm rounded-3 p-3"
-                        style={card.dark ? { background: '#1e4d3a', color: '#fff' } : {}}
-                    >
-                        <div style={{ fontSize: '0.7rem', fontWeight: 600, letterSpacing: '0.08em', opacity: card.dark ? 0.8 : 0.5, marginBottom: 4 }}>
-                            {card.label}
-                        </div>
-                        <div style={{ fontSize: '1.8rem', fontWeight: 700, lineHeight: 1.1 }}>{card.value}</div>
-                        <div style={{ fontSize: '0.75rem', opacity: card.dark ? 0.75 : 0.55, marginTop: 4 }}>{card.sub}</div>
-                    </div>
+                <div key={card.label} className={`ghg-card ghg-stat${card.total ? ' ghg-stat-total' : ''}`}>
+                    <div className="ghg-stat-label">{card.label}</div>
+                    <div className="ghg-stat-value">{card.value}</div>
+                    <div className="ghg-stat-detail">{card.sub}</div>
                 </div>
             ))}
         </div>

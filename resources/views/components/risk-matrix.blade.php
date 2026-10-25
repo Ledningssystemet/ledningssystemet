@@ -14,17 +14,6 @@
             $q->where('riskowner_id', intval($attributes->get('riskowner_id')));
          });
 
-         $query->when(function ($q) use ($attributes) {
-            if ($attributes->has('project_id') && (0 < intval($attributes->get('project_id')))) {
-               $rp = \Ledningssystemet\Ledningssystemet\Models\Project::find(intval($attributes->get('project_id')));
-               if (!auth()->user()->can('view', $rp))
-                  abort(403);
-
-               $q->where('project_id', intval($attributes->get('project_id')));
-            } else
-               $q->whereNull('project_id');
-         });
-
          $query
             ->whereNull('replacedby_id')
             ->whereNotNull('assessed_at');
