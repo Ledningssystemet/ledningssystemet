@@ -116,7 +116,7 @@ class SsoGuestAccountTest extends TestCase
     {
         DB::table('users')->insert([
             'name' => 'Regular User',
-            'email' => 'user@example.com',
+            'email' => 'USER@EXAMPLE.COM',
             'enabled' => true,
         ]);
         $controller = new class extends SsoController {
@@ -126,10 +126,23 @@ class SsoGuestAccountTest extends TestCase
             }
         };
 
-        $user = $controller->resolve(' USER@EXAMPLE.COM ');
+        $user = $controller->resolve('USER@EXAMPLE.COM');
 
-        $this->assertSame('user@example.com', $user->email);
+        $this->assertSame('USER@EXAMPLE.COM', $user->email);
         $this->assertSame('azure:regular-id', $user->external_id);
+    }
+
+    public function test_normalization_leaves_regular_emails_and_other_providers_unchanged(): void
+    {
+        $controller = new class extends SsoController {
+            public function normalizeEmail(string $provider, string $email): string
+            {
+                return self::normalizeAzureGuestEmail($provider, $email);
+            }
+        };
+
+        $this->assertSame('USER@EXAMPLE.COM', $controller->normalizeEmail('azure', 'USER@EXAMPLE.COM'));
+        $this->assertSame('USER@EXAMPLE.COM', $controller->normalizeEmail('google', 'USER@EXAMPLE.COM'));
     }
 
     public function test_unmatched_azure_guest_is_rejected_without_creating_a_user(): void

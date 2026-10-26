@@ -161,7 +161,6 @@ class SsoController extends Controller
 
     protected static function normalizeAzureGuestEmail(string $provider, string $email): string
     {
-        $email = strtolower(trim($email));
         if ('azure' !== $provider || !preg_match('/^([^#]+)#ext#@[^@]+$/i', $email, $matches)) {
             return $email;
         }
@@ -171,7 +170,7 @@ class SsoController extends Controller
             return $email;
         }
 
-        return substr($matches[1], 0, $separator).'@'.substr($matches[1], $separator + 1);
+        return strtolower(substr($matches[1], 0, $separator).'@'.substr($matches[1], $separator + 1));
     }
 
     protected function hasTrustedIdpMfa(string $provider, object $socialUser): bool
