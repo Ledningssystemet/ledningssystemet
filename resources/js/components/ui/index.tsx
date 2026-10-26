@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
 import type { ReactNode, InputHTMLAttributes, SelectHTMLAttributes, TextareaHTMLAttributes, ButtonHTMLAttributes } from 'react';
-import { t } from '@/lib/i18n';
+import { t } from '../../lib/i18n';
 // @ts-ignore
 import './ui.css';
 

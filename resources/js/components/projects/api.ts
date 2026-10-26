@@ -1,6 +1,6 @@
 import axios from 'axios';
-import { t } from '@/lib/i18n';
-export { t } from '@/lib/i18n';
+import { t } from '../../lib/i18n';
+export { t } from '../../lib/i18n';
 
 declare global {
     interface Window {
