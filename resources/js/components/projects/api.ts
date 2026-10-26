@@ -51,6 +51,7 @@ export type ProjectRisk = {
 export type Risk = ProjectRisk;
 export type Action = {
     id: Id;
+    recurring_project_activity_id?: Id | null;
     name: string;
     description: string | null;
     project_id: Id;
@@ -73,6 +74,13 @@ export type WorkPackage = {
     completed_at: string | null;
     activities: (Option & { completed_at: string | null })[];
     access: Access;
+};
+export type RecurringActivity = Pick<Action, 'id' | 'project_id' | 'name' | 'description' | 'responsible_user_id' | 'estimated_cost' | 'estimated_hours' | 'access'> & {
+    frequency: 'daily' | 'weekly' | 'monthly';
+    weekday: number | null;
+    months: number[];
+    day_of_month: number | null;
+    last_generated_on: string | null;
 };
 export type Configuration = {
     currentUserId: Id;

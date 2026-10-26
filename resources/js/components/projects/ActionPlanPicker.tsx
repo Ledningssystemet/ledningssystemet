@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { confirmAction, create, dateValue, nameOf, remove, t, todayDate, update, type Action, type Configuration, type Project, type Risk, type Run, type WorkPackage } from './api';
 import { Badge, Btn, Card, Input, Label, Options, SectionTitle, Select, Textarea } from '../ui';
+import { RecurringActivities } from './RecurringActivities';
 
 export const activityValues = (item: Action | undefined, currentUserId: number) => {
     const today = todayDate();
@@ -43,15 +44,15 @@ export function activityPayload(form: ActivityValues, projectId: number, include
     };
 }
 
-export function ActivityFields({ form, onChange, config, risks }: {
-    form: ActivityValues; onChange: (form: ActivityValues) => void; config: Configuration; risks?: Risk[];
+export function ActivityFields({ form, onChange, config, risks, dates = true }: {
+    form: ActivityValues; onChange: (form: ActivityValues) => void; config: Configuration; risks?: Risk[]; dates?: boolean;
 }) {
     const field = (key: Exclude<keyof ActivityValues, 'risks'>, value: string) => onChange({ ...form, [key]: value });
     return <div className="row">
         <div className="col-md-6"><Label text={t('Name')}><Input required maxLength={255} value={form.name} onChange={event => field('name', event.target.value)} /></Label></div>
         <div className="col-md-6"><Label text={t('Responsible')}><Select value={form.responsible_user_id} onChange={event => field('responsible_user_id', event.target.value)}><Options items={config.users} /></Select></Label></div>
-        <div className="col-md-6"><Label text={t('Start date')}><Input type="date" value={form.startdate} onChange={event => field('startdate', event.target.value)} /></Label></div>
-        <div className="col-md-6"><Label text={t('Due')}><Input type="date" min={form.startdate || undefined} value={form.due} onChange={event => field('due', event.target.value)} /></Label></div>
+        {dates && <div className="col-md-6"><Label text={t('Start date')}><Input type="date" value={form.startdate} onChange={event => field('startdate', event.target.value)} /></Label></div>}
+        {dates && <div className="col-md-6"><Label text={t('Due')}><Input type="date" min={form.startdate || undefined} value={form.due} onChange={event => field('due', event.target.value)} /></Label></div>}
         <div className="col-md-6"><Label text={t('Estimated cost')}><Input type="number" min={0} max={99999999.99} step="0.01" value={form.estimated_cost} onChange={event => field('estimated_cost', event.target.value)} /></Label></div>
         <div className="col-md-6"><Label text={t('Estimated hours')}><Input type="number" min={0} max={4294967295} step={1} value={form.estimated_hours} onChange={event => field('estimated_hours', event.target.value)} /></Label></div>
         {risks && config.canReadRisks && <div className="col-12"><Label text={t('Linked risks')}><Select multiple value={form.risks.map(String)} onChange={event => onChange({ ...form, risks: Array.from(event.target.selectedOptions, option => Number(option.value)) })}><Options items={risks} empty={false} /></Select></Label></div>}
@@ -67,7 +68,7 @@ function ActivityTable({ actions, config, blockedActivityIds, onEdit, onToggle, 
     return <div className="table-responsive"><table className="table align-middle">
         <thead><tr>{['Name', 'Responsible', 'Start date', 'Due', 'Estimated cost', 'Estimated hours', 'Status', 'Actions'].map(label => <th key={label} scope="col">{t(label)}</th>)}</tr></thead>
         <tbody>{actions.map(item => <tr key={item.id}>
-            <td className="text-break">{item.name}<div className="text-muted small" style={{ whiteSpace: 'pre-wrap' }}>{item.description}</div><div className="d-flex flex-wrap gap-1 mt-1">{item.risks.map(risk => <Badge key={risk.id}>RISK-{risk.id}: {risk.name}</Badge>)}</div>{blockedActivityIds.has(item.id) && <p className="text-muted small mt-1">{t('Reopen all completed work packages containing this activity before reopening it')}</p>}</td>
+            <td className="text-break">{item.name}{item.recurring_project_activity_id && <Badge>{t('Recurring project activity')}</Badge>}<div className="text-muted small" style={{ whiteSpace: 'pre-wrap' }}>{item.description}</div><div className="d-flex flex-wrap gap-1 mt-1">{item.risks.map(risk => <Badge key={risk.id}>RISK-{risk.id}: {risk.name}</Badge>)}</div>{blockedActivityIds.has(item.id) && <p className="text-muted small mt-1">{t('Reopen all completed work packages containing this activity before reopening it')}</p>}</td>
             <td>{nameOf(config.users, item.responsible_user_id)}</td>
             <td className="text-nowrap">{dateValue(item.startdate)}</td>
             <td className="text-nowrap">{dateValue(item.due)}</td>
@@ -114,7 +115,7 @@ export function ProjectActions({ actions, project, risks, workPackages = [], con
     const [editing, setEditing] = useState<Action | 'new' | null>(null);
     const editable = !project.archived_at && project.access.write;
     const canUpdateActivities = !project.archived_at;
-    return <Card><SectionTitle title={t('Activities')} action={editable && config.canCreateAction && <Btn onClick={() => setEditing('new')}>{t('Add new activity')}</Btn>} />
+    return <><Card><SectionTitle title={t('Activities')} action={editable && config.canCreateAction && <Btn onClick={() => setEditing('new')}>{t('Add new activity')}</Btn>} />
         {editing && <ActivityForm key={editing === 'new' ? 'new' : editing.id} item={editing === 'new' ? undefined : editing} project={project} risks={risks} config={config} run={run} onSaved={() => setEditing(null)} onCancel={() => setEditing(null)} />}
         <ActivityTable
             actions={actions}
@@ -126,5 +127,5 @@ export function ProjectActions({ actions, project, risks, workPackages = [], con
                 confirmAction('Are you sure that you want to delete this activity?', () => { void run(() => remove('ProjectActivity', item.id)); }, 'Delete activity');
             } : undefined}
         />
-    </Card>;
+    </Card><RecurringActivities project={project} config={config} run={run} /></>;
 }

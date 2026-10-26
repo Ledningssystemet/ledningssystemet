@@ -5,6 +5,7 @@ namespace Ledningssystemet\Ledningssystemet\Providers;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
 use Ledningssystemet\Ledningssystemet\Models\Project;
 use Ledningssystemet\Ledningssystemet\Models\ProjectActivity;
+use Ledningssystemet\Ledningssystemet\Models\RecurringProjectActivity;
 use Ledningssystemet\Ledningssystemet\Models\ProjectMeeting;
 use Ledningssystemet\Ledningssystemet\Models\ProjectMeetingMention;
 use Ledningssystemet\Ledningssystemet\Models\ProjectRisk;
@@ -25,6 +26,7 @@ class AuthServiceProvider extends ServiceProvider
         /* Project module */
         Project::class => ProjectPolicy::class,
         ProjectActivity::class => ProjectActivityPolicy::class,
+        RecurringProjectActivity::class => ProjectActivityPolicy::class,
         ProjectMeeting::class => ProjectItemPolicy::class,
         ProjectMeetingMention::class => ProjectMeetingMentionPolicy::class,
         ProjectRisk::class => ProjectItemPolicy::class,

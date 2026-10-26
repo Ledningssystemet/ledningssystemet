@@ -343,7 +343,7 @@ export function Settings({ project, config, run }: { project: Project; config: C
         <Card><SectionTitle title={t('Actions')} /><div className="d-flex flex-wrap gap-2">
             {project.access.update && <>
                 <Btn variant={project.archived_at ? 'outline' : 'warning'} onClick={() => confirmAction(project.archived_at ? 'By unarchiving this project, risk management will be continued.' : 'By archiving this project, you claim that no more risk management is to be done regarding this project. Risks will not be re-opened for assessment.', () => { void run(() => action('Project', project.id, project.archived_at ? 'unarchive' : 'archive')); }, project.archived_at ? 'Unarchive project' : 'Archive project')}>{t(project.archived_at ? 'Unarchive project' : 'Archive project')}</Btn>
-                <Btn variant="danger" onClick={() => confirmAction('The risks related to the project will also be deleted', () => { void run(() => action('Project', project.id, 'deleteproject')); }, 'Delete project')}>{t('Delete project')}</Btn>
+                {project.archived_at && <Btn variant="danger" onClick={() => confirmAction('The risks related to the project will also be deleted', () => { void run(() => remove('Project', project.id)); }, 'Delete project')}>{t('Delete project')}</Btn>}
             </>}
         </div></Card>
     </>;

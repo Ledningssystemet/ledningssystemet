@@ -5,6 +5,7 @@ namespace Ledningssystemet\Ledningssystemet\Policies;
 use Illuminate\Auth\Access\Response;
 use Ledningssystemet\Ledningssystemet\Models\Project;
 use Ledningssystemet\Ledningssystemet\Models\ProjectActivity;
+use Ledningssystemet\Ledningssystemet\Models\RecurringProjectActivity;
 use Ledningssystemet\Ledningssystemet\Models\User;
 
 class ProjectActivityPolicy
@@ -20,7 +21,7 @@ class ProjectActivityPolicy
     /**
      * Determine whether the user can view the model.
      */
-    public function view(User $user, ProjectActivity $projectActivity): bool
+    public function view(User $user, ProjectActivity|RecurringProjectActivity $projectActivity): bool
     {
        return ($projectActivity->responsible_user_id === $user->id) ||
           ($projectActivity->int_project->int_users->contains($user)) ||
@@ -46,7 +47,7 @@ class ProjectActivityPolicy
     /**
      * Determine whether the user can update the model.
      */
-    public function update(User $user, ProjectActivity $projectActivity): bool
+    public function update(User $user, ProjectActivity|RecurringProjectActivity $projectActivity): bool
     {
          return $projectActivity->int_project->canWrite($user);
     }
@@ -54,7 +55,7 @@ class ProjectActivityPolicy
     /**
      * Determine whether the user can delete the model.
      */
-    public function delete(User $user, ProjectActivity $projectActivity): bool
+    public function delete(User $user, ProjectActivity|RecurringProjectActivity $projectActivity): bool
     {
         return $projectActivity->int_project->canWrite($user);
     }
@@ -62,7 +63,7 @@ class ProjectActivityPolicy
     /**
      * Determine whether the user can restore the model.
      */
-    public function restore(User $user, ProjectActivity $projectActivity): bool
+    public function restore(User $user, ProjectActivity|RecurringProjectActivity $projectActivity): bool
     {
         return false;
     }
@@ -70,7 +71,7 @@ class ProjectActivityPolicy
     /**
      * Determine whether the user can permanently delete the model.
      */
-    public function forceDelete(User $user, ProjectActivity $projectActivity): bool
+    public function forceDelete(User $user, ProjectActivity|RecurringProjectActivity $projectActivity): bool
     {
         return $projectActivity->int_project->canWrite($user);
     }

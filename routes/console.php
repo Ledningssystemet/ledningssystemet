@@ -20,6 +20,9 @@ Schedule::command('ledningssystemet:graphsync')->hourly()->withoutOverlapping();
 // Perform risk re-assessment
 Schedule::command('ledningssystemet:risksreassess')->dailyAt('05:00');
 
+// Create recurring project activities
+Schedule::command('ledningssystemet:recurringprojectactivities')->dailyAt('05:00')->withoutOverlapping();
+
 // Daily status email
 Schedule::command('ledningssystemet:sendstatusmail')->dailyAt('06:00');
 

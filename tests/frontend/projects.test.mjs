@@ -303,7 +303,7 @@ test('shared UI renders outside the project module and has no project dependenci
     assert.ok(Object.keys(bundle.metafile.inputs).every(path => !path.includes('/projects/')));
 });
 
-test('listing projects only fetches projects and filtered timeline data; lookups are deferred to opening or creating', async () => {
+test('listing projects only fetches projects by default; lookups are deferred to opening or creating', async () => {
     const summary = {
         id: 7, name: 'Project', responsible_user_id: 3, responsible_user_name: 'Project owner',
         users: [], start_date: '2026-10-24', end_date: null, archived_at: null, maxrisklevel: null,
@@ -328,7 +328,7 @@ test('listing projects only fetches projects and filtered timeline data; lookups
             if (index === 1) return mode === 'open' || mode === 'cached' ? summary.id : null;
             if (index === 6) return mode === 'create';
             if (index === 11) return false;
-            return initial;
+            return initial === 'gantt' ? 'none' : initial;
         }, () => {}, { useEffect: effect => effects.push(effect) });
         const markup = renderToStaticMarkup(React.createElement(ProjectsView, {
             config: mode === 'cached' ? { ...permissions, users: [], projectTypes: [], riskOwners: [],
@@ -338,11 +338,9 @@ test('listing projects only fetches projects and filtered timeline data; lookups
         await new Promise(resolve => setImmediate(resolve));
         const urls = requests.map(request => request.url);
         if (mode === 'list') {
-            assert.deepEqual(urls, ['/api/v1/crud/Project', '/api/v1/crud/ProjectActivity']);
+            assert.deepEqual(urls, ['/api/v1/crud/Project']);
             assert.match(markup, /Project owner/);
             assert.match(markup, /<option value="3">Project owner<\/option>/);
-            assert.equal(requests[1].params['filter[responsible_user_id]'], 3);
-            assert.equal(requests[1].params['filter[project_id]'], '7');
         } else {
             assert.equal(urls.includes('/api/v1/crud/User'), mode !== 'cached');
             assert.equal(urls.includes('/api/v1/crud/ProjectType'), mode !== 'cached');
@@ -350,6 +348,45 @@ test('listing projects only fetches projects and filtered timeline data; lookups
             assert.equal(urls.includes('/api/v1/crud/ProjectRisk'), mode !== 'create');
             assert.equal(urls.includes('/api/v1/crud/ProjectWorkPackage'), mode !== 'create');
         }
+        cleanups.forEach(cleanup => cleanup?.());
+    }
+});
+
+test('project visualization buttons default to Gantt and switch between none, Gantt and the year wheel', async () => {
+    const summary = {
+        id: 7, name: 'Project', responsible_user_id: 3, users: [],
+        start_date: '2026-10-24', end_date: null, archived_at: null, maxrisklevel: null,
+    };
+    for (const mode of ['default', 'gantt', 'none', 'year-wheel']) {
+        const requests = [];
+        const effects = [];
+        respond([summary], requests);
+        let stateIndex = 0;
+        const { ProjectsView } = await loadComponents('resources\\js\\components\\projects\\index.tsx', initial => {
+            const index = stateIndex++;
+            if (index === 0) return [summary];
+            if (index === 11) return false;
+            return initial === 'gantt' && mode !== 'default' ? mode : initial;
+        }, () => {}, { useEffect: effect => effects.push(effect) });
+        const markup = renderToStaticMarkup(React.createElement(ProjectsView, {
+            config: { currentUserId: 3, canReadActions: true },
+        }));
+        assert.match(markup, /aria-label="Project visualization"/);
+        assert.match(markup, /class="pm-visualization-buttons" role="group"/);
+        const buttons = [...markup.matchAll(/<button aria-pressed="(true|false)"[^>]*>(No overview|Gantt chart|Year wheel)<\/button>/g)];
+        assert.deepEqual(buttons.map(button => button[2]), ['No overview', 'Gantt chart', 'Year wheel']);
+        assert.deepEqual(buttons.map(button => button[1]), [
+            mode === 'none' ? 'true' : 'false',
+            mode === 'gantt' || mode === 'default' ? 'true' : 'false',
+            mode === 'year-wheel' ? 'true' : 'false',
+        ]);
+        assert.match(markup, /pm-project-list/);
+        assert.equal(markup.includes('Loading your project timeline'), mode === 'gantt' || mode === 'default');
+        assert.equal(markup.includes('Loading the year wheel'), mode === 'year-wheel');
+        const cleanups = effects.map(effect => effect());
+        await new Promise(resolve => setImmediate(resolve));
+        assert.equal(requests.some(request => request.url.endsWith('/ProjectActivity')), mode === 'gantt' || mode === 'default');
+        assert.equal(requests.some(request => request.url.endsWith('/RecurringProjectActivity')), mode === 'year-wheel');
         cleanups.forEach(cleanup => cleanup?.());
     }
 });
@@ -362,7 +399,7 @@ test('project descriptions render in the header and project list with preserved 
     };
     const { ProjectHeader } = await loadComponents('resources\\js\\components\\projects\\Views.tsx');
     const { ProjectsView } = await loadComponents('resources\\js\\components\\projects\\index.tsx',
-        initial => Array.isArray(initial) ? [item, { ...item, id: 8, name: 'Second project', description: null, maxrisklevel: { name: 'High', color: 'ffccaa' } }] : initial === true ? false : initial);
+        initial => Array.isArray(initial) ? [item, { ...item, id: 8, name: 'Second project', description: null, maxrisklevel: { name: 'High', color: 'ffccaa' } }] : initial === true ? false : initial === 'gantt' ? 'none' : initial);
     const header = renderToStaticMarkup(React.createElement(ProjectHeader, {
         project: item, projects: [item], config, tab: 'overview', loading: false, onSelect() {}, onTab() {},
     }));
@@ -373,7 +410,8 @@ test('project descriptions render in the header and project list with preserved 
     assert.match(list, />High<\/span>/);
     assert.match(list, /Search/);
     assert.match(list, /Show only my projects/);
-    assert.ok(list.indexOf('Loading your project timeline') < list.indexOf('class="ls-card pm-project-list"'));
+    assert.ok(list.indexOf('pm-visualization-buttons') < list.indexOf('class="ls-card pm-project-list"'));
+    assert.doesNotMatch(list, /Loading your project timeline/);
     assert.doesNotMatch(list, />97</);
     assert.doesNotMatch(list, /col-md-6 col-xl-4|Risks:|Show comments|Show history/);
     for (const markup of [header, list]) {
@@ -557,6 +595,7 @@ test('personal Gantt displays loading, empty, error and read permission states',
         config, projects: [{ id: 1, name: 'My ongoing project', responsible_user_id: 3, users: [], archived_at: null }],
     }));
     assert.match(loaded, /My project activities/);
+    assert.match(loaded, /class="ls-gantt-description text-muted">Only planned project activities are shown\. Recurring activities are shown in the year wheel\./);
     assert.match(loaded, /My ongoing project/);
     assert.match(loaded, /Personal task/);
     assert.match(loaded, /ls-gantt-activity-line/);

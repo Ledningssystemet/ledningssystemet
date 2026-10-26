@@ -20,12 +20,12 @@ class ProjectActivity extends Model
     protected $visible = [
         'id', 'name', 'description', 'project_id', 'responsible_user_id',
         'startdate', 'due', 'estimated_cost', 'estimated_hours', 'completed_at',
-        'created_at', 'updated_at', 'access', 'risks',
+        'created_at', 'updated_at', 'access', 'risks', 'recurring_project_activity_id',
     ];
 
     protected $fillable = [
         'name', 'description', 'project_id', 'responsible_user_id',
-        'startdate', 'due', 'estimated_cost', 'estimated_hours', 'completed_at', 'risks',
+        'startdate', 'due', 'estimated_cost', 'estimated_hours', 'completed_at', 'risks', 'recurring_project_activity_id',
     ];
 
     public static function getPrettyName($plural = false)
@@ -67,6 +67,18 @@ class ProjectActivity extends Model
             }
             if ($activity->exists && $activity->isDirty('project_id')) {
                 abort(422, __('The project of an activity cannot be changed'));
+            }
+            if ($activity->exists && $activity->isDirty('recurring_project_activity_id')) {
+                throw ValidationException::withMessages([
+                    'recurring_project_activity_id' => __('The recurrence of an activity cannot be changed'),
+                ]);
+            }
+            if ($activity->recurring_project_activity_id && ! $activity->completed_at
+                && self::where('recurring_project_activity_id', $activity->recurring_project_activity_id)
+                    ->whereNull('completed_at')->when($activity->exists, fn (Builder $query) => $query->whereKeyNot($activity->id))->exists()) {
+                throw ValidationException::withMessages([
+                    'completed_at' => __('An unfinished activity already exists for this recurrence'),
+                ]);
             }
             if ($activity->exists && ! $activity->completed_at && $activity->int_work_packages()->whereNotNull('completed_at')->exists()) {
                 throw ValidationException::withMessages([
@@ -141,6 +153,7 @@ class ProjectActivity extends Model
             'estimated_cost' => 'nullable|numeric|min:0|max:99999999.99',
             'estimated_hours' => 'nullable|integer|min:0|max:4294967295',
             'completed_at' => 'nullable|date',
+            'recurring_project_activity_id' => ['nullable', 'integer', Rule::exists('recurring_project_activities', 'id')->where('project_id', $this->project_id)],
         ];
     }
 
@@ -168,6 +181,11 @@ class ProjectActivity extends Model
     public function int_project(): BelongsTo
     {
         return $this->belongsTo(Project::class, 'project_id');
+    }
+
+    public function int_recurring_project_activity(): BelongsTo
+    {
+        return $this->belongsTo(RecurringProjectActivity::class, 'recurring_project_activity_id');
     }
 
     public function int_risks(): BelongsToMany

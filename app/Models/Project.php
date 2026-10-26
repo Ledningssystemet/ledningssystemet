@@ -65,6 +65,12 @@ class Project extends Model
             }
          }
       });
+
+      static::deleting(function ($model) {
+         // Ensure that the project is archived before allowing deletion
+         if(null == $model->archived_at)
+            abort(400, __("A project must be archived before it can be deleted"));
+      });
    }
    
    /**
@@ -407,17 +413,4 @@ class Project extends Model
       $this->archived_at = null;
       $this->save();
    }
-
-   /**
-    * Delete project
-    */
-   public function deleteproject()
-   {
-      // Ensure correct authorization
-      if(!request()->user()->can('update', $this))
-         abort(403);
-      
-      $this->delete();
-   }
-   
 }

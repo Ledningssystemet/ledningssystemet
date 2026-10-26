@@ -6,6 +6,7 @@ import { ProjectActions } from './ActionPlanPicker';
 import { WorkPackages } from './WorkPackages';
 import { Gantt } from './Gantt';
 import { PersonalGantt } from './PersonalGantt';
+import { AnnualWheel } from './AnnualWheel';
 import { Meetings } from './Meetings';
 import { Badge, Btn, Card, Icon, Input, Label, Options, SectionTitle, Select } from '../ui';
 // @ts-ignore
@@ -41,6 +42,7 @@ export function ProjectsView({ config: initialConfig }: { config: Configuration 
     const [configError, setConfigError] = useState<string | null>(null);
     const [configAttempt, setConfigAttempt] = useState(0);
     const [meetingLink, setMeetingLink] = useState(initialLink);
+    const [visualization, setVisualization] = useState('gantt');
     const onMeetingLinkOpened = useCallback(() => setMeetingLink(null), []);
     const meetingDirty = useRef(false);
     const onMeetingDirty = useCallback((dirty: boolean) => { meetingDirty.current = dirty; }, []);
@@ -202,7 +204,15 @@ export function ProjectsView({ config: initialConfig }: { config: Configuration 
                     {tab === 'settings' && <Settings key={project.id} project={project} config={config} run={run} />}
                 </div>}
                 </> : <>
-                <PersonalGantt projects={projects} config={config} />
+                <div className="d-flex justify-content-end mb-2">
+                    <div className="pm-visualization-buttons" role="group" aria-label={t('Project visualization')}>
+                        <Btn variant="ghost" aria-pressed={visualization === 'none'} onClick={() => setVisualization('none')}>{t('No overview')}</Btn>
+                        <Btn variant="ghost" aria-pressed={visualization === 'gantt'} onClick={() => setVisualization('gantt')}>{t('Gantt chart')}</Btn>
+                        <Btn variant="ghost" aria-pressed={visualization === 'year-wheel'} onClick={() => setVisualization('year-wheel')}>{t('Year wheel')}</Btn>
+                    </div>
+                </div>
+                {visualization === 'gantt' && <PersonalGantt projects={projects} config={config} />}
+                {visualization === 'year-wheel' && <AnnualWheel projects={projects} config={config} />}
                 <Card className="pm-project-list">
                     <div className="pm-list-toolbar">
                         <div className="pm-eyebrow">{t('Overview')}</div>

@@ -22,6 +22,7 @@ export type GanttGroup = {
 };
 export type GanttProps = {
     title: string;
+    description?: string;
     groups: GanttGroup[];
     startDate?: string | null;
     endDate?: string | null;
@@ -69,7 +70,7 @@ export function ganttSpan(start: string | null, end: string | null, scale: Retur
     return { left: `${scale.position(first)}%`, width: `${(last - first + (inclusive ? 1 : 0)) / (scale.end - scale.start) * 100}%` };
 }
 
-export function Gantt({ title, groups, startDate, endDate, today = todayDate(), locale, ariaLabel = t('Gantt chart') }: GanttProps) {
+export function Gantt({ title, description, groups, startDate, endDate, today = todayDate(), locale, ariaLabel = t('Gantt chart') }: GanttProps) {
     const scrollRef = useRef<HTMLDivElement>(null);
     const todayRef = useRef<HTMLDivElement>(null);
     const labelRef = useRef<HTMLDivElement>(null);
@@ -108,6 +109,7 @@ export function Gantt({ title, groups, startDate, endDate, today = todayDate(), 
     };
 
     return <Card className="ls-gantt-card">
+        {description && <p className="ls-gantt-description text-muted">{description}</p>}
         <div ref={scrollRef} className="ls-gantt-scroll" role="region" aria-label={ariaLabel} tabIndex={0}>
             <div className="ls-gantt" style={{ minWidth: Math.max(760, 224 + scale.months.length * 112) }}>
                 <div className="ls-gantt-header">

@@ -12,6 +12,7 @@ use Illuminate\Validation\ValidationException;
 use Ledningssystemet\Ledningssystemet\Http\Controllers\Api\TableController;
 use Ledningssystemet\Ledningssystemet\Models\Project;
 use Ledningssystemet\Ledningssystemet\Models\ProjectActivity;
+use Ledningssystemet\Ledningssystemet\Models\RecurringProjectActivity;
 use Ledningssystemet\Ledningssystemet\Models\ProjectRisk;
 use Ledningssystemet\Ledningssystemet\Models\ProjectWorkPackage;
 use Ledningssystemet\Ledningssystemet\Models\RiskLevel;
@@ -49,6 +50,8 @@ class ProjectModuleSchemaTest extends TestCase
         $migration->up();
         $workPackages = require base_path('database/migrations/2026_10_24_143000_create_project_work_packages.php');
         $workPackages->up();
+        $recurringActivities = require base_path('database/migrations/2026_10_26_210000_create_recurring_project_activities.php');
+        $recurringActivities->up();
         $this->user = Mockery::mock(User::class)->makePartial();
         $this->user->forceFill(['id' => 1, 'name' => 'Owner']);
         $this->user->shouldReceive('hasPermissionTo')->andReturn(false);
@@ -87,6 +90,236 @@ class ProjectModuleSchemaTest extends TestCase
         $this->assertSame([$activity->id], $risk->int_activities()->pluck('project_activities.id')->all());
         $this->assertSame([1], $risk->int_controls()->pluck('controls.id')->all());
         $this->assertSame([], Project::findOrFail(1)->riskdistribution);
+    }
+
+    public function test_recurring_activity_api_crud_uses_defaults_and_project_permissions(): void
+    {
+        $controller = new TableController;
+        $this->request('POST', ['project_id' => 1, 'name' => 'Monthly review', 'frequency' => 'monthly']);
+        $created = $controller->create('RecurringProjectActivity')->getData(true);
+        $this->assertSame(range(1, 12), $created['months']);
+        $this->assertNull($created['day_of_month'] ?? null);
+        $this->assertTrue($created['access']['update']);
+
+        $this->request('PATCH', ['months' => [2, 6], 'day_of_month' => 15]);
+        $updated = $controller->update('RecurringProjectActivity', $created['id'])->getData(true);
+        $this->assertSame([2, 6], $updated['months']);
+        $this->assertSame(15, $updated['day_of_month']);
+
+        $this->administrator = false;
+        $other = RecurringProjectActivity::withoutEvents(fn () => RecurringProjectActivity::create([
+            'project_id' => 2, 'name' => 'Other project', 'frequency' => 'daily',
+        ]));
+        $this->request('GET', ['filter' => ['project_id' => 1]]);
+        $this->assertCount(1, $controller->index('RecurringProjectActivity')->getData(true));
+        $this->assertFalse($this->user->can('view', $other));
+        $this->assertFalse($this->user->can('update', $other));
+        $this->assertFalse($this->user->can('delete', $other));
+        $this->request('POST', ['project_id' => 2]);
+        $this->assertFalse($this->user->can('create', RecurringProjectActivity::class));
+        $this->request('DELETE');
+        $controller->delete('RecurringProjectActivity', $created['id']);
+        $this->assertNull(RecurringProjectActivity::find($created['id']));
+    }
+
+    public function test_recurring_activity_list_can_include_responsible_user_names_in_the_same_request(): void
+    {
+        $assigned = RecurringProjectActivity::create([
+            'project_id' => 1, 'name' => 'Assigned', 'frequency' => 'daily', 'responsible_user_id' => 1,
+        ]);
+        RecurringProjectActivity::create(['project_id' => 1, 'name' => 'Unassigned', 'frequency' => 'daily']);
+        $this->request('GET', [
+            'filter' => ['project_id' => 1],
+            'fields' => ['recurring_project_activities' => 'id,name,responsible_user_id,responsible_user_name'],
+            'sort' => 'name',
+        ]);
+        $rows = (new TableController)->index('RecurringProjectActivity')->getData(true);
+        $this->assertSame(['Owner', null], array_column($rows, 'responsible_user_name'));
+        $this->assertEqualsCanonicalizing(['id', 'name', 'responsible_user_id', 'responsible_user_name'], array_keys($rows[0]));
+        $this->assertTrue(RecurringProjectActivity::visibleTo($this->user)->get()
+            ->every(fn (RecurringProjectActivity $activity) => $activity->relationLoaded('int_responsible_user')));
+        $this->assertSame('Owner', $assigned->fresh()->responsible_user_name);
+    }
+
+    public function test_recurring_activity_schedule_handles_weekdays_months_and_leap_years(): void
+    {
+        $monthly = new RecurringProjectActivity(['frequency' => 'monthly']);
+        foreach (['2026-02-28', '2028-02-29', '2026-04-30', '2026-12-31'] as $date) {
+            $this->assertTrue($monthly->isDueOn(\Carbon\Carbon::parse($date)), $date);
+        }
+        $this->assertFalse($monthly->isDueOn(\Carbon\Carbon::parse('2028-02-28')));
+        $monthly->months = [2, 4];
+        $this->assertFalse($monthly->isDueOn(\Carbon\Carbon::parse('2026-12-31')));
+        $monthly->day_of_month = 31;
+        $this->assertTrue($monthly->isDueOn(\Carbon\Carbon::parse('2026-04-30')));
+        $this->assertTrue($monthly->isDueOn(\Carbon\Carbon::parse('2028-02-29')));
+        $this->assertFalse($monthly->isDueOn(\Carbon\Carbon::parse('2028-02-28')));
+        $monthly->day_of_month = 15;
+        $this->assertTrue($monthly->isDueOn(\Carbon\Carbon::parse('2026-04-15')));
+
+        $weekly = new RecurringProjectActivity(['frequency' => 'weekly', 'weekday' => 7]);
+        $this->assertTrue($weekly->isDueOn(\Carbon\Carbon::parse('2026-11-01')));
+        $this->assertFalse($weekly->isDueOn(\Carbon\Carbon::parse('2026-11-02')));
+        $this->assertTrue((new RecurringProjectActivity(['frequency' => 'daily']))->isDueOn(\Carbon\Carbon::parse('2026-11-02')));
+    }
+
+    public function test_recurring_activity_command_waits_for_next_occurrence_and_copies_fields(): void
+    {
+        $this->travelTo(now()->setDate(2026, 10, 26)->startOfDay()->addHours(5));
+        $recurring = RecurringProjectActivity::create([
+            'project_id' => 1, 'name' => 'Weekly review', 'description' => 'Review',
+            'responsible_user_id' => 1, 'estimated_cost' => 125.50, 'estimated_hours' => 2,
+            'frequency' => 'weekly', 'weekday' => 1,
+        ]);
+        $this->artisan('ledningssystemet:recurringprojectactivities')->assertSuccessful();
+        $activity = $recurring->int_activities()->sole();
+        $this->assertSame('Weekly review', $activity->name);
+        $this->assertSame('Review', $activity->description);
+        $this->assertSame(1, $activity->responsible_user_id);
+        $this->assertEquals(125.50, $activity->estimated_cost);
+        $this->assertSame(2, $activity->estimated_hours);
+        $this->assertSame('2026-10-26', $activity->startdate);
+        $this->assertSame($activity->startdate, $activity->due);
+        $this->artisan('ledningssystemet:recurringprojectactivities')->assertSuccessful();
+        $this->assertSame(1, $recurring->int_activities()->count());
+
+        $this->travelTo(now()->addWeek());
+        $this->artisan('ledningssystemet:recurringprojectactivities')->assertSuccessful();
+        $this->assertSame(1, $recurring->int_activities()->count());
+        $activity->update(['completed_at' => now()]);
+        $this->artisan('ledningssystemet:recurringprojectactivities')->assertSuccessful();
+        $this->assertSame(1, $recurring->int_activities()->count());
+        $this->travelTo(now()->addDay());
+        $this->artisan('ledningssystemet:recurringprojectactivities')->assertSuccessful();
+        $this->assertSame(1, $recurring->int_activities()->count());
+        $this->travelTo(now()->addDays(6));
+        $this->artisan('ledningssystemet:recurringprojectactivities')->assertSuccessful();
+        $this->assertSame(2, $recurring->int_activities()->count());
+        $this->assertSame(1, $recurring->int_activities()->whereNull('completed_at')->count());
+        $this->travelBack();
+    }
+
+    public function test_recurring_activity_command_does_not_recreate_deleted_occurrences_or_modify_archived_projects(): void
+    {
+        $this->travelTo(now()->setDate(2026, 10, 26));
+        $recurring = RecurringProjectActivity::create(['project_id' => 1, 'name' => 'Daily review', 'frequency' => 'daily']);
+        $this->artisan('ledningssystemet:recurringprojectactivities')->assertSuccessful();
+        $recurring->int_activities()->sole()->delete();
+        $this->artisan('ledningssystemet:recurringprojectactivities')->assertSuccessful();
+        $this->assertSame(0, $recurring->int_activities()->count());
+        $this->travelTo(now()->addDay());
+        DB::table('projects')->where('id', 1)->update(['archived_at' => now()]);
+        $this->artisan('ledningssystemet:recurringprojectactivities')->assertSuccessful();
+        $this->assertSame(0, $recurring->int_activities()->count());
+        $this->travelBack();
+    }
+
+    public function test_recurring_activity_reopening_cannot_create_two_unfinished_activities(): void
+    {
+        $recurring = RecurringProjectActivity::create(['project_id' => 1, 'name' => 'Daily', 'frequency' => 'daily']);
+        $first = $recurring->int_activities()->create(['project_id' => 1, 'name' => 'First', 'completed_at' => now()]);
+        $recurring->int_activities()->create(['project_id' => 1, 'name' => 'Second']);
+        $this->expectException(ValidationException::class);
+        $first->update(['completed_at' => null]);
+    }
+
+    public function test_recurring_activity_uniqueness_is_enforced_by_the_database(): void
+    {
+        $recurring = RecurringProjectActivity::create(['project_id' => 1, 'name' => 'Daily', 'frequency' => 'daily']);
+        $first = $recurring->int_activities()->create(['project_id' => 1, 'name' => 'First', 'completed_at' => now()]);
+        $recurring->int_activities()->create(['project_id' => 1, 'name' => 'Second']);
+        $this->expectException(QueryException::class);
+        DB::table('project_activities')->where('id', $first->id)->update(['completed_at' => null]);
+    }
+
+    public function test_recurring_activity_deletion_preserves_generated_activities(): void
+    {
+        $recurring = RecurringProjectActivity::create(['project_id' => 1, 'name' => 'Daily', 'frequency' => 'daily']);
+        $activity = $recurring->int_activities()->create(['project_id' => 1, 'name' => 'First']);
+        $recurring->delete();
+        $this->assertNotNull($activity->fresh());
+        $this->assertNull($activity->fresh()->recurring_project_activity_id);
+    }
+
+    public function test_recurring_activity_link_must_belong_to_same_project(): void
+    {
+        $recurring = RecurringProjectActivity::create(['project_id' => 1, 'name' => 'Daily', 'frequency' => 'daily']);
+        $this->expectException(ValidationException::class);
+        ProjectActivity::create(['project_id' => 2, 'name' => 'Invalid', 'recurring_project_activity_id' => $recurring->id]);
+    }
+
+    public function test_recurring_activity_rejects_invalid_schedules(): void
+    {
+        foreach ([
+            ['frequency' => 'yearly'], ['frequency' => 'weekly'], ['weekday' => 0],
+            ['weekday' => 8], ['months' => []], ['months' => [1, 1]], ['months' => [13]],
+            ['day_of_month' => 0], ['day_of_month' => 32],
+        ] as $invalid) {
+            try {
+                RecurringProjectActivity::create([...['project_id' => 1, 'name' => 'Invalid', 'frequency' => 'monthly'], ...$invalid]);
+                $this->fail('Invalid schedule was accepted: '.json_encode($invalid));
+            } catch (ValidationException $exception) {
+                $this->assertNotEmpty($exception->errors());
+            }
+        }
+    }
+
+    public function test_recurring_activity_monthly_command_uses_selected_months_and_short_month_end(): void
+    {
+        $recurring = RecurringProjectActivity::create([
+            'project_id' => 1, 'name' => 'Monthly review', 'frequency' => 'monthly',
+            'months' => [2, 4], 'day_of_month' => 31,
+        ]);
+        auth()->forgetUser();
+        foreach (['2028-02-28', '2028-03-31', '2028-04-29'] as $date) {
+            $this->travelTo(\Carbon\Carbon::parse($date.' 05:00:00'));
+            $this->artisan('ledningssystemet:recurringprojectactivities')->assertSuccessful();
+            $this->assertSame(0, $recurring->int_activities()->count());
+        }
+        $this->travelTo(\Carbon\Carbon::parse('2028-04-30 05:00:00'));
+        $this->artisan('ledningssystemet:recurringprojectactivities')->assertSuccessful();
+        $this->assertSame('2028-04-30', $recurring->int_activities()->sole()->due);
+        $this->travelBack();
+    }
+
+    public function test_recurring_activity_readonly_members_cannot_mutate_and_archived_projects_are_locked(): void
+    {
+        $this->user->setTable('users')->setConnection('sqlite');
+        $recurring = RecurringProjectActivity::withoutEvents(fn () => RecurringProjectActivity::create([
+            'project_id' => 2, 'name' => 'Other review', 'frequency' => 'monthly',
+        ]));
+        $this->administrator = false;
+        DB::table('project_user')->insert(['project_id' => 2, 'user_id' => 1, 'readonly' => true]);
+        $this->assertTrue($this->user->can('view', $recurring));
+        $this->assertFalse($this->user->can('update', $recurring));
+        $this->assertFalse($this->user->can('delete', $recurring));
+        $this->request('POST', ['project_id' => 2]);
+        $this->assertFalse($this->user->can('create', RecurringProjectActivity::class));
+        DB::table('project_user')->where('project_id', 2)->update(['readonly' => false]);
+        $this->assertTrue($this->user->can('update', $recurring->fresh()));
+        DB::table('projects')->where('id', 2)->update(['archived_at' => now()]);
+        foreach (['save', 'delete'] as $operation) {
+            try {
+                $recurring->name = 'Changed';
+                $recurring->$operation();
+                $this->fail('Archived recurrence was modified');
+            } catch (HttpException $exception) {
+                $this->assertContains($exception->getStatusCode(), [400, 403]);
+            }
+        }
+        $this->assertSame('Other review', $recurring->fresh()->name);
+    }
+
+    public function test_recurring_activity_migration_can_be_rolled_back_and_reapplied_with_existing_activities(): void
+    {
+        $activity = ProjectActivity::create(['project_id' => 1, 'name' => 'Existing']);
+        $migration = require base_path('database/migrations/2026_10_26_210000_create_recurring_project_activities.php');
+        $migration->down();
+        $this->assertFalse(Schema::hasTable('recurring_project_activities'));
+        $this->assertFalse(Schema::hasColumn('project_activities', 'recurring_project_activity_id'));
+        $migration->up();
+        $this->assertSame('Existing', $activity->fresh()->name);
+        $this->assertNull($activity->fresh()->recurring_project_activity_id);
     }
 
     public function test_activity_crud_uses_project_activities_and_persists_risk_links(): void

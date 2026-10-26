@@ -56,5 +56,5 @@ export function PersonalGantt({ projects, config }: { projects: ProjectSummary[]
     if (!activities) return <Card><p className="mb-0" role="status">{t('Loading your project timeline…')}</p></Card>;
     const groups = personalGanttGroups(projects, activities, config.currentUserId);
     if (!groups.length) return <Card><p className="mb-0 text-muted">{t('You are not participating in any ongoing projects')}</p></Card>;
-    return <Gantt title={t('My project activities')} groups={groups} ariaLabel={t('My project activities')} />;
+    return <Gantt title={t('My project activities')} description={t('Only planned project activities are shown. Recurring activities are shown in the year wheel.')} groups={groups} ariaLabel={t('My project activities')} />;
 }

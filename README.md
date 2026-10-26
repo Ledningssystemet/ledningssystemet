@@ -78,6 +78,41 @@ project theme variables remain supported as fallbacks. Project-specific layout
 and status logic stay in the project module. Translation uses the application's
 `window.translateString` through `resources/js/lib/i18n.ts`.
 
+## Recurring project activities
+
+Configure recurring activities under a project's **Activities** tab. Configurations
+are stored in `recurring_project_activities` and use the same policy as
+`ProjectActivity`. Daily, weekly (ISO weekday 1–7, Monday–Sunday) and monthly
+schedules are supported. Monthly schedules default to all months and the last day
+of the month (`day_of_month: null`); selected days 1–31 use the month's last day
+when that day does not exist.
+The configuration includes the activity's name, description, responsible user,
+estimated cost and estimated hours.
+
+Run migrations before deployment. The command
+`php artisan ledningssystemet:recurringprojectactivities` runs daily at 05:00
+through Laravel's scheduler, using the application's timezone. It creates one
+activity on the scheduled day, with both start and due dates set to that day.
+Archived projects are skipped. Only one unfinished activity is allowed per
+configuration, enforced by project locks and a unique generated database column.
+Activities link back through nullable `recurring_project_activity_id`.
+
+Missed occurrences are not caught up: after completion, creation waits until the
+next scheduled day. Repeated runs cannot create another occurrence on the same
+day, including after completion or deletion. Editing a configuration affects only
+future activities. Deleting it keeps existing activities and clears their link.
+Configurations are also available through the `RecurringProjectActivity` CRUD API.
+The computed field `responsible_user_name` can be requested in the same call, e.g.
+`fields[recurring_project_activities]=id,name,responsible_user_id,responsible_user_name`;
+responsible users are eager-loaded, so no separate user lookup (which requires
+user administration rights) is needed.
+
+The project list's **Year wheel** shows how the recurring activities of the
+projects you participate in are distributed over the months of the current year.
+Weekly and daily recurrences show the number of occurrences per month in
+parentheses. Clicking an activity opens a box with its project, responsible user,
+description and schedule.
+
 ## Project meetings
 
 The Meetings tab stores project meetings through the `ProjectMeeting` CRUD API.

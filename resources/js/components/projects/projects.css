@@ -12,6 +12,308 @@
     border-radius: 16px;
 }
 
+.projects-module .pm-visualization-buttons {
+    display: inline-flex;
+    border: 1px solid var(--pm-border);
+    border-radius: 8px;
+    background: #f3f5f6;
+}
+
+.projects-module .pm-visualization-buttons .ls-button {
+    min-height: 32px;
+    border-radius: 0;
+    font-size: 13px;
+}
+
+.projects-module .pm-visualization-buttons .ls-button:first-child {
+    border-radius: 7px 0 0 7px;
+}
+
+.projects-module .pm-visualization-buttons .ls-button:last-child {
+    border-radius: 0 7px 7px 0;
+}
+
+.projects-module .pm-visualization-buttons .ls-button + .ls-button {
+    border-left-color: var(--pm-border);
+}
+
+.projects-module .pm-visualization-buttons .ls-button[aria-pressed="true"] {
+    background: var(--pm-surface);
+    color: var(--pm-primary);
+    box-shadow: 0 1px 3px #152c3814;
+}
+
+.projects-module .pm-visualization-buttons .ls-button:focus-visible {
+    position: relative;
+    z-index: 1;
+}
+
+.projects-module .pm-wheel-description {
+    margin-bottom: 12px;
+    font-size: 13px;
+}
+
+.projects-module .pm-wheel-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.projects-module .pm-wheel-year {
+    color: var(--pm-muted);
+    font-weight: 600;
+}
+
+.projects-module .pm-wheel-picker {
+    position: relative;
+}
+
+.projects-module .pm-wheel-picker > .ls-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.projects-module .pm-wheel-picker-menu {
+    position: absolute;
+    z-index: 20;
+    top: calc(100% + 6px);
+    left: 0;
+    width: 320px;
+    max-width: calc(100vw - 32px);
+    border: 1px solid var(--pm-border);
+    border-radius: 8px;
+    background: var(--pm-surface);
+    box-shadow: 0 8px 24px #152c3829;
+}
+
+.projects-module .pm-wheel-picker-search {
+    padding: 8px;
+    border-bottom: 1px solid var(--pm-border);
+}
+
+.projects-module .pm-wheel-picker-list {
+    max-height: 290px;
+    margin: 0;
+    padding: 4px 0;
+    overflow-y: auto;
+    list-style: none;
+}
+
+.projects-module .pm-wheel-picker-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 6px 12px;
+    border: 0;
+    background: none;
+    color: var(--pm-foreground);
+    text-align: left;
+}
+
+.projects-module .pm-wheel-picker-item:hover,
+.projects-module .pm-wheel-picker-item:focus-visible {
+    background: #f3f5f6;
+}
+
+.projects-module .pm-wheel-picker-item[aria-pressed="false"] {
+    color: var(--pm-muted);
+}
+
+.projects-module .pm-wheel-picker-item[aria-pressed="false"] .pm-wheel-picker-dot {
+    opacity: 0.25;
+}
+
+.projects-module .pm-wheel-picker-dot {
+    flex: none;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+}
+
+.projects-module .pm-wheel-picker-name {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.projects-module .pm-wheel-picker-count,
+.projects-module .pm-wheel-picker-empty {
+    color: var(--pm-muted);
+    font-size: 13px;
+}
+
+.projects-module .pm-wheel-picker-empty {
+    padding: 6px 12px;
+}
+
+.projects-module .pm-wheel-picker-footer {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 12px;
+    border-top: 1px solid var(--pm-border);
+}
+
+.projects-module .pm-wheel-picker-footer button {
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--pm-muted);
+    font-size: 13px;
+}
+
+.projects-module .pm-wheel-picker-footer button:hover:not(:disabled) {
+    color: var(--pm-primary);
+}
+
+.projects-module .pm-wheel {
+    position: relative;
+}
+
+.projects-module .pm-wheel-svg {
+    display: block;
+    width: 100%;
+    height: auto;
+    margin: 0 auto;
+}
+
+.projects-module .pm-wheel-sector {
+    fill: var(--pm-surface);
+}
+
+.projects-module .pm-wheel-sector-shaded {
+    fill: #eef2f7;
+}
+
+.projects-module .pm-wheel-sector-current {
+    fill: none;
+    stroke: #d0587e;
+    stroke-width: 1.5;
+}
+
+.projects-module .pm-wheel-month {
+    fill: #5c7090;
+    font-size: 15px;
+    font-weight: 600;
+}
+
+.projects-module .pm-wheel-ring {
+    fill: none;
+    stroke: var(--pm-foreground);
+    stroke-width: 1.5;
+}
+
+.projects-module .pm-wheel-center {
+    fill: var(--pm-surface);
+    stroke: var(--pm-border);
+}
+
+.projects-module .pm-wheel-total {
+    fill: var(--pm-muted);
+    font-size: 13px;
+}
+
+.projects-module .pm-wheel-label {
+    fill: var(--pm-foreground);
+    font-size: 11px;
+}
+
+.projects-module .pm-wheel-entry line {
+    stroke-width: 1;
+}
+
+.projects-module .pm-wheel-entry:hover .pm-wheel-label {
+    font-weight: 600;
+}
+
+.projects-module .pm-wheel-canvas {
+    position: relative;
+    margin: 0 auto;
+}
+
+.projects-module .pm-wheel-entry[role="button"] {
+    cursor: pointer;
+    outline: none;
+}
+
+.projects-module .pm-wheel-entry[role="button"]:focus-visible .pm-wheel-label,
+.projects-module .pm-wheel-entry-active .pm-wheel-label {
+    fill: var(--pm-primary);
+    font-weight: 600;
+}
+
+.projects-module .pm-wheel-entry-active circle {
+    stroke: var(--pm-foreground);
+    stroke-width: 2;
+}
+
+.projects-module .pm-wheel-info {
+    position: absolute;
+    z-index: 10;
+    width: 300px;
+    max-width: calc(100vw - 48px);
+    padding: 12px 14px;
+    border: 1px solid var(--pm-border);
+    border-radius: 8px;
+    background: var(--pm-surface);
+    box-shadow: 0 8px 24px #152c3829;
+    font-size: 13px;
+}
+
+.projects-module .pm-wheel-info-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.projects-module .pm-wheel-info-title {
+    margin: 0;
+    font-size: 15px;
+    font-weight: 600;
+    overflow-wrap: anywhere;
+}
+
+.projects-module .pm-wheel-info-close {
+    display: inline-flex;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--pm-muted);
+}
+
+.projects-module .pm-wheel-info-close:hover {
+    color: var(--pm-foreground);
+}
+
+.projects-module .pm-wheel-info-details {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 4px 12px;
+    margin: 0;
+}
+
+.projects-module .pm-wheel-info-details dt {
+    color: var(--pm-muted);
+    font-weight: 500;
+}
+
+.projects-module .pm-wheel-info-details dd {
+    margin: 0;
+    overflow-wrap: anywhere;
+}
+
+.projects-module .pm-wheel-info-text {
+    max-height: 120px;
+    overflow-y: auto;
+    white-space: pre-wrap;
+}
+
 .projects-module .pm-meeting-document {
     min-height: 120px;
     padding: 12px;

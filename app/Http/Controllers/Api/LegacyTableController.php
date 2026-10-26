@@ -21,9 +21,9 @@ class LegacyTableController extends Controller
       if (! $classname)
          abort(404);
 
-      // Ensure index function exist
+      // Ensure index function exist, otherwise redirect to new TableController index function
       if (!method_exists($classname, 'index'))
-         abort(404);
+         return app(\Ledningssystemet\Ledningssystemet\Http\Controllers\Api\TableController::class)->index($model, $namespace);
 
       // Ensure user have correct access
       if (!Gate::allows('index', $classname)) {

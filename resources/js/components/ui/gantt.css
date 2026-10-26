@@ -5,6 +5,11 @@
     line-height: 1.5;
 }
 
+.ls-gantt-card .ls-gantt-description {
+    margin-bottom: 12px;
+    font-size: 13px;
+}
+
 .ls-gantt-card .ls-gantt-scroll {
     overflow-x: auto;
     border-radius: 8px;
