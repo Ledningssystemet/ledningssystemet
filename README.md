@@ -41,6 +41,35 @@ After migration, these environment variables and the old `disable_*` and
 The processing register reads its contact details from the database. Changes in the
 administration page take effect without rebuilding configuration or route caches.
 
+## SSO and MFA enforcement
+
+With `MFA_ENABLED=true` and `MFA_ENFORCED=true`, SSO users who have not completed
+local MFA setup are sent to enrollment. Users who have completed setup must pass
+the local TOTP or recovery-code challenge after SSO, unless that provider is
+explicitly configured to trust upstream MFA. The local challenge remains required
+by default:
+
+- `AZURE_TRUST_IDP_MFA=false`
+- `GOOGLE_TRUST_IDP_MFA=false`
+
+An administrator may enable either flag only after configuring the IdP to require
+MFA for every applicable sign-in and return an authenticated `amr` or `acr` claim
+in the provider response consumed by Socialite. The SSO callback (`SsoController`)
+trusts `amr=mfa` or an `amr` list showing methods from at least two factor
+categories (knowledge, possession, or inherence). Issuer-specific `acr` values
+are trusted only when explicitly allow-listed using the corresponding
+`AZURE_MFA_ACR_VALUES` or `GOOGLE_MFA_ACR_VALUES` comma-separated setting; an
+unlisted, missing, or malformed claim requires local MFA. Configure the IdP to
+release these claims in the authenticated provider response; a policy requiring
+MFA without a usable assurance claim is not sufficient to skip the local
+challenge. The current Azure and Google Socialite integrations use OIDC; SAML
+assurance is not implemented.
+
+For a locally challenged SSO login, `SsoController` stores a pending login rather
+than creating an authenticated session. `TwoFactorChallengeController` completes
+that session only after a valid TOTP or recovery code. `RequireMfaEnforcement`
+continues to redirect accounts without completed local setup to enrollment.
+
 ## API documentation
 
 Authenticated API users can retrieve the Swagger 2.0 specification with
