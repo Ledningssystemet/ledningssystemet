@@ -53,11 +53,34 @@ class SwaggerApiTest extends TestCase
             ->assertJsonPath('security.0.Bearer', []);
 
         $specification = json_decode($response->getContent());
-        $asset = $specification->paths->{'/api/v1/items/Asset'};
+        $asset = $specification->paths->{'/api/v1/crud/Asset'};
         $this->assertIsObject($asset->post->parameters[0]->schema->properties);
-        $this->assertIsObject($asset->get->responses->{'200'}->schema->properties);
-        $this->assertContains('search', array_column($asset->get->parameters, 'name'));
-        $this->assertIsObject($specification->paths->{'/api/v1/items/Asset/{id}'}->patch);
+        $indexSchema = $asset->get->responses->{'200'}->schema;
+        $this->assertSame('object', $indexSchema->items->type);
+        $this->assertIsObject($indexSchema->items->properties);
+        $this->assertSame('array', $indexSchema->properties->data->type);
+        $this->assertEquals($indexSchema->items, $indexSchema->properties->data->items);
+        $this->assertSame(
+            ['sort', 'include', 'fields[assets]', 'per_page', 'page'],
+            array_column($asset->get->parameters, 'name')
+        );
+        $this->assertIsObject($specification->paths->{'/api/v1/crud/Asset/{id}'}->patch);
+        $this->assertIsObject($specification->paths->{'/api/v1/crud/Asset/{id}'}->get);
+        $this->assertIsObject($specification->paths->{'/api/v1/crud/Asset/{id}'}->delete);
+        $this->assertIsObject($specification->paths->{'/api/v1/crud/Asset/{id}/dependantsList'}->post);
+
+        foreach (array_keys(get_object_vars($specification->paths)) as $path) {
+            $this->assertStringStartsWith('/api/v1/crud/', $path);
+        }
+
+        $controlAction = $specification->paths->{'/api/v1/crud/ControlAction'};
+        $filters = array_column($controlAction->get->parameters, 'name');
+        $this->assertContains('filter[risk_id]', $filters);
+        $this->assertNotContains('risk', $filters);
+        $this->assertNotContains('filter[int_risks.id]', $filters);
+
+        // CRUD does not require the legacy index method.
+        $this->assertIsObject($specification->paths->{'/api/v1/crud/ProjectMeetingMention'});
 
         // Generation must also work more than once in the same process.
         $this->getJson('/api/v1/swagger')->assertOk();

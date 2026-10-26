@@ -22,3 +22,6 @@ Schedule::command('ledningssystemet:risksreassess')->dailyAt('05:00');
 
 // Daily status email
 Schedule::command('ledningssystemet:sendstatusmail')->dailyAt('06:00');
+
+// Daily purge of expired API tokens
+Schedule::command('ledningssystemet:purgeapitokens')->dailyAt('05:30');

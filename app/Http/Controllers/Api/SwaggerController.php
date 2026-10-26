@@ -2,23 +2,63 @@
 
 namespace Ledningssystemet\Ledningssystemet\Http\Controllers\Api;
 
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Ledningssystemet\Ledningssystemet\Http\Controllers\Controller;
-use ReflectionMethod;
+use Spatie\QueryBuilder\AllowedFilter;
 
 class SwaggerController extends Controller
 {
-    private function getIndexFilterParams(string $classname): array
+    private function getIndexParams(Model $model): array
     {
-        $params = [];
-        $reflection = new ReflectionMethod($classname, 'index');
-        $fileLines = file($reflection->getFileName());
-        $methodSource = implode('', array_slice($fileLines, $reflection->getStartLine() - 1, $reflection->getEndLine() - $reflection->getStartLine() + 1));
-        preg_match_all("/request\(\)->(?:input|has)\(\s*'([a-zA-Z_][a-zA-Z0-9_]*)'/", $methodSource, $matches);
-        foreach ($matches[1] as $param) {
-            if (! in_array($param, $params)) {
-                $params[] = $param;
+        $params = [
+            [
+                'name' => 'sort',
+                'in' => 'query',
+                'required' => false,
+                'type' => 'string',
+                'description' => 'Comma-separated allowed sort fields. Prefix a field with - for descending order.',
+            ],
+            [
+                'name' => 'include',
+                'in' => 'query',
+                'required' => false,
+                'type' => 'string',
+                'description' => 'Comma-separated allowed relationships to include.',
+            ],
+            [
+                'name' => 'fields['.$model->getTable().']',
+                'in' => 'query',
+                'required' => false,
+                'type' => 'string',
+                'description' => 'Comma-separated allowed fields to return. fields[_] is also accepted.',
+            ],
+            [
+                'name' => 'per_page',
+                'in' => 'query',
+                'required' => false,
+                'type' => 'integer',
+                'description' => 'Enable pagination with this number of items per page. Omit to return all items.',
+            ],
+            [
+                'name' => 'page',
+                'in' => 'query',
+                'required' => false,
+                'type' => 'integer',
+                'description' => 'Page to retrieve when per_page is supplied.',
+            ],
+        ];
+
+        if (method_exists($model, 'getAllowedFilters')) {
+            foreach ($model::getAllowedFilters() as $filter) {
+                $name = $filter instanceof AllowedFilter ? $filter->getName() : $filter;
+                $params[] = [
+                    'name' => 'filter['.$name.']',
+                    'in' => 'query',
+                    'required' => false,
+                    'type' => 'string',
+                ];
             }
         }
 
@@ -55,16 +95,14 @@ class SwaggerController extends Controller
         ];
 
         foreach (scandir(dirname(__DIR__, 3).'/Models') as $filename) {
-            $objstatus = null;
-            if (strpos($filename, '.php') === false) {
+            if (! str_ends_with($filename, '.php')) {
                 continue;
             }
 
             $modelname = substr($filename, 0, strlen($filename) - 4);
             $classname = 'Ledningssystemet\Ledningssystemet\\Models\\'.$modelname;
 
-            // Ensure index function exist
-            if (! method_exists($classname, 'index')) {
+            if (! is_subclass_of($classname, Model::class)) {
                 continue;
             }
 
@@ -101,32 +139,40 @@ class SwaggerController extends Controller
                 'properties' => (object) $visibleProperties,
             ];
 
-            // Build query parameters for the index endpoint from the model's index method
-            $indexFilterParams = [];
-            foreach ($this->getIndexFilterParams($classname) as $param) {
-                $indexFilterParams[] = [
-                    'name' => $param,
-                    'in' => 'query',
-                    'required' => false,
-                    'type' => 'string',
-                ];
-            }
+            // Swagger 2.0 has no oneOf; leave type open for the array and paginated object.
+            $indexResponseSchema = [
+                'description' => 'An array of items, or a pagination object with a data array when per_page is supplied.',
+                'items' => $responseSchema,
+                'properties' => [
+                    'data' => ['type' => 'array', 'items' => $responseSchema],
+                    'current_page' => ['type' => 'integer'],
+                    'per_page' => ['type' => 'integer'],
+                    'last_page' => ['type' => 'integer'],
+                    'total' => ['type' => 'integer'],
+                ],
+            ];
 
             $retval['tags'][] = ['name' => $modelname, 'description' => $classname::getPrettyName(true)];
 
-            $retval['paths']['/api/v1/items/'.$modelname] = [
+            $retval['paths']['/api/v1/crud/'.$modelname] = [
                 // Index
                 'get' => [
                     'tags' => [
                         $modelname,
                     ],
                     'summary' => __('List all items'),
-                    'description' => '',
-                    'parameters' => $indexFilterParams,
+                    'description' => 'Filter using filter[field]=value. Allowed filters, sorts, fields and includes depend on the model. '
+                        .'Unless overridden by the model, filters use visible database columns (exact matching for numeric and boolean fields, partial matching for text) '
+                        .'and visible relationship paths. Computed attributes are not automatically filterable. '
+                        .'Without per_page the response is an array; with per_page it is a pagination object containing data and pagination metadata.',
+                    'parameters' => $this->getIndexParams($newobj),
                     'responses' => [
                         '200' => [
                             'description' => __('Successful operation'),
-                            'schema' => $responseSchema,
+                            'schema' => $indexResponseSchema,
+                        ],
+                        '400' => [
+                            'description' => 'Invalid filter, sort, field or include.',
                         ],
                         '401' => [
                             'description' => __('Unauthenticated'),
@@ -160,7 +206,7 @@ class SwaggerController extends Controller
                 ],
             ];
 
-            $retval['paths']['/api/v1/items/'.$modelname.'/{id}'] = [
+            $retval['paths']['/api/v1/crud/'.$modelname.'/{id}'] = [
                 // View
                 'get' => [
                     'tags' => [
@@ -267,7 +313,7 @@ class SwaggerController extends Controller
             // Register custom actions defined in the model's $actions property
             if (property_exists($newobj, 'actions') && is_array($newobj->actions)) {
                 foreach ($newobj->actions as $action) {
-                    $retval['paths']['/api/v1/items/'.$modelname.'/{id}/'.$action] = [
+                    $retval['paths']['/api/v1/crud/'.$modelname.'/{id}/'.$action] = [
                         'post' => [
                             'tags' => [
                                 $modelname,

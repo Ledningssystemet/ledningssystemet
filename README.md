@@ -51,6 +51,15 @@ This endpoint also accepts the browser's login session, even without
 authentication for other API endpoints is unchanged.
 The Swagger UI remains available to system administrators at `/systemadmin/swagger`
 and loads the specification from the API endpoint.
+The specification documents `/api/v1/crud/{model}` and its item and custom-action
+routes, not the legacy `/api/v1/items` API. List operations support
+`filter[field]=value`, comma-separated `sort` and `include`, and
+`fields[table]=field1,field2` (or `fields[_]`). Allowed values depend on the model;
+explicit model filters are listed in the specification. Default filters are based
+on visible database columns and visible relationship paths, not legacy `index`
+parameters such as `search`. Without `per_page`, lists return an array. With
+`per_page` (and optionally `page`), they return a pagination object with `data`
+and pagination metadata.
 
 ## Shared React UI
 
