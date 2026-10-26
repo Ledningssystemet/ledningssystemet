@@ -187,7 +187,7 @@ class SsoMfaEnforcementTest extends TestCase
         $controller = new class extends SsoController {
             public User $resolvedUser;
 
-            protected function resolveUser(string $provider, string $email, string $name, string $providerUserId): User
+            protected function resolveUser(string $provider, string $email, string $name, ?string $providerUserId): User
             {
                 return $this->resolvedUser;
             }

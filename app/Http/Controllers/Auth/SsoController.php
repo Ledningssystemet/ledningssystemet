@@ -118,7 +118,7 @@ class SsoController extends Controller
         return 'https://login.microsoftonline.com/'.trim((string) $tenant).'/oauth2/v2.0/logout?post_logout_redirect_uri='.urlencode($fallbackUrl);
     }
 
-    protected function resolveUser(string $provider, string $email, string $name, string $providerUserId): User
+    protected function resolveUser(string $provider, string $email, string $name, ?string $providerUserId): User
     {
         $email = self::normalizeAzureGuestEmail($provider, (string) ($email ?? ''));
         $name = trim((string) ($name ?? ''));
@@ -130,10 +130,10 @@ class SsoController extends Controller
 
         $providerKey = self::providerExternalId($provider, $providerUserId);
 
-        $user = User::query()
-            ->where('email', $email)
-            ->orWhere('external_id', $providerKey)
-            ->first();
+        $user = null !== $providerKey
+            ? User::query()->where('external_id', $providerKey)->first()
+            : null;
+        $user ??= User::query()->where('email', $email)->first();
 
         if (null === $user) {
             Log::warning('User '.$email.' was not found for SSO provider '.$provider.'.');
@@ -258,7 +258,7 @@ class SsoController extends Controller
     {
         $clientId = config('services.azure.client_id');
         $clientSecret = config('services.azure.client_secret');
-        $redirect = config('services.azure.redirect', route('sso.callback', ['provider' => 'azure']));
+        $redirect = config('services.azure.redirect') ?: route('oauthcallback');
 
         if (!self::hasCredentials($clientId, $clientSecret, $redirect)) {
             return null;
@@ -275,7 +275,7 @@ class SsoController extends Controller
     {
         $clientId = config('services.google.client_id');
         $clientSecret = config('services.google.client_secret');
-        $redirect = config('services.google.redirect', route('sso.callback', ['provider' => 'google']));
+        $redirect = config('services.google.redirect') ?: route('sso.callback', ['provider' => 'google']);
 
         if (!self::hasCredentials($clientId, $clientSecret, $redirect)) {
             return null;

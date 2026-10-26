@@ -70,6 +70,23 @@ than creating an authenticated session. `TwoFactorChallengeController` completes
 that session only after a valid TOTP or recovery code. `RequireMfaEnforcement`
 continues to redirect accounts without completed local setup to enrollment.
 
+For Azure B2B guests, `SsoController` converts an Entra guest UPN such as
+`guest_externaldomain.com#EXT#@tenant.onmicrosoft.com` to
+`guest@externaldomain.com` before matching an existing account. On the first
+successful match, the Azure provider ID is saved as `external_id`; no account is
+created if no existing user matches. This normalization applies only to Azure.
+
+Configure SSO with provider-specific variables such as `AZURE_CLIENT_ID`,
+`AZURE_CLIENT_SECRET`, `AZURE_TENANT_ID`, `AZURE_SCOPE`, and their `GOOGLE_*`
+equivalents. `AZURE_REDIRECT_URI` and `GOOGLE_REDIRECT_URI` are optional; without
+them the callback URL is generated from the current request. For reverse-proxy
+deployments, `TRUSTED_PROXIES` defaults to `*` and accepts a comma-separated
+list of proxy IP addresses or CIDRs. Replace `*` with the actual proxy addresses
+when possible. The proxy middleware uses the forwarded host and HTTPS scheme to
+generate callback URLs. Existing deployments should move shared SSO credentials
+and scopes to the provider-specific settings before upgrading. The `.env.example`
+lists the current provider settings.
+
 ## API documentation
 
 Authenticated API users can retrieve the Swagger 2.0 specification with
