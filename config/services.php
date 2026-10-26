@@ -68,6 +68,8 @@ return [
         'proxy' => env('AZURE_PROXY', env('PROXY')),
         'graph_url' => env('AZURE_GRAPH_URL', 'https://graph.microsoft.com/v1.0/me'),
         'logout' => env('AZURE_LOGOUT_URL'),
+        'trust_idp_mfa' => env('AZURE_TRUST_IDP_MFA', false),
+        'mfa_acr_values' => array_filter(array_map('trim', explode(',', env('AZURE_MFA_ACR_VALUES', '')))),
     ],
 
     'google' => [
@@ -76,6 +78,8 @@ return [
         'redirect' => env('GOOGLE_REDIRECT_URI', env('OAUTH_REDIRECT_URI')),
         'hosted_domain' => env('GOOGLE_HOSTED_DOMAIN', env('OAUTH_HOSTED_DOMAIN')),
         'scope' => env('GOOGLE_SCOPE', env('OAUTH_SCOPE')),
+        'trust_idp_mfa' => env('GOOGLE_TRUST_IDP_MFA', false),
+        'mfa_acr_values' => array_filter(array_map('trim', explode(',', env('GOOGLE_MFA_ACR_VALUES', '')))),
     ],
 
 ];

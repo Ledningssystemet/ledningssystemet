@@ -84,10 +84,17 @@ class TwoFactorChallengeController extends Controller
             ]);
         }
 
+        $authMechanism = $request->session()->pull('login.auth_mechanism', 'PASSWORD');
         Auth::guard(config('fortify.guard'))->login($user, $request->boolean('remember'));
         $request->session()->regenerate();
         $request->session()->forget('login');
-        $request->session()->put('auth_mechanism', 'PASSWORD');
+        $request->session()->put('auth_mechanism', $authMechanism);
+
+        if (str_starts_with($authMechanism, 'SSO_')) {
+            $user->forceFill([
+                'last_login_at' => now(),
+            ])->save();
+        }
 
         if ($request->boolean('trust_device')) {
             $this->rememberTrustedDevice($request, $user);

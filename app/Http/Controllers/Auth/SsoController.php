@@ -42,14 +42,31 @@ class SsoController extends Controller
             abort(403);
         }
 
-        Auth::login($user);
-        $request->session()->regenerate();
-        $request->session()->put('auth_mechanism', 'SSO_'.strtoupper($provider));
+        $mfaEnforced = config('ledningssystemet.mfa_enabled') && config('ledningssystemet.mfa_enforced');
+        $hasConfiguredMfa = !empty($user->two_factor_secret)
+            && !empty($user->two_factor_recovery_codes)
+            && !empty($user->two_factor_confirmed_at);
 
-        if (config('ledningssystemet.mfa_enabled') && config('ledningssystemet.mfa_enforced') && empty($user->two_factor_secret)) {
+        if ($mfaEnforced && !$hasConfiguredMfa) {
+            Auth::login($user);
+            $request->session()->regenerate();
+            $request->session()->put('auth_mechanism', 'SSO_'.strtoupper($provider));
             $request->session()->regenerateToken();
+
             return redirect()->route('mfa.enforcement');
         }
+
+        $request->session()->regenerate();
+        if ($mfaEnforced && !$this->hasTrustedIdpMfa($provider, $socialUser)) {
+            $request->session()->put('login.id', $user->getAuthIdentifier());
+            $request->session()->put('login.auth_mechanism', 'SSO_'.strtoupper($provider));
+            $request->session()->regenerateToken();
+
+            return redirect()->route('two-factor.login');
+        }
+
+        Auth::login($user);
+        $request->session()->put('auth_mechanism', 'SSO_'.strtoupper($provider));
 
         $user->forceFill([
             'last_login_at' => now(),
@@ -140,6 +157,66 @@ class SsoController extends Controller
         }
 
         return $user;
+    }
+
+    protected function hasTrustedIdpMfa(string $provider, object $socialUser): bool
+    {
+        if (!filter_var(config('services.'.$provider.'.trust_idp_mfa', false), FILTER_VALIDATE_BOOLEAN)) {
+            return false;
+        }
+
+        $claims = method_exists($socialUser, 'getRaw') ? $socialUser->getRaw() : null;
+        if (!is_array($claims)) {
+            return false;
+        }
+
+        $acr = $claims['acr'] ?? null;
+        $trustedAcrValues = config('services.'.$provider.'.mfa_acr_values', []);
+        if (is_string($trustedAcrValues)) {
+            $trustedAcrValues = explode(',', $trustedAcrValues);
+        }
+
+        if (is_string($acr) && '' !== $acr && is_array($trustedAcrValues)) {
+            foreach ($trustedAcrValues as $trustedAcr) {
+                if (is_string($trustedAcr) && hash_equals(trim($trustedAcr), $acr)) {
+                    return true;
+                }
+            }
+        }
+
+        $amr = $claims['amr'] ?? [];
+        if (is_string($amr)) {
+            $amr = [$amr];
+        }
+
+        if (!is_array($amr)) {
+            return false;
+        }
+
+        $factors = [];
+        foreach ($amr as $method) {
+            if (!is_string($method)) {
+                continue;
+            }
+
+            $method = strtolower(trim($method));
+            if ('mfa' === $method) {
+                return true;
+            }
+
+            $factor = match ($method) {
+                'pwd', 'password', 'pin' => 'knowledge',
+                'otp', 'sms', 'hwk', 'swk', 'fido', 'u2f' => 'possession',
+                'fpt', 'face', 'iris', 'retina', 'voice' => 'inherence',
+                default => null,
+            };
+
+            if (null !== $factor) {
+                $factors[$factor] = true;
+            }
+        }
+
+        return count($factors) > 1;
     }
 
     protected static function socialiteDriver(string $provider)
