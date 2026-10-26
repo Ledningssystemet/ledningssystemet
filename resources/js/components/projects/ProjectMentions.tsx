@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { collection, errorMessage, mentionUrl, t, type MeetingMention } from './api';
 import { Badge, Btn, Popup } from '../ui';
+// @ts-ignore
 import './mentions.css';
 
 export function ProjectMentions() {

@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from 'react';
-import { t } from '../../lib/i18n';
+import { t } from '@/lib/i18n';
 import { Card } from './index';
+// @ts-ignore
 import './gantt.css';
 
 export type GanttRow = {
