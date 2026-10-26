@@ -20,15 +20,8 @@ return [
    'mfa_enforced' => env('MFA_ENFORCED', false),
    'trusted_device_days' => env('TRUSTED_DEVICE_DAYS', 30),
 
-   // Single sign-on (SSO) and OAuth configuration
-   'oauth_button_text' => env('OAUTH_BUTTON_TEXT', 'Microsoft Entra ID'),
-   'oauth_server_authorize_url' => env('OAUTH_SERVER_AUTHORIZE_URL'),
-   'oauth_server_token_url' => env('OAUTH_SERVER_TOKEN_URL'),
-   'oauth_client_id' => env('OAUTH_CLIENTID'),
-   'oauth_client_secret' => env('OAUTH_SECRET'),
-   'oauth_scope' => env('OAUTH_SCOPE', 'openid,email,profile,offline_access,User.Read'),
-   'oauth_logout_url' => env('OAUTH_LOGOUT_URL'),
-   'sso_azure_button_text' => env('SSO_AZURE_BUTTON_TEXT', env('OAUTH_BUTTON_TEXT', 'Microsoft Entra ID')),
+   // Single sign-on settings
+   'sso_azure_button_text' => env('SSO_AZURE_BUTTON_TEXT', 'Microsoft Entra ID'),
    'sso_google_button_text' => env('SSO_GOOGLE_BUTTON_TEXT', 'Google Workspace'),
 
    // Microsoft Graph synchronization settings

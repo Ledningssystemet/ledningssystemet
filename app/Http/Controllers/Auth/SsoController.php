@@ -120,7 +120,7 @@ class SsoController extends Controller
 
     protected function resolveUser(string $provider, string $email, string $name, string $providerUserId): User
     {
-        $email = strtolower(trim((string) ($email ?? '')));
+        $email = self::normalizeAzureGuestEmail($provider, (string) ($email ?? ''));
         $name = trim((string) ($name ?? ''));
 
         if (!filter_var($email, FILTER_VALIDATE_EMAIL) || '' === $name) {
@@ -157,6 +157,21 @@ class SsoController extends Controller
         }
 
         return $user;
+    }
+
+    protected static function normalizeAzureGuestEmail(string $provider, string $email): string
+    {
+        $email = strtolower(trim($email));
+        if ('azure' !== $provider || !preg_match('/^([^#]+)#ext#@[^@]+$/i', $email, $matches)) {
+            return $email;
+        }
+
+        $separator = strrpos($matches[1], '_');
+        if (false === $separator) {
+            return $email;
+        }
+
+        return substr($matches[1], 0, $separator).'@'.substr($matches[1], $separator + 1);
     }
 
     protected function hasTrustedIdpMfa(string $provider, object $socialUser): bool
@@ -245,10 +260,6 @@ class SsoController extends Controller
         $clientSecret = config('services.azure.client_secret');
         $redirect = config('services.azure.redirect', route('sso.callback', ['provider' => 'azure']));
 
-        if (!is_string($clientId) || '' === trim($clientId)) {
-            $clientId = self::inferAzureClientIdFromLegacyAuthorizeUrl();
-        }
-
         if (!self::hasCredentials($clientId, $clientSecret, $redirect)) {
             return null;
         }
@@ -315,29 +326,4 @@ class SsoController extends Controller
         return '' === $providerUserId ? null : $provider.':'.$providerUserId;
     }
 
-    protected static function inferAzureClientIdFromLegacyAuthorizeUrl(): ?string
-    {
-        $authorizeUrl = (string) config('ledningssystemet.oauth_server_authorize_url', '');
-        if ('' === trim($authorizeUrl)) {
-            return null;
-        }
-
-        $path = parse_url($authorizeUrl, PHP_URL_PATH);
-        if (!is_string($path) || '' === trim($path)) {
-            return null;
-        }
-
-        $segments = array_values(array_filter(explode('/', trim($path, '/'))));
-        if (count($segments) < 3) {
-            return null;
-        }
-
-        if ('oauth2' !== ($segments[1] ?? null) || 'v2.0' !== ($segments[2] ?? null)) {
-            return null;
-        }
-
-        $candidate = trim((string) ($segments[0] ?? ''));
-
-        return '' === $candidate ? null : $candidate;
-    }
 }

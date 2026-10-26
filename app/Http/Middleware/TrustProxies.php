@@ -2,17 +2,21 @@
 
 namespace Ledningssystemet\Ledningssystemet\Http\Middleware;
 
+use Closure;
 use Illuminate\Http\Middleware\TrustProxies as Middleware;
 use Illuminate\Http\Request;
 
 class TrustProxies extends Middleware
 {
-    /**
-     * The trusted proxies for this application.
-     *
-     * @var array<int, string>|string|null
-     */
-    protected $proxies = '*';
+    public function handle($request, Closure $next)
+    {
+        $proxies = config('app.trusted_proxies', '*');
+        $this->proxies = is_string($proxies) && '*' !== $proxies
+            ? array_values(array_filter(array_map('trim', explode(',', $proxies))))
+            : $proxies;
+
+        return parent::handle($request, $next);
+    }
 
     /**
      * The headers that should be used to detect proxies.

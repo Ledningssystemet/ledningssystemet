@@ -74,14 +74,13 @@ class GraphSync extends Command
 
    protected function createGraphClient(): GraphServiceClient
    {
-      // Reuses the tenant already resolved for Microsoft Entra ID sign-in (services.azure.tenant),
-      // which falls back to OAUTH_TENANT_ID / the authorize url / "common" automatically.
+      // Reuses the tenant configured for Microsoft Entra ID sign-in.
       $tenantId = (string) config('services.azure.tenant');
 
       $tokenRequestContext = new ClientCredentialContext(
          $tenantId,
-         (string) config('ledningssystemet.oauth_client_id'),
-         (string) config('ledningssystemet.oauth_client_secret')
+         (string) config('services.azure.client_id'),
+         (string) config('services.azure.client_secret')
       );
 
       // The SDK obtains and refreshes the access token automatically
