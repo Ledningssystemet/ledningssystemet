@@ -1211,7 +1211,7 @@ test('project activity completion prefills and saves comments while cancellation
     const requests = [];
     respond({}, requests);
     try {
-        const { ProjectActions } = await loadComponents('resources\\js\\components\\projects\\ActionPlanPicker.tsx', value => value);
+        const { ProjectActions } = await loadComponents('resources/js/components/projects/ActionPlanPicker.tsx', value => value);
         const tree = ProjectActions({ project, config, actions, risks: [], run: run => (operation = run()) });
         const markup = renderToStaticMarkup(tree);
         assert.match(markup, /Existing activity comment/);
@@ -1253,7 +1253,7 @@ test('overview metrics have distinct accents and decorative icons without exposi
 });
 
 test('risk form preserves assessment comments when saving the current assessment', async () => {
-    const { RiskForm } = await loadComponents('resources\\js\\components\\projects\\Views.tsx', value => value);
+    const { RiskForm } = await loadComponents('resources/js/components/projects/Views.tsx', value => value);
     const requests = [];
     respond({}, requests);
     let saved = false;
@@ -1345,7 +1345,7 @@ test('risk form never shows post-activity assessment fields', async () => {
 });
 
 test('risk display never shows post-activity assessment', async () => {
-    const { Risks } = await loadComponents('resources\\js\\components\\projects\\Views.tsx');
+    const { Risks } = await loadComponents('resources/js/components/projects/Views.tsx');
     const props = { project, risks: [risk], config, run: async () => true };
     for (const actions of [[], [{ id: 12, name: 'Unrelated', risks: [{ id: 10 }], access }]]) {
         const markup = renderToStaticMarkup(React.createElement(Risks, { ...props, actions }));
@@ -1368,7 +1368,7 @@ test('project risk approval prefills and saves the assessment comment in the app
     const requests = [];
     respond({}, requests);
     try {
-        const { Risks } = await loadComponents('resources\\js\\components\\projects\\Views.tsx', value => value);
+        const { Risks } = await loadComponents('resources/js/components/projects/Views.tsx', value => value);
         const output = Risks({
             project, risks: [riskItem], actions: [], config,
             run: run => (operation = run()),
