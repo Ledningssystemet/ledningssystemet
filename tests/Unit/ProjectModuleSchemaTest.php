@@ -46,14 +46,14 @@ class ProjectModuleSchemaTest extends TestCase
             return in_array($needle, json_decode($value, true) ?? [], true) ? '$' : null;
         });
         $this->createSchema();
-        $assessmentComments = require base_path('database/migrations/2026_10_27_100000_add_assessment_comments.php');
-        $assessmentComments->up();
         $migration = require base_path('database/migrations/2026_10_24_111700_add_readonly_to_project_user.php');
         $migration->up();
         $workPackages = require base_path('database/migrations/2026_10_24_143000_create_project_work_packages.php');
         $workPackages->up();
         $recurringActivities = require base_path('database/migrations/2026_10_26_210000_create_recurring_project_activities.php');
         $recurringActivities->up();
+        $assessmentComments = require base_path('database/migrations/2026_10_27_100000_add_assessment_comments.php');
+        $assessmentComments->up();
         $this->user = Mockery::mock(User::class)->makePartial();
         $this->user->forceFill(['id' => 1, 'name' => 'Owner']);
         $this->user->shouldReceive('hasPermissionTo')->andReturn(false);
