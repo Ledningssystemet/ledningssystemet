@@ -109,6 +109,13 @@ $(function(){
             list: true,
             required: true,
          },
+         assessmentcomment: {
+            title: '{{ __('Assessment comment') }}',
+            type: 'textarea',
+            create: true,
+            edit: true,
+            list: true,
+         },
          hr1: {
             list: true,
             edit: false,
@@ -174,7 +181,7 @@ $(function(){
                      .prepend($('<span />')
                         .addClass('material-symbols-rounded')
                         .text('check'))
-                     .click(function(){ userFinishActivity(data.record.id, function(){
+                     .click(function(){ userFinishActivity(data.record.id, data.record.assessmentcomment, function(){
                         $('#tableContainer').jtable('reload');
                      }); });
                }

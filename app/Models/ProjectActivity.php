@@ -19,13 +19,13 @@ class ProjectActivity extends Model
 
     protected $visible = [
         'id', 'name', 'description', 'project_id', 'responsible_user_id',
-        'startdate', 'due', 'estimated_cost', 'estimated_hours', 'completed_at',
+        'startdate', 'due', 'estimated_cost', 'estimated_hours', 'completed_at', 'assessmentcomment',
         'created_at', 'updated_at', 'access', 'risks', 'recurring_project_activity_id',
     ];
 
     protected $fillable = [
         'name', 'description', 'project_id', 'responsible_user_id',
-        'startdate', 'due', 'estimated_cost', 'estimated_hours', 'completed_at', 'risks', 'recurring_project_activity_id',
+        'startdate', 'due', 'estimated_cost', 'estimated_hours', 'completed_at', 'assessmentcomment', 'risks', 'recurring_project_activity_id',
     ];
 
     public static function getPrettyName($plural = false)
@@ -153,6 +153,7 @@ class ProjectActivity extends Model
             'estimated_cost' => 'nullable|numeric|min:0|max:99999999.99',
             'estimated_hours' => 'nullable|integer|min:0|max:4294967295',
             'completed_at' => 'nullable|date',
+            'assessmentcomment' => 'nullable|string',
             'recurring_project_activity_id' => ['nullable', 'integer', Rule::exists('recurring_project_activities', 'id')->where('project_id', $this->project_id)],
         ];
     }

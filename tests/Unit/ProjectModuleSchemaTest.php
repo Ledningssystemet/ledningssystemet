@@ -46,6 +46,8 @@ class ProjectModuleSchemaTest extends TestCase
             return in_array($needle, json_decode($value, true) ?? [], true) ? '$' : null;
         });
         $this->createSchema();
+        $assessmentComments = require base_path('database/migrations/2026_10_27_100000_add_assessment_comments.php');
+        $assessmentComments->up();
         $migration = require base_path('database/migrations/2026_10_24_111700_add_readonly_to_project_user.php');
         $migration->up();
         $workPackages = require base_path('database/migrations/2026_10_24_143000_create_project_work_packages.php');
@@ -73,13 +75,18 @@ class ProjectModuleSchemaTest extends TestCase
         $this->assertSame('Migrated note', $risk->note);
         $this->assertSame(1, $risk->post_probability_id);
         $this->assertSame([['id' => 1, 'name' => 'Control']], $risk->risk_controls);
-        foreach (['context', 'context_type', 'created_by', 'replacing_id', 'replacedby_id', 'assessmentcomment'] as $field) {
+        foreach (['context', 'context_type', 'created_by', 'replacing_id', 'replacedby_id'] as $field) {
             $this->assertNotContains($field, $risk->getFillable());
             $this->assertNotContains($field, $risk->getVisible());
         }
+        $this->assertSame('Existing assessment comment', $risk->assessmentcomment);
+        $this->assertContains('assessmentcomment', $risk->getFillable());
+        $this->assertContains('assessmentcomment', $risk->getVisible());
 
+        $this->request('POST', ['assessmentcomment' => 'Approved with comment']);
         $risk->approve();
         $this->assertNotNull($risk->fresh()->assessed_at);
+        $this->assertSame('Approved with comment', $risk->fresh()->assessmentcomment);
         $this->assertSame(1, Project::findOrFail(1)->riskdistribution[1][1]['count']);
         $this->assertSame('Level', Project::findOrFail(1)->maxrisklevel['name']);
 
@@ -90,6 +97,17 @@ class ProjectModuleSchemaTest extends TestCase
         $this->assertSame([$activity->id], $risk->int_activities()->pluck('project_activities.id')->all());
         $this->assertSame([1], $risk->int_controls()->pluck('controls.id')->all());
         $this->assertSame([], Project::findOrFail(1)->riskdistribution);
+    }
+
+    public function test_project_risk_can_be_approved_with_an_empty_comment(): void
+    {
+        $risk = $this->createRisk();
+        $this->request('POST', ['assessmentcomment' => '']);
+
+        $risk->approve();
+
+        $this->assertNotNull($risk->fresh()->assessed_at);
+        $this->assertSame('', $risk->fresh()->assessmentcomment);
     }
 
     public function test_recurring_activity_api_crud_uses_defaults_and_project_permissions(): void
@@ -329,6 +347,7 @@ class ProjectModuleSchemaTest extends TestCase
         $this->request('POST', [
             'risks' => [$risk->id],
             'name' => 'Mitigation',
+            'assessmentcomment' => 'Existing activity comment',
             'project_id' => 1,
             'responsible_user_id' => 1,
             'startdate' => '2026-10-24',
@@ -342,6 +361,7 @@ class ProjectModuleSchemaTest extends TestCase
         $this->assertEquals(1250.50, $created['estimated_cost']);
         $this->assertSame(8, $created['estimated_hours']);
         $this->assertSame('2026-10-24', $created['startdate']);
+        $this->assertSame('Existing activity comment', $created['assessmentcomment']);
 
         $otherRisk = $this->createRisk(2);
         ProjectActivity::create(['name' => 'Other project activity', 'project_id' => 2, 'risks' => [$otherRisk->id]]);
@@ -350,9 +370,10 @@ class ProjectModuleSchemaTest extends TestCase
         $this->assertCount(1, $rows);
         $this->assertSame($created['id'], $rows[0]['id']);
 
-        $this->request('PATCH', ['completed_at' => '2026-10-24 11:00:00']);
+        $this->request('PATCH', ['completed_at' => '2026-10-24 11:00:00', 'assessmentcomment' => 'Completed with comment']);
         $finished = $controller->update('ProjectActivity', $created['id'])->getData(true);
         $this->assertNotNull($finished['completed_at']);
+        $this->assertSame('Completed with comment', $finished['assessmentcomment']);
         $this->request('PATCH', ['completed_at' => null, 'risks' => []]);
         $reopened = $controller->update('ProjectActivity', $created['id'])->getData(true);
         $this->assertNull($reopened['completed_at']);
@@ -977,6 +998,7 @@ class ProjectModuleSchemaTest extends TestCase
             'post_probability_id' => 1,
             'post_consequence_id' => 1,
             'note' => 'Migrated note',
+            'assessmentcomment' => 'Existing assessment comment',
             'risk_controls' => [1],
         ]);
     }

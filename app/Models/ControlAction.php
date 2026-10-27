@@ -378,6 +378,7 @@ class ControlAction extends Model
       'tags',
       'messagecount',
       'estimated_cost',
+      'assessmentcomment',
    ];
 
    
@@ -394,6 +395,7 @@ class ControlAction extends Model
       'due',
       'finished_at',
       'estimated_cost',
+      'assessmentcomment',
    ];
 
 
@@ -532,6 +534,7 @@ class ControlAction extends Model
          'responsible_id' => 'nullable|exists:Ledningssystemet\Ledningssystemet\Models\User,id',
          'control_id' => 'required|exists:Ledningssystemet\Ledningssystemet\Models\Control,id',
          'estimated_cost' => 'sometimes|nullable|numeric|min:0',
+         'assessmentcomment' => 'nullable|string',
       ];
    }
 

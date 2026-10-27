@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { confirmAction, create, dateValue, nameOf, remove, t, todayDate, update, type Action, type Configuration, type Project, type Risk, type Run, type WorkPackage } from './api';
+import { confirmAction, confirmCommentAction, create, dateValue, nameOf, remove, t, todayDate, update, type Action, type Configuration, type Project, type Risk, type Run, type WorkPackage } from './api';
 import { Badge, Btn, Card, Input, Label, Options, SectionTitle, Select, Textarea } from '../ui';
 import { RecurringActivities } from './RecurringActivities';
 
@@ -68,7 +68,7 @@ function ActivityTable({ actions, config, blockedActivityIds, onEdit, onToggle, 
     return <div className="table-responsive"><table className="table align-middle">
         <thead><tr>{['Name', 'Responsible', 'Start date', 'Due', 'Estimated cost', 'Estimated hours', 'Status', 'Actions'].map(label => <th key={label} scope="col">{t(label)}</th>)}</tr></thead>
         <tbody>{actions.map(item => <tr key={item.id}>
-            <td className="text-break">{item.name}{item.recurring_project_activity_id && <Badge>{t('Recurring project activity')}</Badge>}<div className="text-muted small" style={{ whiteSpace: 'pre-wrap' }}>{item.description}</div><div className="d-flex flex-wrap gap-1 mt-1">{item.risks.map(risk => <Badge key={risk.id}>RISK-{risk.id}: {risk.name}</Badge>)}</div>{blockedActivityIds.has(item.id) && <p className="text-muted small mt-1">{t('Reopen all completed work packages containing this activity before reopening it')}</p>}</td>
+            <td className="text-break">{item.name}{item.recurring_project_activity_id && <Badge>{t('Recurring project activity')}</Badge>}<div className="text-muted small" style={{ whiteSpace: 'pre-wrap' }}>{item.description}</div>{item.assessmentcomment && <div className="small mt-1" style={{ whiteSpace: 'pre-wrap' }}>{item.assessmentcomment}</div>}<div className="d-flex flex-wrap gap-1 mt-1">{item.risks.map(risk => <Badge key={risk.id}>RISK-{risk.id}: {risk.name}</Badge>)}</div>{blockedActivityIds.has(item.id) && <p className="text-muted small mt-1">{t('Reopen all completed work packages containing this activity before reopening it')}</p>}</td>
             <td>{nameOf(config.users, item.responsible_user_id)}</td>
             <td className="text-nowrap">{dateValue(item.startdate)}</td>
             <td className="text-nowrap">{dateValue(item.due)}</td>
@@ -102,11 +102,18 @@ export function ActivityForm({ item, project, risks, config, run, onSaved, onCan
 }
 
 function toggleCompleted(item: Action, run: Run) {
-    confirmAction(item.completed_at ? 'Are you sure that you want to reopen this activity?' : 'Are you sure that you want to mark this activity as completed?', () => {
+    if (item.completed_at) {
+        confirmAction('Are you sure that you want to reopen this activity?', () => {
+            void run(() => update('ProjectActivity', item.id, { completed_at: null }));
+        }, 'Reopen action');
+        return;
+    }
+    confirmCommentAction('Are you sure that you want to mark this activity as completed?', item.assessmentcomment, assessmentcomment => {
         void run(() => update('ProjectActivity', item.id, {
-            completed_at: item.completed_at ? null : new Date().toISOString().slice(0, 19).replace('T', ' '),
+            completed_at: new Date().toISOString().slice(0, 19).replace('T', ' '),
+            assessmentcomment,
         }));
-    }, item.completed_at ? 'Reopen action' : 'Finish action');
+    }, 'Finish action');
 }
 
 export function ProjectActions({ actions, project, risks, workPackages = [], config, run }: {

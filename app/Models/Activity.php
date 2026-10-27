@@ -203,6 +203,7 @@ class Activity extends Model
       'id',
       'name',
       'description',
+      'assessmentcomment',
       'due',
       'intervalnum',
       'intervaltype',
@@ -229,6 +230,7 @@ class Activity extends Model
    protected $fillable = [
       'name',
       'description',
+      'assessmentcomment',
       'responsible_user_id',
       'project_id',
       'estimated_cost',
@@ -291,6 +293,7 @@ class Activity extends Model
    {
       return [
          'name' => ['required'],
+         'assessmentcomment' => 'nullable|string',
          'responsible_user_id' => 'nullable|exists:users,id',
          'project_id' => 'nullable|exists:projects,id',
          'estimated_cost' => 'sometimes|nullable|numeric|min:0',
@@ -332,14 +335,17 @@ class Activity extends Model
       // Ensure not already finished
       if(null != $this->completed_at)
          abort(400, 'The activity has already been completed');
-     
+
+      if (request()->exists('assessmentcomment'))
+         $this->assessmentcomment = request()->input('assessmentcomment');
+
       $this->completed_at = date("Y-m-d H:i:s");
       $this->update();
-      
+
       // Create new instance if this is a recurring item
       if(null != $this->intervaltype)
       {
-         $newactivity = $this->replicate(['completed_at']);
+         $newactivity = $this->replicate(['completed_at', 'assessmentcomment']);
          $newactivity->due = date("Y-m-d", strtotime("+".$newactivity->intervalnum.' '.$newactivity->intervaltype));
          $newactivity->save();
       }

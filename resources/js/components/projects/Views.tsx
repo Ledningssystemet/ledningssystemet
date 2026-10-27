@@ -1,5 +1,5 @@
 import React, { useRef, useState } from 'react';
-import { action, confirmAction, create, dateValue, errorMessage, nameOf, remove, t, update, type Action, type Configuration, type Id, type Participant, type Project, type ProjectSummary, type Risk, type Run } from './api';
+import { action, confirmAction, confirmCommentAction, create, dateValue, errorMessage, nameOf, remove, t, update, type Action, type Configuration, type Id, type Participant, type Project, type ProjectSummary, type Risk, type Run } from './api';
 import { Badge, Btn, Card, Icon, Input, Label, Options, SectionTitle, Select, Textarea } from '../ui';
 import { ActivityFields, activityPayload, activityValues, type ActivityValues } from './ActionPlanPicker';
 
@@ -142,7 +142,7 @@ export function RiskForm({ risk, project, actions = [], config, run, onSaved, on
         riskowner_id: String(defaultRiskOwnerId !== null && riskOwners.some(owner => owner.id === defaultRiskOwnerId) ? defaultRiskOwnerId : ''),
         probability_id: String(risk?.probability_id ?? ''), consequence_id: String(risk?.consequence_id ?? ''),
         scenariodescription: risk?.scenariodescription ?? '', consequencedescription: risk?.consequencedescription ?? '',
-        note: risk?.note ?? '', risk_controls: risk?.risk_controls.map(control => control.id) ?? [],
+        note: risk?.note ?? '', assessmentcomment: risk?.assessmentcomment ?? '', risk_controls: risk?.risk_controls.map(control => control.id) ?? [],
     });
     const field = (key: Exclude<keyof typeof form, 'risk_controls'>, value: string) => setForm(previous => ({ ...previous, [key]: value }));
     return <form onSubmit={async event => {
@@ -190,6 +190,7 @@ export function RiskForm({ risk, project, actions = [], config, run, onSaved, on
             <div className="col-md-6"><Label text={t('Risk scenario')}><Textarea required rows={3} value={form.scenariodescription} onChange={event => field('scenariodescription', event.target.value)} /></Label></div>
             <div className="col-md-6"><Label text={t('Consequence description')}><Textarea rows={3} value={form.consequencedescription} onChange={event => field('consequencedescription', event.target.value)} /></Label></div>
             <div className="col-md-6"><Label text={t('Controls')}><Select multiple value={form.risk_controls.map(String)} onChange={event => setForm({ ...form, risk_controls: Array.from(event.target.selectedOptions, option => Number(option.value)) })}><Options items={config.controls} empty={false} /></Select></Label></div>
+            <div className="col-12"><Label text={t('Assessment comment')}><Textarea rows={3} value={form.assessmentcomment} onChange={event => field('assessmentcomment', event.target.value)} /></Label></div>
         </div></fieldset>
         <fieldset className="pm-form-section"><legend>{t('Current risk assessment')}</legend><div className="row">
             <div className="col-md-6"><Label text={t('Probability')}><Select value={form.probability_id} onChange={event => field('probability_id', event.target.value)}><Options items={config.probabilities} /></Select></Label></div>
@@ -276,10 +277,10 @@ export function Risks({ project, risks, actions, config, run }: { project: Proje
                     </li>)}</ul>
                     {!actions.some(item => item.risks.some(link => link.id === risk.id)) && <p className="text-muted mb-0">{t('No actions')}</p>}
                 </section>}
-                <section className="pm-risk-section"><h3>{t('Notes')}</h3><p className="pm-risk-text mb-0">{risk.note || t('None')}</p></section>
+                <section className="pm-risk-section"><h3>{t('Notes')}</h3><p className="pm-risk-text mb-0">{risk.note || t('None')}</p>{risk.assessmentcomment && <><h3 className="mt-3">{t('Assessment comment')}</h3><p className="pm-risk-text mb-0">{risk.assessmentcomment}</p></>}</section>
                 <div className="pm-risk-footer d-flex flex-wrap gap-2">
                     {editable && risk.access.update && !risk.assessed_at && <Btn variant="outline" onClick={() => setEditing(risk.id)}>{t('Edit')}</Btn>}
-                    {editable && risk.access.update && !risk.assessed_at && risk.riskowner_id === config.currentUserId && <Btn disabled={!risk.probability_id || !risk.consequence_id} onClick={() => confirmAction('Are you sure that you want to approve this risk?', () => { void run(() => action('ProjectRisk', risk.id, 'approve')); }, 'Approve risk')}>{t('Approve')}</Btn>}
+                    {editable && risk.access.update && !risk.assessed_at && risk.riskowner_id === config.currentUserId && <Btn disabled={!risk.probability_id || !risk.consequence_id} onClick={() => confirmCommentAction('Are you sure that you want to approve this risk?', risk.assessmentcomment, assessmentcomment => { void run(() => action('ProjectRisk', risk.id, 'approve', { assessmentcomment })); }, 'Approve risk')}>{t('Approve')}</Btn>}
                     {editable && risk.access.update && risk.assessed_at && <Btn variant="outline" onClick={() => confirmAction('Are you sure that you want to reassess this risk? The risk will be reopened for assessment.', () => { void run(() => action('ProjectRisk', risk.id, 'replace')); }, 'Reassess risk')}>{t('Reassess risk')}</Btn>}
                     {editable && risk.access.delete && <Btn variant="ghost" onClick={() => confirmAction('Are you sure that you want to delete this risk?', () => { void run(() => remove('ProjectRisk', risk.id)); }, 'Delete risk')}>{t('Delete')}</Btn>}
                 </div>

@@ -189,6 +189,14 @@ $(function(){
             list: true,
             width: '40%',
          },
+         assessmentcomment: {
+            title: '{{ __('Assessment comment') }}',
+            type: 'textarea',
+            create: true,
+            edit: true,
+            list: true,
+            width: '40%',
+         },
          @include('components.customproperty', ['classname' => 'Ledningssystemet\Ledningssystemet\Models\RequirementSource'])
          hr2: {
             list: true,
@@ -370,8 +378,8 @@ $(function(){
                      .prepend($('<span>check</span>')
                         .addClass('material-symbols-rounded'))
                      .click(function (clickevent) {
-                        confirmDialog('{{  __("Approve requirement source") }}', '{{ __("By approving the requirement source, you certify that according to your best knowledge the applicable requirements have been identified, that description and our described controls are relevant and accurate") }}', function () {
-                           ajaxPost('/api/v1/items/RequirementSource/' + data.record.id + '/approve', {}, function () {
+                        confirmCommentDialog('{{  __("Approve requirement source") }}', '{{ __("By approving the requirement source, you certify that according to your best knowledge the applicable requirements have been identified, that description and our described controls are relevant and accurate") }}', data.record.assessmentcomment, function (assessmentcomment) {
+                           ajaxPost('/api/v1/items/RequirementSource/' + data.record.id + '/approve', { assessmentcomment: assessmentcomment }, function () {
                               $(clickevent.target).closest('.jtable-main-container').parent('div').jtable('reload');
                            });
                         });

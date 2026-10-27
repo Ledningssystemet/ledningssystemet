@@ -374,8 +374,8 @@
                         .prepend($('<span>check</span>')
                            .addClass('material-symbols-rounded'))
                         .click(function(clickevent){
-                           confirmDialog('{{ __("Approve risk") }}', '{{ __("By approving the risk, you certify that the risk is correctly assessed, that planned actions are relevant and sufficient to manage the risk and that you have the mandate to approve this risk") }}', function(){
-                                 ajaxPost('/api/v1/items/Risk/'+data.record.id+'/approve', {}, function(){
+                           confirmCommentDialog('{{ __("Approve risk") }}', '{{ __("By approving the risk, you certify that the risk is correctly assessed, that planned actions are relevant and sufficient to manage the risk and that you have the mandate to approve this risk") }}', data.record.assessmentcomment, function(assessmentcomment){
+                                 ajaxPost('/api/v1/items/Risk/'+data.record.id+'/approve', { assessmentcomment: assessmentcomment }, function(){
                                     $(clickevent.target).closest('.jtable-main-container').parent('div').jtable('reload');
                                     });
                            });

@@ -1,12 +1,13 @@
 import assert from 'node:assert/strict';
 import { test, afterEach } from 'node:test';
+import { readFileSync } from 'node:fs';
 import axios from 'axios';
 import { build } from 'esbuild';
 import { createRequire } from 'node:module';
 import { runInNewContext } from 'node:vm';
 import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { action, canWriteProject, collection, configuration, confirmAction, create, dateValue, errorMessage, item, mentionUrl, projectList, projectMeetingLink, remove, update } from '../../resources/js/components/projects/api.ts';
+import { action, canWriteProject, collection, configuration, confirmAction, confirmCommentAction, create, dateValue, errorMessage, item, mentionUrl, projectList, projectMeetingLink, remove, update } from '../../resources/js/components/projects/api.ts';
 
 const originalAdapter = axios.defaults.adapter;
 afterEach(() => { axios.defaults.adapter = originalAdapter; });
@@ -49,6 +50,44 @@ test('project confirmations use the shared utils dialog and only act after confi
         if (originalWindow === undefined) delete globalThis.window;
         else globalThis.window = originalWindow;
     }
+});
+
+test('comment confirmations preserve existing text and only submit after confirmation', () => {
+    const originalWindow = globalThis.window;
+    let dialog;
+    const saved = [];
+    globalThis.window = {
+        translateString: key => `translated:${key}`,
+        confirmCommentDialog: (title, message, comment, onConfirm, options) => { dialog = { title, message, comment, onConfirm, options }; },
+    };
+    try {
+        confirmCommentAction('Approve this object?', 'Existing comment', comment => saved.push(comment), 'Approve');
+        assert.equal(dialog.comment, 'Existing comment');
+        assert.equal(dialog.title, 'translated:Approve');
+        assert.deepEqual(dialog.options, { warning: true });
+        assert.deepEqual(saved, []);
+        dialog.onConfirm('');
+        assert.deepEqual(saved, ['']);
+        confirmCommentAction('Approve this object?', null, comment => saved.push(comment), 'Approve');
+        assert.equal(dialog.comment, '');
+        assert.deepEqual(saved, ['']);
+    } finally {
+        if (originalWindow === undefined) delete globalThis.window;
+        else globalThis.window = originalWindow;
+    }
+});
+
+test('legacy completion and approval views prefill and submit assessment comments', () => {
+    const views = [
+        ['resources/views/user/activities.blade.php', /userFinishActivity\(data\.record\.id, data\.record\.assessmentcomment/],
+        ['resources/views/management/activities.blade.php', /userFinishActivity\(data\.record\.id, data\.record\.assessmentcomment/],
+        ['resources/views/assessment/risktablefields.blade.php', /confirmCommentDialog\([\s\S]*?data\.record\.assessmentcomment[\s\S]*?ajaxPost\([\s\S]*?assessmentcomment: assessmentcomment/],
+        ['resources/views/assessment/controlactions.blade.php', /confirmCommentDialog\([\s\S]*?data\.record\.assessmentcomment[\s\S]*?ajaxPatch\([\s\S]*?assessmentcomment: assessmentcomment/],
+        ['resources/views/user/controlactions.blade.php', /confirmCommentDialog\([\s\S]*?data\.record\.assessmentcomment[\s\S]*?ajaxPatch\([\s\S]*?assessmentcomment: assessmentcomment/],
+        ['resources/views/inventory/requirements.blade.php', /confirmCommentDialog\([\s\S]*?data\.record\.assessmentcomment[\s\S]*?ajaxPost\([\s\S]*?assessmentcomment: assessmentcomment/],
+    ];
+    for (const [path, binding] of views) assert.match(readFileSync(path, 'utf8'), binding, path);
+    assert.match(readFileSync('resources/js/utils.js', 'utf8'), /ajaxPost\('\/api\/v1\/items\/Activity\/'\+id\+'\/completed', \{ assessmentcomment: assessmentcomment \}/);
 });
 
 function respond(data, requests = []) {
@@ -492,7 +531,8 @@ const risk = {
     id: 9, name: 'Migration risk', project_id: 7, riskowner_id: 3,
     scenariodescription: 'Scenario from the new table', consequencedescription: 'Consequence from the new table',
     probability_id: 42, consequence_id: 27, post_probability_id: 43, post_consequence_id: 28,
-    note: 'Migrated note', risk_controls: [{ id: 5, name: 'Control' }], assessed_at: null, risk_level: null, access,
+    note: 'Migrated note', assessmentcomment: 'Existing assessment comment',
+    risk_controls: [{ id: 5, name: 'Control' }], assessed_at: null, risk_level: null, access,
 };
 const config = {
     currentUserId: 3, canReadRisks: true, canReadActions: true, canCreateRisk: true, canCreateAction: true,
@@ -1154,6 +1194,47 @@ test('activities in completed work packages cannot be reopened or deleted in the
     assert.doesNotMatch(reopened, /disabled=""[^>]*>(Reopen|Delete)<\/button>/);
 });
 
+test('project activity completion prefills and saves comments while cancellation leaves it untouched', async () => {
+    const activity = {
+        id: 12, name: 'Activity', description: 'Details', project_id: 7, responsible_user_id: 3,
+        startdate: null, due: null, estimated_cost: null, estimated_hours: null, completed_at: null,
+        assessmentcomment: 'Existing activity comment', risks: [], access,
+    };
+    const actions = [activity];
+    let dialog;
+    let operation;
+    const originalWindow = globalThis.window;
+    globalThis.window = {
+        translateString: key => key,
+        confirmCommentDialog: (title, message, comment, onConfirm) => { dialog = { title, message, comment, onConfirm }; },
+    };
+    const requests = [];
+    respond({}, requests);
+    try {
+        const { ProjectActions } = await loadComponents('resources\\js\\components\\projects\\ActionPlanPicker.tsx', value => value);
+        const tree = ProjectActions({ project, config, actions, risks: [], run: run => (operation = run()) });
+        const markup = renderToStaticMarkup(tree);
+        assert.match(markup, /Existing activity comment/);
+        const activityTable = React.Children.toArray(tree.props.children)
+            .flatMap(node => React.isValidElement(node) ? React.Children.toArray(node.props.children) : [])
+            .find(node => React.isValidElement(node) && node.props.actions === actions);
+        assert.ok(activityTable);
+        activityTable.props.onToggle(activity);
+        assert.equal(dialog.comment, 'Existing activity comment');
+        assert.equal(requests.length, 0);
+        dialog.onConfirm('');
+        await operation;
+        assert.equal(requests[0].url, '/api/v1/crud/ProjectActivity/12');
+        assert.deepEqual(JSON.parse(requests[0].data), {
+            completed_at: JSON.parse(requests[0].data).completed_at,
+            assessmentcomment: '',
+        });
+    } finally {
+        if (originalWindow === undefined) delete globalThis.window;
+        else globalThis.window = originalWindow;
+    }
+});
+
 test('overview metrics have distinct accents and decorative icons without exposing unauthorized metrics', async () => {
     const { Overview } = await loadComponents('resources\\js\\components\\projects\\Views.tsx');
     const item = { ...project, users: [{ id: 4, name: 'Participant' }], riskdistribution: {} };
@@ -1171,7 +1252,7 @@ test('overview metrics have distinct accents and decorative icons without exposi
     assert.match(restricted, /pm-stat-neutral/);
 });
 
-test('risk form submits the current assessment and note without post-activity assessment fields', async () => {
+test('risk form preserves assessment comments when saving the current assessment', async () => {
     const { RiskForm } = await loadComponents('resources\\js\\components\\projects\\Views.tsx', value => value);
     const requests = [];
     respond({}, requests);
@@ -1182,11 +1263,12 @@ test('risk form submits the current assessment and note without post-activity as
     assert.equal(requests[0].url, '/api/v1/crud/ProjectRisk/9');
     const payload = JSON.parse(requests[0].data);
     assert.equal(payload.note, 'Migrated note');
+    assert.equal(payload.assessmentcomment, 'Existing assessment comment');
     assert.equal(Object.hasOwn(payload, 'post_probability_id'), false);
     assert.equal(Object.hasOwn(payload, 'post_consequence_id'), false);
     assert.deepEqual(payload.risk_controls, [5]);
     assert.equal(payload.project_id, 7);
-    for (const key of ['context', 'assessmentcomment', 'replacing_id', 'replacedby_id', 'created_by']) {
+    for (const key of ['context', 'replacing_id', 'replacedby_id', 'created_by']) {
         assert.equal(Object.hasOwn(payload, key), false);
     }
 });
@@ -1268,9 +1350,44 @@ test('risk display never shows post-activity assessment', async () => {
     for (const actions of [[], [{ id: 12, name: 'Unrelated', risks: [{ id: 10 }], access }]]) {
         const markup = renderToStaticMarkup(React.createElement(Risks, { ...props, actions }));
         assert.doesNotMatch(markup, /Assessment after activities|Probability after activities|Consequence after activities/);
+        assert.match(markup, /Existing assessment comment/);
     }
     const actions = [{ id: 12, name: 'Mitigation', risks: [{ id: 9 }], access }];
     assert.doesNotMatch(renderToStaticMarkup(React.createElement(Risks, { ...props, actions })), /Assessment after activities|Probability after activities|Consequence after activities/);
+});
+
+test('project risk approval prefills and saves the assessment comment in the approval request', async () => {
+    const riskItem = { ...risk, assessmentcomment: 'Existing assessment comment' };
+    let dialog;
+    let operation;
+    const originalWindow = globalThis.window;
+    globalThis.window = {
+        translateString: key => key,
+        confirmCommentDialog: (title, message, comment, onConfirm) => { dialog = { title, message, comment, onConfirm }; },
+    };
+    const requests = [];
+    respond({}, requests);
+    try {
+        const { Risks } = await loadComponents('resources\\js\\components\\projects\\Views.tsx', value => value);
+        const output = Risks({
+            project, risks: [riskItem], actions: [], config,
+            run: run => (operation = run()),
+        });
+        const nodes = node => React.isValidElement(node)
+            ? [node, ...React.Children.toArray(node.props.children).flatMap(nodes)] : [];
+        const approveButton = nodes(output).find(node => node.props.children === 'Approve');
+        assert.ok(approveButton);
+        approveButton.props.onClick();
+        assert.equal(dialog.comment, 'Existing assessment comment');
+        assert.equal(requests.length, 0);
+        dialog.onConfirm('');
+        await operation;
+        assert.equal(requests[0].url, '/api/v1/crud/ProjectRisk/9/approve');
+        assert.deepEqual(JSON.parse(requests[0].data), { assessmentcomment: '' });
+    } finally {
+        if (originalWindow === undefined) delete globalThis.window;
+        else globalThis.window = originalWindow;
+    }
 });
 
 test('risk form activity controls add editable drafts and retain unchanged linked activities', async () => {

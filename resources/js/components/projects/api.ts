@@ -5,6 +5,7 @@ export { t } from '../../lib/i18n';
 declare global {
     interface Window {
         confirmDialog: (title: string, message: string, onConfirm: () => void, options: { warning: boolean }) => void;
+        confirmCommentDialog: (title: string, message: string, comment: string | null, onConfirm: (comment: string) => void, options: { warning: boolean }) => void;
     }
 }
 
@@ -43,6 +44,7 @@ export type ProjectRisk = {
     scenariodescription: string | null;
     consequencedescription: string | null;
     note: string | null;
+    assessmentcomment?: string | null;
     risk_controls: Option[];
     assessed_at: string | null;
     risk_level: RiskLevel | null;
@@ -61,6 +63,7 @@ export type Action = {
     estimated_cost: number | string | null;
     estimated_hours: number | null;
     completed_at: string | null;
+    assessmentcomment?: string | null;
     risks: Option[];
     access: Access;
 };
@@ -165,6 +168,10 @@ export function mentionUrl(mention: MeetingMention): string {
 
 export function confirmAction(message: string, onConfirm: () => void, title: string): void {
     window.confirmDialog(t(title), t(message), () => { onConfirm(); }, { warning: true });
+}
+
+export function confirmCommentAction(message: string, comment: string | null | undefined, onConfirm: (comment: string) => void, title: string): void {
+    window.confirmCommentDialog(t(title), t(message), comment ?? '', onConfirm, { warning: true });
 }
 
 const base = '/api/v1/crud';

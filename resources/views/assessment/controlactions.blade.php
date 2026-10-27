@@ -194,6 +194,13 @@ $(function(){
             edit: true,
             list: true,
             required: true,
+         },
+         assessmentcomment: {
+            title: '{{ __('Assessment comment') }}',
+            type: 'textarea',
+            create: true,
+            edit: true,
+            list: true,
             listClass: 'd-inline-block col-12 col-md-8',
          },
          estimated_cost: {
@@ -243,8 +250,8 @@ $(function(){
                         .addClass('material-symbols-rounded')
                         .text('check'))
                      .click(function(){ 
-                        confirmDialog('{{__("Finish") }}', '{{__("By marking this action as finished, you state that the planned actions have been performed")}}', function(){
-                           ajaxPatch('/api/v1/items/ControlAction/'+data.record.id, { finished_at: 1 }, function(){
+                        confirmCommentDialog('{{__("Finish") }}', '{{__("By marking this action as finished, you state that the planned actions have been performed")}}', data.record.assessmentcomment, function(assessmentcomment){
+                           ajaxPatch('/api/v1/items/ControlAction/'+data.record.id, { finished_at: 1, assessmentcomment: assessmentcomment }, function(){
                               $('#tableContainer').jtable('reload');
                            });                        
                         }, { warning: true });

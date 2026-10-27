@@ -47,6 +47,7 @@ class ProjectRisk extends Model
         'updatedts',
         'risk_controls',
         'note',
+        'assessmentcomment',
         'post_probability_id',
         'post_consequence_id',
         'project_id',
@@ -67,6 +68,7 @@ class ProjectRisk extends Model
         'consequence_id',
         'risk_controls',
         'note',
+        'assessmentcomment',
         'post_probability_id',
         'post_consequence_id',
         'project_id',
@@ -256,6 +258,7 @@ class ProjectRisk extends Model
             'post_probability_id' => 'nullable|exists:probability_levels,id',
             'post_consequence_id' => 'nullable|exists:consequence_levels,id',
             'note' => 'nullable|string',
+            'assessmentcomment' => 'nullable|string',
             'project_id' => 'required|exists:projects,id',
         ];
     }
@@ -321,6 +324,9 @@ class ProjectRisk extends Model
             abort(400, __('You are not authorized to approve risks on this level, but need to escalate the risk to higher management'));
         }
 
+        if (request()->exists('assessmentcomment')) {
+            $this->assessmentcomment = request()->input('assessmentcomment');
+        }
         $this->assessed_at = now();
         $this->save();
     }

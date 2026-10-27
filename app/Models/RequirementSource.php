@@ -184,6 +184,7 @@ class RequirementSource extends Model
       'name',
       'reference',
       'description',
+      'assessmentcomment',
       'created_at',
       'updated_at',
       'responsible_user_id',
@@ -209,6 +210,7 @@ class RequirementSource extends Model
       'name',
       'reference',
       'description',
+      'assessmentcomment',
       'max_sanction_fee',
    ];
 
@@ -316,6 +318,7 @@ class RequirementSource extends Model
          'responsible_user_id' => 'nullable|exists:Ledningssystemet\Ledningssystemet\Models\User,id',
          'reference' => 'required',
          'description' => 'nullable',
+         'assessmentcomment' => 'nullable|string',
          'max_sanction_fee' => 'sometimes|nullable|numeric|min:0',
       ];
    }
@@ -345,7 +348,11 @@ class RequirementSource extends Model
       if(auth()->user()->id != $this->responsible_user_id)
          abort(400, __('Only the responsible user can approve the requirement source'));
 
-      DB::table('requirement_sources')->where('id', $this->id)->update(['approved_at' => date("Y-m-d H:i:s")]);
+      $changes = ['approved_at' => date("Y-m-d H:i:s")];
+      if (request()->exists('assessmentcomment')) {
+         $changes['assessmentcomment'] = request()->input('assessmentcomment');
+      }
+      DB::table('requirement_sources')->where('id', $this->id)->update($changes);
 
       ActivityLog::addMessage(__("The requirement source was approved by")." ".auth()->user()->name, $this);
    }

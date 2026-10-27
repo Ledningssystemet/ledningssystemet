@@ -344,6 +344,29 @@ window.confirmDialog = function(title, message, onOkCallback=null, options = {})
    showDialog(title, message, dialogSettings);
 }
 
+window.confirmCommentDialog = function(title, message, comment, onOkCallback, options = {})
+{
+   var content = $('<div />')
+      .append($('<p />').text(message))
+      .append($('<div />')
+         .addClass('form-group')
+         .append($('<label />')
+            .addClass('form-label')
+            .text(translateString('Assessment comment')))
+         .append($('<textarea />')
+            .addClass('form-control')
+            .attr('name', 'assessmentcomment')
+            .val(comment || '')));
+
+   showDialog(title, content, $.extend({
+      actionLabel: translateString('Ok'),
+      onAction: function(data) {
+         var field = data.find(function(item) { return item.name === 'assessmentcomment'; });
+         onOkCallback(field ? field.value : '');
+      },
+   }, options));
+}
+
 /* Open a dialog with select2 */
 window.openSelectDialog = function(title, settings, onSaveCallback, options)
 {
@@ -1235,12 +1258,12 @@ if(observations)
 }
 
 /* User mark activity as completed */
-window.userFinishActivity = function(id, callback=null){
-   confirmDialog(translateString("Completed"), translateString("By marking this activity as completed, you state that the activity has been performed"), function(){
-         ajaxPost('/api/v1/items/Activity/'+id+'/completed', {}, function(){
+window.userFinishActivity = function(id, comment, callback=null){
+   confirmCommentDialog(translateString("Completed"), translateString("By marking this activity as completed, you state that the activity has been performed"), comment, function(assessmentcomment){
+         ajaxPost('/api/v1/items/Activity/'+id+'/completed', { assessmentcomment: assessmentcomment }, function(){
                if(callback)
                   callback();
-            });                        
+            });
    }, {warning: true});
    
 }

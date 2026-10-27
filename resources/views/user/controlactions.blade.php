@@ -142,6 +142,13 @@ $(function(){
             list: true,
             required: true,
          },
+         assessmentcomment: {
+            title: '{{ __('Assessment comment') }}',
+            type: 'textarea',
+            create: true,
+            edit: true,
+            list: true,
+         },
          hr2: {
             list: true,
             edit: false,
@@ -166,8 +173,8 @@ $(function(){
                         .addClass('material-symbols-rounded')
                         .text('check'))
                      .click(function(){ 
-                        confirmDialog('{{__("Finish") }}', '{{__("By marking this control as finish, you state that the planned actions have been performed")}}', function(){
-                           ajaxPatch('/api/v1/items/ControlAction/'+data.record.id, { finished_at: 1 }, function(){
+                        confirmCommentDialog('{{__("Finish") }}', '{{__("By marking this control as finish, you state that the planned actions have been performed")}}', data.record.assessmentcomment, function(assessmentcomment){
+                           ajaxPatch('/api/v1/items/ControlAction/'+data.record.id, { finished_at: 1, assessmentcomment: assessmentcomment }, function(){
                               $('#tableContainer').jtable('reload');
                            });                        
                         }, { warning: true });

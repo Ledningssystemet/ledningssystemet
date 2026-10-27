@@ -640,6 +640,7 @@ static::creating(function ($model) {
          'riskowner_id' => 'nullable|exists:Ledningssystemet\Ledningssystemet\Models\User,id',
          'probability_id' => 'nullable|exists:Ledningssystemet\Ledningssystemet\Models\ProbabilityLevel,id',
          'consequence_id' => 'nullable|exists:Ledningssystemet\Ledningssystemet\Models\ConsequenceLevel,id',
+         'assessmentcomment' => 'nullable|string',
       ];
    }
 
@@ -796,6 +797,9 @@ static::creating(function ($model) {
          abort(400, __('You are not authorized to approve risks on this level, but need to escalate the risk to higher management'));
       
       
+      if (request()->exists('assessmentcomment'))
+         $this->assessmentcomment = request()->input('assessmentcomment');
+
       $this->assessed_at = date("Y-m-d H:i:s");
       $this->save();
    }
