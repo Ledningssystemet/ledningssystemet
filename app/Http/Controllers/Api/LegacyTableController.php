@@ -1,0 +1,190 @@
+<?php
+
+namespace Ledningssystemet\Ledningssystemet\Http\Controllers\Api;
+
+use Ledningssystemet\Ledningssystemet\Http\Controllers\Controller;
+use Illuminate\Http\Request;
+use Ledningssystemet\Ledningssystemet\Models\User;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Log;
+
+
+class LegacyTableController extends Controller
+{
+   public function index($model, $namespace = 'Ledningssystemet\\Ledningssystemet\\Models')
+   {
+      // Derive classname
+      $classname = !str_contains($model, '\\') && is_subclass_of($namespace.'\\'.$model, \Illuminate\Database\Eloquent\Model::class) ? $namespace.'\\'.$model : null;
+
+      // Ensure class exist
+      if (! $classname)
+         abort(404);
+
+      // Ensure index function exist, otherwise redirect to new TableController index function
+      if (!method_exists($classname, 'index'))
+         return app(\Ledningssystemet\Ledningssystemet\Http\Controllers\Api\TableController::class)->index($model, $namespace);
+
+      // Ensure user have correct access
+      if (!Gate::allows('index', $classname)) {
+         abort(403);
+      }
+
+      if (!request()->filled('per_page')) {
+         request()->merge([
+            'per_page' => request()->filled('pageSize') ? request()->query('pageSize') : 10000,
+         ]);
+      }
+
+      // Perform index
+      $retval = $classname::index(request()->user());
+
+      // Perform security validation to make sure we do not reveal unauthorized data by applying filtering
+      $filteredRetval = $retval->reject(function ($item) {
+         if (!Gate::allows('view', $item)) {
+            // Since this shall not happen, we need to report it as a bug
+            Log::critical(auth()->user()->name . ' tried to index ' . get_class($item) . ' but received an authorized item (id ' . $item->id . '). Query: ' . json_encode(request()->all()));
+            return true;
+         }
+
+         return false;
+      });
+
+      if ('Illuminate\Pagination\LengthAwarePaginator' == $retval::class)
+         $retval->setCollection($filteredRetval);
+      else
+         $retval = $filteredRetval;
+
+      // Return response
+      return response()->json($retval);
+   }
+
+   public function show($model, $id, $namespace = 'Ledningssystemet\\Ledningssystemet\\Models')
+   {
+      // Derive classname
+      $classname = !str_contains($model, '\\') && is_subclass_of($namespace.'\\'.$model, \Illuminate\Database\Eloquent\Model::class) ? $namespace.'\\'.$model : null;
+
+      // Ensure class exist
+      if (! $classname)
+         abort(404);
+
+      // Ensure item exists
+      $retval = $classname::findOrFail($id);
+
+      // Ensure user have correct access
+      if (!Gate::allows('view', $retval)) {
+         abort(403);
+      }
+
+      // Return response
+      return response()->json($retval);
+   }
+
+   public function create($model, $namespace = 'Ledningssystemet\\Ledningssystemet\\Models')
+   {
+      // Derive classname
+      $classname = !str_contains($model, '\\') && is_subclass_of($namespace.'\\'.$model, \Illuminate\Database\Eloquent\Model::class) ? $namespace.'\\'.$model : null;
+
+      // Ensure class exist
+      if (! $classname)
+         abort(404);
+
+      // Ensure user have correct access
+      if (!Gate::allows('create', $classname)) {
+         abort(403);
+      }
+
+      DB::beginTransaction();
+
+      // Create new item
+      $newitem = $classname::create(request()->all());
+
+      DB::commit();
+
+      // Return response
+      return response()->json($newitem);
+   }
+
+   public function update($model, $id, $namespace = 'Ledningssystemet\\Ledningssystemet\\Models')
+   {
+      // Derive classname
+      $classname = !str_contains($model, '\\') && is_subclass_of($namespace.'\\'.$model, \Illuminate\Database\Eloquent\Model::class) ? $namespace.'\\'.$model : null;
+
+      // Ensure class exist
+      if (! $classname)
+         abort(404);
+
+      // Ensure item exists
+      $retval = $classname::findOrFail($id);
+
+      // Ensure user have correct access
+      if (!Gate::allows('update', $retval)) {
+         abort(403);
+      }
+
+      DB::beginTransaction();
+
+      // Update item
+      $retval->update(request()->all());
+
+      DB::commit();
+
+      // Return response
+      return response()->json($retval);
+   }
+
+   public function delete($model, $id, $namespace = 'Ledningssystemet\\Ledningssystemet\\Models')
+   {
+      // Derive classname
+      $classname = !str_contains($model, '\\') && is_subclass_of($namespace.'\\'.$model, \Illuminate\Database\Eloquent\Model::class) ? $namespace.'\\'.$model : null;
+
+      // Ensure class exist
+      if(! $classname)
+         abort(404);
+
+      // Ensure item exists
+      $retval = $classname::findOrFail($id);
+
+      // Ensure user have correct access
+      if (!Gate::allows('delete', $retval)) {
+         abort(403);
+      }
+
+      DB::beginTransaction();
+
+      // Perform delete
+      $retval->delete();
+
+      DB::commit();
+
+      // Return response
+      return response()->json([]);
+   }
+
+   public function customAction($model, $id, $action, $namespace = 'Ledningssystemet\\Ledningssystemet\\Models')
+   {
+      // Derive classname
+      $classname = !str_contains($model, '\\') && is_subclass_of($namespace.'\\'.$model, \Illuminate\Database\Eloquent\Model::class) ? $namespace.'\\'.$model : null;
+
+      // Ensure class exist
+      if(! $classname)
+         abort(404);
+
+      // Ensure item exists
+      $retval = $classname::findOrFail($id);
+
+      // Ensure function exists
+      if( !property_exists($retval, 'actions') ||
+         !is_array($retval->actions) ||
+         (false === array_search($action, $retval->actions)))
+         abort(404);
+
+      // Ensure user have at least view access. Note: The functions are responsible for authorization checks
+      if (!Gate::allows('view', $retval)) {
+         abort(403);
+      }
+
+      // Return response
+      return response()->json($retval->$action());
+   }
+}

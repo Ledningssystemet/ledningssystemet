@@ -1,0 +1,218 @@
+<?php
+
+namespace Ledningssystemet\Ledningssystemet\Models;
+
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Relations\MorphTo;
+use Illuminate\Support\Facades\Auth;
+use Spatie\Activitylog\Models\Activity;
+
+class ActivityLog extends Activity
+{
+   
+   protected $table = 'activity_log';
+
+   protected $appends = [
+      'access',
+      'created_at_pretty',
+      'text',
+      'modified',
+      'created_by',
+      'object_id',
+      'object_type',
+   ];
+
+   protected $visible = [
+      'access',
+      'id',
+      'modified',
+      'created_by',
+      'object_id',
+      'object_type',
+      'created_at',
+      'updated_at',
+      'created_at_pretty',
+      'text',
+   ];
+
+   protected $casts = [
+      'properties' => 'array',
+      'attribute_changes' => 'array',
+   ];
+
+   public static function getPrettyName($plural = false)
+   {
+      return $plural ? __('Object histories') : __('Object history');
+   }
+
+   public static function getItemsStatus($department = null, $user = null, $personalOnly = false)
+   {
+      return [];
+   }
+
+   public static function getAllowedFilters(): array
+   {
+      return [
+         \Spatie\QueryBuilder\AllowedFilter::exact('id'),
+         \Spatie\QueryBuilder\AllowedFilter::exact('object_id', 'subject_id'),
+         \Spatie\QueryBuilder\AllowedFilter::exact('object_type', 'subject_type'),
+         \Spatie\QueryBuilder\AllowedFilter::partial('created_at'),
+         \Spatie\QueryBuilder\AllowedFilter::partial('updated_at'),
+      ];
+   }
+
+   public function getAccessAttribute($user = null)
+   {
+      if(null == $user)
+         $user = auth()->user();
+
+      if(null == $user)
+         return null;
+
+      return ['create' => $user->can('create', $this), 'read' => $user->can('view', $this), 'update' => $user->can('update', $this), 'delete' => $user->can('delete', $this)];
+   }
+
+   public function getUidAttribute()
+   {
+      return (string) $this->id;
+   }
+
+   public function getCreatedAtPrettyAttribute()
+   {
+      return date('Y-m-d H:i', strtotime($this->created_at));
+   }
+
+   public function getObjectIdAttribute()
+   {
+      return $this->subject_id;
+   }
+
+   public function getObjectTypeAttribute()
+   {
+      return $this->subject_type;
+   }
+
+   public function getCreatedByAttribute()
+   {
+      $properties = $this->properties ?? [];
+      if(is_array($properties) && array_key_exists('created_by', $properties))
+         return $properties['created_by'];
+
+      if(null != $this->causer && isset($this->causer->name))
+         return $this->causer->name;
+
+      return 'SYSTEM';
+   }
+
+   public function getActionAttribute()
+   {
+      $properties = $this->properties ?? [];
+      if(is_array($properties) && array_key_exists('action', $properties))
+         return $properties['action'];
+
+      return match($this->event) {
+         'created' => 'C',
+         'updated' => 'U',
+         'deleted' => 'D',
+         'message' => 'M',
+         default => '',
+      };
+   }
+
+   public function getModifiedAttribute()
+   {
+      $properties = $this->properties ?? [];
+
+      // Try to json_decode the modified property if it exists and is a string
+      if(is_array($properties) && array_key_exists('modified', $properties) && is_string($properties['modified'])) {
+         $decodedModified = json_decode($properties['modified'], true);
+         if (json_last_error() === JSON_ERROR_NONE) {
+            return json_encode($decodedModified);
+         }
+      }
+      return $properties['modified'] ?? null;
+   }
+
+   public function getTextAttribute()
+   {
+      $historyText = '';
+      switch($this->action)
+      {
+         case 'C':
+            return __('The item was created');
+
+         case 'U':
+            $historyText = __('The item was updated');
+
+            if(null != $this->modified)
+               $historyText .= ":\r\n".implode("\r\n", array_map(function($key, $value) {
+                  return "✓ ".$key;
+               }, array_keys($this->modified), $this->modified));
+
+            return $historyText;
+
+         case 'D':
+            return __('The item was deleted');
+
+         case 'M':
+            return $this->modified;
+      }
+
+      return null;
+   }
+
+   public static function index(User $user)
+   {
+      $objectType = request()->input('object_type', '');
+      $classname = is_string($objectType) ? (str_contains($objectType, '\\') ? $objectType : __NAMESPACE__.'\\'.$objectType) : null;
+      if (!is_string($classname) || !str_starts_with($classname, __NAMESPACE__.'\\') || !is_subclass_of($classname, \Illuminate\Database\Eloquent\Model::class)) {
+         $classname = null;
+      }
+      if(! $classname)
+         abort(404);
+
+      $obj = $classname::findOrFail(request()->input('object_id', 0));
+      if(request()->user()->cannot('index', $obj))
+         abort(403);
+
+      $returnCollection = static::query()
+         ->where('subject_type', $obj::class)
+         ->where('subject_id', $obj->id)
+         ->orderBy('updated_at', 'desc');
+
+      if(request()->input('hidechecked', 0) && (new static())->status)
+         return $returnCollection->get()->filter(function($item) { return ($item->status['level'] != 'info'); });
+
+      return $returnCollection->paginate(request()->query('per_page'));
+   }
+
+   public function obj($model)
+   {
+      return $this->subject();
+   }
+
+   public function subject(): MorphTo
+   {
+      return $this->morphTo(__FUNCTION__, 'subject_type', 'subject_id');
+   }
+
+   public static function addMessage($message, $obj)
+   {
+      $causer = Auth::user();
+      $createdBy = ((null != $causer) && (null != $causer->name)) ? $causer->name : 'SYSTEM';
+
+      $builder = activity('model-history')
+         ->performedOn($obj)
+         ->event('message')
+         ->withProperties([
+            'action' => 'M',
+            'created_by' => $createdBy,
+            'modified' => $message,
+         ]);
+
+      if(null != $causer)
+         $builder->causedBy($causer);
+
+      $builder->log('message');
+   }
+}

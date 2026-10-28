@@ -1,0 +1,30 @@
+<?php
+
+use Illuminate\Foundation\Inspiring;
+use Illuminate\Support\Facades\Artisan;
+
+/*
+|--------------------------------------------------------------------------
+| Console Routes
+|--------------------------------------------------------------------------
+|
+| This file is where you may define all of your Closure based console
+| commands. Each Closure is bound to a command instance allowing a
+| simple approach to interacting with each command's IO methods.
+|
+*/
+
+// Graph sync
+Schedule::command('ledningssystemet:graphsync')->hourly()->withoutOverlapping();
+
+// Perform risk re-assessment
+Schedule::command('ledningssystemet:risksreassess')->dailyAt('05:00');
+
+// Create recurring project activities
+Schedule::command('ledningssystemet:recurringprojectactivities')->dailyAt('05:00')->withoutOverlapping();
+
+// Daily status email
+Schedule::command('ledningssystemet:sendstatusmail')->dailyAt('06:00');
+
+// Daily purge of expired API tokens
+Schedule::command('ledningssystemet:purgeapitokens')->dailyAt('05:30');

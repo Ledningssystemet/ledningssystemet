@@ -1,0 +1,17 @@
+/storage/app/public/*
+/storage/debugbar/*
+/storage/framework/cache/*
+/storage/framework/sessions/*
+/storage/framework/views/*
+/storage/logs/*
+/public/build/*
+/public/hot
+node_modules
+docker
+.env.example
+.dockerignore
+.gitattributes
+*/.gitignore
+composer.lock
+jsconfig.json
+docker-env

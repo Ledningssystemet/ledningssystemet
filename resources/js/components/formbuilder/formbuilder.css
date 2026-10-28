@@ -1,0 +1,9 @@
+.fe-chapter { transition: opacity 0.15s; }
+.fe-chapter.fe-dragging { opacity: 0.45; }
+.fe-chapter.fe-drop-target { outline: 2px dashed var(--bs-primary); outline-offset: 2px; }
+.fe-item { background: var(--bs-white); transition: opacity 0.15s; }
+.fe-item.fe-dragging { opacity: 0.45; }
+.fe-item.fe-drop-target { outline: 2px dashed var(--bs-primary); background: rgba(var(--bs-primary-rgb, 13,110,253), 0.06); }
+.fe-drag-handle { cursor: grab; color: var(--bs-secondary); user-select: none; }
+.fe-drag-handle:active { cursor: grabbing; }
+.fe-type-badge { min-width: 115px; text-align: center; font-size: 0.73em; }

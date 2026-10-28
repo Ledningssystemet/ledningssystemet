@@ -1,0 +1,31 @@
+.ls-button.pm-mentions-trigger {
+    margin-inline-end: 12px;
+    border-color: #ffffff80;
+    color: #fff;
+    background: transparent;
+}
+
+.pm-mentions-project + .pm-mentions-project {
+    margin-top: 20px;
+}
+
+.pm-mention-link {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 12px 0;
+    border-top: 1px solid #dbe3e6;
+    color: #075766;
+    text-decoration: none;
+}
+
+.pm-mention-link:hover,
+.pm-mention-link:focus-visible {
+    text-decoration: underline;
+}
+
+.pm-mention-excerpt {
+    color: #5c7080;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}

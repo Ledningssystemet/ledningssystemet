@@ -1,0 +1,835 @@
+div.jtable-main-container.jtable-native {
+   position: relative;
+}
+div.jtable-main-container.jtable-native thead td {
+   padding: 0;
+}
+
+div.jtable-main-container.jtable-native div.jtable-title {
+   position: relative;
+   text-align: left;
+   border: 0 !important;
+   overflow: hidden;
+   min-height: 50px;
+}
+div.jtable-main-container.jtable-native div.jtable-title .jtable-close-button {
+   right: 0;
+   top: 0;
+   bottom: 0;
+   position: absolute;
+}
+
+div.jtable-main-container.jtable-native div.jtable-title div.jtable-toolbar {
+   bottom: 0;
+   right: 0;
+   position: absolute;
+   display: inline-block;
+   margin-right: 5px;
+}
+div.jtable-main-container.jtable-native div.jtable-title div.jtable-toolbar span.jtable-toolbar-item {
+   position: relative;
+   display: inline-block;
+   margin: 0 0 0 5px;
+   cursor: pointer;
+   font-size: 0.9em;
+   padding: 2px;
+   vertical-align: bottom;
+}
+div.jtable-main-container.jtable-native div.jtable-title div.jtable-toolbar span.jtable-toolbar-item span.jtable-toolbar-item-icon {
+   display: inline-block;
+   margin: 2px;
+   vertical-align: middle;
+   width: 16px;
+   height: 16px;
+}
+div.jtable-main-container.jtable-native div.jtable-title div.jtable-toolbar span.jtable-toolbar-item span.jtable-toolbar-item-text {
+   display: inline-block;
+   margin: 2px;
+   vertical-align: middle;
+}
+div.jtable-main-container.jtable-native div.jtable-title .jtable-close-button + div.jtable-toolbar {
+   margin-right: 30px;
+}
+div.jtable-main-container.jtable-native table.jtable {
+   width: 100%;
+   overflow-x: scroll;
+}
+
+div.jtable-main-container.jtable-native table.jtable thead {
+   position: sticky;
+   top: var(--ls-header-height);
+   background-color: var(--bs-body-bg);
+}
+
+div.jtable-main-container.jtable-native table.jtable thead th {
+   vertical-align: middle;
+   text-align: left;
+}
+div.jtable-main-container.jtable-native table.jtable thead th.jtable-column-header div.jtable-column-header-container {
+   position: relative;
+}
+div.jtable-main-container.jtable-native table.jtable thead th.jtable-column-header div.jtable-column-header-container span.jtable-column-header-text {
+   display: inline-block;
+}
+div.jtable-main-container.jtable-native table.jtable thead th.jtable-column-header div.jtable-column-header-container div.jtable-column-resize-handler {
+   position: absolute;
+   height: 24px;
+   width: 8px;
+   right: -8px;
+   top: -2px;
+   z-index: 2;
+   cursor: col-resize;
+}
+div.jtable-main-container.jtable-native table.jtable thead th.jtable-command-column-header {
+   text-align: center;
+}
+div.jtable-main-container.jtable-native table.jtable thead th.jtable-column-header-selecting {
+   text-align: center;
+   width: 1%;
+}
+div.jtable-main-container.jtable-native table.jtable thead th.jtable-column-header-selecting input {
+   cursor: pointer;
+}
+div.jtable-main-container.jtable-native table.jtable thead th.jtable-column-header-sortable {
+   cursor: pointer;
+}
+div.jtable-main-container.jtable-native .jtable .jtable-command-button {
+   margin: 0;
+   padding: 0;
+   cursor: pointer;
+   border: none;
+   display: inline;
+}
+div.jtable-main-container.jtable-native .jtable-field-label {
+   display: none;
+}
+div.jtable-main-container.jtable-native .jtable .jtable-command-column {
+   text-align: center;
+   vertical-align: middle;
+}
+div.jtable-main-container.jtable-native table.jtable .jtable-selecting-column {
+   text-align: center;
+   vertical-align: middle;
+}
+div.jtable-main-container.jtable-native table.jtable .jtable-selecting-column input {
+   cursor: pointer;
+}
+
+.jtable {
+   border-collapse: collapse;
+   border-spacing: 0;
+   width: 100%;
+}
+.jtable th {
+   text-align: left;
+}
+.jtable th, .jtable td {}
+.jtable-no-data-row, .jtable-no-data-row * {
+   text-align: center !important;
+}
+div.jtable-main-container div.jtable-bottom-panel {
+   position: relative;
+   min-height: 24px;
+   text-align: left;
+   border: 0 !important;
+   font-size: 0.8em;
+}
+
+div.jtable-main-container div.jtable-bottom-panel select {
+   border-radius: 30px;
+   max-width: 100px;
+   font-size: 0.9em;
+   display: inline-block;
+   padding: 3px 30px 3px 20px;
+   margin-left: 20px;
+}
+
+@media (min-width: 576px) {
+   div.jtable-main-container div.jtable-bottom-panel div.jtable-left-area {
+      display: inline-block;
+      width: 75%;
+   }
+
+   div.jtable-main-container div.jtable-bottom-panel div.jtable-right-area {
+      display: inline-block;
+      width: 25%;
+      text-align: right;
+   }
+}
+
+@media (max-width: 575px) {
+   div.jtable-main-container div.jtable-bottom-panel div.jtable-left-area > *,
+   div.jtable-main-container div.jtable-bottom-panel .jtable-goto-page,
+   div.jtable-main-container div.jtable-bottom-panel .jtable-page-size-change,
+   div.jtable-main-container div.jtable-bottom-panel div.jtable-right-area > *{
+      padding: 10px 0 0 0 !important;
+      display: block;
+   }
+}
+
+div.jtable-main-container div.jtable-bottom-panel .jtable-page-list {
+   display: inline-block;
+}
+div.jtable-main-container div.jtable-bottom-panel .jtable-page-list .jtable-page-number,
+div.jtable-main-container div.jtable-bottom-panel .jtable-page-list .jtable-page-number-space,
+div.jtable-main-container div.jtable-bottom-panel .jtable-page-list .jtable-page-number-first,
+div.jtable-main-container div.jtable-bottom-panel .jtable-page-list .jtable-page-number-last,
+div.jtable-main-container div.jtable-bottom-panel .jtable-page-list .jtable-page-number-previous,
+div.jtable-main-container div.jtable-bottom-panel .jtable-page-list .jtable-page-number-next,
+div.jtable-main-container div.jtable-bottom-panel .jtable-page-list .jtable-page-number-active {
+   padding: 2px 5px;
+   display: inline-block;
+   cursor: pointer;
+}
+div.jtable-main-container div.jtable-bottom-panel .jtable-page-list .jtable-page-number-space,
+div.jtable-main-container div.jtable-bottom-panel .jtable-page-list .jtable-page-number-active,
+div.jtable-main-container div.jtable-bottom-panel .jtable-page-list .jtable-page-number-disabled {
+   cursor: default;
+}
+div.jtable-main-container div.jtable-bottom-panel span.jtable-page-size-change {
+   padding-left: 20px;
+}
+div.jtable-main-container div.jtable-bottom-panel span.jtable-goto-page {
+   padding-left: 20px;
+}
+div.jtable-main-container div.jtable-bottom-panel span.jtable-goto-page input[type=text] {
+   width: 22px;
+}
+div.jtable-main-container div.jtable-bottom-panel span.jtable-page-info {
+   vertical-align: middle;
+}
+div.jtable-main-container.jtable-native div.jtable-column-resize-bar {
+   opacity: 0.5;
+   filter: alpha(opacity=50);
+   position: absolute;
+   display: none;
+   width: 1px;
+   background-color: #000;
+}
+
+
+div.jtable-busy-panel-background {
+   opacity: 0.1;
+   filter: alpha(opacity=50);
+   z-index: 998;
+   position: absolute;
+   background-color: #000;
+}
+div.jtable-busy-panel-background.jtable-busy-panel-background-invisible {
+   background-color: transparent;
+}
+div.jtable-busy-message {
+   cursor: wait;
+   z-index: 999;
+   position: absolute;
+   margin: 5px;
+}
+div.jtable-contextmenu-overlay {
+   position: fixed;
+   left: 0;
+   top: 0;
+   width: 100%;
+   height: 100%;
+   z-index: 100;
+}
+div.jtable-main-container.jtable-native div.jtable-title {
+   position: relative;
+   line-height: 34px;
+   padding-left: 10px;
+
+}
+div.jtable-main-container.jtable-native div.jtable-title .jtable-close-button {
+   right: 6px;
+   top: 6px;
+   bottom: 6px;
+   position: absolute;
+   opacity: 0.8;
+   filter: alpha(opacity=50);
+   width: 22px;
+   height: 22px;
+}
+div.jtable-main-container.jtable-native div.jtable-title .jtable-close-button:hover {
+   opacity: 1;
+   filter: alpha(opacity=50);
+}
+div.jtable-main-container.jtable-native div.jtable-title div.jtable-toolbar {
+   bottom: 0;
+   right: 0;
+   position: absolute;
+   line-height: 20px;
+   margin-right: 2px;
+   margin-bottom: 2px;
+}
+div.jtable-main-container.jtable-native div.jtable-title div.jtable-toolbar span.jtable-toolbar-item.jtable-toolbar-item-add-record span.jtable-toolbar-item-icon {
+}
+div.jtable-main-container.jtable-native table.jtable {
+   border-collapse: collapse;
+   border-spacing: 0;
+}
+
+div.jtable-main-container.jtable-native table.jtable thead tr:last-child {
+   border-bottom: 2px solid black;
+}
+
+div.jtable-main-container.jtable-native table.jtable thead th {
+   padding: 4px 3px 4px 6px;
+}
+div.jtable-main-container.jtable-native table.jtable thead th.jtable-column-header div.jtable-column-header-container {
+   /*  height: 20px; */
+}
+div.jtable-main-container.jtable-native table.jtable thead th.jtable-column-header span.jtable-column-header-text {
+   margin-top: 3px;
+}
+div.jtable-main-container.jtable-native table.jtable thead th.jtable-column-header-selecting {
+   padding: 5px;
+}
+div.jtable-main-container.jtable-native table.jtable thead th.jtable-column-header-sortable div.jtable-column-header-container {
+   padding-left: 20px;
+}
+div.jtable-main-container.jtable-native table.jtable thead th.jtable-column-header-sorted-asc div.jtable-column-header-container {
+   padding-left: 20px;
+}
+div.jtable-main-container.jtable-native table.jtable thead th.jtable-column-header-sorted-desc div.jtable-column-header-container {
+   padding-left: 20px;
+}
+div.jtable-main-container.jtable-native table.jtable tbody > tr {
+   padding: 2px;
+   height: 30px;
+}
+div.jtable-main-container.jtable-native table.jtable tbody > tr > td {
+   padding: 5px;
+   border: none;
+   vertical-align: top;
+   text-align: left;
+}
+div.jtable-main-container.jtable-native table.jtable tbody > tr > td:first-child {
+}
+div.jtable-main-container.jtable-native table.jtable tbody > tr > td.jtable-command-column > * {
+   color: #554f4f;
+}
+
+div.jtable-main-container.jtable-native table.jtable tbody > tr.jtable-child-row > td {
+   padding: 2px 1px 2px 2px;
+}
+div.jtable-main-container.jtable-native table.jtable tbody > tr.jtable-child-row > td div.jtable-toolbar {
+   margin-right: 33px;
+}
+div.jtable-main-container.jtable-native table.jtable tbody > tr.jtable-child-row > td .jtable {
+   border: none;
+}
+div.jtable-main-container.jtable-native table.jtable tbody > tr.jtable-child-row > td .jtable-title,
+div.jtable-main-container.jtable-native table.jtable tbody > tr.jtable-child-row > td .jtable-bottom-panel {
+   -webkit-border-radius: 0;
+   -moz-border-radius: 0;
+   border-radius: 0;
+   border: none;
+}
+div.jtable-main-container.jtable-native div.jtable-bottom-panel {
+   padding: 1px;
+   min-height: 24px;
+   line-height: 16px;
+   font-size: 0.9em;
+}
+div.jtable-main-container.jtable-native div.jtable-bottom-panel div.jtable-right-area {
+   padding: 2px;
+}
+div.jtable-main-container.jtable-native div.jtable-bottom-panel .jtable-page-list {
+   margin: 3px;
+}
+div.jtable-main-container.jtable-native div.jtable-bottom-panel .jtable-page-list .jtable-page-number,
+div.jtable-main-container.jtable-native div.jtable-bottom-panel .jtable-page-list .jtable-page-number-space,
+div.jtable-main-container.jtable-native div.jtable-bottom-panel .jtable-page-list .jtable-page-number-first,
+div.jtable-main-container.jtable-native div.jtable-bottom-panel .jtable-page-list .jtable-page-number-last,
+div.jtable-main-container.jtable-native div.jtable-bottom-panel .jtable-page-list .jtable-page-number-previous,
+div.jtable-main-container.jtable-native div.jtable-bottom-panel .jtable-page-list .jtable-page-number-next,
+div.jtable-main-container.jtable-native div.jtable-bottom-panel .jtable-page-list .jtable-page-number-active {
+   padding: 2px 5px;
+}
+div.jtable-main-container.jtable-native div.jtable-bottom-panel span.jtable-page-size-change {
+   vertical-align: middle;
+}
+div.jtable-main-container.jtable-native div.jtable-bottom-panel span.jtable-goto-page {
+   vertical-align: middle;
+}
+div.jtable-main-container.jtable-native div.jtable-bottom-panel .jtable-page-info {
+   display: inline-block;
+   padding: 4px;
+}
+div.jtable-main-container.jtable-native div.jtable-bottom-panel span.jtable-add-record {
+   margin: 3px;
+}
+div.jtable-main-container.jtable-native div.jtable-bottom-panel span.jtable-add-record a {
+   font-weight: 600;
+   text-decoration: none;
+}
+div.jtable-main-container.jtable-native div.jtable-bottom-panel span.jtable-add-record a:hover {
+   text-decoration: underline;
+}
+div.jtable-main-container.jtable-native div.jtable-column-selection-container {
+   -webkit-border-radius: 3px;
+   -moz-border-radius: 3px;
+   border-radius: 3px;
+   -webkit-box-shadow: 2px 2px 4px rgba(50, 51, 50, 0.75);
+   -moz-box-shadow: 2px 2px 4px rgba(50, 51, 50, 0.75);
+   box-shadow: 2px 2px 4px rgba(50, 51, 50, 0.75);
+}
+
+/* Dialogs */
+
+/* In order to make select 2 work within dialog */
+.modal-content:has(>.modal-body >.jtable-dialog-form .select2-dropdown) {
+   overflow: initial;
+}
+
+.modal-body:has(>.jtable-dialog-form .select2-dropdown) {
+   overflow-y: visible;
+}
+
+form.jtable-dialog-form ul.jtable-field-tabs {
+   margin-bottom: 0.5rem;
+}
+form.jtable-dialog-form div.jtable-field-tabs-content {
+   padding-top: 0.5rem;
+}
+form.jtable-dialog-form button.nav-link .jtable-tab-invalid-indicator {
+   border-radius: 999px;
+   background-color: var(--bs-danger);
+   width: 10px;
+   height: 10px;
+   display: block;
+   float: left;
+   overflow: hidden;
+   position: relative;
+   top: 0.5em;
+   margin-right: 0.5rem;
+}
+
+form.jtable-dialog-form div.jtable-input-field-container {
+   padding: 2px 0 3px 0;
+}
+form.jtable-dialog-form div.jtable-input-field-container:last-child {
+   border: none;
+}
+form.jtable-dialog-form div.jtable-input-label {
+   padding: 2px 3px;
+   font-size: 1em;
+   color: #666;
+}
+form.jtable-dialog-form div.jtable-input-label-description {
+   padding: 2px 3px;
+   font-size: 0.8em;
+   font-style: italic;
+   font-weight: normal;
+   color: #666;
+}
+form.jtable-dialog-form div.jtable-input {
+   padding: 2px;
+}
+form.jtable-dialog-form div.jtable-date-input {
+   /* No additional style */
+
+}
+form.jtable-dialog-form div.jtable-text-input {
+   /* No additional style */
+
+}
+form.jtable-dialog-form span.select2 {
+   width: 100% !important;
+}
+form.jtable-dialog-form span.jtable-option-text-clickable {
+   position: relative;
+   top: -2px;
+}
+form.jtable-dialog-form div.jtable-textarea-input textarea {
+   min-height: 100px;
+}
+form.jtable-dialog-form div.jtable-checkbox-input span,
+form.jtable-dialog-form div.jtable-radio-input span {
+   padding-left: 4px;
+}
+form.jtable-dialog-form div.jtable-radio-input input,
+form.jtable-dialog-form div.jtable-checkbox-input input,
+form.jtable-dialog-form span.jtable-option-text-clickable {
+   cursor: pointer;
+}
+
+form.jtable-dialog-form .select2-dropdown{
+}
+
+.jtable-form-title-icon {
+   position: relative;
+   top: 0.2em;
+   margin-right: 1em;
+}
+
+form.jtable-dialog-form div.jtable-input-label {
+   font-weight: 600;
+}
+div.jtable-busy-message {
+   -webkit-border-radius: 3px;
+   -moz-border-radius: 3px;
+   border-radius: 3px;
+   -webkit-box-shadow: 2px 2px 4px rgba(50, 51, 50, 0.75);
+   -moz-box-shadow: 2px 2px 4px rgba(50, 51, 50, 0.75);
+   box-shadow: 2px 2px 4px rgba(50, 51, 50, 0.75);
+   padding: 5px;
+}
+
+
+td.jtable-cell-clickable{
+   cursor: pointer;
+}
+
+
+
+div.jtable-search-field span.input-group-text {
+   border-radius: 30px;
+   background-color: transparent;
+   padding: 3px 10px 3px 10px;
+   margin: 0;
+}
+
+
+label.form-check-label {
+   margin-left: 5px;
+}
+
+div.jtable-title-text {
+   font-size: 12pt;
+   font-weight: bold;
+}
+
+div.jtable-search-field {
+   margin-top: 5px;
+   background-color: var(--bs-body-bg);
+   vertical-align: top;
+}
+
+div.jtable-search-field .form-control {
+   background-color: transparent;
+   border: none;
+}
+
+.jtable-column-header { text-overflow: ellipsis; }
+
+div.jtable-sorting-select-container {
+   max-width: 200px;
+}
+
+div.jtable-sorting-select {
+   text-overflow: ellipsis;
+}
+
+.child-opener-image { cursor: pointer; }
+.child-opener-image { opacity: 0.5; }
+.child-opener-image:hover { opacity: 0.8; }
+.child-opener-image-column { text-align: center; }
+
+.jtable-native .jtable-row-even { background-color: #fafafa; }
+.jtable-native .jtable-data-row:hover { background-color: #f5f5f5; }
+
+
+td.jtable-field-textarea, td.jtable-field-text, td.jtable-field-date, td.jtable-field-number, td.jtable-field-select {
+   white-space: pre-wrap;
+   font-size: 0.8rem;
+}
+
+td.jtable-command-column > span > i {
+   cursor: pointer;
+}
+
+.jtable-native span.jtable-field-label {
+   display: none;
+}
+
+@media (min-width: 576px) {
+   div.jtable-child-table-container {
+      padding: 10px 50px 10px 50px;
+   }
+}
+
+@media (max-width: 575px) {
+   div.jtable-child-table-container {
+      padding: 10px 10px 10px 10px;
+   }
+}
+
+div.jtable-child-table-container > div.jtable-main-container > div.jtable-title > button.jtable-close-button {
+   display: none;
+}
+
+div.jtable-child-table-container .jtable-title h1 {
+   font-size: 2em;
+}
+
+.jtable-native > table {
+   border-top: 0;
+}
+
+.jtable-native > .jtable-bottom-panel {
+   margin-top: 20px;
+}
+
+/* Tag container */
+
+span.tagcontainer span {
+   margin-right: 3px;
+   background-color: var(--bs-info);
+
+}
+
+/* Filter checkbox */
+input.form-check-input.jtable-filter-value {
+   vertical-align: inherit;
+}
+
+
+
+/* Bootstrap layout */
+.jtable-bootstrap .jtable-data-row {
+   margin-bottom: 20px;
+   border-radius: 0 0 12px 12px;
+   font-size: 0.8em;
+}
+
+.jtable-bootstrap .accordion-button {
+   vertical-align: middle;
+   overflow: hidden;
+   text-overflow: ellipsis;
+   padding: 10px 10px 10px 10px;
+}
+
+.jtable-bootstrap .accordion-button:hover {
+   z-index: initial !important;
+   outline: initial !important;
+}
+.jtable-bootstrap .accordion-header,
+.jtable-bootstrap .card-header {
+   position: relative;
+   display: block;
+   width: 100%;
+   font-size: 1.5em;
+   margin: 0 10px 0 0;
+   padding-right: 50px;
+}
+
+.accordion-header > .jtable-field > .jtable-field-label,
+.jtable-bootstrap .card-header .jtable-field-label {
+   display: none;
+}
+
+.jtable-bootstrap.jtable-accordion .status-indicator{
+   position: absolute;
+   top:-10px;
+   right: 0;
+   bottom: -10px;
+   padding-left: 10px;
+   padding-right: 10px;
+
+}
+
+.jtable-bootstrap:not(.jtable-accordion) .status-indicator{
+   position: absolute;
+   top: 0;
+   right: 0;
+   bottom: 0;
+   padding-left: 10px;
+   padding-right: 10px;
+   color: white;
+
+}
+
+.justify-middle {
+   position: relative;
+   top: 50%;
+   transform: translateY(-50%);
+}
+
+.jtable-bootstrap .status-indicator .material-symbols-rounded {
+}
+
+.jtable-bootstrap .status-indicator.status-level-info{
+   background-color: var(--bs-info);
+}
+
+.jtable-bootstrap .status-indicator.status-level-warning{
+   background-color: var(--bs-warning);
+}
+
+.jtable-bootstrap .status-indicator.status-level-danger{
+   background-color: var(--bs-danger);
+}
+
+.jtable-bootstrap .status-alert-container {
+   position: relative;
+   display: block;
+   width: auto;
+   top: -1px;
+   padding: 10px;
+   box-shadow: none;
+   border-width: 0 0 1px 0;
+   border-style: solid;
+   border-color: var(--bs-gray-400);
+   background-color: #eee;
+}
+
+.jtable-bootstrap .jtable-data-row:has(.status-indicator.status-level-danger) .status-alert-container {
+   box-shadow: inset 0 0 1px 1px var(--bs-danger);
+}
+
+.jtable-bootstrap .jtable-data-row:has(.status-indicator.status-level-warning) .status-alert-container {
+   box-shadow: inset 0 0 1px 1px var(--bs-warning);
+}
+
+.jtable-bootstrap .jtable-data-row:has(.status-indicator.status-level-info) .status-alert-container {
+   box-shadow: inset 0 0 1px 1px var(--bs-info);
+}
+
+.jtable-bootstrap .status-alert-container .status-text {
+   display: block;
+   font-size: 0.9em;
+}
+
+.jtable-bootstrap .status-alert-container .status-text-array-item {
+   display: list-item;
+   margin-left: 20px;
+   list-style: disc;
+}
+
+.jtable-bootstrap .accordion-body, .jtable-bootstrap .card-body {
+   position: relative;
+   padding: 0;
+}
+
+.accordion-body > .jtable-field > .jtable-field-label,
+.jtable-bootstrap .card-body .jtable-field-label,
+.jtable-bootstrap .card-footer .jtable-field-label
+{
+   display: block;
+   font-weight: 700;
+   margin-bottom: 0.3em;
+}
+
+.jtable-bootstrap .jtable-cell-content {
+   white-space: pre-wrap;
+}
+
+.jtable-bootstrap .card-footer > div,
+.jtable-bootstrap .accordion-footer > div {
+   display: inline-block;
+   margin: 5px;
+}
+
+.jtable-bootstrap .accordion-body > .jtable-field,
+.jtable-bootstrap .card-body > .jtable-field
+{
+   padding: 10px;
+   vertical-align: top;
+}
+
+
+.jtable-bootstrap.jtable-accordion .jtable hr {
+   position: relative;
+   left: -10px;
+   width: calc(100% + 20px);
+   margin-top: 10px;
+   margin-bottom: 5px;
+}
+
+.jtable-bootstrap:not(.jtable-accordion) .jtable hr {
+   position: relative;
+   margin-top: 10px;
+   margin-bottom: 5px;
+}
+
+
+.jtable, .jtable-bootstrap >  .jtable-title > .jtable-toolbar {
+   border-top: 1px solid var(--bs-gray-200);
+   padding-top: 30px;
+   margin-top: 20px;
+}
+
+@media (max-width: 576px){
+   .jtable-bootstrap .accordion-footer > * {
+      width: 100%;
+      text-align: left;
+   }
+}
+
+.jtable-display-select-option {
+   display: block;
+}
+
+.jtable-display-select-option:not(:first-child) {
+   margin-top: 0.5em;
+}
+
+/* Reorder */
+.jtable-sortable-handle {
+   display: block;
+   margin-top: -0.4em;
+   width: 10px;
+   float: left;
+   letter-spacing: 1px;
+   line-height: 5px;
+   margin-right: 10px;
+   cursor: move;
+}
+.jtable-sortable-handle::after {
+   content: '.. .. .. .. ..';
+}
+
+/* Filter */
+.jtable-filter {
+   border-top: 1px solid var(--bs-gray-200);
+   padding-top: 30px;
+   margin-top: 20px;
+   position: relative;
+}
+
+.jtable-filter:empty {
+}
+
+.jtable-filter-pills {
+   display: inline-block;
+   position: relative;
+   top: 8px;
+}
+
+.jtable-filter-pills .badge {
+   display: inline-flex;
+   align-items: center;
+   font-size: 0.8rem;
+   background-color: var(--bs-warning);
+   color: black;
+   padding: 5px 20px;
+   margin-right: 5px;
+}
+
+.jtable-filter-pills .filter-pill-text {
+   display: inline-flex;
+}
+
+.jtable-filter-pills .material-symbols-rounded {
+   margin-right: 5px;
+   cursor: pointer;
+}
+
+.jtable-filter-disabled .jtable-filter-button,
+.jtable-filter-disabled .jtable-filter-button:hover {
+   background-color: var(--bs-gray-200);
+   color: var(--bs-gray-500);
+   border-color: var(--bs-gray-200);
+   cursor: not-allowed;
+}
+
+.jtable-filter-disabled .jtable-filter-pills .badge:not([data-filter-key="id"]) {
+   background-color: var(--bs-gray-200);
+   color: var(--bs-gray-500);
+}
+
+.jtable-filter .jtable-reload-button,
+.jtable-filter .jtable-filter-button {
+   display: inline-block;
+   margin-right: 5px;
+}
