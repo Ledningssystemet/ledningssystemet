@@ -4,6 +4,23 @@ This document covers application operations, not the setup or hardening of the
 underlying host, database or proxy. See [installation prerequisites](../INSTALL.md)
 before first deployment.
 
+## Container image publishing
+
+GitHub Actions builds the root `Dockerfile` and publishes images to GitHub
+Container Registry on pushes to these branches (including merged pull requests):
+
+| Branch | Workflow | Image |
+| --- | --- | --- |
+| `main` | `.github/workflows/main.yml` | `ghcr.io/ledningssystemet/ledningssystemet` |
+| `stage` | `.github/workflows/stage.yml` | `ghcr.io/ledningssystemet/ledningssystemet_stage` |
+
+Both images receive a `latest` tag and a seven-character commit SHA tag. Publishing
+uses the workflow's `GITHUB_TOKEN` with `packages: write`; no separate registry
+secret is required. If the package already exists, ensure this repository has
+Actions write access to it in the package settings. The stage workflow must be
+present on `stage` to run. These workflows publish images only; they do not deploy
+containers to a running environment.
+
 ## Upgrades
 
 1. Test the target image or source revision in a staging environment, including
