@@ -6,6 +6,7 @@ use Ledningssystemet\Ledningssystemet\Console\Commands\GraphSync;
 use Ledningssystemet\Ledningssystemet\Console\Commands\CreateRecurringProjectActivities;
 use Ledningssystemet\Ledningssystemet\Console\Commands\RiskReassess;
 use Ledningssystemet\Ledningssystemet\Console\Commands\MailSendstatus;
+use Ledningssystemet\Ledningssystemet\Console\Commands\PurgeApiTokens;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Contracts\Foundation\CachesConfiguration;
 use Illuminate\Support\ServiceProvider;
@@ -89,6 +90,7 @@ class LedningssystemetServiceProvider extends ServiceProvider
             RiskReassess::class,
             CreateRecurringProjectActivities::class,
 			   MailSendstatus::class,
+            PurgeApiTokens::class,
          ]);
 
          $this->app->booted(function (): void {
