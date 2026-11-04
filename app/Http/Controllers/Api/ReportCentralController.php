@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Gate;
+use Ledningssystemet\Ledningssystemet\Models\PointNotation;
 
 class ReportCentralController extends Controller
 {
@@ -245,23 +246,22 @@ class ReportCentralController extends Controller
          'time' => date("H:i:s"),
          'informationtypes' => [],
       ];
-      
-      // Create data object
+
       foreach(\Ledningssystemet\Ledningssystemet\Models\InformationType::orderBy('name')->get() as $obj)
       {
          $objdata = $obj->toArray();
-         
+
          $procs = [];
          foreach($obj->int_processes() as $process)
             $procs[$process->id] = $process->name;
          sort($procs);
-         
+
          $assets = $obj->int_assets()->distinct()->orderBy('name')->pluck('name')->toArray();
          sort($assets);
-         
+
          $objdata['processes'] = implode("\r\n", $procs);
          $objdata['assets'] = implode("\r\n", $assets);
-         $objdata['retention'] = $objdata['retention'] ? $objdata['retention'].' '.__("months") : "";
+         $objdata['retention'] = ReportCentralController::monthsToText($objdata['retention']);
          $objdata['responsible'] = $obj->responsible_user_id ? \Ledningssystemet\Ledningssystemet\Models\User::findOrFail($obj->responsible_user_id)->name : "";
          $objdata['confidentiality'] = $obj->confidentiality_class_id ?  \Ledningssystemet\Ledningssystemet\Models\ConfidentialityClass::findOrFail($obj->confidentiality_class_id)->name : "";
          $objdata['integrity'] = $obj->integrity_class_id ?  \Ledningssystemet\Ledningssystemet\Models\IntegrityClass::findOrFail($obj->integrity_class_id)->name : "";
@@ -610,36 +610,119 @@ class ReportCentralController extends Controller
          'informationtypes' => [],
       ];
 
-      // Create data object
-      foreach(\Ledningssystemet\Ledningssystemet\Models\InformationType::orderBy('name')->get() as $obj)
-      {
-         $objdata = $obj->toArray();
+      $appendInformationType = function ($obj, string $processLabel) use (&$data): void {
+         $objdata = $obj ? $obj->toArray() : [];
+         $objdata['processes'] = $processLabel;
 
-         $procs = [];
-         foreach($obj->int_processes() as $process)
-            $procs[$process->id] = $process->name;
-         sort($procs);
+         if ($obj) {
+            $assets = $obj->int_assets()->distinct()->orderBy('name')->pluck('name')->toArray();
+            sort($assets);
+            $objdata['assets'] = implode("\r\n", $assets);
+            $objdata['confidential'] = $obj->confidentiality_ground_id ? __("Yes") : __("No");
+            $objdata['diary'] = $obj->diary_id ? $obj->int_diary->name : __("Not recorded");
+            $objdata['retention'] = ReportCentralController::monthsToText($objdata['retention']);
 
-         $assets = $obj->int_assets()->distinct()->orderBy('name')->pluck('name')->toArray();
-         sort($assets);
-
-         $objdata['processes'] = implode("\r\n", $procs);
-         $objdata['assets'] = implode("\r\n", $assets);
-         $objdata['confidential'] = $obj->confidentiality_ground_id ? __("Yes") : __("No");
-         $objdata['diary'] = $obj->diary_id ? $obj->int_diary->name : __("Not recorded");
-         $objdata['retention'] = $objdata['retention'] ? $objdata['retention'].' '.__("months") : "";
-
-         if($obj->confidentiality_ground_id)
-         {
-            $objdata['archivingdescription'] .= ("" != $objdata['archivingdescription']) ? "\r\n\r\n" : "";
-            $objdata['archivingdescription'] .= __("This information type is classified as confidential with reference to")." ".$obj->int_confidentiality_ground->name;
+            if ($obj->confidentiality_ground_id) {
+               $archivingDescription = $objdata['archivingdescription'] ?? '';
+               $objdata['archivingdescription'] = $archivingDescription.("" != $archivingDescription ? "\r\n\r\n" : "");
+               $objdata['archivingdescription'] .= __("This information type is classified as confidential with reference to")." ".$obj->int_confidentiality_ground->name;
+            }
+         } else {
+            foreach (['name', 'diary', 'confidential', 'assets', 'sortinginformation', 'retention', 'archivemedia', 'archiveshippingtime', 'archivingdescription'] as $field) {
+               $objdata[$field] = '';
+            }
          }
 
          $data['informationtypes'][] = $objdata;
+      };
+
+      $pointNotations = PointNotation::with([
+         'processes.int_information_types',
+         'processes.int_process_activities.int_information_types',
+         'processActivities.int_information_types',
+      ])->get();
+      if ($pointNotations->isNotEmpty()) {
+         $pointNotations = $pointNotations
+            ->sort(fn (PointNotation $left, PointNotation $right) => PointNotation::compareCodes($left->code, $right->code))
+            ->values();
+         $capturedInformationTypeIds = [];
+         $capturedProcessIds = [];
+
+         foreach ($pointNotations as $notation) {
+            $informationTypes = [];
+            foreach ($notation->processes as $process) {
+               $capturedProcessIds[$process->id] = true;
+               foreach ($process->int_information_types as $informationType) {
+                  $informationTypes[$informationType->id] = $informationType;
+               }
+               foreach ($process->int_process_activities as $activity) {
+                  foreach ($activity->int_information_types as $informationType) {
+                     $informationTypes[$informationType->id] = $informationType;
+                  }
+               }
+            }
+            foreach ($notation->processActivities as $activity) {
+               $capturedProcessIds[$activity->process_id] = true;
+               foreach ($activity->int_information_types as $informationType) {
+                  $informationTypes[$informationType->id] = $informationType;
+               }
+            }
+
+            $processLabel = $notation->code.' '.$notation->name;
+            if ($informationTypes) {
+               $informationTypes = collect($informationTypes)->sortBy('name', SORT_NATURAL | SORT_FLAG_CASE);
+               foreach ($informationTypes as $informationType) {
+                  $capturedInformationTypeIds[$informationType->id] = true;
+                  $appendInformationType($informationType, $processLabel);
+               }
+            } else {
+               $appendInformationType(null, $processLabel);
+            }
+         }
+
+         $unmappedInformationTypes = \Ledningssystemet\Ledningssystemet\Models\InformationType::orderBy('name')
+            ->get()
+            ->reject(fn ($informationType) => isset($capturedInformationTypeIds[$informationType->id]));
+         if ($unmappedInformationTypes->isNotEmpty()) {
+            $appendInformationType(null, __("Other information management:"));
+
+            foreach ($unmappedInformationTypes as $informationType) {
+               $processes = [];
+               foreach ($informationType->int_processes() as $process) {
+                  if (! isset($capturedProcessIds[$process->id])) {
+                     $processes[$process->id] = $process->name;
+                  }
+               }
+               sort($processes);
+               $appendInformationType($informationType, implode("\r\n", $processes));
+            }
+         }
+      } else {
+         // With no configured point notations, preserve the current export.
+         foreach(\Ledningssystemet\Ledningssystemet\Models\InformationType::orderBy('name')->get() as $obj) {
+            $processes = [];
+            foreach ($obj->int_processes() as $process) {
+               $processes[$process->id] = $process->name;
+            }
+            sort($processes);
+            $appendInformationType($obj, implode("\r\n", $processes));
+         }
       }
 
       ReportCentralController::GenerateExcel('DocumentManagementPlan_'.config('app.locale', 'en'), 'InformationHandlingPlan', $data);
    }
 
-
+   static function monthsToText($months)
+   {
+      if (null == $months)
+         return "-";
+      else if ($months < 3)
+         return __("Not retained");
+      else if ($months > (25 * 12))
+         return __("Retained");
+      else if (0 == ($months % 12))
+         return ($months / 12) . ' ' . __("years");
+      else
+         return $months . ' ' . __("months");
+   }
 }
