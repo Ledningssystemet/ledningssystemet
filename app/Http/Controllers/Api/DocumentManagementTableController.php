@@ -59,7 +59,7 @@ class DocumentManagementTableController extends Controller
             'responsible' => $informationtype->responsible_user_id ? $informationtype->int_responsible_user->name : null,
             'description' => $informationtype->description,
             'archivingdescription' => $informationtype->archivingdescription,
-            'retention' => (null == $informationtype->retention) ? __ ("Not retained") : (($informationtype->retention > 50 * 12) ? __("Retained") : $informationtype->retention.' '.__("months")),
+            'retention' => \Ledningssystemet\Ledningssystemet\Http\Controllers\Api\ReportCentralController::monthsToText($informationtype->retention),
             'departments' => $departments,
             'confidentiality_ground' => $informationtype->confidentiality_ground_id ? $informationtype->int_confidentiality_ground->name : __("None"),
             'diary' => $informationtype->diary_id ? $informationtype->int_diary->name : __("Not recorded"),
