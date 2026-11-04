@@ -21,4 +21,4 @@ composer.lock
 sql-ca.pem
 /docker-env
 *.sql
-/tests
+/tests/*

@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
 use Ledningssystemet\Ledningssystemet\Http\Controllers\SystemSettingsController;
+use Ledningssystemet\Ledningssystemet\Http\Middleware\LogPasswordResetAttempt;
 use Ledningssystemet\Ledningssystemet\Http\Middleware\ModuleEnabled;
 use Ledningssystemet\Ledningssystemet\Http\Middleware\PasswordResetAccess;
 
@@ -46,11 +47,13 @@ Route::group(['namespace' => 'Ledningssystemet\Ledningssystemet\Http\Controllers
       }
    });
 
-   Route::middleware(PasswordResetAccess::class)->group(function () {
-      Route::get('/forgot-password', [\Laravel\Fortify\Http\Controllers\PasswordResetLinkController::class, 'create'])->name('password.request');
-      Route::post('/forgot-password', [\Laravel\Fortify\Http\Controllers\PasswordResetLinkController::class, 'store'])->name('password.email');
-      Route::get('/reset-password/{token}', [\Laravel\Fortify\Http\Controllers\NewPasswordController::class, 'create'])->name('password.reset');
-      Route::post('/reset-password', [\Laravel\Fortify\Http\Controllers\NewPasswordController::class, 'store'])->name('password.update');
+   Route::middleware(LogPasswordResetAttempt::class)->group(function () {
+      Route::middleware(PasswordResetAccess::class)->group(function () {
+         Route::get('/forgot-password', [\Laravel\Fortify\Http\Controllers\PasswordResetLinkController::class, 'create'])->name('password.request');
+         Route::post('/forgot-password', [\Laravel\Fortify\Http\Controllers\PasswordResetLinkController::class, 'store'])->name('password.email');
+         Route::get('/reset-password/{token}', [\Laravel\Fortify\Http\Controllers\NewPasswordController::class, 'create'])->name('password.reset');
+         Route::post('/reset-password', [\Laravel\Fortify\Http\Controllers\NewPasswordController::class, 'store'])->name('password.update');
+      });
    });
 
    Route::post('/auth/keepalive', function () {

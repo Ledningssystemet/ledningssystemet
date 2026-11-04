@@ -31,16 +31,29 @@ locally with `php artisan schedule:run` when testing scheduled tasks.
 
 ## Verification and formatting
 
+Test cases may be created and run locally in `tests/`, but must remain
+untracked and must not be committed or force-added. Keep the directory's
+contents ignored by Git. Shared regression testing takes place in a separate
+project that consumes this application as its base through Composer and npm.
+The local checks described below do not replace that regression suite.
+
 Run `php tests\Feature\PasswordResetAccessTest.php` to check the registered password
 reset routes for guests, regular users and system administrators with password
 login enabled and disabled. This standalone regression check requires Composer
 dependencies but does not access the database or send mail.
 
 There is currently no PHPUnit configuration in the working repository.
+Run `php tests\Feature\SwaggerDocumentationTest.php` to generate the Swagger
+specification and check project participant payloads, ControlAction source fields,
+read-only origin metadata and reporting guidance. This standalone check requires
+Composer dependencies but does not load `.env` or access a database.
+
 Verify other changes in an isolated development environment,
 including the workflows you changed, and document the verification in your
-pull request. Use `vendor/bin/pint` for PHP formatting. If automated tests
-are added, document their prerequisites and commands here.
+pull request. Use `vendor/bin/pint` for PHP formatting. When using local automated
+tests, report their prerequisites, commands and results without committing the
+test files. For package integration changes, also verify the affected behavior
+in a consuming application; report explicitly if that verification was not run.
 
 See [Contributing](../CONTRIBUTING.md) for expectations when changing behavior
 and [Architecture](architecture.md) for the main entry points.

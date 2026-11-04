@@ -15,252 +15,258 @@ use Throwable;
 
 class SsoController extends Controller
 {
-    public function redirect(string $provider): RedirectResponse
-    {
-        abort_unless(self::isProviderEnabled($provider), 404);
+   public function redirect(string $provider): RedirectResponse
+   {
+      abort_unless(self::isProviderEnabled($provider), 404);
 
-        session(['auth_mechanism' => 'SSO_'.strtoupper($provider)]);
+      session(['auth_mechanism' => 'SSO_' . strtoupper($provider)]);
 
-        return self::socialiteDriver($provider)->redirect();
-    }
+      return self::socialiteDriver($provider)->redirect();
+   }
 
-    public function callback(Request $request, string $provider): RedirectResponse
-    {
-        abort_unless(self::isProviderEnabled($provider), 404);
+   public function callback(Request $request, string $provider): RedirectResponse
+   {
+      abort_unless(self::isProviderEnabled($provider), 404);
 
-        try {
-            $socialUser = self::socialiteDriver($provider)->user();
-        } catch (Throwable $e) {
-            Log::warning('SSO callback failed for '.$provider.': '.$e->getMessage());
+      try {
+         $socialUser = self::socialiteDriver($provider)->user();
+      } catch (Throwable $e) {
+         Log::warning('SSO callback failed for ' . $provider . ': ' . $e->getMessage() . ' from IP ' . $request->ip() . '.');
 
-            return redirect()->route('login')->withErrors(trans('auth.failed'));
-        }
+         return redirect()->route('login')->withErrors(trans('auth.failed'));
+      }
 
-        $user = $this->resolveUser($provider, $socialUser->getEmail(), $socialUser->getName(), $socialUser->getId());
-        if (!$user->enabled) {
-            Log::info('User '.$user->email.' is disabled and cannot sign in with '.$provider.'.');
-            abort(403);
-        }
+      $user = $this->resolveUser($provider, $socialUser->getEmail(), $socialUser->getName(), $socialUser->getId());
+      if (!$user->enabled) {
+         Log::info('User ' . $user->email . ' is disabled and cannot sign in with ' . $provider . ' from IP ' . $request->ip() . '.');
+         abort(403);
+      }
 
-        Auth::login($user);
-        $request->session()->regenerate();
-        $request->session()->put('auth_mechanism', 'SSO_'.strtoupper($provider));
+      Auth::login($user);
+      $request->session()->regenerate();
+      $request->session()->put('auth_mechanism', 'SSO_' . strtoupper($provider));
 
-        if (config('ledningssystemet.mfa_enabled') && config('ledningssystemet.mfa_enforced') && empty($user->two_factor_secret)) {
-            $request->session()->regenerateToken();
-            return redirect()->route('mfa.enforcement');
-        }
+      if (config('ledningssystemet.mfa_enabled') && config('ledningssystemet.mfa_enforced') && empty($user->two_factor_secret)) {
+         Log::info('User ' . $user->email . ' is required to enforce MFA after SSO login with ' . $provider . ' from IP ' . $request->ip() . '.');
+         $request->session()->regenerateToken();
+         return redirect()->route('mfa.enforcement');
+      }
 
-        $user->forceFill([
-            'last_login_at' => now(),
-        ])->save();
+      Log::info('User ' . $user->email . ' signed in with ' . $provider . ' from IP ' . $request->ip() . '.');
 
-        return redirect()->intended('/');
-    }
+      $user->forceFill([
+         'last_login_at' => now(),
+      ])->save();
 
-    public static function enabledProviders(): array
-    {
-        $providers = [];
+      return redirect()->intended('/');
+   }
 
-        foreach (['azure', 'google'] as $provider) {
-            if (self::isProviderEnabled($provider)) {
-                $providers[] = [
-                    'name' => $provider,
-                    'label' => self::providerLabel($provider),
-                ];
-            }
-        }
+   public static function enabledProviders(): array
+   {
+      $providers = [];
 
-        return $providers;
-    }
+      foreach (['azure', 'google'] as $provider) {
+         if (self::isProviderEnabled($provider)) {
+            $providers[] = [
+               'name' => $provider,
+               'label' => self::providerLabel($provider),
+            ];
+         }
+      }
 
-    public static function hasEnabledProviders(): bool
-    {
-        return [] !== self::enabledProviders();
-    }
+      return $providers;
+   }
 
-    public static function isProviderEnabled(string $provider): bool
-    {
-        return null !== self::providerConfig($provider);
-    }
+   public static function hasEnabledProviders(): bool
+   {
+      return [] !== self::enabledProviders();
+   }
 
-    public static function logoutRedirectUrl(string $fallbackUrl): string
-    {
-        $mechanism = (string) session('auth_mechanism', '');
-        if ('SSO_AZURE' !== $mechanism) {
-            return $fallbackUrl;
-        }
+   public static function isProviderEnabled(string $provider): bool
+   {
+      return null !== self::providerConfig($provider);
+   }
 
-        $configured = config('services.azure.logout');
-        if (is_string($configured) && '' !== trim($configured)) {
-            return $configured;
-        }
+   public static function logoutRedirectUrl(string $fallbackUrl): string
+   {
+      $mechanism = (string)session('auth_mechanism', '');
+      if ('SSO_AZURE' !== $mechanism) {
+         return $fallbackUrl;
+      }
 
-        $tenant = config('services.azure.tenant', 'common');
+      $configured = config('services.azure.logout');
+      if (is_string($configured) && '' !== trim($configured)) {
+         return $configured;
+      }
 
-        return 'https://login.microsoftonline.com/'.trim((string) $tenant).'/oauth2/v2.0/logout?post_logout_redirect_uri='.urlencode($fallbackUrl);
-    }
+      $tenant = config('services.azure.tenant', 'common');
 
-    protected function resolveUser(string $provider, string $email, string $name, string $providerUserId): User
-    {
-        $email = strtolower(trim((string) ($email ?? '')));
-        $name = trim((string) ($name ?? ''));
+      return 'https://login.microsoftonline.com/' . trim((string)$tenant) . '/oauth2/v2.0/logout?post_logout_redirect_uri=' . urlencode($fallbackUrl);
+   }
 
-        if (!filter_var($email, FILTER_VALIDATE_EMAIL) || '' === $name) {
-            Log::warning('SSO callback produced invalid identity data for provider '.$provider.'.');
-            abort(403);
-        }
+   protected function resolveUser(string $provider, string $email, string $name, string $providerUserId): User
+   {
+      $email = strtolower(trim((string)($email ?? '')));
+      $name = trim((string)($name ?? ''));
 
-        $providerKey = self::providerExternalId($provider, $providerUserId);
+      if (!filter_var($email, FILTER_VALIDATE_EMAIL) || '' === $name) {
+         Log::warning('SSO callback produced invalid identity data ("'.$email.'") for provider ' . $provider . '.');
+         abort(403);
+      }
 
-        $user = User::query()
-            ->where('email', $email)
-            ->orWhere('external_id', $providerKey)
-            ->first();
+      $providerKey = self::providerExternalId($provider, $providerUserId);
 
-        if (null === $user) {
-            Log::warning('User '.$email.' was not found for SSO provider '.$provider.'.');
-            abort(403);
-        }
+      $user = null !== $providerKey
+         ? User::query()->where('external_id', $providerKey)->first()
+         : null;
 
-        if (null === $user->external_id && null !== $providerKey) {
-            $user->external_id = $providerKey;
-        }
+      if (null === $user) {
+         $user = User::query()->where('email', $email)->first();
+      }
 
-        if ($user->email !== $email) {
-            $user->email = $email;
-        }
+      if (null === $user) {
+         Log::warning('User ' . $email . ' was not found for SSO provider ' . $provider . ' from IP ' . request()->ip() . '.');
+         abort(403);
+      }
 
-        if ($user->name !== $name) {
-            $user->name = $name;
-        }
+      if (null === $user->external_id && null !== $providerKey) {
+         $user->external_id = $providerKey;
+      }
 
-        if ($user->isDirty(['external_id', 'email', 'name'])) {
-            $user->save();
-        }
+      if ($user->email !== $email) {
+         $user->email = $email;
+      }
 
-        return $user;
-    }
+      if ($user->name !== $name) {
+         $user->name = $name;
+      }
 
-    protected static function socialiteDriver(string $provider)
-    {
-        $config = self::providerConfig($provider);
-        abort_unless(null !== $config, 404);
+      if ($user->isDirty(['external_id', 'email', 'name'])) {
+         $user->save();
+      }
 
-        $driver = Socialite::driver($provider)->setConfig($config);
-        $scopes = self::providerScopes($provider);
+      return $user;
+   }
 
-        return [] === $scopes ? $driver : $driver->scopes($scopes);
-    }
+   protected static function socialiteDriver(string $provider)
+   {
+      $config = self::providerConfig($provider);
+      abort_unless(null !== $config, 404);
 
-    protected static function providerConfig(string $provider): ?SocialiteConfig
-    {
-        return match ($provider) {
-            'azure' => self::buildAzureConfig(),
-            'google' => self::buildGoogleConfig(),
-            default => null,
-        };
-    }
+      $driver = Socialite::driver($provider)->setConfig($config);
+      $scopes = self::providerScopes($provider);
 
-    protected static function buildAzureConfig(): ?SocialiteConfig
-    {
-        $clientId = config('services.azure.client_id');
-        $clientSecret = config('services.azure.client_secret');
-        $redirect = config('services.azure.redirect', route('sso.callback', ['provider' => 'azure']));
+      return [] === $scopes ? $driver : $driver->scopes($scopes);
+   }
 
-        if (!is_string($clientId) || '' === trim($clientId)) {
-            $clientId = self::inferAzureClientIdFromLegacyAuthorizeUrl();
-        }
+   protected static function providerConfig(string $provider): ?SocialiteConfig
+   {
+      return match ($provider) {
+         'azure' => self::buildAzureConfig(),
+         'google' => self::buildGoogleConfig(),
+         default => null,
+      };
+   }
 
-        if (!self::hasCredentials($clientId, $clientSecret, $redirect)) {
-            return null;
-        }
+   protected static function buildAzureConfig(): ?SocialiteConfig
+   {
+      $clientId = config('services.azure.client_id');
+      $clientSecret = config('services.azure.client_secret');
+      $redirect = config('services.azure.redirect', route('sso.callback', ['provider' => 'azure']));
 
-        return new SocialiteConfig($clientId, $clientSecret, $redirect, [
-            'tenant' => config('services.azure.tenant', 'common'),
-            'proxy' => config('services.azure.proxy'),
-            'graph_url' => config('services.azure.graph_url', 'https://graph.microsoft.com/v1.0/me'),
-        ]);
-    }
+      if (!is_string($clientId) || '' === trim($clientId)) {
+         $clientId = self::inferAzureClientIdFromLegacyAuthorizeUrl();
+      }
 
-    protected static function buildGoogleConfig(): ?SocialiteConfig
-    {
-        $clientId = config('services.google.client_id');
-        $clientSecret = config('services.google.client_secret');
-        $redirect = config('services.google.redirect', route('sso.callback', ['provider' => 'google']));
+      if (!self::hasCredentials($clientId, $clientSecret, $redirect)) {
+         return null;
+      }
 
-        if (!self::hasCredentials($clientId, $clientSecret, $redirect)) {
-            return null;
-        }
+      return new SocialiteConfig($clientId, $clientSecret, $redirect, [
+         'tenant' => config('services.azure.tenant', 'common'),
+         'proxy' => config('services.azure.proxy'),
+         'graph_url' => config('services.azure.graph_url', 'https://graph.microsoft.com/v1.0/me'),
+      ]);
+   }
 
-        return new SocialiteConfig($clientId, $clientSecret, $redirect, [
-            'hosted_domain' => config('services.google.hosted_domain'),
-        ]);
-    }
+   protected static function buildGoogleConfig(): ?SocialiteConfig
+   {
+      $clientId = config('services.google.client_id');
+      $clientSecret = config('services.google.client_secret');
+      $redirect = config('services.google.redirect', route('sso.callback', ['provider' => 'google']));
 
-    protected static function providerScopes(string $provider): array
-    {
-        $configured = match ($provider) {
-            'azure' => config('services.azure.scope', 'openid,email,profile,offline_access,User.Read'),
-            'google' => config('services.google.scope', 'openid,email,profile'),
-            default => '',
-        };
+      if (!self::hasCredentials($clientId, $clientSecret, $redirect)) {
+         return null;
+      }
 
-        $scopes = array_values(array_filter(array_map('trim', explode(',', (string) $configured))));
+      return new SocialiteConfig($clientId, $clientSecret, $redirect, [
+         'hosted_domain' => config('services.google.hosted_domain'),
+      ]);
+   }
 
-        if ('azure' === $provider && !in_array('User.Read', $scopes, true)) {
-            $scopes[] = 'User.Read';
-        }
+   protected static function providerScopes(string $provider): array
+   {
+      $configured = match ($provider) {
+         'azure' => config('services.azure.scope', 'openid,email,profile,offline_access,User.Read'),
+         'google' => config('services.google.scope', 'openid,email,profile'),
+         default => '',
+      };
 
-        return $scopes;
-    }
+      $scopes = array_values(array_filter(array_map('trim', explode(',', (string)$configured))));
 
-    protected static function providerLabel(string $provider): string
-    {
-        return match ($provider) {
-            'azure' => (string) config('ledningssystemet.sso_azure_button_text', 'Microsoft Entra ID'),
-            'google' => (string) config('ledningssystemet.sso_google_button_text', 'Google Workspace'),
-            default => Str::title($provider),
-        };
-    }
+      if ('azure' === $provider && !in_array('User.Read', $scopes, true)) {
+         $scopes[] = 'User.Read';
+      }
 
-    protected static function hasCredentials(mixed $clientId, mixed $clientSecret, mixed $redirect): bool
-    {
-        return is_string($clientId) && '' !== trim($clientId)
-            && is_string($clientSecret) && '' !== trim($clientSecret)
-            && is_string($redirect) && '' !== trim($redirect);
-    }
+      return $scopes;
+   }
 
-    protected static function providerExternalId(string $provider, ?string $providerUserId): ?string
-    {
-        $providerUserId = is_string($providerUserId) ? trim($providerUserId) : '';
+   protected static function providerLabel(string $provider): string
+   {
+      return match ($provider) {
+         'azure' => (string)config('ledningssystemet.sso_azure_button_text', 'Microsoft Entra ID'),
+         'google' => (string)config('ledningssystemet.sso_google_button_text', 'Google Workspace'),
+         default => Str::title($provider),
+      };
+   }
 
-        return '' === $providerUserId ? null : $provider.':'.$providerUserId;
-    }
+   protected static function hasCredentials(mixed $clientId, mixed $clientSecret, mixed $redirect): bool
+   {
+      return is_string($clientId) && '' !== trim($clientId)
+         && is_string($clientSecret) && '' !== trim($clientSecret)
+         && is_string($redirect) && '' !== trim($redirect);
+   }
 
-    protected static function inferAzureClientIdFromLegacyAuthorizeUrl(): ?string
-    {
-        $authorizeUrl = (string) config('ledningssystemet.oauth_server_authorize_url', '');
-        if ('' === trim($authorizeUrl)) {
-            return null;
-        }
+   protected static function providerExternalId(string $provider, ?string $providerUserId): ?string
+   {
+      $providerUserId = is_string($providerUserId) ? trim($providerUserId) : '';
 
-        $path = parse_url($authorizeUrl, PHP_URL_PATH);
-        if (!is_string($path) || '' === trim($path)) {
-            return null;
-        }
+      return '' === $providerUserId ? null : $provider . ':' . $providerUserId;
+   }
 
-        $segments = array_values(array_filter(explode('/', trim($path, '/'))));
-        if (count($segments) < 3) {
-            return null;
-        }
+   protected static function inferAzureClientIdFromLegacyAuthorizeUrl(): ?string
+   {
+      $authorizeUrl = (string)config('ledningssystemet.oauth_server_authorize_url', '');
+      if ('' === trim($authorizeUrl)) {
+         return null;
+      }
 
-        if ('oauth2' !== ($segments[1] ?? null) || 'v2.0' !== ($segments[2] ?? null)) {
-            return null;
-        }
+      $path = parse_url($authorizeUrl, PHP_URL_PATH);
+      if (!is_string($path) || '' === trim($path)) {
+         return null;
+      }
 
-        $candidate = trim((string) ($segments[0] ?? ''));
+      $segments = array_values(array_filter(explode('/', trim($path, '/'))));
+      if (count($segments) < 3) {
+         return null;
+      }
 
-        return '' === $candidate ? null : $candidate;
-    }
+      if ('oauth2' !== ($segments[1] ?? null) || 'v2.0' !== ($segments[2] ?? null)) {
+         return null;
+      }
+
+      $candidate = trim((string)($segments[0] ?? ''));
+
+      return '' === $candidate ? null : $candidate;
+   }
 }
