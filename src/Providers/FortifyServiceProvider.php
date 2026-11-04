@@ -107,7 +107,7 @@ class FortifyServiceProvider extends ServiceProvider
                 return null;
             }
 
-            Log::info('User login succeeded for '.$credentials['email'].' from IP '.$request->ip());
+            Log::info('User password verified for '.$credentials['email'].' from IP '.$request->ip());
 
             return $user;
         });
