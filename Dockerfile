@@ -90,7 +90,7 @@ RUN echo "\
     su -c \"cd /var/www/html && php artisan config:cache\" -s /bin/bash www-data\n\
     service cron start\n\
     echo \"Ready.\"\n\
-    tail -F -s 1 /var/www/html/storage/logs/*.log\n" > /start.sh
+    tail -F -s 1 /var/www/html/storage/logs/laravel.log\n" > /start.sh
 
 # Install composer
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer

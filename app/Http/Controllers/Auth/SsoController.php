@@ -46,13 +46,13 @@ class SsoController extends Controller
       $request->session()->regenerate();
       $request->session()->put('auth_mechanism', 'SSO_' . strtoupper($provider));
 
-      Log::info('User ' . $user->email . ' signed in with ' . $provider . ' from IP ' . $request->ip() . '.');
-
       if (config('ledningssystemet.mfa_enabled') && config('ledningssystemet.mfa_enforced') && empty($user->two_factor_secret)) {
          Log::info('User ' . $user->email . ' is required to enforce MFA after SSO login with ' . $provider . ' from IP ' . $request->ip() . '.');
          $request->session()->regenerateToken();
          return redirect()->route('mfa.enforcement');
       }
+
+      Log::info('User ' . $user->email . ' signed in with ' . $provider . ' from IP ' . $request->ip() . '.');
 
       $user->forceFill([
          'last_login_at' => now(),
@@ -109,16 +109,6 @@ class SsoController extends Controller
       $email = strtolower(trim((string)($email ?? '')));
       $name = trim((string)($name ?? ''));
 
-      // Try to normalize E-mailadresses that are azure guest emails
-      if (preg_match('/^(.*)#ext#.*$/', $email, $matches)) {
-         list($extPart) = explode('#ext#', $email);
-         $parts = explode('_', $extPart);
-         $domain = array_pop($parts);
-         $user = implode('_', $parts);
-
-         $email = $user . '@' . $domain;
-      }
-
       if (!filter_var($email, FILTER_VALIDATE_EMAIL) || '' === $name) {
          Log::warning('SSO callback produced invalid identity data ("'.$email.'") for provider ' . $provider . '.');
          abort(403);
@@ -126,10 +116,13 @@ class SsoController extends Controller
 
       $providerKey = self::providerExternalId($provider, $providerUserId);
 
-      $user = User::query()
-         ->where('email', $email)
-         ->orWhere('external_id', $providerKey)
-         ->first();
+      $user = null !== $providerKey
+         ? User::query()->where('external_id', $providerKey)->first()
+         : null;
+
+      if (null === $user) {
+         $user = User::query()->where('email', $email)->first();
+      }
 
       if (null === $user) {
          Log::warning('User ' . $email . ' was not found for SSO provider ' . $provider . ' from IP ' . request()->ip() . '.');
