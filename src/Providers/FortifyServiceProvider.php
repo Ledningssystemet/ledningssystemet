@@ -96,16 +96,18 @@ class FortifyServiceProvider extends ServiceProvider
             $passwordMatches = Hash::check($credentials['password'], $hashedPassword);
 
             if (null === $user || !$passwordMatches) {
-                Log::warning('User login failed for '.$credentials['email']);
+                Log::warning('User login failed for '.$credentials['email'].' from IP '.$request->ip());
 
                 return null;
             }
 
             if (!$user->enabled) {
-                Log::warning('User login failed for '.$credentials['email'].' (User is not enabled)');
+                Log::warning('User login failed for '.$credentials['email'].' (User is not enabled) from IP '.$request->ip());
 
                 return null;
             }
+
+            Log::info('User login succeeded for '.$credentials['email'].' from IP '.$request->ip());
 
             return $user;
         });
