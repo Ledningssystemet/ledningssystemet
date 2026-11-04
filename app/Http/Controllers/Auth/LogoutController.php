@@ -2,6 +2,7 @@
 
 namespace Ledningssystemet\Ledningssystemet\Http\Controllers\Auth;
 
+use Illuminate\Support\Facades\Log;
 use Ledningssystemet\Ledningssystemet\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
@@ -18,6 +19,8 @@ class LogoutController extends Controller
       // Get login mechanism
       $authmechanism = session('auth_mechanism');
 
+      Log::info("Logging out user '".Auth::user()->email."'.");
+      
       // Flush session and logout user
       Session::flush();
       Auth::logout();

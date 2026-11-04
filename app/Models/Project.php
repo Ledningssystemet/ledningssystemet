@@ -45,6 +45,9 @@ class Project extends Model
       });
       
       static::created(function ($model) {
+         if (null != $model->responsible_user_id)
+            $model->int_users()->syncWithoutDetaching([$model->responsible_user_id => ['readonly' => false]]);
+
          // If based on template, create risks
          if(null != $model->project_type_id)
          {
@@ -161,6 +164,8 @@ class Project extends Model
       $participants = [];
       foreach ($data['users'] as $participant)
          $participants[$participant['id']] = ['readonly' => (bool) $participant['readonly']];
+
+      $participants[$this->responsible_user_id] = ['readonly' => false];
 
       DB::transaction(function () use ($participants): void {
          $this->int_users()->sync($participants);

@@ -72,6 +72,9 @@ class SwaggerController extends Controller
             'info' => [
                 'title' => 'Ledningssystemet.se Open API',
                 'version' => '1.0.0',
+                'description' => 'API documentation and bug reporting: https://github.com/Ledningssystemet/ledningssystemet/blob/HEAD/docs/api.md#reporting-api-bugs. '
+                    .'Report reproducible API or documentation bugs at https://github.com/Ledningssystemet/ledningssystemet/issues. '
+                    .'Include the environment/date, HTTP method and path, sanitized payload, status/response, and expected behavior. Never include tokens or personal data.',
             ],
             'host' => $request->getHttpHost(),
             'basePath' => '/',
@@ -124,6 +127,27 @@ class SwaggerController extends Controller
                 $visibleProperties[$fieldname] = (object) [];
             }
 
+            if ($modelname === 'ControlAction') {
+                foreach (['risk_id' => 'Risk', 'finding_id' => 'Finding (observation)', 'incident_id' => 'Incident', 'objective_id' => 'Objective'] as $fieldname => $source) {
+                    $editableProperties[$fieldname] = [
+                        'type' => 'integer',
+                        'format' => 'int64',
+                        'minimum' => 1,
+                        'description' => 'Optional existing '.$source.' ID. One scalar ID per source type per request. '
+                            .'POST and PATCH add the link without replacing existing sources; repeat PATCH with another ID to link more sources of this type. '
+                            .'Different source types may be supplied together. Omit to leave links unchanged; arrays and plural *_ids fields are not supported.',
+                    ];
+                }
+
+                $visibleProperties['origin'] = [
+                    'type' => 'string',
+                    'readOnly' => true,
+                    'description' => 'Generated, localized, newline-separated display text for linked sources (for example RISK or observation). '
+                        .'Response only: not writable free text. Use risk_id, finding_id, incident_id or objective_id on POST/PATCH to add sources. '
+                        .'A control action can have zero or more sources, including multiple sources of the same type.',
+                ];
+            }
+
             $requestBody = [
                 'name' => 'body',
                 'in' => 'body',
@@ -152,7 +176,12 @@ class SwaggerController extends Controller
                 ],
             ];
 
-            $retval['tags'][] = ['name' => $modelname, 'description' => $classname::getPrettyName(true)];
+            $retval['tags'][] = [
+                'name' => $modelname,
+                'description' => $classname::getPrettyName(true).($modelname === 'Project'
+                    ? '. Project is the current CRUD model, also for projects referred to as risk projects. Use /api/v1/crud/Project; RiskProject is not a supported model.'
+                    : ''),
+            ];
 
             $retval['paths']['/api/v1/crud/'.$modelname] = [
                 // Index
@@ -313,23 +342,63 @@ class SwaggerController extends Controller
             // Register custom actions defined in the model's $actions property
             if (property_exists($newobj, 'actions') && is_array($newobj->actions)) {
                 foreach ($newobj->actions as $action) {
+                    $actionDescription = '';
+                    $actionParameters = [
+                        [
+                            'name' => 'id',
+                            'in' => 'path',
+                            'description' => __('ID of object'),
+                            'required' => true,
+                            'type' => 'integer',
+                            'format' => 'int64',
+                        ],
+                    ];
+
+                    if ($modelname === 'Project' && $action === 'updateparticipants') {
+                        $actionDescription = 'Only the project responsible user may replace the entire participant list. '
+                            .'Omitted users are removed; {"users":[]} removes all participants except the responsible user. '
+                            .'Do not include the project responsible user, whose read/write participant membership is retained automatically.';
+                        $actionParameters[] = [
+                            'name' => 'body',
+                            'in' => 'body',
+                            'required' => true,
+                            'schema' => [
+                                'type' => 'object',
+                                'required' => ['users'],
+                                'properties' => [
+                                    'users' => [
+                                        'type' => 'array',
+                                        'description' => 'The complete replacement participant list. Each user ID must be unique.',
+                                        'items' => [
+                                            'type' => 'object',
+                                            'required' => ['id', 'readonly'],
+                                            'properties' => [
+                                                'id' => [
+                                                    'type' => 'integer',
+                                                    'format' => 'int64',
+                                                    'description' => 'Existing user ID, excluding the project responsible user.',
+                                                ],
+                                                'readonly' => [
+                                                    'type' => 'boolean',
+                                                    'description' => 'true for read-only access; false for write access.',
+                                                ],
+                                            ],
+                                        ],
+                                    ],
+                                ],
+                                'example' => ['users' => [['id' => 123, 'readonly' => false]]],
+                            ],
+                        ];
+                    }
+
                     $retval['paths']['/api/v1/crud/'.$modelname.'/{id}/'.$action] = [
                         'post' => [
                             'tags' => [
                                 $modelname,
                             ],
                             'summary' => ucfirst($action).' '.$classname::getPrettyName().' '.__('with specific id'),
-                            'description' => '',
-                            'parameters' => [
-                                [
-                                    'name' => 'id',
-                                    'in' => 'path',
-                                    'description' => __('ID of object'),
-                                    'required' => true,
-                                    'type' => 'integer',
-                                    'format' => 'int64',
-                                ],
-                            ],
+                            'description' => $actionDescription,
+                            'parameters' => $actionParameters,
                             'responses' => [
                                 '200' => [
                                     'description' => __('Successful operation'),
@@ -346,6 +415,12 @@ class SwaggerController extends Controller
                             ],
                         ],
                     ];
+                    if ($modelname === 'Project' && $action === 'updateparticipants') {
+                        $retval['paths']['/api/v1/crud/'.$modelname.'/{id}/'.$action]['post']['consumes'] = ['application/json'];
+                        $retval['paths']['/api/v1/crud/'.$modelname.'/{id}/'.$action]['post']['responses']['422'] = [
+                            'description' => 'Invalid participant list: users must be an array, with distinct existing user IDs (excluding the project responsible user) and a readonly boolean for every participant.',
+                        ];
+                    }
                 }
             }
 

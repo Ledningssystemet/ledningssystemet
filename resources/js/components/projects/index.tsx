@@ -118,7 +118,7 @@ export function ProjectsView({ config: initialConfig }: { config: Configuration 
             item<Project>('Project', selectedId, controller.signal),
             config.canReadRisks ? collection<Risk>('ProjectRisk', { 'filter[project_id]': selectedId }, controller.signal) : Promise.resolve([]),
             config.canReadActions ? collection<Action>('ProjectActivity', { 'filter[project_id]': selectedId, sort: 'due' }, controller.signal) : Promise.resolve([]),
-            config.canReadWorkPackages ? collection<WorkPackage>('ProjectWorkPackage', { 'filter[project_id]': selectedId, sort: 'name' }, controller.signal) : Promise.resolve([]),
+            config.canReadWorkPackages ? collection<WorkPackage>('ProjectWorkPackage', { 'filter[project_id]': selectedId, sort: 'start_date,name,id' }, controller.signal) : Promise.resolve([]),
         ]).then(([projectItem, riskItems, actionItems, packageItems]) => {
             setProjectDetail(projectItem);
             setRisks(riskItems);

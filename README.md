@@ -14,6 +14,7 @@ Features include process and document management, roles and permissions, activit
 - [Project features](docs/projects.md): recurring activities, meetings, risks, work packages, Gantt, and permissions
 - [Shared React UI components](docs/ui.md)
 - [Contributing](CONTRIBUTING.md)
+- [Coding-agent instructions](AGENTS.md)
 
 ## License
 

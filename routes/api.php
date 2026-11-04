@@ -217,8 +217,6 @@ Route::prefix('v1/documentcontroller')->group(function () {
         }
 
         $docxml = DocumentController::generateXml($modelobj, $xslt);
-        header('Content-Type: text/xml');
-        exit($docxml);
 
         $pdfdata = DocumentController::generatePdf($docxml, $xslt->asXML(), false);
         if (! $pdfdata) {

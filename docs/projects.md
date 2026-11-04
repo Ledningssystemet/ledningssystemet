@@ -137,6 +137,9 @@ creating a replacement chain. History and comment panels are not displayed in
 the project module; backend history logging is unchanged.
 The risk matrix uses the installation's configured
 probability, consequence and risk levels, not a fixed five-point scale.
+Work packages are sorted by start date, earliest first, in both their list and
+the project's Gantt chart. Packages without a start date appear first; packages
+with the same start date are sorted by name, then ID.
 Work packages are configured in their own tab immediately after Activities, using
 `ProjectWorkPackage` (`project_work_packages`) and the
 `project_work_package_activities` pivot table. The timeline layout has status
@@ -240,3 +243,16 @@ to `false`, preserving write access for existing participants. Read-only members
 can view the project, risks, activities and work packages, but cannot change them or add comments.
 Project settings and participant administration remain reserved for their existing
 administrative roles and the responsible user respectively.
+
+When a project is created with a responsible user, that user is also added as an
+ordinary participant with read/write access. Saving the team preserves the
+current responsible user's read/write membership even though the team editor
+lists that user separately. Changing the responsible user does not remove the
+previous user's participant membership, so they retain access unless explicitly
+removed or made read-only through participant administration. Existing projects
+are not backfilled automatically.
+
+Regression scenarios: create a project with and without a responsible user; save
+the team before changing the responsible user; verify the former responsible
+user retains read/write access after the change. Also verify that other
+participants' read-only flags and explicit removals remain effective.
