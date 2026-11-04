@@ -6,9 +6,81 @@
 <script>
 var riskmappings = [];
 var settingsDirty = false;
+var pointNotationMappings = <?php
+   $mappingOptions = \Ledningssystemet\Ledningssystemet\Models\Process::with('int_process_activities')
+      ->orderBy('name')
+      ->get()
+      ->map(function ($process) {
+         $children = [[
+            'Value' => 'process:'.$process->id,
+            'DisplayText' => $process->name,
+         ]];
+         foreach ($process->int_process_activities as $activity) {
+            $children[] = [
+               'Value' => 'activity:'.$activity->id,
+               'DisplayText' => $process->name.' - '.$activity->name,
+            ];
+         }
+
+         return ['Label' => $process->name, 'Children' => $children];
+      });
+   echo json_encode($mappingOptions, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT);
+?>;
 
 $(function(){
    window.addEventListener("beforeunload", beforeUnloadHandler);
+   @if(\Ledningssystemet\Ledningssystemet\Support\Modules::active('archival'))
+   $('#pointNotationContainer').jtable({
+      title: '',
+      tableId: 'pointnotation',
+      messages: {
+         addNewRecord: '{{ __("Add point notation") }}',
+      },
+      actions: {
+         listAction: '/api/v1/items/PointNotation',
+         createAction: '/api/v1/items/PointNotation',
+         updateAction: '/api/v1/items/PointNotation',
+         deleteAction: '/api/v1/items/PointNotation',
+      },
+      fields: {
+         id: {
+            key: true,
+            list: false,
+            create: false,
+            edit: false,
+         },
+         code: {
+            title: '{{ __("Point notation") }}',
+            create: true,
+            edit: true,
+            list: true,
+            required: true,
+            maxlength: 100,
+            pattern: '[0-9]+(\\.[0-9]+)*',
+            header: true,
+         },
+         name: {
+            title: '{{ __("Name") }}',
+            create: true,
+            edit: true,
+            list: true,
+            required: true,
+            maxlength: 255,
+         },
+         mappings: {
+            title: '{{ __("Processes and activities") }}',
+            type: 'multiselect',
+            multiple: true,
+            search: true,
+            options: pointNotationMappings,
+            create: true,
+            edit: true,
+            list: true,
+         },
+      },
+   });
+   $('#pointNotationContainer').jtable('load');
+   @endif
 
    $('#probabilityContainer').jtable({
       messages: {
@@ -1472,6 +1544,10 @@ function saveclassificationsettings()
 
       <h2>{{ __("Diaries") }}</h2>
       <div id="diariesContainer"></div>
+
+      <h2>{{ __("Point notation") }}</h2>
+      <p>{{ __("Map point notation entries to processes and/or process activities. The document management plan export uses these entries instead of internal process names when at least one entry is configured.") }}</p>
+      <div id="pointNotationContainer"></div>
   </div>
 @endif
 </div>

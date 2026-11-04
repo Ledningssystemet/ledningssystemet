@@ -243,6 +243,7 @@ class AppServiceProvider extends ServiceProvider
 
             case 'ConfidentialityGround':
             case 'Diary':
+            case 'PointNotation':
                return (\Ledningssystemet\Ledningssystemet\Support\Modules::active('archival') && $user->hasAnyPermission(['managementtools.edit']));
 
             case 'LibraryDocument':
@@ -441,6 +442,7 @@ class AppServiceProvider extends ServiceProvider
 
             case 'ConfidentialityGround':
             case 'Diary':
+            case 'PointNotation':
                return (\Ledningssystemet\Ledningssystemet\Support\Modules::active('archival') && $user->hasAnyPermission(['managementtools.edit']));
 
             case 'LibraryDocument':
@@ -636,6 +638,7 @@ class AppServiceProvider extends ServiceProvider
 
             case 'ConfidentialityGround':
             case 'Diary':
+            case 'PointNotation':
                return (\Ledningssystemet\Ledningssystemet\Support\Modules::active('archival') && $user->hasAnyPermission(['managementtools.edit']));
 
             case 'LibraryDocument':
@@ -838,6 +841,7 @@ class AppServiceProvider extends ServiceProvider
 
             case 'ConfidentialityGround':
             case 'Diary':
+            case 'PointNotation':
                return (\Ledningssystemet\Ledningssystemet\Support\Modules::active('archival') && $user->hasAnyPermission(['managementtools.edit']));
 
             case 'LibraryDocument':
@@ -1066,6 +1070,7 @@ class AppServiceProvider extends ServiceProvider
             case 'Agreement':
             case 'ConfidentialityGround':
             case 'Diary':
+            case 'PointNotation':
             case 'CustomProperty':
             case 'FormTemplate':
             case 'Form':

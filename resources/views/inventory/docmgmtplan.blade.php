@@ -31,7 +31,7 @@ $(function(){
             text: '{{ __("Department") }}',
             default: 0,
             options: [
-               { value: null, text: '{{ __('Show all') }}' },
+               { value: 0, text: '{{ __('Show all') }}' },
 @foreach(\Ledningssystemet\Ledningssystemet\Models\Department::orderBy('name')->get()->each->setAppends([]) as $obj)
                { value: {{ $obj->id }}, text: <?php echo(json_encode($obj->name)); ?> },
 @endforeach               
@@ -42,7 +42,7 @@ $(function(){
             text: '{{ __("Confidentiality ground") }}',
             default: 0,
             options: [
-               { value: null, text: '{{ __('Show all') }}' },
+               { value: 0, text: '{{ __('Show all') }}' },
 @foreach(\Ledningssystemet\Ledningssystemet\Models\ConfidentialityGround::whereIn('id',\Ledningssystemet\Ledningssystemet\Models\InformationType::pluck('confidentiality_ground_id')->unique())->orderBy('name')->get()->each->setAppends([]) as $obj)
                { value: {{ $obj->id }}, text: <?php echo(json_encode($obj->name)); ?> },
 @endforeach
@@ -53,7 +53,7 @@ $(function(){
             text: '{{ __("Diary") }}',
             default: 0,
             options: [
-               { value: null, text: '{{ __('Show all') }}' },
+               { value: 0, text: '{{ __('Show all') }}' },
 @foreach(\Ledningssystemet\Ledningssystemet\Models\Diary::whereIn('id',\Ledningssystemet\Ledningssystemet\Models\InformationType::pluck('diary_id')->unique())->orderBy('name')->get()->each->setAppends([]) as $obj)
                { value: {{ $obj->id }}, text: <?php echo(json_encode($obj->name)); ?> },
 @endforeach
