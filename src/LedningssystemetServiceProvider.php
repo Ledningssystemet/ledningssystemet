@@ -2,6 +2,7 @@
 
 namespace Ledningssystemet\Ledningssystemet;
 
+use Ledningssystemet\Ledningssystemet\Console\Commands\ConvertProcessCharts;
 use Ledningssystemet\Ledningssystemet\Console\Commands\GraphSync;
 use Ledningssystemet\Ledningssystemet\Console\Commands\CreateRecurringProjectActivities;
 use Ledningssystemet\Ledningssystemet\Console\Commands\RiskReassess;
@@ -91,6 +92,7 @@ class LedningssystemetServiceProvider extends ServiceProvider
             CreateRecurringProjectActivities::class,
 			   MailSendstatus::class,
             PurgeApiTokens::class,
+            ConvertProcessCharts::class,
          ]);
 
          $this->app->booted(function (): void {
@@ -110,6 +112,9 @@ class LedningssystemetServiceProvider extends ServiceProvider
 
          // Daily status email
 			$schedule->command('ledningssystemet:sendstatusmail')->dailyAt('06:00');
+
+         // Convert process charts to the new format
+         $schedule->command('ledningssystemet:convert-process-charts')->hourlyAt(27)->withoutOverlapping();
          });
       }
    }
