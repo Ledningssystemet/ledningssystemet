@@ -18,6 +18,7 @@ class ConvertProcessCharts extends Command
     */
    public function handle()
    {
+      $chartFailures = [];
       $chartCount = 0;
       $failedChartCount = 0;
       foreach (Process::whereNull('process_chart_draft')->whereNotNull('bpmn')->cursor() as $process) {
@@ -46,6 +47,7 @@ class ConvertProcessCharts extends Command
             $process->saveQuietly();
          } catch (\Exception $e) {
             $failedChartCount++;
+            $chartFailures[] = "Failed to convert draft process chart for process: {$process->name}. Error: {$e->getMessage()}";
             $this->error("Failed to convert draft process chart for process: {$process->name}. Error: {$e->getMessage()}");
          }
       }
@@ -76,12 +78,19 @@ class ConvertProcessCharts extends Command
             $process->saveQuietly();
          } catch (\Exception $e) {
             $failedChartCount++;
+            $chartFailures[] = "Failed to convert published process chart for process: {$process->name}. Error: {$e->getMessage()}";
             $this->error("Failed to convert published process chart for process: {$process->name}. Error: {$e->getMessage()}");
          }
       }
 
       $this->info("Conversion completed. Total charts processed: {$chartCount}");
       $this->info("Total charts failed: {$failedChartCount}");
+      if($failedChartCount > 0) {
+         $this->warn("Failed charts details:");
+         foreach ($chartFailures as $failure) {
+            $this->warn($failure);
+         }
+      }
 
       Log::info("Conversion completed. Total charts processed: {$chartCount}, Total charts failed: {$failedChartCount}");
    }

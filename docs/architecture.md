@@ -14,6 +14,54 @@ The `User` model and user API use `org_roles` for organizational roles, with
 `int_roles()` relation and `role_user` pivot table. The `roles` relation is
 reserved for Spatie permission roles (access groups).
 
+## BPMN conversion
+
+`app/Support/ProcessChartBpmn.php` converts the supported BPMN subset to and from
+`chart_data`. End events support incoming data associations from information
+objects, including the `property` placeholder used by bpmn.io. These connections
+and their diagram geometry are preserved on import and export as graphics, not
+as relations between database objects. Unsupported elements still cause an
+explicit conversion error.
+
+Import validates the regenerated BPMN XML against the original before returning
+`chart_data`. Comparison ignores namespace prefixes, attribute and element order,
+and consistently renamed IDs, but requires an exact mapping of elements,
+containment and references. Coordinates are compared numerically; empty names and
+the default `isExpanded=false` are equivalent to omitted attributes. Other
+attributes, documentation and diagram geometry must be preserved. Errors identify
+changed XML paths and values or incompatible connections. Unsupported XML cannot
+silently disappear just because a second import produces the same `chart_data`.
+`ledningssystemet:convert-process-charts` additionally compares `chart_data`
+before saving.
+
+Optional preservation metadata includes `bpmnName` on information objects whose
+XML name differs from the name inferred from a reference, `hasDiagram` on
+subprocess graphics with an empty diagram plane, and `hasLabel` on graphics
+with an empty diagram label. These survive encoding and decoding and are emitted
+on export. Existing charts without this metadata remain supported.
+
+`bpmn:documentation` is preserved on the process and supported nodes and
+connections. Optional `documentation` lists contain entries with a `text` string
+and an optional `textFormat` string. Process documentation is stored at the root
+of `chart_data`; data-object documentation is stored on its `objects` entry;
+documentation for graphical nodes (including tasks and data-object references)
+and connections is stored on their `graphics` entries. Multiple entries, empty
+text, whitespace and escaped HTML/CDATA text survive import/export. Nested XML
+elements inside documentation are rejected rather than silently flattened.
+Documentation remains chart metadata and does not update entity descriptions.
+Existing charts without documentation keep their existing structure.
+
+Regression coverage in the separate consuming project should include end events
+with one or multiple data inputs sharing a placeholder, preservation of waypoints
+and labels across import/export, and unchanged task/subprocess data associations.
+Also cover documentation on tasks and data-object references, multiple formatted
+entries, database-linked objects, process/data-object/connection documentation,
+and rejection of malformed documentation metadata. Include XML comparisons with
+renamed IDs and reordered nodes, identical-looking nodes with different
+connections, cyclic graphs, missing or dangling references, changed coordinates,
+empty labels and subprocess planes. Exported BPMN should also import without
+warnings in bpmn.io.
+
 ## Password authentication
 
 `LOGIN_ALLOW_PASSWORDLOGIN=false` disables password login and denies unauthenticated
