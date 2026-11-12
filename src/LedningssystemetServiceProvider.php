@@ -98,23 +98,20 @@ class LedningssystemetServiceProvider extends ServiceProvider
          $this->app->booted(function (): void {
             $schedule = $this->app->make(Schedule::class);
 
-			// Graph sync
-			$schedule->command('ledningssystemet:graphsync')->hourly()->withoutOverlapping();
+            // Graph sync
+            $schedule->command('ledningssystemet:graphsync')->hourly()->withoutOverlapping();
 
-			// Perform risk re-assessment
-			$schedule->command('ledningssystemet:risksreassess')->dailyAt('05:00');
+            // Perform risk re-assessment
+            $schedule->command('ledningssystemet:risksreassess')->dailyAt('05:00');
 
-         // Create recurring project activities
-         $schedule->command('ledningssystemet:recurringprojectactivities')->dailyAt('05:00')->withoutOverlapping();
+            // Create recurring project activities
+            $schedule->command('ledningssystemet:recurringprojectactivities')->dailyAt('05:00')->withoutOverlapping();
 
-         // Daily purge of expired API tokens
-         $schedule->command('ledningssystemet:purgeapitokens')->dailyAt('05:30');
+            // Daily purge of expired API tokens
+            $schedule->command('ledningssystemet:purgeapitokens')->dailyAt('05:30');
 
-         // Daily status email
-			$schedule->command('ledningssystemet:sendstatusmail')->dailyAt('06:00');
-
-         // Convert process charts to the new format
-         $schedule->command('ledningssystemet:convert-process-charts')->hourlyAt(27)->withoutOverlapping();
+            // Daily status email
+            $schedule->command('ledningssystemet:sendstatusmail')->dailyAt('06:00');
          });
       }
    }
