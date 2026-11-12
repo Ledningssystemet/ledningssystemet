@@ -2,7 +2,6 @@
 
 namespace Ledningssystemet\Ledningssystemet;
 
-use Ledningssystemet\Ledningssystemet\Console\Commands\ConvertProcessCharts;
 use Ledningssystemet\Ledningssystemet\Console\Commands\GraphSync;
 use Ledningssystemet\Ledningssystemet\Console\Commands\CreateRecurringProjectActivities;
 use Ledningssystemet\Ledningssystemet\Console\Commands\RiskReassess;
@@ -92,7 +91,6 @@ class LedningssystemetServiceProvider extends ServiceProvider
             CreateRecurringProjectActivities::class,
 			   MailSendstatus::class,
             PurgeApiTokens::class,
-            ConvertProcessCharts::class,
          ]);
 
          $this->app->booted(function (): void {
