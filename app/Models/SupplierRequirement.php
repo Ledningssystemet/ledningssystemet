@@ -70,7 +70,8 @@ class SupplierRequirement extends Model
       'supplier_supplier_requirement_id',
       'note',
       'satisfactory',
-      'evaluated_by_name',   
+      'evaluated_by_name',
+      'reassessment_due'
    ];
 
    
