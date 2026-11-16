@@ -8,6 +8,7 @@ import { Gantt } from './Gantt';
 import { PersonalGantt } from './PersonalGantt';
 import { AnnualWheel } from './AnnualWheel';
 import { Meetings } from './Meetings';
+import { ProjectFiles } from './ProjectFiles';
 import { Badge, Btn, Card, Icon, Input, Label, Options, SectionTitle, Select } from '../ui';
 // @ts-ignore
 import './projects.css';
@@ -201,6 +202,7 @@ export function ProjectsView({ config: initialConfig }: { config: Configuration 
                         onActivityChanged={activity => setActions(previous => previous.some(item => item.id === activity.id)
                             ? previous.map(item => item.id === activity.id ? activity : item) : [...previous, activity])} />}
                     {tab === 'team' && <Team key={project.id} project={project} config={config} run={run} />}
+                    {tab === 'files' && <ProjectFiles key={project.id} project={project} />}
                     {tab === 'settings' && <Settings key={project.id} project={project} config={config} run={run} />}
                 </div>}
                 </> : <>

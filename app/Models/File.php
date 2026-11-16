@@ -32,13 +32,29 @@ class File extends Model
          // Set model connection
          $obj = $model->obj();
 
+         if(request()->user()->cannot('update', $obj))
+            abort(403);
+
+         if ($model->exists && ($model->isDirty('object_type') || $model->isDirty('object_id')))
+         {
+            $original = new static([
+               'object_type' => $model->getRawOriginal('object_type'),
+               'object_id' => $model->getRawOriginal('object_id'),
+            ]);
+            if ($original->obj() instanceof Project || $obj instanceof Project)
+               abort(400, __("A project file cannot be moved to another object"));
+         }
+
+         if ($obj instanceof Project && $obj->archived_at)
+            abort(400, __("You cannot modify files for an archived project"));
+
+         if ($obj instanceof Project && $model->exists && $model->isDirty(['name', 'filename', 'contents', 'contenttype', 'contentlength']))
+            abort(422, __("Only the description of a project file can be changed"));
+
          $model->object_type = $obj->getMorphClass();
          $model->object_id = $obj->id;
          $model->created_by = request()->user()->name;
-         $model->name = $model->name ? $model->name : $model->filename;
-         
-         if(request()->user()->cannot('update', $obj))
-            abort(403);
+         $model->name = $obj instanceof Project && !$model->exists ? $model->filename : ($model->name ? $model->name : $model->filename);
          
          // Check if valid context
          switch($obj::class)
@@ -46,12 +62,19 @@ class File extends Model
             case 'Ledningssystemet\Ledningssystemet\\Models\\Agreement':
             case 'Ledningssystemet\Ledningssystemet\\Models\\Customer':
             case 'Ledningssystemet\Ledningssystemet\\Models\\Supplier':
+            case 'Ledningssystemet\Ledningssystemet\\Models\\Project':
                break;
             default:
                abort(400, __("This object does not support file upload"));
          }
          
          Validator::make($model->toArray(), $model->getValidationRules())->validate();
+      });
+
+      static::deleting(function ($model) {
+         $obj = $model->obj();
+         if ($obj instanceof Project && $obj->archived_at)
+            abort(400, __("You cannot modify files for an archived project"));
       });
    }
    

@@ -6,6 +6,8 @@
     "exports": {
         "./app": "./resources/js/app.js",
         "./loadstyles": "./resources/js/loadstyles.js",
+        "./components/ui": "./resources/js/components/ui/index.tsx",
+        "./components/ui/Dropzone": "./resources/js/components/ui/Dropzone.tsx",
         "./components/*": "./resources/js/components/*"
     },
     "scripts": {

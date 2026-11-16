@@ -1,0 +1,62 @@
+.ls-dropzone {
+    padding: 24px;
+    border: 2px dashed var(--ui-border, var(--pm-border, #9aaeb5));
+    border-radius: 9px;
+    background: var(--bs-gray-100, #f8f9fa);
+    color: var(--ui-foreground, var(--pm-foreground, #152c38));
+    text-align: center;
+}
+
+.ls-dropzone p {
+    margin: 0 0 12px;
+}
+
+.ls-dropzone-dragging {
+    border-color: var(--ui-primary, var(--pm-primary, #0c7b80));
+    background: #e8f4f3;
+}
+
+.ls-dropzone-disabled {
+    opacity: 0.6;
+}
+
+.ls-dropzone-select,
+.ls-dropzone-action {
+    padding: 6px 12px;
+    border: 1px solid var(--ui-border, var(--pm-border, #9aaeb5));
+    border-radius: 9px;
+    background: #fff;
+    color: inherit;
+    font: inherit;
+    cursor: pointer;
+}
+
+.ls-dropzone-select:focus-visible,
+.ls-dropzone-action:focus-visible {
+    outline: 2px solid #006c68;
+    outline-offset: 2px;
+}
+
+.ls-dropzone-select:disabled,
+.ls-dropzone-action:disabled {
+    cursor: not-allowed;
+}
+
+.ls-dropzone-uploads {
+    display: grid;
+    gap: 8px;
+    padding: 0;
+    margin: 12px 0 0;
+    list-style: none;
+}
+
+.ls-dropzone-uploads li {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+}
+
+.ls-dropzone-filename {
+    overflow-wrap: anywhere;
+}
