@@ -6,6 +6,7 @@ import { t } from '../../lib/i18n';
 import './ui.css';
 
 export { Gantt, type GanttProps, type GanttGroup, type GanttRow } from './Gantt';
+export { Dropzone, type DropzoneProps } from './Dropzone';
 
 export type Option = { id: number; name: string };
 

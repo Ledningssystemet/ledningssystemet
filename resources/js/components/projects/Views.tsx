@@ -14,6 +14,7 @@ export function ProjectHeader({ project, projects, config, tab, loading, onSelec
         ...(config.canReadWorkPackages ? [['work-packages', 'Work packages', 'workspaces']] : []),
         ...(config.canReadWorkPackages || config.canReadActions ? [['gantt', 'Gantt', 'view_timeline']] : []),
         ['meetings', 'Meetings', 'event_note'],
+        ['files', 'Files', 'folder_open'],
         ['settings', 'Settings', 'settings'],
     ];
     return <header className="pm-header">

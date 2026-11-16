@@ -1,5 +1,24 @@
 # Project features
 
+## Project files
+
+The **Files** tab uses the existing `File` model and `/api/v1/items/File` API
+to upload via the shared React Dropzone, list, download, describe and delete files
+associated with a project. Only a file's description can be edited; attempts to
+rename or replace an existing project file through the API are rejected.
+Project participants with read access can list and download files;
+the project owner and writable participants can also change files. Archived
+projects retain read access to their files but cannot have files changed, even
+through the API. Project files cannot be moved between objects. Deleting an
+archived project also deletes its files.
+
+Regression coverage in the separate consuming project should include uploading,
+downloading, editing descriptions and deleting files; rejected rename and file
+replacement attempts; access by owners, writable and read-only
+participants and nonparticipants; archived projects; attempts to move files
+between objects; project deletion; and unchanged file handling for agreements,
+customers and suppliers.
+
 ## Recurring project activities
 
 Configure recurring activities under a project's **Activities** tab. Configurations
