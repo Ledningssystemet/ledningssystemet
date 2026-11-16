@@ -74,6 +74,12 @@ class Project extends Model
          if(null == $model->archived_at)
             abort(400, __("A project must be archived before it can be deleted"));
       });
+
+      static::deleted(function ($model) {
+         File::where('object_type', $model->getMorphClass())
+            ->where('object_id', $model->id)
+            ->delete();
+      });
    }
    
    /**
