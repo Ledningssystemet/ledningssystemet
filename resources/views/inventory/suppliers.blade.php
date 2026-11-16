@@ -144,6 +144,12 @@ $(function(){
             checked: false,
             text: '{{ __('Hide items without issues') }}',
          },
+         showonlyprocessors: {
+            type: 'checkbox',
+            value: '1',
+            checked: false,
+            text: '{{ __('Show only data processors') }}',
+         },
 @include('components.customproperty', ['classname' => 'Ledningssystemet\Ledningssystemet\Models\Supplier', 'showFilter' => true])
       },
       actions: {
@@ -416,10 +422,20 @@ $(function(){
                               edit: false,
                               list: true,
                               listClass: 'd-inline-block col-12 col-md-4',
-                              options: [
-                                 { Value: 0, DisplayText: '{{ __("No") }}' },
-                                 { Value: 1, DisplayText: '{{ __("Yes") }}' },
-                              ]
+                              display: function(data)
+                              {
+                                 var retval = $('<div />');
+
+                                 if(data.record.reassessment)
+                                    retval.text(data.record.reassessment_due ? '{{ __("Yes").", ".__("due")." " }}' + data.record.reassessment_due : '{{ __("Yes") }}');
+                                 else
+                                    retval.text('{{ __("No") }}');
+
+                                 if(data.record.reassessment && data.record.reassessment_due && (new Date(data.record.reassessment_due) < new Date()))
+                                    retval.addClass('text-danger');
+
+                                 return retval;
+                              }
                            },
                            hr0: {
                               list: true,
