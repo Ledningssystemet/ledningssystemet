@@ -416,10 +416,20 @@ $(function(){
                               edit: false,
                               list: true,
                               listClass: 'd-inline-block col-12 col-md-4',
-                              options: [
-                                 { Value: 0, DisplayText: '{{ __("No") }}' },
-                                 { Value: 1, DisplayText: '{{ __("Yes") }}' },
-                              ]
+                              display: function(data)
+                              {
+                                 var retval = $('<div />');
+
+                                 if(data.record.reassessment)
+                                    retval.text('{{ __("Yes").", ".__("due")." " }}' + data.record.reassessment_due);
+                                 else
+                                    retval.text('{{ __("No") }}');
+
+                                 if(data.record.reassessment && data.record.reassessment_due && (new Date(data.record.reassessment_due) < new Date()))
+                                    retval.addClass('text-danger');
+
+                                 return retval;
+                              }
                            },
                            hr0: {
                               list: true,

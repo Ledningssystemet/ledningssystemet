@@ -631,6 +631,7 @@ class Supplier extends Model
             'supplier_supplier_requirement.satisfactory as satisfactory',
             'supplier_supplier_requirement.updated_by_name as evaluated_by_name',
             'supplier_supplier_requirement.updated_at as evaluated_at',
+            'supplier_categories.reassessment_interval as reassessment_interval',
          )
          ->orderBy('supplier_requirements.name');
 
@@ -645,7 +646,14 @@ class Supplier extends Model
          }
 
          // Get all requirements
-         return $this->int_supplier_requirements()->get();
+         $reqs =  $this->int_supplier_requirements()->get();
+         foreach($reqs as $req) {
+            $req->reassessment_due = null;
+            if($req->reassessment_interval && $req->evaluated_at) {
+               $req->reassessment_due = date('Y-m-d', strtotime($req->reassessment_interval, strtotime($req->evaluated_at)));
+            }
+         }
+         return $reqs;
       } elseif (request()->method() == 'POST') {
          if (auth()->user()->cannot('update', Supplier::class)) {
             abort(403);
