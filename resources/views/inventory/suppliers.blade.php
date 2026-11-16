@@ -427,7 +427,7 @@ $(function(){
                                  var retval = $('<div />');
 
                                  if(data.record.reassessment)
-                                    retval.text('{{ __("Yes").", ".__("due")." " }}' + data.record.reassessment_due);
+                                    retval.text(data.record.reassessment_due ? '{{ __("Yes").", ".__("due")." " }}' + data.record.reassessment_due : '{{ __("Yes") }}');
                                  else
                                     retval.text('{{ __("No") }}');
 
