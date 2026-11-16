@@ -144,6 +144,12 @@ $(function(){
             checked: false,
             text: '{{ __('Hide items without issues') }}',
          },
+         showonlyprocessors: {
+            type: 'checkbox',
+            value: '1',
+            checked: false,
+            text: '{{ __('Show only data processors') }}',
+         },
 @include('components.customproperty', ['classname' => 'Ledningssystemet\Ledningssystemet\Models\Supplier', 'showFilter' => true])
       },
       actions: {

@@ -495,6 +495,9 @@ class Supplier extends Model
          ->when(count(array_filter(array_keys(request()->all()), fn($var) => str_starts_with($var, 'customproperty_'))) > 0, function (Builder $query) {
             self::getIndexQuery($query);
          })
+         ->when(intval(request()->input('showonlyprocessors', 0)) == 1, function (Builder $query) {
+            $query->where('dataprocessor', true);
+         })
          ->with([
             'tags',
             'int_assets:id,supplier_id,name',
