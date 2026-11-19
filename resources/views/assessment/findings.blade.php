@@ -60,6 +60,17 @@ $(function(){
             checked: false,
             text: '{{ __('Show non-conformities only') }}',
          },
+         responsible_user_id: {
+            type: 'select',
+            text: '{{ __("Responsible user") }}',
+            default: 0,
+            options: [
+               { value: 0, text: '{{ __('Show all') }}' },
+                  @foreach(\Ledningssystemet\Ledningssystemet\Models\User::leftJoin('findings', 'findings.responsible_user_id', '=', 'users.id')->whereNotNull('findings.id')->select(['users.id', 'users.name'])->distinct()->orderBy('users.name')->get()->each->setAppends([]) as $obj)
+               { value: {{ $obj->id }}, text: <?php echo(json_encode($obj->name)); ?> },
+               @endforeach
+            ]
+         },
 @include('components.customproperty', ['classname' => 'Ledningssystemet\Ledningssystemet\Models\Finding', 'showFilter' => true])
       },
       actions: {
@@ -85,6 +96,28 @@ $(function(){
             required: true,
             header: true,
             maxlength: 255,
+            display: function(data) {
+               var status = '';
+               var severity = 'info';
+
+               if (data.record.finished_at) {
+                  status = '{{ __("Handled") }}';
+                  severity = 'success';
+               } else if (data.record.responsible_user_id) {
+                  status = '{{ __("Assigned") }}';
+                  severity = 'warning text-dark';
+               } else {
+                  status = '{{ __("Identified") }}';
+                  severity = 'danger';
+               }
+
+               return $('<span />')
+                  .text(data.record.name)
+                  .append($('<span />')
+                     .addClass('badge rounded-pill ms-2 bg-' + severity)
+                     .css({'position': 'relative', 'top': '-3px'})
+                     .text(status));
+            }
          },
          tags: showTags('Finding', $('#tableContainer')),
          id: {
@@ -167,6 +200,20 @@ if(\Ledningssystemet\Ledningssystemet\Support\Modules::active('supplier'))
                { Value: {{$obj->id}}, DisplayText: @php echo(json_encode($obj->name)); @endphp },
 @endforeach
             ]
+         },
+         responsible_user_id: {
+            title: '{{ __('Responsible') }}',
+            list: true,
+            edit: true,
+            create: true,
+            options: [
+                  @foreach(\Ledningssystemet\Ledningssystemet\Models\User::orderBy('name')->select(['id', 'name'])->get()->each->setAppends([]) as $obj)
+                  @if($obj->can('index', \Ledningssystemet\Ledningssystemet\Models\Finding::class))
+               { Value: {{ $obj->id }}, DisplayText: <?php echo(json_encode($obj->name)); ?>},
+               @endif
+               @endforeach
+            ],
+            required: true,
          },
          description: {
             title: '{{ __('Description') }}',
@@ -295,6 +342,9 @@ if(\Ledningssystemet\Ledningssystemet\Support\Modules::active('supplier'))
             display: function(data){
                if(!data.record.finished_at)
                {
+                  if (data.record.responsible_user_id != {{ auth()->user()->id }})
+                     return $('<span />');
+
                   return $('<button />')
                      .addClass('btn btn-outline-primary btn-sm')
                      .text('{{ __('Handled') }}')

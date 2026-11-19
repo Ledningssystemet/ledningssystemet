@@ -403,6 +403,21 @@ $(function(){
                            .append($('<select id="activities-user" name="activities" class="form-select form-select-sm" required="true" />'));
                      }
 
+                     if(data.record.activityflowcount)
+                     {
+                        $('<div />')
+                           .appendTo(retval)
+                           .append($('<label for="activityflows-user" class="form-label">{{ __("Activity Flows") }}</label>'))
+                           .append($('<select id="activityflows-user" name="activityflows" class="form-select form-select-sm" required="true" />'));
+                     }
+
+                     if(data.record.agreementcount)
+                     {
+                        $('<div />')
+                           .appendTo(retval)
+                           .append($('<label for="agreements-user" class="form-label">{{ __("Agreements") }}</label>'))
+                           .append($('<select id="agreements-user" name="agreements" class="form-select form-select-sm" required="true" />'));
+                     }
 
                      if(data.record.assetscount)
                      {
@@ -428,6 +443,31 @@ $(function(){
                            .appendTo(retval)
                            .append($('<label for="control_actions-user" class="form-label">{{ __("Control actions") }}</label>'))
                            .append($('<select id="control_actions-user" name="control_actions" class="form-select form-select-sm" required="true" />'));
+                     }
+
+                     if(data.record.customercount)
+                     {
+                        $('<div />')
+                           .appendTo(retval)
+                           .append($('<label for="customers-user" class="form-label">{{ __("Customers") }}</label>'))
+                           .append($('<select id="customers-user" name="customers" class="form-select form-select-sm" required="true" />'));
+                     }
+
+
+                     if(data.record.findingscount)
+                     {
+                        $('<div />')
+                           .appendTo(retval)
+                           .append($('<label for="findings-user" class="form-label">{{ __("Findings") }}</label>'))
+                           .append($('<select id="findings-user" name="findings" class="form-select form-select-sm" required="true" />'));
+                     }
+
+                     if(data.record.formcount)
+                     {
+                        $('<div />')
+                           .appendTo(retval)
+                           .append($('<label for="forms-user" class="form-label">{{ __("Forms") }}</label>'))
+                           .append($('<select id="forms-user" name="forms" class="form-select form-select-sm" required="true" />'));
                      }
 
                      if(data.record.incidentscount)
@@ -472,6 +512,14 @@ $(function(){
                            .append($('<select id="process_performance_metrics-user" name="process_performance_metrics" class="form-select form-select-sm" required="true" />'));
                      }
 
+
+                     if(data.record.projectcount)
+                     {
+                        $('<div />')
+                           .appendTo(retval)
+                           .append($('<label for="projects-user" class="form-label">{{ __("Projects") }}</label>'))
+                           .append($('<select id="projects-user" name="projects" class="form-select form-select-sm" required="true" />'));
+                     }
 
                      if(data.record.riskscount)
                      {

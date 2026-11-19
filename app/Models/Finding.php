@@ -49,11 +49,18 @@ class Finding extends Model
       
       $count = (null == $departments) ? Finding::whereNull('finished_at')->where('nonconformity', true)->count() : Finding::whereNull('finished_at')->where('nonconformity', true)->whereIn('department_id', $departments)->count();
       if($count)
-         $retval[] = ['level' => (null == $user) ? 'warning' : 'danger', 'count' => $count, 'text' => __("Non-conformitites").' '.__("pending assessment"), 'url' => ((($user != null) && $user->can('index',  get_called_class())) || (($user == null) && (null != auth()->user()) && (auth()->user()->can('index', get_called_class())))) ? url()->query('/assessment/findings') : null];
+         $retval[] = ['level' => (null == $user) ? 'warning' : 'warning', 'count' => $count, 'text' => __("Non-conformitites").' '.__("pending assessment"), 'url' => ((($user != null) && $user->can('index',  get_called_class())) || (($user == null) && (null != auth()->user()) && (auth()->user()->can('index', get_called_class())))) ? url()->query('/assessment/findings') : null];
       
       $count = (null == $departments) ? Finding::whereNull('finished_at')->where('nonconformity', false)->count() : Finding::whereNull('finished_at')->where('nonconformity', false)->whereIn('department_id', $departments)->count();
       if($count)
          $retval[] = ['level' => (null == $user) ? 'info' : 'warning', 'count' => $count, 'text' => __("Observation").' '.__("pending assessment"), 'url' => ((($user != null) && $user->can('index',  get_called_class())) || (($user == null) && (null != auth()->user()) && (auth()->user()->can('index', get_called_class())))) ? url()->query('/assessment/findings') : null];
+
+      if(null == $user)
+      {
+         $count = (null == $departments) ? Finding::whereNull('finished_at')->whereNull('responsible_user_id')->count() : Finding::whereNull('finished_at')->whereIn('department_id', $departments)->whereNull('responsible_user_id')->count();
+         if($count)
+            $retval[] = ['level' => 'danger', 'count' => $count, 'text' => __("unhandled findings without assigned responsible user"), 'url' => ((($user != null) && $user->can('index',  get_called_class())) || (null != auth()->user()) && (auth()->user()->can('index', get_called_class()))) ? url()->query('/assessment/findings') : null];
+      }
 
       return $retval;
    }
@@ -89,6 +96,14 @@ class Finding extends Model
           
          if($model->finished_at)
          {
+            // Ensure that a responsible user is assigned
+            if(null == $model->responsible_user_id)
+               abort(400, __('There must be a responsible user assigned before a finding can be marked as finished'));
+
+            // Ensure tha the responsible user is the one that is marking the non-conformity as finished
+            if($model->responsible_user_id != auth()->user()->id)
+               abort(403, __('You may not mark a finding as finished if you are not the responsible user'));
+
             // Ensure that all mandatory fields are provided
             if(null == $model->immediateaction)
                abort(400, __('There must be a description of immediate actions before a non-conformity can be marked as finished'));
@@ -144,10 +159,13 @@ static::creating(function ($model) {
    {
       if($this->finished_at)
          return ['icon' => 'check', 'level' => 'info', 'text' => ''];
-      
+
+      if(null == $this->responsible_user_id)
+         return ['icon' => 'report', 'level' => 'danger', 'text' => __("This observation has not been assigned a responsible user")];
+
       if($this->nonconformity)
-         return ['icon' => 'report', 'level' => 'danger', 'text' => __("This non-conformity has not been assessed")];
-         
+         return ['icon' => 'report', 'level' => 'warning', 'text' => __("This non-conformity has not been assessed")];
+
       return ['icon' => 'report', 'level' => 'warning', 'text' => __("This observation has not been assessed")];
    }
    
@@ -260,6 +278,7 @@ static::creating(function ($model) {
       'tags',
       'distribution_analysis',
       'estimated_cost',
+      'responsible_user_id',
    ];
 
    
@@ -282,6 +301,7 @@ static::creating(function ($model) {
       'finished_at',
       'distribution_analysis',
       'estimated_cost',
+      'responsible_user_id',
    ];
 
 
@@ -366,6 +386,9 @@ static::creating(function ($model) {
          ->when(0 < intval(request()->input('isnc', 0)), function (Builder $query) {
             $query->where('nonconformity', 1);
          })
+         ->when( 0 < intval(request()->input('responsible_user_id', 0)), function (Builder $query) {
+            $query->where('responsible_user_id', intval(request()->input('responsible_user_id', 0)));
+         })
          ->when(0 < count(array_filter(array_keys(request()->all()), function($var){ return (0 === strpos($var,'customproperty_')); })), function(Builder $query){ self::getIndexQuery($query); })
          ->select($table.'.*')
          ->with(['tags'])
@@ -396,6 +419,7 @@ static::creating(function ($model) {
          'preventativeaction' => 'nullable',
          'nonconformity' => 'nullable',
          'estimated_cost' => 'sometimes|nullable|numeric|min:0',
+         'responsible_user_id' => 'nullable|exists:Ledningssystemet\Ledningssystemet\Models\User,id',
       ];
    }
  
