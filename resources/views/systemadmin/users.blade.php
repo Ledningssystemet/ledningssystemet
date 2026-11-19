@@ -408,7 +408,7 @@ $(function(){
                         $('<div />')
                            .appendTo(retval)
                            .append($('<label for="activityflows-user" class="form-label">{{ __("Activity Flows") }}</label>'))
-                           .append($('<select id="activityflows-user" name="activityflows" class="form-select form-select-sm" required="true" />'));
+                           .append($('<select id="activityflows-user" name="activity_flows" class="form-select form-select-sm" required="true" />'));
                      }
 
                      if(data.record.agreementcount)
