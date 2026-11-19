@@ -30,6 +30,12 @@ class Project extends Model
 
    public static function getPrettyName($plural = false){ if($plural) { return __("Projects"); } else { return __("Project"); }}
 
+   /* Retrieve status for the entire collection of objects */
+   public static function getItemsStatus($department = null, $user = null, $personalOnly = false)
+   {
+      return [];
+   }
+
    /**
     * Bootstrap any application services.
     *
@@ -67,6 +73,22 @@ class Project extends Model
 
             }
          }
+      });
+
+      static::updated(function ($model): void {
+         if (!$model->wasChanged('responsible_user_id'))
+            return;
+
+         $participants = [];
+         $formerResponsibleUserId = $model->getOriginal('responsible_user_id');
+         if (null != $formerResponsibleUserId)
+            $participants[$formerResponsibleUserId] = ['readonly' => false];
+
+         if (null != $model->responsible_user_id)
+            $participants[$model->responsible_user_id] = ['readonly' => false];
+
+         if (!empty($participants))
+            $model->int_users()->syncWithoutDetaching($participants);
       });
 
       static::deleting(function ($model) {

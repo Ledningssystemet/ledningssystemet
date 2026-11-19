@@ -79,7 +79,8 @@ Archival, as well as the data protection contact's name and email address, under
 **System settings > General settings** (`/systemadmin/settings`). Settings
 apply to the entire installation and are persisted by Laravel Pennant in
 `system_settings`, using its dedicated `ledningssystemet` store and null scope.
-Disabling a module does not delete its data.
+The Assessment tab also stores the control-status reassessment deadline in days;
+it defaults to 365 days. Disabling a module does not delete its data.
 
 Run `php artisan migrate --force` during deployment, before serving requests.
 The migration imports the installation's existing `DISABLE_STAFF`,
@@ -94,3 +95,11 @@ After migration, these environment variables and the old `disable_*` and
 The processing register reads its contact details from the database. Changes in
 the administration page take effect without rebuilding configuration or route
 caches.
+
+System administrators can manage a user's weekly status-email schedule and
+notification channels from **System administration > Users**. The notification
+settings action is available to users with permission to update users; changes
+to the schedule use the protected system-admin endpoint, while notification
+channels use the existing `UserNotificationChannel` API and authorization.
+Regression coverage should verify that administrators can view and update both
+settings for another user, while other users cannot access the admin endpoint.

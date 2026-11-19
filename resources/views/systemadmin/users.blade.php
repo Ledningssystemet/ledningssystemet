@@ -4,6 +4,158 @@
 @section('container')
 
 <script>
+function openUserNotificationSettings(user) {
+   var days = [
+      { name: 'monday', label: @json(__('Monday')) },
+      { name: 'tuesday', label: @json(__('Tuesday')) },
+      { name: 'wednesday', label: @json(__('Wednesday')) },
+      { name: 'thursday', label: @json(__('Thursday')) },
+      { name: 'friday', label: @json(__('Friday')) },
+      { name: 'saturday', label: @json(__('Saturday')) },
+      { name: 'sunday', label: @json(__('Sunday')) },
+   ];
+   var title = @json(__('E-mail notification settings'));
+
+   $.ajax({
+      method: 'GET',
+      url: '/systemadmin/users/' + user.id + '/notification-settings',
+      dataType: 'json',
+      success: function(settings) {
+         var content = $('<div class="container-fluid" />');
+         var weekdays = $('<div class="row g-2" />');
+
+         days.forEach(function(day) {
+            var inputId = 'notification-' + day.name + '-' + user.id;
+            weekdays.append(
+               $('<div class="col-6 col-md-4" />').append(
+                  $('<div class="form-check form-switch" />')
+                     .append($('<input class="form-check-input" type="checkbox" />')
+                        .attr({ id: inputId, name: day.name })
+                     .prop('checked', settings[day.name] === true || settings[day.name] == 1))
+                     .append($('<label class="form-check-label" />')
+                        .attr('for', inputId)
+                        .text(day.label))
+               )
+            );
+         });
+
+         content
+            .append($('<p class="mb-3" />').text(@json(__('These settings adjust how often you want to get status overviews from the system'))))
+            .append(weekdays)
+            .append($('<h5 class="mt-4" />').text(@json(__('Notification channels'))))
+            .append($('<div id="userNotificationChannelsTable" />'));
+
+         var status = $('<div class="text-danger mt-2" role="alert" />');
+         content.append(status);
+
+         showDialog(title, content, {
+            actionLabel: translateString('Save'),
+            dismissLabel: translateString('Close'),
+            modalClass: 'modal-xl',
+            onAction: function(data, dialogDiv) {
+               var preferences = {};
+               days.forEach(function(day) {
+                  preferences[day.name] = dialogDiv.find('input[name="' + day.name + '"]').prop('checked') ? 1 : 0;
+               });
+
+               dialogDiv.find('.action-button').prop('disabled', true);
+               $.ajax({
+                  method: 'POST',
+                  url: '/systemadmin/users/' + user.id + '/notification-settings',
+                  data: preferences,
+                  dataType: 'json',
+                  success: function() {
+                     dialogDiv.find('.dismiss-button').first().trigger('click');
+                  },
+                  error: function() {
+                     status.text(@json(__('Unable to save notification settings.')));
+                     dialogDiv.find('.action-button').prop('disabled', false);
+                  },
+               });
+
+               return true;
+            },
+            formCreated: function(dialogDiv) {
+               dialogDiv.find('.modal-dialog').addClass('modal-xl');
+
+               var channelsTable = dialogDiv.find('#userNotificationChannelsTable');
+               channelsTable.jtable({
+                  title: @json(__('Notification channels')),
+                  tableId: 'usernotificationchannels',
+                  bootstrap: true,
+                  accordion: true,
+                  messages: {
+                     addNewRecord: @json(__('Add new channel')),
+                  },
+                  actions: {
+                     listAction: '/api/v1/items/UserNotificationChannel?user_id=' + user.id,
+                     createAction: '/api/v1/items/UserNotificationChannel?user_id=' + user.id,
+                     updateAction: '/api/v1/items/UserNotificationChannel',
+                     deleteAction: '/api/v1/items/UserNotificationChannel',
+                  },
+                  fields: {
+                     id: {
+                        key: true,
+                        list: false,
+                        create: false,
+                        edit: false,
+                     },
+                     name: {
+                        title: @json(__('Name')),
+                        create: true,
+                        edit: true,
+                        list: true,
+                        required: true,
+                        maxlength: 255,
+                        header: true,
+                     },
+                     ignoremine: {
+                        title: @json(__('Notify me when I am doing the changes')),
+                        create: true,
+                        edit: true,
+                        list: true,
+                        defaultValue: true,
+                        options: [
+                           { Value: 1, DisplayText: @json(__('No')) },
+                           { Value: 0, DisplayText: @json(__('Yes')) },
+                        ],
+                     },
+                     channelscopes: {
+                        title: @json(__('Object scopes')),
+                        create: true,
+                        edit: true,
+                        list: true,
+                        multiple: true,
+                        options: [
+@foreach(\Ledningssystemet\Ledningssystemet\Models\UserNotificationChannel::availableScopes() as $obj)
+                           { Value: @json($obj['key']), DisplayText: @json($obj['text']) },
+@endforeach
+                        ],
+                     },
+                     channelevents: {
+                        title: @json(__('Events')),
+                        create: true,
+                        edit: true,
+                        list: true,
+                        multiple: true,
+                        options: [
+@foreach(\Ledningssystemet\Ledningssystemet\Models\UserNotificationChannel::availableEvents() as $obj)
+                           { Value: @json($obj['key']), DisplayText: @json($obj['text']) },
+@endforeach
+                        ],
+                     },
+                  },
+               });
+               channelsTable.jtable('load');
+            },
+         });
+      },
+      error: function() {
+         showDialog(title, $('<p />').text(@json(__('Unable to load notification settings.'))));
+      },
+   });
+}
+
 $(function(){
    $('#tableContainer').jtable({
       title: '{{ __("Users") }}',
@@ -207,6 +359,26 @@ $(function(){
             }
          },
 @if(Auth::user()->can('update', \Ledningssystemet\Ledningssystemet\Models\User::class))
+         notifications: {
+            title: '',
+            list: true,
+            edit: false,
+            create: false,
+            type: 'command',
+            footer: true,
+            display: function(data) {
+               return $('<button />')
+                  .addClass('btn btn-outline-primary btn-sm')
+                  .css({cursor: 'pointer'})
+                  .text('{{ __('Notification settings') }}')
+                  .append($('<span />')
+                     .addClass('material-symbols-rounded')
+                     .text('notifications'))
+                  .on('click', function() {
+                     openUserNotificationSettings(data.record);
+                  });
+            },
+         },
          reassign: {
             edit: false,
             create: false,
@@ -231,6 +403,21 @@ $(function(){
                            .append($('<select id="activities-user" name="activities" class="form-select form-select-sm" required="true" />'));
                      }
 
+                     if(data.record.activityflowcount)
+                     {
+                        $('<div />')
+                           .appendTo(retval)
+                           .append($('<label for="activityflows-user" class="form-label">{{ __("Activity Flows") }}</label>'))
+                           .append($('<select id="activityflows-user" name="activity_flows" class="form-select form-select-sm" required="true" />'));
+                     }
+
+                     if(data.record.agreementcount)
+                     {
+                        $('<div />')
+                           .appendTo(retval)
+                           .append($('<label for="agreements-user" class="form-label">{{ __("Agreements") }}</label>'))
+                           .append($('<select id="agreements-user" name="agreements" class="form-select form-select-sm" required="true" />'));
+                     }
 
                      if(data.record.assetscount)
                      {
@@ -256,6 +443,31 @@ $(function(){
                            .appendTo(retval)
                            .append($('<label for="control_actions-user" class="form-label">{{ __("Control actions") }}</label>'))
                            .append($('<select id="control_actions-user" name="control_actions" class="form-select form-select-sm" required="true" />'));
+                     }
+
+                     if(data.record.customercount)
+                     {
+                        $('<div />')
+                           .appendTo(retval)
+                           .append($('<label for="customers-user" class="form-label">{{ __("Customers") }}</label>'))
+                           .append($('<select id="customers-user" name="customers" class="form-select form-select-sm" required="true" />'));
+                     }
+
+
+                     if(data.record.findingscount)
+                     {
+                        $('<div />')
+                           .appendTo(retval)
+                           .append($('<label for="findings-user" class="form-label">{{ __("Findings") }}</label>'))
+                           .append($('<select id="findings-user" name="findings" class="form-select form-select-sm" required="true" />'));
+                     }
+
+                     if(data.record.formcount)
+                     {
+                        $('<div />')
+                           .appendTo(retval)
+                           .append($('<label for="forms-user" class="form-label">{{ __("Forms") }}</label>'))
+                           .append($('<select id="forms-user" name="forms" class="form-select form-select-sm" required="true" />'));
                      }
 
                      if(data.record.incidentscount)
@@ -300,6 +512,22 @@ $(function(){
                            .append($('<select id="process_performance_metrics-user" name="process_performance_metrics" class="form-select form-select-sm" required="true" />'));
                      }
 
+
+                     if(data.record.projectcount)
+                     {
+                        $('<div />')
+                           .appendTo(retval)
+                           .append($('<label for="projects-user" class="form-label">{{ __("Projects") }}</label>'))
+                           .append($('<select id="projects-user" name="projects" class="form-select form-select-sm" required="true" />'));
+                     }
+
+                     if(data.record.projectactivitycount)
+                     {
+                        $('<div />')
+                           .appendTo(retval)
+                           .append($('<label for="project_activities-user" class="form-label">{{ __("Project activities") }}</label>'))
+                           .append($('<select id="project_activities-user" name="project_activities" class="form-select form-select-sm" required="true" />'));
+                     }
 
                      if(data.record.riskscount)
                      {

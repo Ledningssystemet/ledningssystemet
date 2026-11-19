@@ -99,6 +99,11 @@ class AppServiceProvider extends ServiceProvider
             throw new \LogicException("Missing system setting [{$name}]. Run database migrations.");
          });
       }
+      foreach (array_keys(SystemSettings::ASSESSMENT_FIELDS) as $name) {
+         Feature::store('ledningssystemet')->define($name, function () use ($name): never {
+            throw new \LogicException("Missing system setting [{$name}]. Run database migrations.");
+         });
+      }
 
       /* Register event listener for cache flush on database modification, except for session update.
          This is a very ugly, yet powerful, way of at least making sure that any cached data is valid

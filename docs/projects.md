@@ -267,9 +267,11 @@ When a project is created with a responsible user, that user is also added as an
 ordinary participant with read/write access. Saving the team preserves the
 current responsible user's read/write membership even though the team editor
 lists that user separately. Changing the responsible user does not remove the
-previous user's participant membership, so they retain access unless explicitly
-removed or made read-only through participant administration. Existing projects
-are not backfilled automatically.
+previous user's participant membership; the former responsible user is added
+with read/write access even if they were not already a participant. The new
+responsible user also has read/write participant access. The former responsible
+user retains access unless explicitly removed or made read-only through
+participant administration. Existing projects are not backfilled automatically.
 
 Regression scenarios: create a project with and without a responsible user; save
 the team before changing the responsible user; verify the former responsible
