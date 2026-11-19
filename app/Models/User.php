@@ -81,15 +81,21 @@ static::creating(function ($model) {
       'status',
       'direct_reports',
       'activitiescount',
+      'activityflowcount',
+      'agreementcount',
       'assetscount',
       'controlscount',
       'control_actionscount',
+      'customercount',
       'findingscount',
+      'formcount',
       'incidentscount',
       'information_typescount',
       'objectivescount',
       'processescount',
       'process_performance_metricscount',
+      'projectcount',
+      'projectactivitycount',
       'riskscount',
       'supplierscount',
       'access_groups',
@@ -170,6 +176,16 @@ static::creating(function ($model) {
       return DB::table('activities')->where('responsible_user_id', $this->id)->count();
    }
 
+   public function getActivityflowcountAttribute()
+   {
+      return DB::table('activity_flows')->where('responsible_user_id', $this->id)->count();
+   }
+
+   public function getAgreementcountAttribute()
+   {
+      return DB::table('agreements')->where('responsible_user_id', $this->id)->count();
+   }
+
    public function getAssetscountAttribute()
    {
       return DB::table('assets')->where('responsible_user_id', $this->id)->count();
@@ -183,6 +199,21 @@ static::creating(function ($model) {
    public function getControlActionscountAttribute()
    {
       return DB::table('control_actions')->where('responsible_id', $this->id)->count();
+   }
+
+   public function getCustomercountAttribute()
+   {
+      return DB::table('customers')->where('responsible_user_id', $this->id)->count();
+   }
+
+   public function getFindingscountAttribute()
+   {
+      return DB::table('findings')->where('responsible_user_id', $this->id)->count();
+   }
+
+   public function getFormcountAttribute()
+   {
+      return DB::table('forms')->where('responsible_user_id', $this->id)->count();
    }
 
    public function getIncidentscountAttribute()
@@ -208,6 +239,16 @@ static::creating(function ($model) {
    public function getProcessPerformanceMetricscountAttribute()
    {
       return DB::table('process_performance_metrics')->where('responsible_user_id', $this->id)->count();
+   }
+
+   public function getProjectcountAttribute()
+   {
+      return DB::table('projects')->where('responsible_user_id', $this->id)->count();
+   }
+
+   public function getProjectactivitycountAttribute()
+   {
+      return DB::table('project_activities')->where('responsible_user_id', $this->id)->count();
    }
 
    public function getRiskscountAttribute()
@@ -242,14 +283,21 @@ static::creating(function ($model) {
       'manager_user_id',
       'direct_reports',
       'activitiescount',
+      'activityflowcount',
+      'agreementcount',
       'assetscount',
       'controlscount',
       'control_actionscount',
+      'customercount',
+      'findingscount',
+      'formcount',
       'incidentscount',
       'information_typescount',
       'objectivescount',
       'processescount',
       'process_performance_metricscount',
+      'projectcount',
+      'projectactivitycount',
       'riskscount',
       'supplierscount',
       'last_login_at',
@@ -565,6 +613,12 @@ static::creating(function ($model) {
       if(request()->has('activities') && ($this->id != request()->input('activities')))
          DB::table('activities')->where('responsible_user_id', $this->id)->update(['responsible_user_id' => request()->input('activities') ]);
 
+      if(request()->has('activity_flows') && ($this->id != request()->input('activity_flows')))
+         DB::table('activity_flows')->where('responsible_user_id', $this->id)->update(['responsible_user_id' => request()->input('activity_flows') ]);
+
+      if(request()->has('agreements') && ($this->id != request()->input('agreements')))
+         DB::table('agreements')->where('responsible_user_id', $this->id)->update(['responsible_user_id' => request()->input('agreements') ]);
+
       if(request()->has('assets') && ($this->id != request()->input('assets')))
          DB::table('assets')->where('responsible_user_id', $this->id)->update(['responsible_user_id' => request()->input('assets') ]);
 
@@ -574,34 +628,38 @@ static::creating(function ($model) {
       if(request()->has('control_actions') && ($this->id != request()->input('control_actions')))
          DB::table('control_actions')->where('responsible_id', $this->id)->update(['responsible_id' => request()->input('control_actions') ]);
 
+      if(request()->has('customers') && ($this->id != request()->input('customers')))
+         DB::table('customers')->where('responsible_user_id', $this->id)->update(['responsible_user_id' => request()->input('customers') ]);
 
       if(request()->has('findings') && ($this->id != request()->input('findings')))
          DB::table('findings')->where('responsible_user_id', $this->id)->update(['responsible_user_id' => request()->input('findings') ]);
 
+      if(request()->has('forms') && ($this->id != request()->input('forms')))
+         DB::table('forms')->where('responsible_user_id', $this->id)->update(['responsible_user_id' => request()->input('forms') ]);
 
       if(request()->has('incidents') && ($this->id != request()->input('incidents')))
          DB::table('incidents')->where('responsible_user_id', $this->id)->update(['responsible_user_id' => request()->input('incidents') ]);
 
-
       if(request()->has('information_types') && ($this->id != request()->input('information_types')))
          DB::table('information_types')->where('responsible_user_id', $this->id)->update(['responsible_user_id' => request()->input('information_types') ]);
-
 
       if(request()->has('objectives') && ($this->id != request()->input('objectives')))
          DB::table('objectives')->where('responsible_user_id', $this->id)->update(['responsible_user_id' => request()->input('objectives') ]);
 
-
       if(request()->has('processes') && ($this->id != request()->input('processes')))
          DB::table('processes')->where('responsible_user_id', $this->id)->update(['responsible_user_id' => request()->input('processes') ]);
-
 
       if(request()->has('process_performance_metrics') && ($this->id != request()->input('process_performance_metrics')))
          DB::table('process_performance_metrics')->where('responsible_user_id', $this->id)->update(['responsible_user_id' => request()->input('process_performance_metrics') ]);
 
+      if(request()->has('projects') && ($this->id != request()->input('projects')))
+         DB::table('projects')->where('responsible_user_id', $this->id)->update(['responsible_user_id' => request()->input('projects') ]);
+
+      if(request()->has('project_activities') && ($this->id != request()->input('project_activities')))
+         DB::table('project_activities')->where('responsible_user_id', $this->id)->update(['responsible_user_id' => request()->input('project_activities') ]);
 
       if(request()->has('risks') && ($this->id != request()->input('risks')))
          DB::table('risks')->where('riskowner_id', $this->id)->update(['riskowner_id' => request()->input('risks') ]);
-
 
       if(request()->has('suppliers') && ($this->id != request()->input('suppliers')))
          DB::table('suppliers')->where('responsible_user_id', $this->id)->update(['responsible_user_id' => request()->input('suppliers') ]);

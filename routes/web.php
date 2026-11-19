@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
 use Ledningssystemet\Ledningssystemet\Http\Controllers\SystemSettingsController;
+use Ledningssystemet\Ledningssystemet\Http\Controllers\SystemUserNotificationSettingsController;
 use Ledningssystemet\Ledningssystemet\Http\Middleware\LogPasswordResetAttempt;
 use Ledningssystemet\Ledningssystemet\Http\Middleware\ModuleEnabled;
 use Ledningssystemet\Ledningssystemet\Http\Middleware\PasswordResetAccess;
@@ -243,6 +244,8 @@ Route::group(['namespace' => 'Ledningssystemet\Ledningssystemet\Http\Controllers
       Route::put('/systemadmin/settings', [SystemSettingsController::class, 'update'])->name('systemadmin.settings.update');
       Route::get('/systemadmin/access', function() { return view('systemadmin.access'); }); // Display access settings
       Route::get('/systemadmin/users', function() { return view('systemadmin.users'); }); // Display users
+      Route::get('/systemadmin/users/{user}/notification-settings', [SystemUserNotificationSettingsController::class, 'show'])->whereNumber('user');
+      Route::post('/systemadmin/users/{user}/notification-settings', [SystemUserNotificationSettingsController::class, 'update'])->whereNumber('user');
       Route::get('/systemadmin/apitokens', function() { return view('systemadmin.apitokens'); }); // Display API tokens
       Route::get('/systemadmin/sites', function() { return view('systemadmin.sites'); }); // Display Sites
       Route::get('/systemadmin/swagger', function() { return view('systemadmin.swagger'); }); // Display Swagger

@@ -74,7 +74,7 @@ function ActivityTable({ actions, config, blockedActivityIds, onEdit, onToggle, 
             <td className="text-nowrap">{dateValue(item.due)}</td>
             <td>{item.estimated_cost ?? '—'}</td>
             <td>{item.estimated_hours ?? '—'}</td>
-            <td><Badge tone={item.completed_at ? 'ok' : 'info'}>{t(item.completed_at ? 'Finished' : 'Planned')}</Badge></td>
+            <td><Badge tone={item.completed_at ? 'ok' : 'warn'}>{t(item.completed_at ? 'Finished' : 'Planned')}</Badge></td>
             <td><div className="d-flex flex-wrap gap-2">
                 {onEdit && item.access.update && !item.completed_at && <Btn variant="outline" onClick={() => onEdit(item)}>{t('Edit')}</Btn>}
                 {onToggle && item.access.update && <Btn disabled={blockedActivityIds.has(item.id)} onClick={() => onToggle(item)}>{t(item.completed_at ? 'Reopen' : 'Finish')}</Btn>}
