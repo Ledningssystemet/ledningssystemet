@@ -355,7 +355,7 @@ class Control extends Model
          'name' => 'required',
          'description' => 'required',
          'responsible_user_id' => 'nullable|exists:Ledningssystemet\Ledningssystemet\Models\User,id',
-         'implemented' => 'required|boolean',
+         'implemented' => 'sometimes|boolean',
       ];
    }
    
