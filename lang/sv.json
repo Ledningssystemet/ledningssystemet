@@ -1392,6 +1392,7 @@
     "Missing qualifications": "Ej uppnådda kvalifikationer",
     "No direct assigned responsibilities for processes, information types, assets, customers, supppliers or controls": "Inga tilldelade ansvarsområden för processer, informationstyper, tillgångar, kunder, leverantörer eller kontroller",
     "Notification channels": "Notifikationskanaler",
+    "Notification settings": "Notifieringsinställningar",
     "Add new channel": "Lägg till ny kanal",
     "Notify me when I am doing the changes": "Meddela mig när jag gör ändringarna",
     "Object scopes": "Objektomfattningar",
@@ -1405,6 +1406,8 @@
     "Friday": "Fredag",
     "Saturday": "Lördag",
     "Sunday": "Söndag",
+    "Unable to load notification settings.": "Det gick inte att läsa in notifieringsinställningarna.",
+    "Unable to save notification settings.": "Det gick inte att spara notifieringsinställningarna.",
     "All rights reserved.": "Alla rättigheter förbehållna.",
     "Cannot upload this form since the exchange proxy is not configured. Contact your administrator": "Det går inte att ladda upp formuläret eftersom utbytesproxyn inte är konfigurerad. Kontakta din administratör",
     "Cannot upload this form since the exchange proxy could not be reached or returned an error. Try again later or contact your administrator. Reference: :reference": "Det går inte att ladda upp formuläret eftersom utbytesproxyn inte kunde nås eller returnerade ett fel. Försök igen senare eller kontakta din administratör. Referens: :reference",
@@ -1558,6 +1561,12 @@
     "By marking this control as reviewed, you certify that according to your best knowledge the status description and implementation assessments are accurate.": "Genom att markera denna kontroll som granskad intygar du att enligt din bästa kunskap är statusbeskrivningen och implementationsstatusen korrekta.",
     "Implemented": "Implementerad",
     "Not implemented": "Ej implementerad",
-    "not reviewed within the reassessment deadline": "inte granskad inom tidsfristen för ombedömning"
-
+    "not reviewed within the reassessment deadline": "inte granskad inom tidsfristen för ombedömning",
+    "Edit record": "Redigera post",
+    "Showing {0}-{1} of {2}": "Visar {0}-{1} av {2}",
+    "Row count": "Radräkning",
+    "Go to page": "Gå till sida",
+    "Deleting": "Tar bort",
+    "Can not delete {0} of {1} records!": "Kan inte ta bort {0} av {1} poster!",
+    "Deleting {0} of {1} records, processing...": "Tar bort {0} av {1} poster, bearbetar..."
 }

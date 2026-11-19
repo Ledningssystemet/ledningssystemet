@@ -95,3 +95,11 @@ After migration, these environment variables and the old `disable_*` and
 The processing register reads its contact details from the database. Changes in
 the administration page take effect without rebuilding configuration or route
 caches.
+
+System administrators can manage a user's weekly status-email schedule and
+notification channels from **System administration > Users**. The notification
+settings action is available to users with permission to update users; changes
+to the schedule use the protected system-admin endpoint, while notification
+channels use the existing `UserNotificationChannel` API and authorization.
+Regression coverage should verify that administrators can view and update both
+settings for another user, while other users cannot access the admin endpoint.
