@@ -521,6 +521,14 @@ $(function(){
                            .append($('<select id="projects-user" name="projects" class="form-select form-select-sm" required="true" />'));
                      }
 
+                     if(data.record.projectactivitycount)
+                     {
+                        $('<div />')
+                           .appendTo(retval)
+                           .append($('<label for="project_activities-user" class="form-label">{{ __("Project activities") }}</label>'))
+                           .append($('<select id="project_activities-user" name="project_activities" class="form-select form-select-sm" required="true" />'));
+                     }
+
                      if(data.record.riskscount)
                      {
                         $('<div />')
