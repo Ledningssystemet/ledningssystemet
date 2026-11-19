@@ -30,6 +30,12 @@ class Project extends Model
 
    public static function getPrettyName($plural = false){ if($plural) { return __("Projects"); } else { return __("Project"); }}
 
+   /* Retrieve status for the entire collection of objects */
+   public static function getItemsStatus($department = null, $user = null, $personalOnly = false)
+   {
+      return [];
+   }
+
    /**
     * Bootstrap any application services.
     *

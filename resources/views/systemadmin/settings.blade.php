@@ -23,6 +23,10 @@
          <button class="nav-link" id="privacy-tab" data-bs-toggle="tab" data-bs-target="#privacy-panel"
                  type="button" role="tab" aria-controls="privacy-panel" aria-selected="false">{{ __('Privacy') }}</button>
       </li>
+      <li class="nav-item" role="presentation">
+         <button class="nav-link" id="assessment-tab" data-bs-toggle="tab" data-bs-target="#assessment-panel"
+                 type="button" role="tab" aria-controls="assessment-panel" aria-selected="false">{{ __('Assessment') }}</button>
+      </li>
    </ul>
 
    <form method="POST" action="{{ route('systemadmin.settings.update') }}">
@@ -48,6 +52,15 @@
                   <label class="form-label" for="{{ $name }}">{{ __($label) }}</label>
                   <input class="form-control" type="{{ $name === 'data_privacy_contact_email' ? 'email' : 'text' }}"
                          id="{{ $name }}" name="{{ $name }}" maxlength="255" value="{{ old($name, $contact[$name]) }}">
+               </div>
+            @endforeach
+         </div>
+         <div class="tab-pane fade" id="assessment-panel" role="tabpanel" aria-labelledby="assessment-tab">
+            @foreach(\Ledningssystemet\Ledningssystemet\Support\SystemSettings::ASSESSMENT_FIELDS as $name => $label)
+               <div class="mb-3">
+                  <label class="form-label" for="{{ $name }}">{{ __($label) }}</label>
+                  <input class="form-control" type="number" id="{{ $name }}" name="{{ $name }}"
+                         min="1" step="1" value="{{ old($name, $assessment[$name]) }}" required>
                </div>
             @endforeach
          </div>

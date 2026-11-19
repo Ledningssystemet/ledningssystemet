@@ -79,7 +79,8 @@ Archival, as well as the data protection contact's name and email address, under
 **System settings > General settings** (`/systemadmin/settings`). Settings
 apply to the entire installation and are persisted by Laravel Pennant in
 `system_settings`, using its dedicated `ledningssystemet` store and null scope.
-Disabling a module does not delete its data.
+The Assessment tab also stores the control-status reassessment deadline in days;
+it defaults to 365 days. Disabling a module does not delete its data.
 
 Run `php artisan migrate --force` during deployment, before serving requests.
 The migration imports the installation's existing `DISABLE_STAFF`,

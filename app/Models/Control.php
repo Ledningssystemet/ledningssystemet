@@ -7,6 +7,8 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Carbon;
+use Ledningssystemet\Ledningssystemet\Support\SystemSettings;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -50,7 +52,17 @@ class Control extends Model
       $count = $user ? Control::whereNull('not_applicable_at')->where('responsible_user_id', $user->id)->whereNull('statusdescription')->count() : Control::whereNull('not_applicable_at')->whereNull('statusdescription')->count();
       if($count > 0)
          $retval[] = ['level' => 'warning', 'count' => $count, 'text' => Control::getPrettyName($count > 1).' '.__("without status description"), 'url' => ((($user != null) && $user->can('index',  get_called_class())) || (($user == null) && (null != auth()->user()) && (auth()->user()->can('index', get_called_class())))) ? url()->query('/inventory/controls') : null];
-      
+
+      // Count controls that have not been reviewed within the reassessment deadline
+      $reviewDeadline = now()->subDays(SystemSettings::integerValue('control_status_reassessment_days'));
+      $count = $user ? Control::whereNull('not_applicable_at')->where('responsible_user_id',  $user->id)->where(function($query) use ($reviewDeadline) {
+         $query->whereNull('reviewed_at')->orWhere('reviewed_at', '<', $reviewDeadline);
+      })->count() : Control::whereNull('not_applicable_at')->where(function($query) use ($reviewDeadline) {
+         $query->whereNull('reviewed_at')->orWhere('reviewed_at', '<', $reviewDeadline);
+      })->count();
+      if($count > 0)
+         $retval[] = ['level' => 'warning', 'count' => $count, 'text' => Control::getPrettyName($count > 1).' '.__("not reviewed within the reassessment deadline"), 'url' => ((($user != null) && $user->can('index',  get_called_class())) || (($user == null) && (null != auth()->user()) && (auth()->user()->can('index', get_called_class())))) ? url()->query('/inventory/controls') : null];
+
       return $retval;
    }
 
@@ -109,7 +121,11 @@ class Control extends Model
       
       if(!$this->statusdescription)
          return ['icon' => 'warning', 'level' => 'warning', 'text' => __("Status description is missing")];
-      
+
+      $reviewDeadline = now()->subDays(SystemSettings::integerValue('control_status_reassessment_days'));
+      if(null == $this->reviewed_at || Carbon::parse($this->reviewed_at)->lt($reviewDeadline))
+         return ['icon' => 'warning', 'level' => 'warning', 'text' => __("The control needs an updated approval/review of the status description")];
+
       if($this->getPendingActionCountAttribute())
          return ['icon' => 'event_list', 'level' => 'info', 'text' => __("There are pending actions for this control")];
       
@@ -222,6 +238,8 @@ class Control extends Model
       'status',
       'statusdescription',
       'not_applicable_at',
+      'implemented',
+      'reviewed_at',
    ];
 
    
@@ -237,6 +255,7 @@ class Control extends Model
       'responsible_user_id',
       'requirements',
       'statusdescription',
+      'implemented',
    ];
 
    /**
@@ -245,6 +264,7 @@ class Control extends Model
    public $actions = [
       'notapplicable',
       'applicable',
+      'review',
    ];
 
    /**
@@ -335,6 +355,7 @@ class Control extends Model
          'name' => 'required',
          'description' => 'required',
          'responsible_user_id' => 'nullable|exists:Ledningssystemet\Ledningssystemet\Models\User,id',
+         'implemented' => 'required|boolean',
       ];
    }
    
@@ -417,5 +438,31 @@ class Control extends Model
       DB::table('controls')->where('id', $this->id)->update(['not_applicable_at' => null]);
 
       ActivityLog::addMessage(__("The control was set applicable by")." ".auth()->user()->name, $this);
+   }
+
+
+   /**
+    * Set this control as reviewed
+    */
+   public function review()
+   {
+      // Ensure correct authorization
+      if(!request()->user()->can('update', $this))
+         abort(403);
+
+      // Ensure current user is responsible
+      if(auth()->user()->id != $this->responsible_user_id)
+         abort(400, __('Only the responsible user can review the control'));
+
+      // Perform sanity checks
+      if(null != $this->not_applicable_at)
+         abort(400, __('The control is set as not applicable and cannot be reviewed'));
+
+      if(null == $this->statusdescription)
+         abort(400, __('The control does not have a status description'));
+
+      DB::table('controls')->where('id', $this->id)->update(['reviewed_at' => DB::raw('NOW()')]);
+
+      ActivityLog::addMessage(__("The control was reviewed by")." ".auth()->user()->name, $this);
    }
 }

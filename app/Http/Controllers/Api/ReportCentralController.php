@@ -200,12 +200,13 @@ class ReportCentralController extends Controller
                       'pendingactions' => $pendingactions,
                       'implementedactions' => $implementedactions,
                       'requirements' => '',
+                      'implemented' => $control->implemented ? __("Yes") : __("No"),
                    ];
                 }
 
                 $applicablecontrols[$control->id]['requirements'] .= (("" != $applicablecontrols[$control->id]['requirements']) ? "\r\n" : "") . $req->name;
 
-                $reqobj['controls'] .= (("" != $reqobj['controls']) ? "\r\n" : "") . $control->name;
+                $reqobj['controls'] .= (("" != $reqobj['controls']) ? "\r\n" : "") . $control->name." (".($control->implemented ? __("Implemented") : __("Not implemented")).")";
 
                 if ($control->int_risks()->count())
                    $reqobj['applicability'] = __("This requirement have controls bound to it that are necessary to mitigate identified risks");

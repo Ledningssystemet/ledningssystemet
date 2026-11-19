@@ -97,9 +97,8 @@ $(function(){
             create: true,
             edit: true,
             list: true,
-
             required: true,
-            listClass: 'd-inline-block col-6 col-md-8',
+            listClass: 'd-inline-block col-6 col-md-4',
             defaultValue: {{ auth()->user()->id }},
             options: [
                { Value: null, DisplayText: '{{ __("None assigned") }}' },
@@ -107,6 +106,19 @@ $(function(){
                { Value: {{$obj ->id}}, DisplayText: @php echo(json_encode($obj->name)); @endphp  },
 @endforeach
             ],
+         },
+         reviewed_at: {
+            title: '{{ __('Reviewed') }}',
+            create: false,
+            edit: false,
+            list: true,
+            listClass: 'd-inline-block col-12 col-md-4',
+            display: function(data){
+               if(!data.record.reviewed_at)
+                  return '-';
+
+               return new Date(data.record.reviewed_at).toLocaleDateString();
+            }
          },
          description: {
             title: '{{ __('Description') }}',
@@ -123,6 +135,17 @@ $(function(){
             display: function(data){
                return $('<hr />'); 
             }
+         },
+         implemented: {
+            title: '{{ __('Implemented') }}',
+            create: true,
+            edit: true,
+            list: true,
+            defaultValue: 0,
+            options: [
+               { Value: 0, DisplayText: '{{ __("No") }}' },
+               { Value: 1, DisplayText: '{{ __("Yes") }}' },
+            ],
          },
          statusdescription: {
             title: '{{ __('Status description') }}',
@@ -192,6 +215,31 @@ $(function(){
             display: function(data){
                return $('<hr />');
             }
+         },
+         review: {
+            type: 'command',
+            title: '',
+            footer: true,
+            edit: false,
+            create: false,
+            display: function (data) {
+               var retval = $('<span />');
+               if (!data.record.not_applicable_at && ({{ auth()->user()->id }} == data.record.responsible_user_id)) {
+                  retval.append($('<button />')
+                     .addClass('btn btn-primary btn-sm text-light')
+                     .text('{{ __('Review') }}')
+                     .prepend($('<span>check</span>')
+                        .addClass('material-symbols-rounded'))
+                     .click(function (clickevent) {
+                        confirmDialog('{{  __("Review control") }}', '{{ __("By marking this control as reviewed, you certify that according to your best knowledge the status description and implementation assessments are accurate.") }}', function () {
+                           ajaxPost('/api/v1/items/Control/' + data.record.id + '/review', {}, function () {
+                              $(clickevent.target).closest('.jtable-main-container').parent('div').jtable('reload');
+                           });
+                        });
+                     }));
+               }
+               return retval;
+            },
          },
          actions: {
             title: '',

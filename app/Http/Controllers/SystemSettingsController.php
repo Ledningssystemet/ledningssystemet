@@ -27,7 +27,16 @@ class SystemSettingsController extends Controller
             $contact[$name] = SystemSettings::value($name);
         }
 
-        return view('systemadmin.settings', ['modules' => $modules, 'contact' => $contact]);
+        $assessment = [];
+        foreach (array_keys(SystemSettings::ASSESSMENT_FIELDS) as $name) {
+            $assessment[$name] = SystemSettings::integerValue($name);
+        }
+
+        return view('systemadmin.settings', [
+            'modules' => $modules,
+            'contact' => $contact,
+            'assessment' => $assessment,
+        ]);
     }
 
     public function update(Request $request): RedirectResponse
@@ -38,6 +47,7 @@ class SystemSettingsController extends Controller
             'modules' => ['required', 'array:'.implode(',', array_keys(Modules::LABELS))],
             'data_privacy_contact_name' => ['present', 'nullable', 'string', 'max:255'],
             'data_privacy_contact_email' => ['present', 'nullable', 'string', 'email', 'max:255'],
+            'control_status_reassessment_days' => ['required', 'integer', 'min:1'],
         ];
         foreach (Modules::LABELS as $module => $label) {
             $rules['modules.'.$module] = ['required', 'boolean'];
@@ -50,6 +60,9 @@ class SystemSettingsController extends Controller
             }
             foreach (array_keys(SystemSettings::CONTACT_FIELDS) as $name) {
                 Feature::store('ledningssystemet')->for(null)->activate($name, $validated[$name] ?? '');
+            }
+            foreach (array_keys(SystemSettings::ASSESSMENT_FIELDS) as $name) {
+                Feature::store('ledningssystemet')->for(null)->activate($name, (int) $validated[$name]);
             }
         });
 

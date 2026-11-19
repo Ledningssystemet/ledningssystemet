@@ -1137,6 +1137,9 @@
     "GHG Calculator": "Utsläppsberäknare",
     "Document library": "Dokumentbibliotek",
     "Assessment settings": "Bedömningsinställningar",
+    "Assessment": "Bedömningar",
+    "Control status reassessment deadline (days)": "Tidsfrist för förnyad bedömning av kontrollstatus (dagar)",
+    "The control needs an updated approval/review of the status description": "Kontrollen behöver ett uppdaterat godkännande/granskning av statusbeskrivningen",
     "Tag collection": "Taggsamling",
     "Access groups": "Åtkomstgrupper",
     "API tokens": "API-tokens",
@@ -1545,5 +1548,16 @@
     "Project participants were updated": "Projektdeltagarna uppdaterades",
     "No overview": "Ingen översikt",
     "years": "år",
-    "Show only data processors": "Visa endast personuppgiftsbiträden"
+    "Show only data processors": "Visa endast personuppgiftsbiträden",
+    "Only the responsible user can review the control": "Endast den ansvariga användaren kan granska kontrollen",
+    "The control is set as not applicable and cannot be reviewed": "Kontrollen är markerad som ej tillämplig och kan inte granskas",
+    "The control does not have a status description": "Kontrollen har ingen statusbeskrivning",
+    "The control was reviewed by": "Kontrollen granskades av",
+    "Reviewed": "Granskad",
+    "Review": "Granska",
+    "By marking this control as reviewed, you certify that according to your best knowledge the status description and implementation assessments are accurate.": "Genom att markera denna kontroll som granskad intygar du att enligt din bästa kunskap är statusbeskrivningen och implementationsstatusen korrekta.",
+    "Implemented": "Implementerad",
+    "Not implemented": "Ej implementerad",
+    "not reviewed within the reassessment deadline": "inte granskad inom tidsfristen för ombedömning"
+
 }

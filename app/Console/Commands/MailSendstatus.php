@@ -117,7 +117,8 @@ class MailSendstatus extends Command
       foreach ($sectionModels as $header => $models) {
          $issues = [];
          foreach ($models as $model) {
-            $issues = array_merge($issues, $model::getItemsStatus(null, $user, true));
+            if(method_exists($model, 'getItemsStatus'))
+               $issues = array_merge($issues, $model::getItemsStatus(null, $user, true));
          }
          if (0 < count($issues)) {
             $sections[$header] = $issues;
