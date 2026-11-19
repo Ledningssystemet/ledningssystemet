@@ -75,6 +75,22 @@ class Project extends Model
          }
       });
 
+      static::updated(function ($model): void {
+         if (!$model->wasChanged('responsible_user_id'))
+            return;
+
+         $participants = [];
+         $formerResponsibleUserId = $model->getOriginal('responsible_user_id');
+         if (null != $formerResponsibleUserId)
+            $participants[$formerResponsibleUserId] = ['readonly' => false];
+
+         if (null != $model->responsible_user_id)
+            $participants[$model->responsible_user_id] = ['readonly' => false];
+
+         if (!empty($participants))
+            $model->int_users()->syncWithoutDetaching($participants);
+      });
+
       static::deleting(function ($model) {
          // Ensure that the project is archived before allowing deletion
          if(null == $model->archived_at)
