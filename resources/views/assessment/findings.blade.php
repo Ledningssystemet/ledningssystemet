@@ -208,7 +208,7 @@ if(\Ledningssystemet\Ledningssystemet\Support\Modules::active('supplier'))
             create: true,
             options: [
                   @foreach(\Ledningssystemet\Ledningssystemet\Models\User::orderBy('name')->select(['id', 'name'])->get()->each->setAppends([]) as $obj)
-                  @if($obj->can('index', \Ledningssystemet\Ledningssystemet\Models\Finding::class))
+                  @if($obj->can('update', \Ledningssystemet\Ledningssystemet\Models\Finding::class))
                { Value: {{ $obj->id }}, DisplayText: <?php echo(json_encode($obj->name)); ?>},
                @endif
                @endforeach
