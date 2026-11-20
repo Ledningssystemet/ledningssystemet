@@ -2,10 +2,12 @@
 
 namespace Ledningssystemet\Ledningssystemet\Providers;
 
+use Illuminate\Auth\Events\Login;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Auth\Listeners\SendEmailVerificationNotification;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
 use Illuminate\Support\Facades\Event;
+use Ledningssystemet\Ledningssystemet\Listeners\UpdateLastLoginAt;
 use SocialiteProviders\Azure\AzureExtendSocialite;
 use SocialiteProviders\Google\GoogleExtendSocialite;
 use SocialiteProviders\Manager\SocialiteWasCalled;
@@ -18,6 +20,9 @@ class EventServiceProvider extends ServiceProvider
      * @var array<class-string, array<int, class-string>>
      */
     protected $listen = [
+        Login::class => [
+            UpdateLastLoginAt::class,
+        ],
         Registered::class => [
             SendEmailVerificationNotification::class,
         ],
