@@ -72,6 +72,19 @@ user administration. Other authenticated users cannot use the reset routes while
 password login is disabled. When password login is enabled, guest password reset
 continues to work as before.
 
+Successful session authentication updates the package user's `last_login_at`
+through Laravel's `Login` event, including password login after any MFA
+challenge, Azure and Google SSO, and restoration from a remember-me cookie.
+For SSO users redirected to mandatory MFA enrollment, the timestamp reflects
+the initial authenticated session, before enrollment is completed. Failed
+authentication and an unfinished password MFA challenge do not update it.
+The listener also runs in Composer host applications and ignores users that do
+not use the package's `User` model.
+
+The separate consumer regression suite should cover password login with and
+without MFA, failed credentials and MFA, both SSO providers including mandatory
+MFA enrollment, remember-me restoration, and unrelated host user models.
+
 ## System settings
 
 System administrators manage Staff, Processes, Findings, Suppliers, GDPR and

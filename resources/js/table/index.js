@@ -1703,23 +1703,29 @@ import 'jquery-ui-sortable';
                   .append(option);
             } else // Multiple selections
             {
-               var displaytext = $('<div />').addClass('jtable-display-select-options');
-               fieldValue.forEach((obj) => {
-                  // Transform field value if it is an arrray with id parameter
-                  if ('undefined' !== typeof obj['id'])
-                     obj = obj['id'];
+               displaytext = $('<div />').addClass('jtable-display-select-options');
 
-                  var option = $('<span />')
+               // Normalize field options
+               fieldValue = fieldValue.map(value =>
+                  value && typeof value === 'object' && 'id' in value ? value.id : value
+               );
+
+               // Loop through all options and create a span for each where the value matches the fieldValue array
+               let selectedOptions = options
+                  .flatMap(option => option.Children || [option])
+                  .filter(option => fieldValue.some(value => option.Value == value));
+
+               selectedOptions.forEach((obj) => {
+                  let option = $('<span />')
                      .addClass('jtable-display-select-option')
-                     .text(this._findOptionByValue(options, obj).DisplayText);
+                     .text(obj.DisplayText);
 
-                  var tooltip = (this._findOptionByValue(options, obj).Tooltip);
-                  if (('undefined' !== typeof tooltip) && tooltip) {
+                  if ('undefined' !== typeof obj.Tooltip) {
                      option
                         .addClass('hasdescription')
                         .attr('data-bs-toggle', 'tooltip')
                         .attr('data-bs-placement', 'left')
-                        .attr('data-bs-title', tooltip);
+                        .attr('data-bs-title', obj.Tooltip);
                   }
 
                   displaytext.append(option);
