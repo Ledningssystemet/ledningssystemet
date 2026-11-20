@@ -1706,11 +1706,9 @@ import 'jquery-ui-sortable';
                displaytext = $('<div />').addClass('jtable-display-select-options');
 
                // Normalize field options
-               for(var i = 0; i < fieldValue.length; i++) {
-                  if(fieldValue[i] && typeof fieldValue[i] === 'object' && 'id' in fieldValue[i]) {
-                     fieldValue[i] = fieldValue[i].id;
-                  }
-               }
+               fieldValue = fieldValue.map(value =>
+                  value && typeof value === 'object' && 'id' in value ? value.id : value
+               );
 
                // Loop through all options and create a span for each where the value matches the fieldValue array
                let selectedOptions = options.filter(option => fieldValue.includes(option.Value));
