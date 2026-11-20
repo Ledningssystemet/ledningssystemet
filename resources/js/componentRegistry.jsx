@@ -5,6 +5,7 @@ import { FormBuilder, FormViewer } from '@components/formbuilder/index.jsx';
 import { AuthApp } from '@components/auth/AuthApp.jsx';
 import { Projects } from '@components/projects/index.tsx';
 import { ProjectMentions } from '@components/projects/ProjectMentions.tsx';
+import { TableModule } from '@components/table/TableModule.tsx';
 
 const registry = {
     'ghg-calculator': GhgCalculator,
@@ -13,6 +14,7 @@ const registry = {
     'auth-app': AuthApp,
     'projects-module': Projects,
     'project-mentions': ProjectMentions,
+    'table-module': TableModule,
 };
 
 /**
