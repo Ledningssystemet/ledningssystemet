@@ -76,8 +76,13 @@ class Risk extends Model
 
       static::saving(function ($model) {
          Validator::make($model->toArray(), $model->getValidationRules())->validate();
+
+         // Prevent update if risk is already assessed
+         if(null != $model->getOriginal('assessed_at'))
+            abort(400, __("You cannot update an assessed risk"));
+
       });
-static::creating(function ($model) {
+      static::creating(function ($model) {
                   $model->created_by = (null != auth()->user()) ? auth()->user()->id : null;
       });
       
@@ -822,12 +827,10 @@ static::creating(function ($model) {
       $newrisk = $this->replicate(['assessed_at', 'replacing', 'replacedby_id','replaced_at']);
       $newrisk->replacing_id = $this->id;
       $newrisk->save();
-      
-      // Set pointers
-      $this->replacedby_id = $newrisk->id;
-      $this->replaced_at = date("Y-m-d H:i:s");
-      $this->save();
-      
+
+      // Save
+      DB::table('risks')->where('id', $this->id)->update(['replacedby_id' => $newrisk->id, 'replaced_at' => date("Y-m-d H:i:s"), 'updated_at' => date("Y-m-d H:i:s")]);
+
       // Sync controls and control actions
       $controls = $this->int_controls()->pluck('controls.id')->toArray();
       $newrisk->int_controls()->sync($controls);
