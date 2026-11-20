@@ -212,7 +212,7 @@
                      {Value: null, DisplayText: '{{ __("Not classified") }}'},
                         @foreach(Ledningssystemet\Ledningssystemet\Models\ConfidentialityClass::orderBy('ordinal', 'desc')->get()->each->setAppends([]) as $obj)
                      {
-                        Value: {{$obj ->id}}, DisplayText: @php echo(json_encode($obj->name)); @endphp  },
+                        Value: {{$obj ->id}}, DisplayText: @php echo(json_encode($obj->name)); @endphp, Tooltip: <?php echo(json_encode($obj->description)); ?>  },
                      @endforeach
                   ],
                },
@@ -226,7 +226,7 @@
                      {Value: null, DisplayText: '{{ __("Not classified") }}'},
                         @foreach(Ledningssystemet\Ledningssystemet\Models\IntegrityClass::orderBy('ordinal', 'desc')->get()->each->setAppends([]) as $obj)
                      {
-                        Value: {{$obj ->id}}, DisplayText: @php echo(json_encode($obj->name)); @endphp  },
+                        Value: {{$obj ->id}}, DisplayText: @php echo(json_encode($obj->name)); @endphp, Tooltip: <?php echo(json_encode($obj->description)); ?>  },
                      @endforeach
                   ],
                },
@@ -240,7 +240,7 @@
                      {Value: null, DisplayText: '{{ __("Not classified") }}'},
                         @foreach(Ledningssystemet\Ledningssystemet\Models\AvailabilityClass::orderBy('ordinal', 'desc')->get()->each->setAppends([]) as $obj)
                      {
-                        Value: {{$obj ->id}}, DisplayText: @php echo(json_encode($obj->name)); @endphp  },
+                        Value: {{$obj ->id}}, DisplayText: @php echo(json_encode($obj->name)); @endphp, Tooltip: <?php echo(json_encode($obj->description)); ?>  },
                      @endforeach
                   ],
                },

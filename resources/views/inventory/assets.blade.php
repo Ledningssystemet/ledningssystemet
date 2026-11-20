@@ -219,7 +219,7 @@
                      {Value: null, DisplayText: '{{ __("Not classified") }}'},
                         @foreach(Ledningssystemet\Ledningssystemet\Models\ConfidentialityClass::orderBy('name')->get()->each->setAppends([]) as $obj)
                      {
-                        Value: {{$obj ->id}}, DisplayText: @php echo(json_encode($obj->name)); @endphp  },
+                        Value: {{$obj ->id}}, DisplayText: @php echo(json_encode($obj->name)); @endphp },
                      @endforeach
                   ],
                },
@@ -231,7 +231,7 @@
                   listClass: 'd-inline-block col-12 col-md-4',
                   options: [
                      {Value: null, DisplayText: '{{ __("Not classified") }}'},
-                        @foreach(Ledningssystemet\Ledningssystemet\Models\IntegrityClass::orderBy('name')->get()->each->setAppends([]) as $obj)
+                        @foreach(Ledningssystemet\Ledningssystemet\Models\IntegrityClass::orderBy('ordinal')->get()->each->setAppends([]) as $obj)
                      {
                         Value: {{$obj ->id}}, DisplayText: @php echo(json_encode($obj->name)); @endphp  },
                      @endforeach
@@ -261,7 +261,7 @@
                      {Value: null, DisplayText: '{{ __("Inherit") }}'},
                         @foreach(Ledningssystemet\Ledningssystemet\Models\ConfidentialityClass::orderBy('ordinal', 'desc')->get()->each->setAppends([]) as $obj)
                      {
-                        Value: {{$obj->id}}, DisplayText: @php echo(json_encode($obj->name)); @endphp },
+                        Value: {{$obj->id}}, DisplayText: @php echo(json_encode($obj->name)); @endphp, Tooltip: <?php echo(json_encode($obj->description)); ?> },
                      @endforeach
                   ],
                },
@@ -275,7 +275,7 @@
                      {Value: null, DisplayText: '{{ __("Inherit") }}'},
                         @foreach(Ledningssystemet\Ledningssystemet\Models\IntegrityClass::orderBy('ordinal', 'desc')->get()->each->setAppends([]) as $obj)
                      {
-                        Value: {{$obj->id}}, DisplayText: @php echo(json_encode($obj->name)); @endphp },
+                        Value: {{$obj->id}}, DisplayText: @php echo(json_encode($obj->name)); @endphp, Tooltip: <?php echo(json_encode($obj->description)); ?> },
                      @endforeach
                   ],
                },
@@ -289,7 +289,7 @@
                      {Value: null, DisplayText: '{{ __("Inherit") }}'},
                         @foreach(Ledningssystemet\Ledningssystemet\Models\AvailabilityClass::orderBy('ordinal', 'desc')->get()->each->setAppends([]) as $obj)
                      {
-                        Value: {{$obj->id}}, DisplayText: @php echo(json_encode($obj->name)); @endphp },
+                        Value: {{$obj->id}}, DisplayText: @php echo(json_encode($obj->name)); @endphp, Tooltip: <?php echo(json_encode($obj->description)); ?> },
                      @endforeach
                   ],
                },

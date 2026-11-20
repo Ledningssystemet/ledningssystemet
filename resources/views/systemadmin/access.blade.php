@@ -126,9 +126,15 @@ $(function(){
       ->orderBy('name')
       ->pluck('name', 'id')
       ->toArray();
+
+   array_map(function($permissionId) use (&$permissions) {
+      $permissions[$permissionId] = __($permissions[$permissionId]);
+   }, array_keys($permissions));
+
+   asort($permissions);
 @endphp
 @foreach($permissions as $permissionId => $permissionName)
-               { Value: {{ $permissionId }}, DisplayText: @php echo(json_encode(__($permissionName))); @endphp },
+               { Value: {{ $permissionId }}, DisplayText: @php echo(json_encode($permissionName)); @endphp },
 @endforeach
             ]
          },

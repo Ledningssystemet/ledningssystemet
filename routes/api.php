@@ -10,6 +10,7 @@ use Ledningssystemet\Ledningssystemet\Http\Controllers\Api\TableController;
 use Ledningssystemet\Ledningssystemet\Http\Controllers\Api\TagController;
 use Ledningssystemet\Ledningssystemet\Http\Controllers\DocumentController;
 use Ledningssystemet\Ledningssystemet\Http\Controllers\StatusController;
+use Ledningssystemet\Ledningssystemet\Http\Middleware\NoStore;
 use Ledningssystemet\Ledningssystemet\Models\Department;
 use Ledningssystemet\Ledningssystemet\Models\LibraryDocument;
 use Ledningssystemet\Ledningssystemet\Models\RiskLevel;
@@ -234,3 +235,10 @@ Route::prefix('v1/documentcontroller')->group(function () {
         ->where('template', '[a-zA-Z0.9_]+')
         ->withoutMiddleware(['jsononly']);
 });
+
+/* Get the current user permissions - used for react frontend applications in order to display available permissions */
+Route::get('/v1/permissions', function () {
+   return response()->json([
+      'permissions' => auth()->user()->getAllPermissions()->pluck('name')->values(),
+   ]);
+})->middleware(NoStore::class)->name('api.v1.permissions.index');

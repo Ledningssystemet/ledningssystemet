@@ -54,10 +54,6 @@ class SsoController extends Controller
 
       Log::info('User ' . $user->email . ' signed in with ' . $provider . ' from IP ' . $request->ip() . '.');
 
-      $user->forceFill([
-         'last_login_at' => now(),
-      ])->save();
-
       return redirect()->intended('/');
    }
 
