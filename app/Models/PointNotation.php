@@ -12,6 +12,8 @@ class PointNotation extends Model
 {
     use DefersRelationAttributeSync;
 
+   public static function getPrettyName($plural = false){ if($plural) { return __("Point notations"); } else { return __("Point notation"); }}
+
     protected $fillable = [
         'code',
         'name',
