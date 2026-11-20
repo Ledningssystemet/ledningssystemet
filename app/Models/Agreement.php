@@ -39,9 +39,9 @@ class Agreement extends Model
       if(!$personalOnly && $count)
          $retval[] = ['level' => 'danger', 'count' => $count, 'text' => Agreement::getPrettyName($count > 1).' '.__("without assignment"), 'url' => ((($user != null) && $user->can('index',  get_called_class())) || (($user == null) && (null != auth()->user()) && (auth()->user()->can('index', get_called_class())))) ? url()->query('/inventory/agreements') : null];
 
-      $count = $user ? Agreement::whereNull('archived_at')->where('responsible_user_id', $user->id)->whereRaw('(startdate IS NULL OR enddate IS NULL)')->count() : Agreement::whereNull('archived_at')->whereNull('startdate')->orWhereNull('enddate')->count();
+      $count = $user ? Agreement::whereNull('archived_at')->where('responsible_user_id', $user->id)->whereNull('startdate')->count() : Agreement::whereNull('archived_at')->whereNull('startdate')->count();
       if($count > 0)
-         $retval[] = ['level' => 'danger', 'count' => $count, 'text' => Agreement::getPrettyName($count > 1).' '.__("without provided start- and/or end-dates"), 'url' => ((($user != null) && $user->can('index',  get_called_class())) || (($user == null) && (null != auth()->user()) && (auth()->user()->can('index',  get_called_class())))) ? url()->query('/inventory/agreements') : null];
+         $retval[] = ['level' => 'danger', 'count' => $count, 'text' => Agreement::getPrettyName($count > 1).' '.__("without provided start date"), 'url' => ((($user != null) && $user->can('index',  get_called_class())) || (($user == null) && (null != auth()->user()) && (auth()->user()->can('index',  get_called_class())))) ? url()->query('/inventory/agreements') : null];
       
       $count = $user ? Agreement::whereNull('archived_at')->where('responsible_user_id', $user->id)->whereNotNull('enddate')->where('enddate', '<', date("Y-m-d"))->count() : Agreement::whereNull('archived_at')->whereNotNull('enddate')->where('enddate', '<', date("Y-m-d"))->count();
       if($count > 0)
@@ -108,10 +108,10 @@ class Agreement extends Model
       if(!$this->responsible_user_id)
          return ['icon' => 'warning', 'level' => 'danger', 'text' => __("A responsible user has not been assigned")];
       
-      if(!$this->startdate | !$this->enddate)
-         return ['icon' => 'warning', 'level' => 'danger', 'text' => __("The agreement is not provided with startdate and enddate")];
+      if(!$this->startdate)
+         return ['icon' => 'warning', 'level' => 'danger', 'text' => __("The agreement is not provided with start date")];
       
-      if(strtotime($this->enddate) < time())
+      if($this->enddate && (strtotime($this->enddate) < time()))
          return ['icon' => 'partner_exchange', 'level' => 'danger', 'text' => __("The agreement is no longer valid")];
       
       if($this->reminderdate && (strtotime($this->reminderdate) < time()))

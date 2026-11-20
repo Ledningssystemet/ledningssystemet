@@ -226,9 +226,6 @@ $(function(){
          
          if(!data.record.startdate)
             $('#jtable-body-agreementslist > .jtable-data-row[data-record-key="'+data.record.id+'"] div[data-jtable-fieldname="startdate"] .jtable-field-label').addClass('text-danger');
-         
-         if(!data.record.enddate)
-            $('#jtable-body-agreementslist > .jtable-data-row[data-record-key="'+data.record.id+'"] div[data-jtable-fieldname="enddate"] .jtable-field-label').addClass('text-danger');
       },
    });
    $('#tableContainer').jtable('load');      
