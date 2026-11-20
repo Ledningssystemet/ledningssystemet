@@ -1711,7 +1711,9 @@ import 'jquery-ui-sortable';
                );
 
                // Loop through all options and create a span for each where the value matches the fieldValue array
-               let selectedOptions = options.filter(option => fieldValue.includes(option.Value));
+               let selectedOptions = options
+                  .flatMap(option => option.Children || [option])
+                  .filter(option => fieldValue.some(value => option.Value == value));
 
                selectedOptions.forEach((obj) => {
                   let option = $('<span />')
