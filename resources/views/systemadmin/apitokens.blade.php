@@ -40,14 +40,19 @@
       ],
    ];
 @endphp
-<a class="btn btn-outline-secondary mt-3 me-2 mb-3" href="/systemadmin/swagger">{{ __("To the API documentation") }}</a>
+<div class="mb-3">
+   <span class="ls-table inline-flex">
+      <a href="/systemadmin/swagger" class="inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring border bg-card hover:bg-surface-hover text-decoration-none">{{ __('To the API documentation') }}</a>
+   </span>
 
 @if(Auth::user()->can('create', \Ledningssystemet\Ledningssystemet\Models\PersonalAccessToken::class))
 @php
    $tokenWarning = __('A new token has been created, and it will be displayed only this time. A new token needs to be created if this gets lost.');
    $tokenError = __('Due to an unknown reason, a requested action failed');
 @endphp
-<button id="create-api-token" type="button" class="btn btn-primary text-white">{{ __('Create API token') }}</button>
+<span class="ls-table inline-flex">
+   <button id="create-api-token" type="button" class="inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring bg-primary text-primary-foreground hover:bg-primary/90">{{ __('Create API token') }}</button>
+</span>
 <script>
 document.getElementById('create-api-token').addEventListener('click', function () {
    const name = $('<input />').attr({ type: 'text', maxlength: 255, id: 'api-token-name' }).addClass('form-control');
@@ -123,5 +128,6 @@ document.getElementById('create-api-token').addEventListener('click', function (
 });
 </script>
 @endif
+</div>
 <table-module data-props="{{ json_encode($tableProps) }}"></table-module>
 @endsection
