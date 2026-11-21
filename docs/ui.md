@@ -56,6 +56,9 @@ views. At least one view must be enabled; disabling all three raises a
 configuration error. `reorder` requires the table view and raises an error if
 it is disabled.
 
+In list view, item actions are hidden while collapsed and appear above the
+details when an item is expanded.
+
 The saved `md_view` cookie is used only if its view is enabled. Otherwise the
 module selects `defaultView` when enabled, or the first enabled view in the
 order master-detail, table, list. `persistState: false` skips the saved
@@ -74,6 +77,12 @@ table header clickable. Columns with `sortable: false` or no `sortable` setting
 are not sortable through either control. In API mode, the server must also
 allow the requested sort field.
 
+For fixed select options, `type: "select"` with `multiple: true` displays a
+checkbox multiselect in create and edit forms. Values are submitted as an array
+of strings; existing object values such as `{ id, name }` are normalized to
+their IDs. Column and filter options accept either strings or `{ value, label }`
+objects, so stored values can have human-readable labels.
+
 For local data, `searchKeys` selects the fields searched for a substring. With
 `dataSource`, the table sends the trimmed search text as a Spatie filter:
 `searchKeys: ["name"]` produces `filter[name]`, and `["name", "email"]`
@@ -87,7 +96,9 @@ active filter or a fixed data-source parameter.
 Consumer regression coverage should include all three views, responsive layout,
 selection and pagination, filter and edit dialogs, selects and multiselects,
 delete confirmation, nested tables, theme overrides, and unrelated Bootstrap
-controls. Exercise both application registration and direct npm imports. Cover
+controls. In list view, verify actions are hidden while collapsed and appear
+above details when expanded. Exercise both application registration and direct
+npm imports. Cover
 each view disabled individually and in combinations, disabled saved and default
 views, configuration changes, all views disabled, and the reorder conflict. Cover
 attempted view switching during inline edit, cancellation, successful save, and

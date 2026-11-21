@@ -9,11 +9,10 @@ type Props = {
   selectedId: string | null;
   onSelect: (id: string) => void;
   renderStatus: (item: Item) => ReactNode;
-  renderActions: (item: Item) => ReactNode;
   renderDetails: (item: Item) => ReactNode;
 };
 
-export function MasterDetailView({ items, config, selected, selectedId, onSelect, renderStatus, renderActions, renderDetails }: Props) {
+export function MasterDetailView({ items, config, selected, selectedId, onSelect, renderStatus, renderDetails }: Props) {
   return (
     <div className="grid md:grid-cols-[minmax(240px,1fr)_2fr]">
       <ul className="border-b md:border-b-0 md:border-r">
@@ -29,7 +28,7 @@ export function MasterDetailView({ items, config, selected, selectedId, onSelect
       <div className="min-w-0 p-4">
         {selected ? (
           <>
-            <div className="mb-4 flex items-start justify-between gap-2"><h3 className="text-xl font-semibold">{selected[config.titleKey]}{renderStatus(selected)}</h3>{renderActions(selected)}</div>
+            <h3 className="mb-4 text-xl font-semibold">{selected[config.titleKey]}{renderStatus(selected)}</h3>
             {renderDetails(selected)}
           </>
         ) : <p className="text-muted-foreground">{t("Select an item from the list.")}</p>}

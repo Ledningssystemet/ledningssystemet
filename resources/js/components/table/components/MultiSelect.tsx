@@ -4,6 +4,8 @@ import * as Checkbox from "@radix-ui/react-checkbox";
 import { Check, ChevronDown, Plus, X } from "lucide-react";
 import { t } from "../../../lib/i18n";
 import { translate } from "../helpers/translate";
+import { normalizeOptions } from "../helpers/logic";
+import type { OptionInput } from "../helpers/types";
 
 const field = "flex min-h-[34px] w-full flex-wrap items-center gap-1 rounded-md border border-input bg-card px-2 py-1 text-sm focus-within:ring-2 focus-within:ring-ring";
 const chip = "inline-flex items-center gap-1 rounded bg-accent px-1.5 py-0.5 text-xs text-accent-foreground";
@@ -18,14 +20,19 @@ function Chip({ label, onRemove }: { label: string; onRemove: () => void }) {
 }
 
 /** Multiselect: pick several of a fixed list of options via checkboxes. */
-export function MultiSelect({ label, options, value, onChange }: { label: string; options: string[]; value: string[]; onChange: (v: string[]) => void }) {
-  const toggle = (o: string) => onChange(value.includes(o) ? value.filter((v) => v !== o) : [...value, o]);
+export function MultiSelect({ label, options, value, onChange, id, emptyLabel = t("All") }: { label: string; options: OptionInput[]; value: string[]; onChange: (v: string[]) => void; id?: string; emptyLabel?: string }) {
+  const normalizedOptions = normalizeOptions(options);
+  const optionLabels = new Map(normalizedOptions.map((option) => [option.value, option.label]));
+  const toggle = (option: string) => {
+    if (normalizedOptions.find((entry) => entry.value === option)?.disabled) return;
+    onChange(value.includes(option) ? value.filter((v) => v !== option) : [...value, option]);
+  };
   return (
     <Popover.Root>
       <Popover.Trigger asChild>
-        <button type="button" aria-label={label} className={`${field} justify-between text-left`}>
+        <button id={id} type="button" aria-label={label} className={`${field} justify-between text-left`}>
           <span className="flex flex-wrap gap-1">
-            {value.length ? value.map((v) => <Chip key={v} label={v} onRemove={() => toggle(v)} />) : <span className="text-muted-foreground">{t("All")}</span>}
+            {value.length ? value.map((v) => <Chip key={v} label={optionLabels.get(v) ?? v} onRemove={() => toggle(v)} />) : <span className="text-muted-foreground">{emptyLabel}</span>}
           </span>
           <ChevronDown className="h-4 w-4 shrink-0 opacity-60" />
         </button>
@@ -33,12 +40,12 @@ export function MultiSelect({ label, options, value, onChange }: { label: string
       <Popover.Portal>
         <div className="ls-table">
         <Popover.Content align="start" sideOffset={4} className="z-[60] w-[var(--radix-popover-trigger-width)] rounded-md border bg-popover p-1 shadow-lg">
-          {options.map((o) => (
-            <label key={o} className="flex cursor-pointer items-center gap-2 rounded px-2 py-1.5 text-sm hover:bg-accent">
-              <Checkbox.Root checked={value.includes(o)} onCheckedChange={() => toggle(o)} aria-label={o} className="flex h-4 w-4 items-center justify-center rounded border border-input bg-card data-[state=checked]:border-primary data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground">
+          {normalizedOptions.map((option) => (
+            <label key={option.value} className={`flex items-center gap-2 rounded px-2 py-1.5 text-sm ${option.disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer hover:bg-accent"}`}>
+              <Checkbox.Root disabled={option.disabled} checked={value.includes(option.value)} onCheckedChange={() => toggle(option.value)} aria-label={option.label} className="flex h-4 w-4 items-center justify-center rounded border border-input bg-card data-[state=checked]:border-primary data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground">
                 <Checkbox.Indicator><Check className="h-3 w-3" /></Checkbox.Indicator>
               </Checkbox.Root>
-              {o}
+              {option.label}
             </label>
           ))}
           {value.length > 0 && <button type="button" className="mt-1 w-full rounded px-2 py-1 text-left text-xs text-muted-foreground hover:bg-accent" onClick={() => onChange([])}>{t("Clear selection")}</button>}

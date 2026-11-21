@@ -321,6 +321,7 @@ export function TableModule({ config: rawConfig, data, onDataChange, controllerR
       editing={editing}
       inlineEditing={!!inlineEditing}
       tagSuggestions={allValues}
+      renderActions={actions}
       renderValue={renderValue}
       renderChildTable={childTable}
       onCancelEdit={() => setEditing(null)}
@@ -442,7 +443,6 @@ export function TableModule({ config: rawConfig, data, onDataChange, controllerR
           selectedId={selectedId}
           onSelect={setSelectedId}
           renderStatus={statusMark}
-          renderActions={actions}
           renderDetails={details}
         />
       ) : effView === "table" ? (
@@ -491,7 +491,7 @@ export function TableModule({ config: rawConfig, data, onDataChange, controllerR
           renderChildTable={childTable}
         />
       ) : (
-        <ListView items={pageItems} config={config} renderStatus={statusMark} renderActions={actions} renderDetails={details} />
+        <ListView items={pageItems} config={config} renderStatus={statusMark} renderDetails={details} />
       )}
 
       </div>

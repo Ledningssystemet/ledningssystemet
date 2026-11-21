@@ -21,6 +21,8 @@ export interface ColumnConfig {
   label: string;
   type?: FieldType;
   options?: OptionInput[];
+  /** Render a select field as a multi-value selector. */
+  multiple?: boolean;
   /** Beroende val: alternativen räknas fram från formulärets aktuella värden. */
   dependsOn?: string;
   optionsFor?: (draft: Record<string, any>) => OptionInput[];
@@ -55,7 +57,7 @@ export interface DetailSection {
 export interface FilterConfig {
   key: string;
   label: string;
-  options?: string[];
+  options?: OptionInput[];
   /** "single" = one value, "multi" = checkbox multiselect, "tags" = multiselect with tagging */
   mode?: "single" | "multi" | "tags";
 }
@@ -115,7 +117,7 @@ export interface ModuleConfig {
   reorder?: { canReorder?: (item: Item) => boolean; onMoved?: (item: Item, previous: Item | null) => void };
   customProperties?: CustomProperty[];
   /** Alternativ för referenstyper i anpassade egenskaper. */
-  references?: Partial<Record<CustomProperty["type"], string[]>>;
+  references?: Partial<Record<CustomProperty["type"], OptionInput[]>>;
   /** Visa sökfält och filter (standard: ja). */
   showToolbarSearch?: boolean;
 }

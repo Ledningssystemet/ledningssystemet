@@ -36,6 +36,16 @@ window.mountFormViewer = function (container, props) {
     return () => root.unmount();
 };
 
+window.mountTableModule = function (container, props) {
+    const root = ReactDOM.createRoot(container);
+    root.render(
+        <React.StrictMode>
+            <TableModule {...props} />
+        </React.StrictMode>
+    );
+    return () => root.unmount();
+};
+
 document.addEventListener('DOMContentLoaded', () => {
     Object.entries(registry).forEach(([tag, Component]) => {
         document.querySelectorAll(tag).forEach(el => {

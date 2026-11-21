@@ -355,6 +355,72 @@ static::creating(function ($model) {
       'resetpasssword',
    ];
   
+   /** Allowed filters for CRUD listing, including the user search and custom-property filters. */
+   public static function getAllowedFilters(): array
+   {
+      $filters = [
+         \Spatie\QueryBuilder\AllowedFilter::exact('id'),
+         \Spatie\QueryBuilder\AllowedFilter::partial('name'),
+         \Spatie\QueryBuilder\AllowedFilter::partial('email'),
+         \Spatie\QueryBuilder\AllowedFilter::exact('enabled'),
+         \Spatie\QueryBuilder\AllowedFilter::partial('created_at'),
+         \Spatie\QueryBuilder\AllowedFilter::partial('updated_at'),
+         \Spatie\QueryBuilder\AllowedFilter::partial('external_id'),
+         \Spatie\QueryBuilder\AllowedFilter::partial('title'),
+         \Spatie\QueryBuilder\AllowedFilter::exact('manager_user_id'),
+         \Spatie\QueryBuilder\AllowedFilter::partial('last_login_at'),
+         \Spatie\QueryBuilder\AllowedFilter::callback('name_or_email', static function (Builder $query, $value) {
+            $searches = array_values(array_filter(
+               is_array($value) ? $value : [$value],
+               static fn ($search) => trim((string) $search) !== ''
+            ));
+
+            if ($searches === []) {
+               return;
+            }
+
+            $query->where(static function (Builder $query) use ($searches) {
+               foreach ($searches as $search) {
+                  $search = (string) $search;
+                  $query->orWhere(static function (Builder $query) use ($search) {
+                     $query->where('name', 'LIKE', '%'.$search.'%')
+                        ->orWhere('email', 'LIKE', '%'.$search.'%');
+                  });
+               }
+            });
+         }),
+      ];
+
+      foreach (static::getCustomProperties() as $property) {
+         if (in_array($property->type, ['string', 'textarea'], true)) {
+            continue;
+         }
+
+         $propertyId = $property->id;
+         $filters[] = \Spatie\QueryBuilder\AllowedFilter::callback(
+            'customproperty_'.$propertyId,
+            static function (Builder $query, $value) use ($propertyId) {
+               $values = is_array($value) ? $value : explode(',', (string) $value);
+               $jsonValues = array_map(
+                  static fn ($value) => json_encode((string) $value),
+                  array_filter($values, static fn ($value) => (string) $value !== '')
+               );
+
+               if ($jsonValues === []) {
+                  return;
+               }
+
+               $query->whereHas('int_custom_properties', static function (Builder $query) use ($propertyId, $jsonValues) {
+                  $query->where('custom_properties.id', $propertyId)
+                     ->whereIn('custom_property_object.value', $jsonValues);
+               });
+            }
+         );
+      }
+
+      return $filters;
+   }
+
    /**
     * Index-function used for fetching multiple items via API
     */

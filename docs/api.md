@@ -30,6 +30,12 @@ legacy `index` parameters such as `search` are not automatically available.
 Without `per_page`, a list returns an array. With `per_page` (and optionally
 `page`), it returns a pagination object with `data` and pagination metadata.
 
+For `/api/v1/crud/User`, `filter[name_or_email]` searches names or e-mail
+addresses, `filter[enabled]` filters by enabled state, and
+`filter[customproperty_<id>]` filters non-text custom properties by their stored
+option value. These filters are also available through TableModule's
+`searchKeys: ["name", "email"]` and filter configuration.
+
 For writes, use the create, item-update, delete, and custom-action operations
 defined for the model in Swagger. The server applies authorization and validation;
 do not assume that a field visible in a response is writable. See

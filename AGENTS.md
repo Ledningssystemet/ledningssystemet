@@ -37,6 +37,24 @@ Gör fokuserade ändringar och bevara orelaterade lokala ändringar. Behåll
 behörighetskontroller, validering, översättningar och felhantering genom hela
 flödet, inte bara i gränssnittet. Uppdatera direkt berörd dokumentation.
 
+## Blade-vyer
+
+Använd systemets befintliga React-komponenter och följ andra vyers utseende för
+ett enhetligt gränssnitt. Standardlayouten för en vy är en eller flera tabeller,
+vid behov fördelade på flikar. När sidan innehåller tabeller ska knappar och
+andra UI-element harmoniera med tabellens utseende, ikoner och övriga uttryck.
+
+Arbeta i första hand inom den aktuella Blade-filen. Ändra eller skapa andra
+filer endast när det är strikt nödvändigt, exempelvis om funktionalitet saknas
+i tabellmodulen eller andra frontendkomponenter. Lägg inte till funktionalitet
+i tabellmodulen enbart för att förenkla en specifik vy utan godkännande från
+en människa. Skapa inte separata kopior av React-komponenter för enskilda vyer.
+
+JavaScript eller liknande som behövs för en specifik vy ska i första hand
+skrivas inline i Blade-filen. Om funktionaliteten kan vara användbar i många
+vyer, fråga en människa om en ny återanvändbar React-komponent i
+`resources/js/components` i stället ska skapas.
+
 ## Utveckla för både paketet och värdapplikationen
 
 - Använd paketets namespace `Ledningssystemet\Ledningssystemet` enligt

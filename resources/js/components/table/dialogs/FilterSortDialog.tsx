@@ -4,6 +4,7 @@ import * as Label from "@radix-ui/react-label";
 import { MultiSelect, TagSelect } from "../components/MultiSelect";
 import { RSelect } from "../components/RSelect";
 import type { ModuleConfig, SortState } from "../helpers/types";
+import { normalizeOptions } from "../helpers/logic";
 import { btnOutline, btnPrimary, dialogBox, overlay } from "../helpers/styles";
 import { t } from "../../../lib/i18n";
 
@@ -22,8 +23,6 @@ type Props = {
 
 const ALL = "__all__";
 const NONE = "__none__";
-const so = (values: (string | number)[]) => values.map((value) => ({ value: String(value), label: String(value) }));
-
 export function FilterSortDialog({ open, onOpenChange, config, filters, setFilters, setFilter, allValues, sort, setSort, setPage }: Props) {
   return (
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
@@ -44,17 +43,18 @@ export function FilterSortDialog({ open, onOpenChange, config, filters, setFilte
             </div>
             {config.filters.length > 0 && <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">{t("Filter")}</h3>}
             <div className="space-y-3">
-              {config.filters.map((filter) => (
-                <div key={filter.key}><Label.Root className="mb-1 block text-sm">{filter.label}{filter.mode === "multi" && <span className="ml-1 text-xs text-muted-foreground">{t("(multiple choice)")}</span>}{filter.mode === "tags" && <span className="ml-1 text-xs text-muted-foreground">{t("(multiple choice, search tags)")}</span>}</Label.Root>
+              {config.filters.map((filter) => {
+                const options = normalizeOptions(filter.options ?? allValues(filter.key));
+                return <div key={filter.key}><Label.Root className="mb-1 block text-sm">{filter.label}{filter.mode === "multi" && <span className="ml-1 text-xs text-muted-foreground">{t("(multiple choice)")}</span>}{filter.mode === "tags" && <span className="ml-1 text-xs text-muted-foreground">{t("(multiple choice, search tags)")}</span>}</Label.Root>
                   {filter.mode === "multi" ? (
-                    <MultiSelect label={filter.label} options={filter.options ?? allValues(filter.key)} value={(filters[filter.key] as string[]) ?? []} onChange={(value) => setFilter(filter.key, value)} />
+                    <MultiSelect label={filter.label} options={options} value={(filters[filter.key] as string[]) ?? []} onChange={(value) => setFilter(filter.key, value)} />
                   ) : filter.mode === "tags" ? (
-                    <TagSelect label={filter.label} id={`filter-${filter.key}`} allowCreate={false} suggestions={filter.options ?? allValues(filter.key)} value={(filters[filter.key] as string[]) ?? []} onChange={(value) => setFilter(filter.key, value)} />
+                    <TagSelect label={filter.label} id={`filter-${filter.key}`} allowCreate={false} suggestions={options.map((option) => option.value)} value={(filters[filter.key] as string[]) ?? []} onChange={(value) => setFilter(filter.key, value)} />
                   ) : (
                     <RSelect label={filter.label} value={(filters[filter.key] as string) || ALL} placeholder={t("All")} onChange={(value) => setFilter(filter.key, value === ALL ? "" : value)}
-                      options={[{ value: ALL, label: t("All") }, ...so(filter.options ?? allValues(filter.key))]} />
-                  )}</div>
-              ))}
+                      options={[{ value: ALL, label: t("All") }, ...options]} />
+                  )}</div>;
+              })}
             </div>
             <div className="mt-6 flex justify-between">
               <button className={btnOutline} onClick={() => { setFilters({}); setSort({ key: null, dir: "asc" }); setPage(1); }}>{t("Clear all")}</button>

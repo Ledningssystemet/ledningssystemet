@@ -1,8 +1,181 @@
-@php if(Auth::user()->cannot('index', \Ledningssystemet\Ledningssystemet\Models\User::class)) abort(403); @endphp
+@php
+if (Auth::user()->cannot('index', \Ledningssystemet\Ledningssystemet\Models\User::class)) abort(403);
+
+$optionList = fn ($items) => $items
+   ->map(fn ($item) => ['value' => (string) $item->id, 'label' => $item->name])
+   ->values()
+   ->all();
+$userOptions = $optionList(\Ledningssystemet\Ledningssystemet\Models\User::orderBy('name')->get()->each->setAppends([]));
+$departmentOptions = $optionList(\Ledningssystemet\Ledningssystemet\Models\Department::orderBy('name')->get()->each->setAppends([]));
+$roleOptions = $optionList(\Ledningssystemet\Ledningssystemet\Models\Role::orderBy('name')->get()->each->setAppends([]));
+$accessGroupOptions = $optionList(\Ledningssystemet\Ledningssystemet\Models\AccessGroup::orderBy('name')->get()->each->setAppends([]));
+$canCreateUser = config('ledningssystemet.local_user_management') && Auth::user()->can('create', \Ledningssystemet\Ledningssystemet\Models\User::class);
+$canUpdateUser = config('ledningssystemet.local_user_management') && Auth::user()->can('update', \Ledningssystemet\Ledningssystemet\Models\User::class);
+$customProperties = \Ledningssystemet\Ledningssystemet\Models\CustomProperty::where('context', \Ledningssystemet\Ledningssystemet\Models\User::class)->orderBy('ordinal')->get();
+$customPropertyColumns = [];
+$customPropertyFilters = [];
+
+foreach ($customProperties as $property) {
+   $type = match ($property->type) {
+      'string' => 'text',
+      'textarea' => 'textarea',
+      default => 'select',
+   };
+   $options = collect(json_decode($property->getJtableOptions(), true) ?? [])
+      ->filter(fn ($option) => isset($option['Value']))
+      ->map(fn ($option) => [
+         'value' => (string) $option['Value'],
+         'label' => $option['DisplayText'],
+         'disabled' => $option['Disabled'] ?? false,
+      ])
+      ->values()
+      ->all();
+
+   $customPropertyColumns[] = [
+      'key' => 'customproperty_'.$property->id,
+      'label' => __($property->name),
+      'type' => $type,
+      'options' => $options,
+      'form' => $property->user_editable ? 'edit' : 'none',
+      'required' => (bool) $property->required,
+      'maxLength' => $type === 'text' ? 255 : null,
+      'listHidden' => ! $property->display_on_card,
+      'tab' => __('Custom properties'),
+      'sortable' => false,
+   ];
+
+   if (! in_array($property->type, ['string', 'textarea'], true)) {
+      $customPropertyFilters[] = [
+         'key' => 'customproperty_'.$property->id,
+         'label' => __($property->name),
+         'mode' => 'single',
+         'options' => $options,
+      ];
+   }
+}
+
+$tableColumns = [
+   'name',
+   'title',
+   'enabled',
+   'email',
+   'last_login_at',
+];
+if (\Ledningssystemet\Ledningssystemet\Support\Modules::active('staff')) {
+   $tableColumns[] = 'manager_user_id';
+}
+$tableColumns = [
+   ...$tableColumns,
+   'departments',
+];
+if (\Ledningssystemet\Ledningssystemet\Support\Modules::active('staff')) {
+   $tableColumns[] = 'org_roles';
+   $tableColumns[] = 'direct_reports';
+}
+$tableColumns = [
+   ...$tableColumns,
+   'access_groups',
+   ...array_values(array_map(
+      fn ($column) => $column['key'],
+      array_filter($customPropertyColumns, fn ($column) => ! $column['listHidden'])
+   )),
+];
+
+$tableFilters = [
+   [
+      'key' => 'enabled',
+      'label' => __('Status'),
+      'mode' => 'single',
+      'options' => [
+         ['value' => '1', 'label' => __('Enabled')],
+         ['value' => '0', 'label' => __('Deactivated')],
+      ],
+   ],
+   ...$customPropertyFilters,
+];
+
+$formTabs = [__('User')];
+if (\Ledningssystemet\Ledningssystemet\Support\Modules::active('staff') || ! config('ledningssystemet.graph_departments_assignusers')) {
+   $formTabs[] = __('Organization');
+}
+$formTabs[] = __('Access');
+if (array_filter($customPropertyColumns, fn ($column) => $column['form'] !== 'none')) {
+   $formTabs[] = __('Custom properties');
+}
+
+$tableConfig = [
+   'listTitle' => __('Users'),
+   'tableId' => 'userslist',
+   'titleKey' => 'name',
+   'subtitleKeys' => ['email'],
+   'defaultView' => 'masterDetail',
+   'editMode' => 'popup',
+   'perPage' => 10,
+   'searchKeys' => ['name', 'email'],
+   'dataSource' => [
+      'baseUrl' => '/api/v1/crud',
+      'model' => 'User',
+      'allowedFilters' => array_values(array_map(fn ($filter) => $filter['key'], $tableFilters)),
+      'sort' => ['name'],
+      'headers' => ['X-CSRF-TOKEN' => csrf_token()],
+   ],
+   'permissions' => [
+      'create' => $canCreateUser,
+      'update' => $canUpdateUser,
+      'delete' => Auth::user()->can('delete', \Ledningssystemet\Ledningssystemet\Models\User::class),
+   ],
+   'columns' => [
+      ['key' => 'name', 'label' => __('Name'), 'form' => 'both', 'required' => true, 'maxLength' => 255, 'sortable' => true, 'tab' => __('User')],
+      ['key' => 'title', 'label' => __('Title'), 'form' => 'both', 'maxLength' => 255, 'sortable' => true, 'tab' => __('User')],
+      ['key' => 'enabled', 'label' => __('Enabled'), 'type' => 'select', 'form' => 'both', 'required' => true, 'options' => [
+         ['value' => '0', 'label' => __('No')],
+         ['value' => '1', 'label' => __('Yes')],
+      ], 'sortable' => true, 'tab' => __('User')],
+      ['key' => 'email', 'label' => __('E-mail address'), 'form' => 'both', 'required' => true, 'sortable' => true, 'tab' => __('User')],
+      ['key' => 'last_login_at', 'label' => __('Last login'), 'type' => 'datetime', 'form' => 'none', 'sortable' => true, 'tab' => __('User')],
+      ...(
+         \Ledningssystemet\Ledningssystemet\Support\Modules::active('staff')
+            ? [
+               ['key' => 'manager_user_id', 'label' => __('Manager'), 'type' => 'select', 'form' => 'both', 'options' => $userOptions, 'sortable' => false, 'tab' => __('Organization')],
+            ]
+            : []
+      ),
+      ['key' => 'departments', 'label' => __('Departments'), 'type' => 'select', 'multiple' => true, 'form' => config('ledningssystemet.graph_departments_assignusers') ? 'none' : 'both', 'options' => $departmentOptions, 'sortable' => false, 'tab' => __('Organization')],
+      ...(
+         \Ledningssystemet\Ledningssystemet\Support\Modules::active('staff')
+            ? [
+               ['key' => 'org_roles', 'label' => __('Roles'), 'type' => 'select', 'multiple' => true, 'form' => 'both', 'options' => $roleOptions, 'sortable' => false, 'tab' => __('Organization')],
+               ['key' => 'direct_reports', 'label' => __('Direct reports'), 'form' => 'none', 'sortable' => false, 'tab' => __('Organization')],
+            ]
+            : []
+      ),
+      ['key' => 'access_groups', 'label' => __('Access groups'), 'type' => 'select', 'multiple' => true, 'form' => 'both', 'options' => $accessGroupOptions, 'sortable' => false, 'tab' => __('Access')],
+      ...$customPropertyColumns,
+   ],
+   'tableColumns' => $tableColumns,
+   'detailSections' => [],
+   'filters' => $tableFilters,
+   'newItemDefaults' => [
+      'enabled' => 1,
+      'departments' => [],
+      'org_roles' => [],
+      'access_groups' => [],
+   ],
+   'formTabs' => $formTabs,
+];
+
+$notificationScopeOptions = array_map(
+   fn ($scope) => ['value' => $scope['key'], 'label' => $scope['text']],
+   \Ledningssystemet\Ledningssystemet\Models\UserNotificationChannel::availableScopes()
+);
+$notificationEventOptions = array_map(
+   fn ($event) => ['value' => $event['key'], 'label' => $event['text']],
+   \Ledningssystemet\Ledningssystemet\Models\UserNotificationChannel::availableEvents()
+);
+@endphp
 @extends('layouts.master')
 
 @section('container')
-
 <script>
 function openUserNotificationSettings(user) {
    var days = [
@@ -18,7 +191,7 @@ function openUserNotificationSettings(user) {
 
    $.ajax({
       method: 'GET',
-      url: '/systemadmin/users/' + user.id + '/notification-settings',
+      url: '/systemadmin/users/' + encodeURIComponent(user.id) + '/notification-settings',
       dataType: 'json',
       success: function(settings) {
          var content = $('<div class="container-fluid" />');
@@ -31,7 +204,7 @@ function openUserNotificationSettings(user) {
                   $('<div class="form-check form-switch" />')
                      .append($('<input class="form-check-input" type="checkbox" />')
                         .attr({ id: inputId, name: day.name })
-                     .prop('checked', settings[day.name] === true || settings[day.name] == 1))
+                        .prop('checked', settings[day.name] === true || settings[day.name] == 1))
                      .append($('<label class="form-check-label" />')
                         .attr('for', inputId)
                         .text(day.label))
@@ -47,6 +220,13 @@ function openUserNotificationSettings(user) {
 
          var status = $('<div class="text-danger mt-2" role="alert" />');
          content.append(status);
+         var unmountChannels = null;
+         var cleanupChannels = function() {
+            if (unmountChannels) {
+               unmountChannels();
+               unmountChannels = null;
+            }
+         };
 
          showDialog(title, content, {
             actionLabel: translateString('Save'),
@@ -61,7 +241,7 @@ function openUserNotificationSettings(user) {
                dialogDiv.find('.action-button').prop('disabled', true);
                $.ajax({
                   method: 'POST',
-                  url: '/systemadmin/users/' + user.id + '/notification-settings',
+                  url: '/systemadmin/users/' + encodeURIComponent(user.id) + '/notification-settings',
                   data: preferences,
                   dataType: 'json',
                   success: function() {
@@ -77,77 +257,57 @@ function openUserNotificationSettings(user) {
             },
             formCreated: function(dialogDiv) {
                dialogDiv.find('.modal-dialog').addClass('modal-xl');
+               dialogDiv.one('hidden.bs.modal', cleanupChannels);
 
-               var channelsTable = dialogDiv.find('#userNotificationChannelsTable');
-               channelsTable.jtable({
-                  title: @json(__('Notification channels')),
-                  tableId: 'usernotificationchannels',
-                  bootstrap: true,
-                  accordion: true,
-                  messages: {
-                     addNewRecord: @json(__('Add new channel')),
+               var channelConfig = {
+                  listTitle: @json(__('Notification channels')),
+                  tableId: 'usernotificationchannels-' + user.id,
+                  titleKey: 'name',
+                  subtitleKeys: [],
+                  defaultView: 'table',
+                  viewModes: { masterDetail: false, table: true, list: false },
+                  editMode: 'inline',
+                  perPage: 10,
+                  searchKeys: ['name'],
+                  dataSource: {
+                     baseUrl: '/api/v1/crud',
+                     model: 'UserNotificationChannel',
+                     params: { user_id: String(user.id) },
+                     allowedFilters: ['user_id'],
+                     sort: ['name'],
+                     headers: { 'X-CSRF-TOKEN': @json(csrf_token()) },
                   },
-                  actions: {
-                     listAction: '/api/v1/items/UserNotificationChannel?user_id=' + user.id,
-                     createAction: '/api/v1/items/UserNotificationChannel?user_id=' + user.id,
-                     updateAction: '/api/v1/items/UserNotificationChannel',
-                     deleteAction: '/api/v1/items/UserNotificationChannel',
+                  permissions: {
+                     create: @json(Auth::user()->can('create', \Ledningssystemet\Ledningssystemet\Models\UserNotificationChannel::class)),
+                     update: @json(Auth::user()->can('update', \Ledningssystemet\Ledningssystemet\Models\UserNotificationChannel::class)),
+                     delete: @json(Auth::user()->can('delete', \Ledningssystemet\Ledningssystemet\Models\UserNotificationChannel::class)),
                   },
-                  fields: {
-                     id: {
-                        key: true,
-                        list: false,
-                        create: false,
-                        edit: false,
-                     },
-                     name: {
-                        title: @json(__('Name')),
-                        create: true,
-                        edit: true,
-                        list: true,
-                        required: true,
-                        maxlength: 255,
-                        header: true,
-                     },
-                     ignoremine: {
-                        title: @json(__('Notify me when I am doing the changes')),
-                        create: true,
-                        edit: true,
-                        list: true,
-                        defaultValue: true,
+                  columns: [
+                     { key: 'name', label: @json(__('Name')), required: true, maxLength: 255, sortable: true },
+                     {
+                        key: 'ignoremine',
+                        label: @json(__('Notify me when I am doing the changes')),
+                        type: 'select',
                         options: [
-                           { Value: 1, DisplayText: @json(__('No')) },
-                           { Value: 0, DisplayText: @json(__('Yes')) },
+                           { value: '1', label: @json(__('No')) },
+                           { value: '0', label: @json(__('Yes')) },
                         ],
                      },
-                     channelscopes: {
-                        title: @json(__('Object scopes')),
-                        create: true,
-                        edit: true,
-                        list: true,
-                        multiple: true,
-                        options: [
-@foreach(\Ledningssystemet\Ledningssystemet\Models\UserNotificationChannel::availableScopes() as $obj)
-                           { Value: @json($obj['key']), DisplayText: @json($obj['text']) },
-@endforeach
-                        ],
-                     },
-                     channelevents: {
-                        title: @json(__('Events')),
-                        create: true,
-                        edit: true,
-                        list: true,
-                        multiple: true,
-                        options: [
-@foreach(\Ledningssystemet\Ledningssystemet\Models\UserNotificationChannel::availableEvents() as $obj)
-                           { Value: @json($obj['key']), DisplayText: @json($obj['text']) },
-@endforeach
-                        ],
-                     },
-                  },
-               });
-               channelsTable.jtable('load');
+                     { key: 'channelscopes', label: @json(__('Object scopes')), type: 'select', multiple: true, options: @json($notificationScopeOptions), sortable: false },
+                     { key: 'channelevents', label: @json(__('Events')), type: 'select', multiple: true, options: @json($notificationEventOptions), sortable: false },
+                  ],
+                  tableColumns: ['name', 'ignoremine', 'channelscopes', 'channelevents'],
+                  detailSections: [],
+                  filters: [],
+                  newItemDefaults: { user_id: String(user.id), ignoremine: 1, channelscopes: [], channelevents: [] },
+               };
+
+               unmountChannels = window.mountTableModule(
+                  dialogDiv.find('#userNotificationChannelsTable').get(0),
+                  { config: channelConfig, data: [] }
+               );
             },
+            afterClose: cleanupChannels,
          });
       },
       error: function() {
@@ -156,485 +316,115 @@ function openUserNotificationSettings(user) {
    });
 }
 
-$(function(){
-   $('#tableContainer').jtable({
-      title: '{{ __("Users") }}',
-      paging: true,
-      searchfield: true,
-      tableId: 'userslist',
-      bootstrap: true,
-      accordion: true,
-      messages: {
-         addNewRecord: '{{ __('Create user') }}',
-         search: '{{ __('Search by name or department') }}',
-      },
-	  filter: {
-        hide_enabled: {
-           type: 'checkbox',
-           value: '1',
-           checked: false,
-           text: '{{ __('Hide actived users') }}',
-        },
-        hide_disabled: {
-           type: 'checkbox',
-           value: '1',
-           checked: false,
-           text: '{{ __('Hide deactivated users') }}',
-        },
-@include('components.customproperty', ['classname' => 'Ledningssystemet\Ledningssystemet\Models\User', 'showFilter' => true])
-	  },
-      actions: {
-@if(Auth::user()->can('index', \Ledningssystemet\Ledningssystemet\Models\User::class))
-         listAction: '/api/v1/items/User',
-@endif
-@if(Auth::user()->can('delete', \Ledningssystemet\Ledningssystemet\Models\User::class))
-         deleteAction: '/api/v1/items/User',
-@endif
-@if(config('ledningssystemet.local_user_management'))
-@if(Auth::user()->can('create', \Ledningssystemet\Ledningssystemet\Models\User::class))
-         createAction: '/api/v1/items/User',
-@endif
-@if(Auth::user()->can('update', \Ledningssystemet\Ledningssystemet\Models\User::class))
-         updateAction: '/api/v1/items/User',
-@endif
-@endif
-      },
-      fields: {
-         id: {
-            key: true,
-            list: false,
-            create: false,
-            edit: false,
-         },
-         name: {
-            title: '{{ __('Name') }}',
-            create: true,
-            edit: true,
-            list: true,
-            required: true,
-            header: true,
-            maxlength: 255,
-         },
-         title: {
-            title: '{{ __('Title') }}',
-            create: true,
-            edit: true,
-            list: true,
-            maxlength: 255,
-            listClass: 'd-inline-block col-6 col-md-4',
-         },
-         enabled: {
-            title: '{{ __('Enabled') }}',
-            create: true,
-            edit: true,
-            list: true,
-            required: true,
-            defaultValue: 1,
-            options: {0: '{{ __("No") }}', 1: '{{ __("Yes") }}'},
-            listClass: 'd-inline-block col-6 col-md-4',
-         },
-@if(\Ledningssystemet\Ledningssystemet\Support\Modules::active('staff'))
-         manager_user_id: {
-            title: '{{ __('Manager') }}',
-            create: true,
-            edit: true,
-            list: true,
-            listClass: 'd-inline-block col-6 col-md-4',
-            options: [
-               { Value: null, DisplayText: '{{ __("None") }}' },
-@foreach(\Ledningssystemet\Ledningssystemet\Models\User::orderBy('name')->get()->each->setAppends([]) as $obj)
-               { Value: {{ $obj->id }}, DisplayText: @php echo(json_encode($obj->name)); @endphp },
-@endforeach            
-            ]
-         },
-@endif
-         email: {
-            title: '{{ __('E-mail address') }}',
-            create: true,
-            edit: true,
-            list: true,
-            listClass: 'd-inline-block col-12 col-md-4',
-            required: true,
-         },
-         last_login_at: {
-            title: '{{ __('Last login') }}',
-            create: false,
-            edit: false,
-            list: true,
-            listClass: 'd-inline-block col-12 col-md-4',
-         },
-         hr0: {
-            list: true,
-            edit: false,
-            create: false,
-            display: function(data){
-               return $('<hr />'); 
-            }
-         },
-         departments: {
-            title: '{{ __('Departments') }}',
-            create: @php echo(config('ledningssystemet.graph_departments_assignusers') ? "false" : "true"); @endphp,
-            edit: @php echo(config('ledningssystemet.graph_departments_assignusers') ? "false" : "true"); @endphp,
-            list: true,
-            multiple: true,
-            options: [
-@foreach(Ledningssystemet\Ledningssystemet\Models\Department::orderBy('name')->get()->each->setAppends([]) as $obj)
-   { Value: {{ $obj->id }}, DisplayText: @php echo(json_encode($obj->name)); @endphp },
-@endforeach
-            ]
-         },
-         hr1: {
-            list: true,
-            edit: false,
-            create: false,
-            display: function(data){
-               return $('<hr />'); 
-            }
-         },
-@if(\Ledningssystemet\Ledningssystemet\Support\Modules::active('staff'))
-         org_roles: {
-            title: '{{ __('Roles') }}',
-            create: true,
-            edit: true,
-            list: true,
-            multiple: true,
-            options: [
-@foreach(Ledningssystemet\Ledningssystemet\Models\Role::orderBy('name')->get()->each->setAppends([]) as $obj)
-               { Value: {{ $obj->id }}, DisplayText: @php echo(json_encode($obj->name)); @endphp },
-@endforeach
-            ]
-         },
-         hr2: {
-            list: true,
-            edit: false,
-            create: false,
-            display: function(data){
-               return $('<hr />'); 
-            }
-         },
-@endif
-         access_groups: {
-            title: '{{ __('Access groups') }}',
-            create: true,
-            edit: true,
-            list: true,
-            multiple: true,
-            options: [
-@foreach(Ledningssystemet\Ledningssystemet\Models\AccessGroup::orderBy('name')->get()->each->setAppends([]) as $obj)
-               { Value: {{ $obj->id }}, DisplayText: @php echo(json_encode($obj->name)); @endphp },
-@endforeach
-            ]
-         },
-@if(\Ledningssystemet\Ledningssystemet\Support\Modules::active('staff'))
-         hr3: {
-            list: true,
-            edit: false,
-            create: false,
-            display: function(data){
-               return $('<hr />'); 
-            }
-         },
-         directreports: {
-            title: '{{ __('Direct reports') }}',
-            create: false,
-            edit: false,
-            list: true,
-            display: function(data) {
-               var retval = $('<div />');
-               Object.values(data.record.direct_reports).forEach((obj) => {
-                  retval.append($('<div />').text(obj.name));
-               });
-               return retval;
-            }
-         },
-@endif
-   @include('components.customproperty', ['classname' => 'Ledningssystemet\Ledningssystemet\Models\User'])
-
-         hr4: {
-            list: true,
-            edit: false,
-            create: false,
-            display: function(data){
-               return $('<hr />'); 
-            }
-         },
-@if(Auth::user()->can('update', \Ledningssystemet\Ledningssystemet\Models\User::class))
-         notifications: {
-            title: '',
-            list: true,
-            edit: false,
-            create: false,
-            type: 'command',
-            footer: true,
-            display: function(data) {
-               return $('<button />')
-                  .addClass('btn btn-outline-primary btn-sm')
-                  .css({cursor: 'pointer'})
-                  .text('{{ __('Notification settings') }}')
-                  .append($('<span />')
-                     .addClass('material-symbols-rounded')
-                     .text('notifications'))
-                  .on('click', function() {
-                     openUserNotificationSettings(data.record);
-                  });
-            },
-         },
-         reassign: {
-            edit: false,
-            create: false,
-            type: 'command',
-            footer: true,
-            display: function(data){
-               var retobj= $('<a />')
-                  .addClass('btn btn-outline-primary btn-sm')
-                  .css({cursor: 'pointer'})
-                  .text('{{__('Re-assign objects'); }}')
-                  .append($('<span />')
-                     .addClass('material-symbols-rounded')
-                     .text('alt_route'))
-                  .on('click', function(){
-                     var retval = $('<div />');
-                     
-                     if(data.record.activitiescount)
-                     {
-                        $('<div />')
-                           .appendTo(retval)
-                           .append($('<label for="activities-user" class="form-label">{{ __("Activities") }}</label>'))
-                           .append($('<select id="activities-user" name="activities" class="form-select form-select-sm" required="true" />'));
-                     }
-
-                     if(data.record.activityflowcount)
-                     {
-                        $('<div />')
-                           .appendTo(retval)
-                           .append($('<label for="activityflows-user" class="form-label">{{ __("Activity Flows") }}</label>'))
-                           .append($('<select id="activityflows-user" name="activity_flows" class="form-select form-select-sm" required="true" />'));
-                     }
-
-                     if(data.record.agreementcount)
-                     {
-                        $('<div />')
-                           .appendTo(retval)
-                           .append($('<label for="agreements-user" class="form-label">{{ __("Agreements") }}</label>'))
-                           .append($('<select id="agreements-user" name="agreements" class="form-select form-select-sm" required="true" />'));
-                     }
-
-                     if(data.record.assetscount)
-                     {
-                        $('<div />')
-                           .appendTo(retval)
-                           .append($('<label for="assets-user" class="form-label">{{ __("Assets") }}</label>'))
-                           .append($('<select id="assets-user" name="assets" class="form-select form-select-sm" required="true" />'));
-                     }
-
-
-                     if(data.record.controlscount)
-                     {
-                        $('<div />')
-                           .appendTo(retval)
-                           .append($('<label for="controls-user" class="form-label">{{ __("Controls") }}</label>'))
-                           .append($('<select id="controls-user" name="controls" class="form-select form-select-sm" required="true" />'));
-                     }
-
-
-                     if(data.record.control_actionscount)
-                     {
-                        $('<div />')
-                           .appendTo(retval)
-                           .append($('<label for="control_actions-user" class="form-label">{{ __("Control actions") }}</label>'))
-                           .append($('<select id="control_actions-user" name="control_actions" class="form-select form-select-sm" required="true" />'));
-                     }
-
-                     if(data.record.customercount)
-                     {
-                        $('<div />')
-                           .appendTo(retval)
-                           .append($('<label for="customers-user" class="form-label">{{ __("Customers") }}</label>'))
-                           .append($('<select id="customers-user" name="customers" class="form-select form-select-sm" required="true" />'));
-                     }
-
-
-                     if(data.record.findingscount)
-                     {
-                        $('<div />')
-                           .appendTo(retval)
-                           .append($('<label for="findings-user" class="form-label">{{ __("Findings") }}</label>'))
-                           .append($('<select id="findings-user" name="findings" class="form-select form-select-sm" required="true" />'));
-                     }
-
-                     if(data.record.formcount)
-                     {
-                        $('<div />')
-                           .appendTo(retval)
-                           .append($('<label for="forms-user" class="form-label">{{ __("Forms") }}</label>'))
-                           .append($('<select id="forms-user" name="forms" class="form-select form-select-sm" required="true" />'));
-                     }
-
-                     if(data.record.incidentscount)
-                     {
-                        $('<div />')
-                           .appendTo(retval)
-                           .append($('<label for="incidents-user" class="form-label">{{ __("Incidents") }}</label>'))
-                           .append($('<select id="incidents-user" name="incidents" class="form-select form-select-sm" required="true" />'));
-                     }
-
-
-                     if(data.record.information_typescount)
-                     {
-                        $('<div />')
-                           .appendTo(retval)
-                           .append($('<label for="information_types-user" class="form-label">{{ __("Information types") }}</label>'))
-                           .append($('<select id="information_types-user" name="information_types" class="form-select form-select-sm" required="true" />'));
-                     }
-
-                     if(data.record.objectivescount)
-                     {
-                        $('<div />')
-                           .appendTo(retval)
-                           .append($('<label for="objectives-user" class="form-label">{{ __("Objectives") }}</label>'))
-                           .append($('<select id="objectives-user" name="objectives" class="form-select form-select-sm" required="true" />'));
-                     }
-
-
-                     if(data.record.processescount)
-                     {
-                        $('<div />')
-                           .appendTo(retval)
-                           .append($('<label for="processes-user" class="form-label">{{ __("Processes") }}</label>'))
-                           .append($('<select id="processes-user" name="processes" class="form-select form-select-sm" required="true" />'));
-                     }
-
-                     if(data.record.process_performance_metricscount)
-                     {
-                        $('<div />')
-                           .appendTo(retval)
-                           .append($('<label for="process_performance_metrics-user" class="form-label">{{ __("Process performance metrics") }}</label>'))
-                           .append($('<select id="process_performance_metrics-user" name="process_performance_metrics" class="form-select form-select-sm" required="true" />'));
-                     }
-
-
-                     if(data.record.projectcount)
-                     {
-                        $('<div />')
-                           .appendTo(retval)
-                           .append($('<label for="projects-user" class="form-label">{{ __("Projects") }}</label>'))
-                           .append($('<select id="projects-user" name="projects" class="form-select form-select-sm" required="true" />'));
-                     }
-
-                     if(data.record.projectactivitycount)
-                     {
-                        $('<div />')
-                           .appendTo(retval)
-                           .append($('<label for="project_activities-user" class="form-label">{{ __("Project activities") }}</label>'))
-                           .append($('<select id="project_activities-user" name="project_activities" class="form-select form-select-sm" required="true" />'));
-                     }
-
-                     if(data.record.riskscount)
-                     {
-                        $('<div />')
-                           .appendTo(retval)
-                           .append($('<label for="risks-user" class="form-label">{{ __("Risks") }}</label>'))
-                           .append($('<select id="risks-user" name="risks" class="form-select form-select-sm" required="true" />'));
-                     }
-
+function openUserReassignmentDialog(user) {
+   var reassignable = [
+      { count: 'activitiescount', key: 'activities', label: @json(__('Activities')) },
+      { count: 'activityflowcount', key: 'activity_flows', label: @json(__('Activity Flows')) },
+      { count: 'agreementcount', key: 'agreements', label: @json(__('Agreements')) },
+      { count: 'assetscount', key: 'assets', label: @json(__('Assets')) },
+      { count: 'controlscount', key: 'controls', label: @json(__('Controls')) },
+      { count: 'control_actionscount', key: 'control_actions', label: @json(__('Control actions')) },
+      { count: 'customercount', key: 'customers', label: @json(__('Customers')) },
+      { count: 'findingscount', key: 'findings', label: @json(__('Findings')) },
+      { count: 'formcount', key: 'forms', label: @json(__('Forms')) },
+      { count: 'incidentscount', key: 'incidents', label: @json(__('Incidents')) },
+      { count: 'information_typescount', key: 'information_types', label: @json(__('Information types')) },
+      { count: 'objectivescount', key: 'objectives', label: @json(__('Objectives')) },
+      { count: 'processescount', key: 'processes', label: @json(__('Processes')) },
+      { count: 'process_performance_metricscount', key: 'process_performance_metrics', label: @json(__('Process performance metrics')) },
+      { count: 'projectcount', key: 'projects', label: @json(__('Projects')) },
+      { count: 'projectactivitycount', key: 'project_activities', label: @json(__('Project activities')) },
+      { count: 'riskscount', key: 'risks', label: @json(__('Risks')) },
 @if(\Ledningssystemet\Ledningssystemet\Support\Modules::active('supplier'))
-                     if(data.record.supplierscount)
-                     {
-                        $('<div />')
-                           .appendTo(retval)
-                           .append($('<label for="suppliers-user" class="form-label">{{ __("Suppliers") }}</label>'))
-                           .append($('<select id="suppliers-user" name="suppliers" class="form-select form-select-sm" required="true" />'));
-                     }
+      { count: 'supplierscount', key: 'suppliers', label: @json(__('Suppliers')) },
 @endif
-                        
-                     retval.find('select').each(function(){
-@foreach(\Ledningssystemet\Ledningssystemet\Models\User::orderBy('name')->get()->each->setAppends([]) as $obj)
-                        $(this).append($('<option value="{{ $obj->id }}" />')
-                           .text(@php echo(json_encode($obj->name)); @endphp)
-                           .prop('selected', ({{ $obj->id }} == data.record.id)));
-@endforeach                     
-                     });
-                     
-                     confirmDialog('{{ __("Re-assign objects") }}', retval, function(formdata){
-                        ajaxPost('/api/v1/items/User/'+data.record.id+'/reassign', formdata, function(){
-                           $('#tableContainer').jtable('reload');
-                        });
-                     });
-                  });
-                  
-               return retobj;
-            },
-         },   
-@endif         
-         passwordreset: {
-            list: true,
-            edit: false,
-            create: false,
-            type: 'command',
-            footer: true,
-            display: function(data){
-               var retobj= $('<button />')
-                  .addClass('btn btn-outline-primary btn-sm')
-                  .text('{{__('Send password reset link'); }}')
-                  .append($('<span />')
-                     .addClass('material-symbols-rounded')
-                     .text('lock_reset'))
-                  .on('click', function(){
-                     confirmDialog('{{ __("Send password reset link") }}', '{{__("Are you sure?") }}', function(){
-                        ajaxPost('/api/v1/items/User/'+data.record.id+'/resetpasssword', {}, function(){
-                           showDialog('{{ __("Send password reset link") }}', '{{ __("A password reset link has been sent to the user") }}');
-                        });
-                     });
-                  });
-               return retobj;
-            }
-         }
-      },
-      rowLoaded: function(event, data){
-         if(data.record.activitiescount ||
-            data.record.assetscount ||
-            data.record.controlscount ||
-            data.record.control_actionscount ||
-            data.record.findingscount ||
-            data.record.incidentscount ||
-            data.record.information_typescount ||
-            data.record.objectivescount ||
-            data.record.processescount ||
-            data.record.process_performance_metricscount ||
-            data.record.riskscount ||
-            data.record.supplierscount ||
-            data.record.external_id
-         )
-            $(event.target).find('.jtable-data-row[data-record-key="'+data.record.id+'"]').find('.jtable-delete-command').remove();
-         else
-            $(event.target).find('.jtable-data-row[data-record-key="'+data.record.id+'"]').find('.jtable-command-column[data-jtable-fieldname="reassign"]').remove();
-      },
-      recordsLoaded: function(event, data) {
-         if(data.serverResponse.data)
-         {
-            data.serverResponse.data.forEach((obj) => {
-               if(obj.external_id)
-               {
-                  // Remove delete button
-                  $('[data-record-key="'+obj.id+'"]').find('.jtable-delete-command').remove();
-                  
-               }
-            });
-         }
-         else
-         {
-            if(data.serverResponse.external_id)
-            {
-               // Remove delete button
-               $('[data-record-key="'+data.serverResponse.id+'"]').find('.jtable-delete-command').remove();
-               
-            }
-         }
-      },
+   ];
+   var content = $('<div class="container-fluid" />');
+
+   reassignable.filter(function(entry) {
+      return Number(user[entry.count]) > 0;
+   }).forEach(function(entry) {
+      var id = 'reassign-' + entry.key + '-' + user.id;
+      var select = $('<select class="form-select form-select-sm" required />').attr({ id: id, name: entry.key });
+      @json($userOptions).forEach(function(option) {
+         select.append($('<option />').val(option.value).text(option.label).prop('selected', option.value === String(user.id)));
+      });
+      content.append(
+         $('<div class="mb-3" />')
+            .append($('<label class="form-label" />').attr('for', id).text(entry.label))
+            .append(select)
+      );
    });
-   $('#tableContainer').jtable('load');      
+
+   confirmDialog(@json(__('Re-assign objects')), content, function(formdata) {
+      ajaxPost('/api/v1/items/User/' + encodeURIComponent(user.id) + '/reassign', formdata, function() {
+         window.location.reload();
+      });
+   });
+}
+
+$(function() {
+   var tableConfig = @json($tableConfig);
+   var optionLabels = function(options) {
+      return new Map(options.map(function(option) {
+         return [String(option.value), option.label];
+      }));
+   };
+   var relationText = function(value, options) {
+      var labels = optionLabels(options);
+      var values = Array.isArray(value) ? value : [];
+      return values.map(function(item) {
+         var id = item && typeof item === 'object' ? item.id : item;
+         return labels.get(String(id)) || (item && typeof item === 'object' ? item.name : String(item));
+      }).filter(Boolean).join(', ');
+   };
+   var linkedObjectCounts = [
+      'activitiescount', 'assetscount', 'controlscount', 'control_actionscount', 'findingscount',
+      'incidentscount', 'information_typescount', 'objectivescount', 'processescount',
+      'process_performance_metricscount', 'riskscount', 'supplierscount',
+   ];
+   var hasLinkedObjects = function(user) {
+      return Boolean(user.external_id) || linkedObjectCounts.some(function(key) { return Number(user[key]) > 0; });
+   };
+
+   tableConfig.columns.find(function(column) { return column.key === 'departments'; }).render = function(user) {
+      return relationText(user.departments, @json($departmentOptions));
+   };
+@if(\Ledningssystemet\Ledningssystemet\Support\Modules::active('staff'))
+   tableConfig.columns.find(function(column) { return column.key === 'org_roles'; }).render = function(user) {
+      return relationText(user.org_roles, @json($roleOptions));
+   };
+   tableConfig.columns.find(function(column) { return column.key === 'direct_reports'; }).render = function(user) {
+      return Array.isArray(user.direct_reports) ? user.direct_reports.map(function(item) { return item.name; }).join(', ') : '';
+   };
+@endif
+   tableConfig.columns.find(function(column) { return column.key === 'access_groups'; }).render = function(user) {
+      return relationText(user.access_groups, @json($accessGroupOptions));
+   };
+
+   tableConfig.permissions.delete = tableConfig.permissions.delete
+      ? function(user) { return !hasLinkedObjects(user); }
+      : false;
+
+   tableConfig.rowCommands = [
+@if(Auth::user()->can('update', \Ledningssystemet\Ledningssystemet\Models\User::class))
+      { label: @json(__('Notification settings')), onClick: openUserNotificationSettings },
+      { label: @json(__('Re-assign objects')), onClick: openUserReassignmentDialog, visible: hasLinkedObjects },
+@endif
+      {
+         label: @json(__('Send password reset link')),
+         onClick: function(user) {
+            confirmDialog(@json(__('Send password reset link')), @json(__('Are you sure?')), function() {
+               ajaxPost('/api/v1/items/User/' + encodeURIComponent(user.id) + '/resetpasssword', {}, function() {
+                  showDialog(@json(__('Send password reset link')), @json(__('A password reset link has been sent to the user')));
+               });
+            });
+         },
+      },
+   ];
+
+   window.mountTableModule(document.getElementById('tableContainer'), { config: tableConfig, data: [] });
 });
 </script>
 <div id="tableContainer"></div>
-   
 @endsection

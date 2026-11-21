@@ -2,7 +2,7 @@ import React, { useEffect, useState, type FormEvent, type ReactNode } from "reac
 import * as Tabs from "@radix-ui/react-tabs";
 import * as Label from "@radix-ui/react-label";
 import { formatDate, validateField } from "../helpers/logic";
-import { TagSelect } from "../components/MultiSelect";
+import { MultiSelect, TagSelect } from "../components/MultiSelect";
 import { NestedTableEditor } from "../components/NestedTable";
 import { RSelect } from "../components/RSelect";
 import { colOptions } from "../helpers/tableConfig";
@@ -137,6 +137,11 @@ export function ItemForm({ config, item, isNew, onSave, onCancel, tagSuggestions
     let control: ReactNode;
     if (entry.readOnly || isDisabled(column.key)) {
       control = <p className="rounded-md bg-muted px-3 py-1.5 text-sm">{String(value ?? "–")}</p>;
+    } else if (column.type === "select" && column.multiple) {
+      const selected = Array.isArray(value)
+        ? value.map((option) => String(option && typeof option === "object" ? option.id : option)).filter(Boolean)
+        : [];
+      control = <MultiSelect id={id} label={column.label} options={colOptions(column, draft)} value={selected} emptyLabel={t("Select…")} onChange={(next) => set(column.key, next)} />;
     } else if (column.type === "select") {
       const options = colOptions(column, draft);
       const chosen = options.find((option) => option.value === String(value ?? ""));
