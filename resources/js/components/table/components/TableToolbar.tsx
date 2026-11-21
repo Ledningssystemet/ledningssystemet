@@ -16,13 +16,14 @@ type Props = {
   activeFilterCount: number;
   view: ViewMode;
   availableViews: ViewMode[];
+  viewChangeDisabled: boolean;
   onViewChange: (view: ViewMode) => void;
   canCreate: boolean;
   onCreate: () => void;
   onOpenFilters: () => void;
 };
 
-export function TableToolbar({ title, count, reorderMode, idFilter, searchInput, onSearchChange, searchMax, activeFilterCount, view, availableViews, onViewChange, canCreate, onCreate, onOpenFilters }: Props) {
+export function TableToolbar({ title, count, reorderMode, idFilter, searchInput, onSearchChange, searchMax, activeFilterCount, view, availableViews, viewChangeDisabled, onViewChange, canCreate, onCreate, onOpenFilters }: Props) {
   return (
     <div className="flex flex-wrap items-center gap-2 border-b p-3">
       <h2 className="mr-2 text-lg font-semibold">{title} <span className="text-sm font-normal text-muted-foreground">({count})</span></h2>
@@ -35,7 +36,7 @@ export function TableToolbar({ title, count, reorderMode, idFilter, searchInput,
           <SlidersHorizontal className="h-4 w-4" />{t("Filter and sorting")}
           {activeFilterCount > 0 && <span className="rounded-full bg-primary px-1.5 text-xs text-primary-foreground">{activeFilterCount}</span>}
         </button>
-        <ToggleGroup.Root type="single" value={view} onValueChange={(value) => value && onViewChange(value as ViewMode)} aria-label={t("Select view")} className="inline-flex overflow-hidden rounded-md border">
+        <ToggleGroup.Root type="single" value={view} disabled={viewChangeDisabled} onValueChange={(value) => value && onViewChange(value as ViewMode)} aria-label={t("Select view")} className="inline-flex overflow-hidden rounded-md border">
           {([["master-detail", "Master/Detail", LayoutList], ["table", "Table", Table2], ["list", "List", Rows3]] as const).filter(([value]) => availableViews.includes(value)).map(([value, label, Icon]) => (
             <ToggleGroup.Item key={value} value={value} className="inline-flex items-center gap-1.5 border-r px-3 py-1.5 text-sm last:border-0 hover:bg-surface-hover data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">
               <Icon className="h-4 w-4" /><span className="hidden sm:inline">{t(label)}</span>

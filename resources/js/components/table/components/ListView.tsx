@@ -1,8 +1,9 @@
 import React from "react";
 import * as Accordion from "@radix-ui/react-accordion";
-import { ChevronRight } from "lucide-react";
+import { ChevronDown } from "lucide-react";
 import type { ReactNode } from "react";
 import type { Item, ModuleConfig } from "../helpers/types";
+import { t } from "../../../lib/i18n";
 
 type Props = {
   items: Item[];
@@ -15,18 +16,29 @@ type Props = {
 export function ListView({ items, config, renderStatus, renderActions, renderDetails }: Props) {
   return (
     <Accordion.Root type="multiple">
-      {items.map((item) => (
-        <Accordion.Item key={item.id} value={item.id} className="border-b">
-          <Accordion.Header className="flex items-center">
-            <Accordion.Trigger className="group flex flex-1 items-center gap-3 px-4 py-3 text-left hover:bg-surface-hover">
-              <ChevronRight className="h-4 w-4 transition-transform group-data-[state=open]:rotate-90" />
-              <div><div className="font-medium">{item[config.titleKey]}{renderStatus(item)}</div><div className="text-xs text-muted-foreground">{config.subtitleKeys.map((key) => item[key]).filter(Boolean).join(" · ")}</div></div>
-            </Accordion.Trigger>
-            <div className="pr-3">{renderActions(item)}</div>
-          </Accordion.Header>
-          <Accordion.Content className="bg-background px-6 py-4">{renderDetails(item)}</Accordion.Content>
-        </Accordion.Item>
-      ))}
+      {items.map((item) => {
+        const status = renderStatus(item);
+        return (
+          <Accordion.Item key={item.id} value={item.id} className="ls-list-item">
+            <Accordion.Header className="ls-list-header">
+              <Accordion.Trigger className="ls-list-title">
+                <span className="ls-list-copy">
+                  <span className="ls-list-name">{item[config.titleKey]}</span>
+                  {config.subtitleKeys.length > 0 && (
+                    <span className="ls-list-subtitle">{config.subtitleKeys.map((key) => item[key]).filter(Boolean).join(" · ")}</span>
+                  )}
+                </span>
+              </Accordion.Trigger>
+              {status && <div className="ls-list-status">{status}</div>}
+              <div className="ls-list-actions">{renderActions(item)}</div>
+              <Accordion.Trigger className="ls-list-expand" aria-label={t("Show details")}>
+                <ChevronDown aria-hidden="true" />
+              </Accordion.Trigger>
+            </Accordion.Header>
+            <Accordion.Content className="ls-list-content">{renderDetails(item)}</Accordion.Content>
+          </Accordion.Item>
+        );
+      })}
     </Accordion.Root>
   );
 }

@@ -63,6 +63,10 @@ view. The same rules apply when the configuration changes after mounting.
 The option works in React configs, JSON `data-props`, and `data-config` for
 `mountMasterDetail`.
 
+When inline editing has started, view switching is disabled until the edit is
+cancelled or saved successfully. A failed save keeps the current view and edit
+open.
+
 ### Sortable columns
 
 Set `sortable: true` on a column to offer it in the sorting dialog and make its
@@ -86,6 +90,8 @@ delete confirmation, nested tables, theme overrides, and unrelated Bootstrap
 controls. Exercise both application registration and direct npm imports. Cover
 each view disabled individually and in combinations, disabled saved and default
 views, configuration changes, all views disabled, and the reorder conflict. Cover
+attempted view switching during inline edit, cancellation, successful save, and
+failed save. Cover
 sortable and non-sortable columns in both the table and sorting dialog, including
 API-backed sorting. Cover
 single- and multi-field API search, combining search with filters and pagination,

@@ -388,7 +388,8 @@ export function TableModule({ config: rawConfig, data, onDataChange, controllerR
         activeFilterCount={activeFilterCount}
         view={activeView}
         availableViews={views}
-        onViewChange={setView}
+        viewChangeDisabled={!!inlineEditing}
+        onViewChange={(nextView) => { if (!inlineEditing) setView(nextView); }}
         canCreate={canCreate}
         onCreate={startNew}
         onOpenFilters={() => setFilterOpen(true)}
