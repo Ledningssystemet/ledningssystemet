@@ -12,7 +12,7 @@ type Props = {
   renderDetails: (item: Item) => ReactNode;
 };
 
-export function AccordionView({ items, config, renderStatus, renderActions, renderDetails }: Props) {
+export function ListView({ items, config, renderStatus, renderActions, renderDetails }: Props) {
   return (
     <Accordion.Root type="multiple">
       {items.map((item) => (

@@ -1,5 +1,5 @@
 export type Item = Record<string, any> & { id: string };
-export type ViewMode = "master-detail" | "table" | "accordion";
+export type ViewMode = "master-detail" | "table" | "list";
 export type Tone = "success" | "info" | "warning" | "danger" | "secondary";
 
 /** Ett valalternativ: etikett i stället för internt värde, kan grupperas, inaktiveras och ha beskrivning. */
@@ -79,6 +79,8 @@ export interface ModuleConfig {
   titleKey: string;
   subtitleKeys: string[];
   defaultView: ViewMode;
+  /** Aktiverade vyer; utelämnade värden är aktiverade. Minst en vy måste vara aktiverad. */
+  viewModes?: { masterDetail?: boolean; table?: boolean; list?: boolean };
   editMode: "inline" | "popup";
   perPage: number;
   /** Storlekar användaren kan välja i pagineringen, t.ex. [10, 25, 50, 100, 250] */

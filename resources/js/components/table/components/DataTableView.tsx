@@ -66,7 +66,7 @@ export function DataTableView(props: Props) {
           </th>
           {columns.map((key) => (
             <th key={key} className="px-3 py-2 font-medium">
-              {isReorderMode ? colLabel(key) : (
+              {isReorderMode || !config.columns.find((column) => column.key === key)?.sortable ? colLabel(key) : (
                 <button className="inline-flex items-center gap-1" onClick={() => onSortChange((current) => ({ key, dir: current.key === key && current.dir === "asc" ? "desc" : "asc" }))}>
                   {colLabel(key)}{sort.key === key && (sort.dir === "asc" ? " ↑" : " ↓")}
                 </button>

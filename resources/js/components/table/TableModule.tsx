@@ -10,12 +10,12 @@ import { TableDialogs } from "./dialogs";
 import { btnOutline } from "./helpers/styles";
 import { TablePagination } from "./components/TablePagination";
 import { TableToolbar } from "./components/TableToolbar";
-import { AccordionView } from "./components/AccordionView";
+import { ListView } from "./components/ListView";
 import { DataTableView } from "./components/DataTableView";
 import { ItemDetails } from "./components/ItemDetails";
 import { MasterDetailView } from "./components/MasterDetailView";
 import { RowActions } from "./components/RowActions";
-import { DEFAULT_PAGE_SIZES, initialPageSize, initialView, writeCookie } from "./helpers/persistence";
+import { availableViews, DEFAULT_PAGE_SIZES, initialPageSize, initialView, resolveView, writeCookie } from "./helpers/persistence";
 import { colOptions, customToColumns, linkState } from "./helpers/tableConfig";
 import { badgeTone, dotTone } from "./helpers/tones";
 import { t } from "../../lib/i18n";
@@ -47,8 +47,10 @@ export function TableModule({ config: rawConfig, data, onDataChange, controllerR
   const link = useMemo(() => linkState(rawConfig.tableId), [rawConfig.tableId]);
   const [idFilter, setIdFilter] = useState<string | null>(link.id);
   const persist = config.persistState !== false;
+  const views = availableViews(config);
   const [items, setItems] = useState<Item[]>(data);
-  const [view, setView] = useState<ViewMode>(() => initialView(config));
+  const [view, setView] = useState<ViewMode>(() => initialView(config, views));
+  const activeView = resolveView(config, views, view);
   const [searchInput, setSearchInput] = useState("");
   const [search, setSearch] = useState("");
   const [filters, setFilters] = useState<Record<string, string | string[]>>(() => {
@@ -59,7 +61,8 @@ export function TableModule({ config: rawConfig, data, onDataChange, controllerR
   const [sort, setSort] = useState<SortState>({ key: null, dir: "asc" });
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(() => initialPageSize(config));
-  useEffect(() => { if (persist) writeCookie("md_view", view); }, [view, persist]);
+  useEffect(() => { if (view !== activeView) setView(activeView); }, [view, activeView]);
+  useEffect(() => { if (persist) writeCookie("md_view", activeView); }, [activeView, persist]);
   useEffect(() => { if (persist) writeCookie("md_pageSize", String(pageSize)); }, [pageSize, persist]);
   const [selectedId, setSelectedId] = useState<string | null>(data[0]?.id ?? null);
   const [editing, setEditing] = useState<Item | null>(null);
@@ -341,7 +344,7 @@ export function TableModule({ config: rawConfig, data, onDataChange, controllerR
   };
   // Reorder-läge: endast tabellvy, ingen sökning, filtrering eller sortering; dra och släpp rader.
   const reorderMode = !!config.reorder;
-  const effView: ViewMode = reorderMode ? "table" : view;
+  const effView: ViewMode = reorderMode ? "table" : activeView;
   const canMove = reorderMode && !idFilter;
   const [dragId, setDragId] = useState<string | null>(null);
   const [dropIndex, setDropIndex] = useState<number | null>(null);
@@ -383,7 +386,8 @@ export function TableModule({ config: rawConfig, data, onDataChange, controllerR
         onSearchChange={setSearchInput}
         searchMax={SEARCH_MAX}
         activeFilterCount={activeFilterCount}
-        view={view}
+        view={activeView}
+        availableViews={views}
         onViewChange={setView}
         canCreate={canCreate}
         onCreate={startNew}
@@ -486,7 +490,7 @@ export function TableModule({ config: rawConfig, data, onDataChange, controllerR
           renderChildTable={childTable}
         />
       ) : (
-        <AccordionView items={pageItems} config={config} renderStatus={statusMark} renderActions={actions} renderDetails={details} />
+        <ListView items={pageItems} config={config} renderStatus={statusMark} renderActions={actions} renderDetails={details} />
       )}
 
       </div>

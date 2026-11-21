@@ -40,6 +40,36 @@ apply; server-side authorization remains required.
 reloading the list, which is useful for response-only values that cannot be
 retrieved later.
 
+### Available views
+
+Configure `viewModes` on the `TableModule` config to disable individual views:
+
+```ts
+{
+  defaultView: "table",
+  viewModes: { masterDetail: false, table: true, list: false },
+}
+```
+
+Omitted settings default to `true`, so existing configurations retain all three
+views. At least one view must be enabled; disabling all three raises a
+configuration error. `reorder` requires the table view and raises an error if
+it is disabled.
+
+The saved `md_view` cookie is used only if its view is enabled. Otherwise the
+module selects `defaultView` when enabled, or the first enabled view in the
+order master-detail, table, list. `persistState: false` skips the saved
+view. The same rules apply when the configuration changes after mounting.
+The option works in React configs, JSON `data-props`, and `data-config` for
+`mountMasterDetail`.
+
+### Sortable columns
+
+Set `sortable: true` on a column to offer it in the sorting dialog and make its
+table header clickable. Columns with `sortable: false` or no `sortable` setting
+are not sortable through either control. In API mode, the server must also
+allow the requested sort field.
+
 For local data, `searchKeys` selects the fields searched for a substring. With
 `dataSource`, the table sends the trimmed search text as a Spatie filter:
 `searchKeys: ["name"]` produces `filter[name]`, and `["name", "email"]`
@@ -54,6 +84,10 @@ Consumer regression coverage should include all three views, responsive layout,
 selection and pagination, filter and edit dialogs, selects and multiselects,
 delete confirmation, nested tables, theme overrides, and unrelated Bootstrap
 controls. Exercise both application registration and direct npm imports. Cover
+each view disabled individually and in combinations, disabled saved and default
+views, configuration changes, all views disabled, and the reorder conflict. Cover
+sortable and non-sortable columns in both the table and sorting dialog, including
+API-backed sorting. Cover
 single- and multi-field API search, combining search with filters and pagination,
 filter name collisions, and any server-specific delimiter and OR behavior.
 
