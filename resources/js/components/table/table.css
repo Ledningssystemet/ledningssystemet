@@ -1,0 +1,89 @@
+.ls-table {
+  --background: var(--ls-table-background, 0 0% 100%);
+  --foreground: var(--ls-table-foreground, 202 45% 15%);
+  --border: var(--ls-table-border, 198 18% 88%);
+  --input: var(--ls-table-input, 198 18% 82%);
+  --ring: var(--ls-table-ring, 183 83% 27%);
+  --primary: var(--ls-table-primary, 183 83% 27%);
+  --primary-foreground: var(--ls-table-primary-foreground, 0 0% 100%);
+  --secondary: var(--ls-table-secondary, 195 20% 94%);
+  --secondary-foreground: var(--ls-table-secondary-foreground, 202 45% 15%);
+  --destructive: var(--ls-table-destructive, 0 72% 45%);
+  --destructive-foreground: var(--ls-table-destructive-foreground, 0 0% 100%);
+  --muted: var(--ls-table-muted, 195 20% 96%);
+  --muted-foreground: var(--ls-table-muted-foreground, 200 16% 40%);
+  --accent: var(--ls-table-accent, 182 30% 93%);
+  --accent-foreground: var(--ls-table-accent-foreground, 202 45% 15%);
+  --popover: var(--ls-table-popover, 0 0% 100%);
+  --popover-foreground: var(--ls-table-popover-foreground, 202 45% 15%);
+  --card: var(--ls-table-card, 0 0% 100%);
+  --card-foreground: var(--ls-table-card-foreground, 202 45% 15%);
+  --surface-hover: var(--ls-table-surface-hover, 195 20% 96%);
+  --badge-info: var(--ls-table-badge-info, 210 85% 94%);
+  --badge-info-foreground: var(--ls-table-badge-info-foreground, 210 80% 30%);
+  --badge-success: var(--ls-table-badge-success, 145 50% 92%);
+  --badge-success-foreground: var(--ls-table-badge-success-foreground, 145 65% 25%);
+  --badge-warning: var(--ls-table-badge-warning, 45 95% 90%);
+  --badge-warning-foreground: var(--ls-table-badge-warning-foreground, 35 90% 25%);
+  --badge-danger: var(--ls-table-badge-danger, 0 85% 94%);
+  --badge-danger-foreground: var(--ls-table-badge-danger-foreground, 0 75% 35%);
+  --dot-success: var(--ls-table-dot-success, 145 65% 35%);
+  --dot-warning: var(--ls-table-dot-warning, 35 90% 45%);
+  --dot-secondary: var(--ls-table-dot-secondary, 200 16% 50%);
+  --detail-label: var(--ls-table-detail-label, 200 16% 40%);
+  --list-active: var(--ls-table-list-active, 182 30% 93%);
+  --list-active-border: var(--ls-table-list-active-border, 183 83% 27%);
+  --radius: var(--ls-table-radius, 0.5rem);
+  color: hsl(var(--foreground));
+}
+
+.ls-table *, .ls-table ::before, .ls-table ::after {
+  box-sizing: border-box;
+  border: 0 solid hsl(var(--border));
+  --tw-translate-x: 0;
+  --tw-translate-y: 0;
+  --tw-rotate: 0;
+  --tw-skew-x: 0;
+  --tw-skew-y: 0;
+  --tw-scale-x: 1;
+  --tw-scale-y: 1;
+  --tw-ring-inset: ;
+  --tw-ring-offset-width: 0px;
+  --tw-ring-offset-color: #fff;
+  --tw-ring-color: rgb(59 130 246 / 0.5);
+  --tw-ring-offset-shadow: 0 0 #0000;
+  --tw-ring-shadow: 0 0 #0000;
+  --tw-shadow: 0 0 #0000;
+}
+
+.ls-table :is(button, input, select, textarea) {
+  font: inherit;
+  color: inherit;
+}
+
+.ls-table button {
+  background: transparent;
+  cursor: pointer;
+}
+
+.ls-table button:disabled {
+  cursor: default;
+}
+
+.ls-table :is(h2, h3, h4, p, ul, dl, dd) {
+  margin: 0;
+}
+
+.ls-table ul {
+  padding: 0;
+  list-style: none;
+}
+
+.ls-table table {
+  border-collapse: collapse;
+}
+
+.ls-table svg {
+  display: block;
+  vertical-align: middle;
+}

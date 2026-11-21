@@ -14,7 +14,8 @@
         "dev:app": "php artisan serve --port=8010",
         "dev:frontend": "vite",
         "dev": "concurrently \"npm run dev:app\" \"npm run dev:frontend\"  \"php artisan queue:work --queue=high,default,low\"",
-        "build": "vite build  --emptyOutDir"
+        "build": "vite build  --emptyOutDir",
+        "build:table-css": "node scripts/build-table-css.mjs"
     },
     "devDependencies": {
         "autoprefixer": "^10.4.21",
@@ -94,7 +95,8 @@
         "react-dom": "^19.2.8",
         "react-resizable-panels": "^4.12.3",
         "react-select": "^5.10.2",
-        "tiny-svg": "^3.0.0"
+        "tiny-svg": "^3.0.0",
+        "tailwindcss": "^3.4.17"
     },
     "allowScripts": {
         "@parcel/watcher@2.6.0": true,

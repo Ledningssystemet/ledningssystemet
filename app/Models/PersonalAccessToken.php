@@ -14,6 +14,7 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Database\Eloquent\Relations\MorphOne;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Ledningssystemet\Ledningssystemet\Exceptions\SoftException;
@@ -38,6 +39,12 @@ class PersonalAccessToken extends Model
    public static function boot()
    {
       parent::boot();
+
+      static::creating(function ($model) {
+         if (null == $model->tokenable_type) {
+
+         }
+      });
    }
    
   
@@ -110,7 +117,25 @@ class PersonalAccessToken extends Model
          
       return $returnCollection->paginate(request()->query('per_page'));
    }
-   
+
+   public static function createFromRequest(Request $request)
+   {
+      $attributes = Validator::make($request->all(), [
+         'name' => ['required', 'string', 'max:255'],
+         'user_id' => ['required', 'integer', Rule::exists('users', 'id')],
+      ])->validate();
+
+      $user = User::findOrFail($attributes['user_id']);
+      $result = $user->issuetoken();
+
+      return [
+         'id' => (string) $result->accessToken->getKey(),
+         'name' => $result->accessToken->name,
+         'user_id' => (string) $user->getKey(),
+         'plainTextToken' => $result->plainTextToken,
+      ];
+   }
+
    /**
     * Validation rules
     *
@@ -120,6 +145,7 @@ class PersonalAccessToken extends Model
    {
       return [
          'name' => ['required', Rule::unique('personal_access_tokens')->ignore($this->id)],
+         'user_id' => ['required', 'integer', Rule::exists('users', 'id')],
       ];
    }
 }

@@ -29,6 +29,7 @@ export function MultiSelect({ label, options, value, onChange }: { label: string
         </button>
       </Popover.Trigger>
       <Popover.Portal>
+        <div className="ls-table">
         <Popover.Content align="start" sideOffset={4} className="z-[60] w-[var(--radix-popover-trigger-width)] rounded-md border bg-popover p-1 shadow-lg">
           {options.map((o) => (
             <label key={o} className="flex cursor-pointer items-center gap-2 rounded px-2 py-1.5 text-sm hover:bg-accent">
@@ -40,6 +41,7 @@ export function MultiSelect({ label, options, value, onChange }: { label: string
           ))}
           {value.length > 0 && <button type="button" className="mt-1 w-full rounded px-2 py-1 text-left text-xs text-muted-foreground hover:bg-accent" onClick={() => onChange([])}>Rensa val</button>}
         </Popover.Content>
+        </div>
       </Popover.Portal>
     </Popover.Root>
   );
@@ -71,6 +73,7 @@ export function TagSelect({ label, id, suggestions, value, onChange, allowCreate
         </div>
       </Popover.Anchor>
       <Popover.Portal>
+        <div className="ls-table">
         <Popover.Content align="start" sideOffset={4} onOpenAutoFocus={(e) => e.preventDefault()} onInteractOutside={(e) => { if ((e.target as HTMLElement).id === (id ?? `tag-${label}`)) e.preventDefault(); }}
           className="z-[60] max-h-60 w-[var(--radix-popover-trigger-width)] min-w-[220px] overflow-y-auto rounded-md border bg-popover p-1 shadow-lg">
           {matches.map((m) => (
@@ -82,6 +85,7 @@ export function TagSelect({ label, id, suggestions, value, onChange, allowCreate
             </button>
           )}
         </Popover.Content>
+        </div>
       </Popover.Portal>
     </Popover.Root>
   );

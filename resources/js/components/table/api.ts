@@ -35,23 +35,36 @@ export class ApiError extends Error {
 
 export interface ListQuery {
   search?: string;
+  /** När angiven skickas sökningen som ett Spatie-filter med nycklar förenade av _or. */
+  searchKeys?: string[];
   filters?: Record<string, string | string[] | undefined>;
   page?: number;
   perPage?: number;
   sort?: SortState;
 }
 
-/** FK-11/13/17/39: bygg list-URL med search, filter[..], fields[_], include, sort, page, per_page. */
+/** FK-11/13/17/39: bygg list-URL med sökning, filter[..], fields[_], include, sort, page, per_page. */
 export function buildListUrl(ds: DataSource, q: ListQuery = {}) {
   const p = new URLSearchParams();
   for (const [k, v] of Object.entries(ds.params ?? {})) p.set(k, v);
   const search = q.search?.trim();
-  if (search) p.set("search", search);
   for (const [k, v] of Object.entries(q.filters ?? {})) {
     const vals = Array.isArray(v) ? v : v ? [v] : [];
     if (!vals.length) continue;
     if (ds.allowedFilters && !ds.allowedFilters.includes(k) && k !== ds.parentKey) continue;
     p.set(`filter[${k}]`, vals.join(","));
+  }
+  if (search) {
+    if (q.searchKeys === undefined) {
+      p.set("search", search);
+    } else {
+      if (!q.searchKeys.length || q.searchKeys.some((key) => !key.trim())) {
+        throw new ApiError(0, "Sökning kräver minst ett giltigt sökfält.");
+      }
+      const filter = `filter[${q.searchKeys.join("_or_")}]`;
+      if (p.has(filter)) throw new ApiError(0, `Sökfiltret ${filter} används redan av ett annat filter.`);
+      p.set(filter, search);
+    }
   }
   if (ds.fields?.length) p.set(`fields[${ds.tableName ?? "_"}]`, ds.fields.join(","));
   if (ds.include?.length) p.set("include", ds.include.join(","));

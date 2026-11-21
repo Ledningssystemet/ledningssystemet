@@ -61,8 +61,8 @@ export interface FilterConfig {
 }
 export interface Permissions {
   create?: boolean;
-  update?: (item: Item) => boolean;
-  delete?: (item: Item) => boolean;
+  update?: boolean | ((item: Item) => boolean);
+  delete?: boolean | ((item: Item) => boolean);
 }
 export interface ModuleEvents {
   onCreated?: (item: Item) => void;
@@ -83,6 +83,7 @@ export interface ModuleConfig {
   perPage: number;
   /** Storlekar användaren kan välja i pagineringen, t.ex. [10, 25, 50, 100, 250] */
   pageSizeOptions?: number[];
+  /** Lokala fält att söka i; i API-läge används filter[field_or_field]. */
   searchKeys: string[];
   columns: ColumnConfig[];
   tableColumns: string[];
@@ -97,6 +98,8 @@ export interface ModuleConfig {
   events?: ModuleEvents;
   /** Spara vy och sidstorlek i kakor (standard: ja). Underordnade tabeller sparar inte. */
   persistState?: boolean;
+  /** Behåll API-svarets nya objekt lokalt i tabellen i stället för att läsa om listan. */
+  retainCreatedItem?: boolean;
   /** FK-15: identifierare för länkar jtId[tableId] och jtFilter[tableId][filter]. */
   tableId?: string;
   rowCommands?: RowCommand[];

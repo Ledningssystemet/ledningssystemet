@@ -17,6 +17,49 @@ project module. Translation uses the application's `window.translateString` thro
 
 For `Gantt` usage and date-range behavior, see [Project features](projects.md#reusable-gantt-component).
 
+## Table module permissions
+
+`TableModule` imports its own scoped styles, including styles for dialog and
+select portals. Consumers do not need to configure Tailwind. The checked-in
+utility stylesheet is generated with `npm run build:table-css` after changing
+table utility classes or the Tailwind configuration. Theme overrides use
+`--ls-table-*` variables (HSL components, for example `--ls-table-primary:
+183 83% 27%`); set them on the document or body so portal content inherits
+them too. `--ls-table-radius` is a CSS length.
+
+`TableModule` accepts `permissions.create` as a boolean and
+`permissions.update` and `permissions.delete` as booleans or per-item
+functions. Boolean values can also be supplied through JSON `data-props` on a
+`table-module` element. Per-item `access` and `accessFlags` restrictions still
+apply; server-side authorization remains required.
+`retainCreatedItem` keeps the create response in the current table instead of
+reloading the list, which is useful for response-only values that cannot be
+retrieved later.
+
+For local data, `searchKeys` selects the fields searched for a substring. With
+`dataSource`, the table sends the trimmed search text as a Spatie filter:
+`searchKeys: ["name"]` produces `filter[name]`, and `["name", "email"]`
+produces `filter[name_or_email]`. Other filters remain separate and combine with
+this filter. The backend must explicitly allow the resulting filter and implement
+the intended OR behavior; Spatie does not create it automatically. Commas in
+search text follow the server's filter-value delimiter configuration. A search
+requires at least one key and cannot share its resulting filter name with an
+active filter or a fixed data-source parameter.
+
+Consumer regression coverage should include all three views, responsive layout,
+selection and pagination, filter and edit dialogs, selects and multiselects,
+delete confirmation, nested tables, theme overrides, and unrelated Bootstrap
+controls. Exercise both application registration and direct npm imports. Cover
+single- and multi-field API search, combining search with filters and pagination,
+filter name collisions, and any server-specific delimiter and OR behavior.
+
+The table implementation is split by responsibility: `TableModule.tsx` owns
+state and data operations; reusable controls and views are in `table/components/`,
+the form is in `table/forms/`, dialog components are in `table/dialogs/`, and
+configuration/persistence helpers are in `table/helpers/`. Keep API and
+permission decisions in the module rather than duplicating them in presentation
+components.
+
 ## Dropzone
 
 `Dropzone` is a reusable React upload control, exported with `DropzoneProps`
