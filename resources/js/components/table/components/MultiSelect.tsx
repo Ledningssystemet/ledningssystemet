@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import * as Popover from "@radix-ui/react-popover";
 import * as Checkbox from "@radix-ui/react-checkbox";
 import { Check, ChevronDown, Plus, X } from "lucide-react";
+import { t } from "../../../lib/i18n";
+import { translate } from "../helpers/translate";
 
 const field = "flex min-h-[34px] w-full flex-wrap items-center gap-1 rounded-md border border-input bg-card px-2 py-1 text-sm focus-within:ring-2 focus-within:ring-ring";
 const chip = "inline-flex items-center gap-1 rounded bg-accent px-1.5 py-0.5 text-xs text-accent-foreground";
@@ -10,7 +12,7 @@ function Chip({ label, onRemove }: { label: string; onRemove: () => void }) {
   return (
     <span className={chip}>
       {label}
-      <button type="button" aria-label={`Ta bort ${label}`} className="rounded hover:bg-primary/15" onClick={(e) => { e.stopPropagation(); onRemove(); }}><X className="h-3 w-3" /></button>
+      <button type="button" aria-label={translate("Remove {label}", { label })} className="rounded hover:bg-primary/15" onClick={(e) => { e.stopPropagation(); onRemove(); }}><X className="h-3 w-3" /></button>
     </span>
   );
 }
@@ -23,7 +25,7 @@ export function MultiSelect({ label, options, value, onChange }: { label: string
       <Popover.Trigger asChild>
         <button type="button" aria-label={label} className={`${field} justify-between text-left`}>
           <span className="flex flex-wrap gap-1">
-            {value.length ? value.map((v) => <Chip key={v} label={v} onRemove={() => toggle(v)} />) : <span className="text-muted-foreground">Alla</span>}
+            {value.length ? value.map((v) => <Chip key={v} label={v} onRemove={() => toggle(v)} />) : <span className="text-muted-foreground">{t("All")}</span>}
           </span>
           <ChevronDown className="h-4 w-4 shrink-0 opacity-60" />
         </button>
@@ -39,7 +41,7 @@ export function MultiSelect({ label, options, value, onChange }: { label: string
               {o}
             </label>
           ))}
-          {value.length > 0 && <button type="button" className="mt-1 w-full rounded px-2 py-1 text-left text-xs text-muted-foreground hover:bg-accent" onClick={() => onChange([])}>Rensa val</button>}
+          {value.length > 0 && <button type="button" className="mt-1 w-full rounded px-2 py-1 text-left text-xs text-muted-foreground hover:bg-accent" onClick={() => onChange([])}>{t("Clear selection")}</button>}
         </Popover.Content>
         </div>
       </Popover.Portal>
@@ -61,7 +63,7 @@ export function TagSelect({ label, id, suggestions, value, onChange, allowCreate
         <div className={field} onClick={() => document.getElementById(id ?? `tag-${label}`)?.focus()}>
           {value.map((v) => <Chip key={v} label={v} onRemove={() => onChange(value.filter((x) => x !== v))} />)}
           <input
-            id={id ?? `tag-${label}`} aria-label={label} value={text} placeholder={value.length ? "" : allowCreate ? "Skriv för att söka eller skapa…" : "Skriv för att söka…"}
+            id={id ?? `tag-${label}`} aria-label={label} value={text} placeholder={value.length ? "" : allowCreate ? t("Type to search or create…") : t("Type to search…")}
             className="min-w-[120px] flex-1 bg-transparent py-0.5 outline-none"
             onFocus={() => setOpen(true)}
             onChange={(e) => { setText(e.target.value); setOpen(true); }}
@@ -81,7 +83,7 @@ export function TagSelect({ label, id, suggestions, value, onChange, allowCreate
           ))}
           {canCreate && (
             <button type="button" className="flex w-full items-center gap-1.5 rounded px-2 py-1.5 text-left text-sm text-primary hover:bg-accent" onMouseDown={(e) => e.preventDefault()} onClick={() => add(q)}>
-              <Plus className="h-3.5 w-3.5" />Skapa tagg "{q}"
+              <Plus className="h-3.5 w-3.5" />{translate('Create tag "{tag}"', { tag: q })}
             </button>
           )}
         </Popover.Content>

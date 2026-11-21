@@ -15,6 +15,10 @@ supported as fallbacks. Project-specific layout and status logic stay in the
 project module. Translation uses the application's `window.translateString` through
 `resources/js/lib/i18n.ts`.
 
+JSX source files include a runtime `React` import so that direct npm package
+imports work with both classic and automatic JSX transforms, independently of
+the consuming application's compiler configuration.
+
 For `Gantt` usage and date-range behavior, see [Project features](projects.md#reusable-gantt-component).
 
 ## Table module permissions
@@ -59,6 +63,14 @@ the form is in `table/forms/`, dialog components are in `table/dialogs/`, and
 configuration/persistence helpers are in `table/helpers/`. Keep API and
 permission decisions in the module rather than duplicating them in presentation
 components.
+
+Table-owned labels, accessibility text, validation and fallback errors use the
+shared translation function with English keys and Swedish translations in
+`lang/sv.json`. Configuration-provided labels and server messages are supplied
+by the consumer and are not translated automatically. Consumer regression
+coverage should check English fallback and Swedish translations across views,
+dialogs, pagination, validation, bulk actions and API errors, including
+interpolated values and custom property tabs.
 
 ## Dropzone
 

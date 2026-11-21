@@ -1,5 +1,6 @@
-import type { ReactNode } from "react";
+import React, { type ReactNode } from "react";
 import type { Item, ModuleConfig } from "../helpers/types";
+import { t } from "../../../lib/i18n";
 
 type Props = {
   items: Item[];
@@ -31,7 +32,7 @@ export function MasterDetailView({ items, config, selected, selectedId, onSelect
             <div className="mb-4 flex items-start justify-between gap-2"><h3 className="text-xl font-semibold">{selected[config.titleKey]}{renderStatus(selected)}</h3>{renderActions(selected)}</div>
             {renderDetails(selected)}
           </>
-        ) : <p className="text-muted-foreground">Välj ett objekt i listan.</p>}
+        ) : <p className="text-muted-foreground">{t("Select an item from the list.")}</p>}
       </div>
     </div>
   );

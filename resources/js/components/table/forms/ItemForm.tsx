@@ -1,4 +1,4 @@
-import { useEffect, useState, type FormEvent, type ReactNode } from "react";
+import React, { useEffect, useState, type FormEvent, type ReactNode } from "react";
 import * as Tabs from "@radix-ui/react-tabs";
 import * as Label from "@radix-ui/react-label";
 import { formatDate, validateField } from "../helpers/logic";
@@ -8,6 +8,8 @@ import { RSelect } from "../components/RSelect";
 import { colOptions } from "../helpers/tableConfig";
 import type { ColumnConfig, DetailSection, Item, ModuleConfig } from "../helpers/types";
 import { btnOutline, btnPrimary, inputCls } from "../helpers/styles";
+import { t } from "../../../lib/i18n";
+import { translate } from "../helpers/translate";
 
 type FormEntry = { kind: "col"; col: ColumnConfig; readOnly: boolean } | { kind: "section"; section: DetailSection };
 type SaveResult = { fields?: Record<string, string>; message?: string } | null;
@@ -104,7 +106,7 @@ export function ItemForm({ config, item, isNew, onSave, onCancel, tagSuggestions
         const invalid = entries.find((entry) => entry.kind === "col" && result.fields![entry.col.key]);
         if (invalid && tabs) setTab(tabOf(invalid));
       }
-      setServerError(result.message ?? "Det gick inte att spara.");
+      setServerError(result.message ?? t("Could not save."));
     });
   };
 
@@ -113,7 +115,7 @@ export function ItemForm({ config, item, isNew, onSave, onCancel, tagSuggestions
       const section = entry.section;
       return (
         <div key={section.key}>
-          <Label.Root htmlFor={`f-${section.key}`} className="mb-1 block text-sm">{section.label}{section.type === "tags" && " (sök eller skapa ny med Enter)"}{section.type === "properties" && " (en per rad: nyckel: värde)"}</Label.Root>
+          <Label.Root htmlFor={`f-${section.key}`} className="mb-1 block text-sm">{section.label}{section.type === "tags" && ` ${t("(search or create with Enter)")}`}{section.type === "properties" && ` ${t("(one per line: key: value)")}`}</Label.Root>
           {section.type === "textarea" && <textarea id={`f-${section.key}`} rows={3} className={inputCls} value={draft[section.key] ?? ""} onChange={(event) => set(section.key, event.target.value)} />}
           {section.type === "table" && <NestedTableEditor section={section} rows={draft[section.key] ?? []} onChange={(value) => set(section.key, value)} />}
           {section.type === "tags" && <TagSelect label={section.label} id={`f-${section.key}`} suggestions={tagSuggestions(section.key)} value={draft[section.key] ?? []} onChange={(value) => set(section.key, value)} />}
@@ -140,7 +142,7 @@ export function ItemForm({ config, item, isNew, onSave, onCancel, tagSuggestions
       const chosen = options.find((option) => option.value === String(value ?? ""));
       control = (
         <>
-          <RSelect id={id} label={column.label} invalid={!!error} value={value ? String(value) : ""} onChange={(next) => set(column.key, next)} placeholder={column.dependsOn && !options.length ? "Välj först " + (config.columns.find((candidate) => candidate.key === column.dependsOn)?.label ?? "") : "Välj…"} options={options} />
+          <RSelect id={id} label={column.label} invalid={!!error} value={value ? String(value) : ""} onChange={(next) => set(column.key, next)} placeholder={column.dependsOn && !options.length ? translate("Select {field} first", { field: config.columns.find((candidate) => candidate.key === column.dependsOn)?.label ?? "" }) : t("Select…")} options={options} />
           {chosen?.description && <p className="mt-1 text-xs text-muted-foreground">{chosen.description}</p>}
         </>
       );
@@ -156,7 +158,7 @@ export function ItemForm({ config, item, isNew, onSave, onCancel, tagSuggestions
       control = (
         <>
           <input {...common} type="file" accept={column.accept} onChange={(event) => { const file = event.target.files?.[0]; set(column.key, file ? { name: file.name, size: file.size, type: file.type } : null); }} />
-          {value?.name && <p className="mt-1 text-xs text-muted-foreground">Vald fil: {value.name}</p>}
+          {value?.name && <p className="mt-1 text-xs text-muted-foreground">{translate("Selected file: {name}", { name: String(value.name) })}</p>}
         </>
       );
     } else {
@@ -177,10 +179,10 @@ export function ItemForm({ config, item, isNew, onSave, onCancel, tagSuggestions
     <form noValidate className="space-y-3" onSubmit={submit}>
       {tabs ? (
         <Tabs.Root value={tab} onValueChange={setTab}>
-          <Tabs.List aria-label="Formulärflikar" className="mb-3 flex border-b">
+          <Tabs.List aria-label={t("Form tabs")} className="mb-3 flex border-b">
             {tabs.map((formTab) => (
               <Tabs.Trigger key={formTab} value={formTab} className={`-mb-px inline-flex items-center gap-1.5 border-b-2 border-transparent px-3 py-1.5 text-sm data-[state=active]:border-primary data-[state=active]:font-medium ${tabHasError(formTab) ? "text-destructive" : ""}`}>
-                {formTab}{tabHasError(formTab) && <span aria-label="innehåller fel" className="h-2 w-2 rounded-full bg-destructive" />}
+                {formTab}{tabHasError(formTab) && <span aria-label={t("contains errors")} className="h-2 w-2 rounded-full bg-destructive" />}
               </Tabs.Trigger>
             ))}
           </Tabs.List>
@@ -190,10 +192,10 @@ export function ItemForm({ config, item, isNew, onSave, onCancel, tagSuggestions
         </Tabs.Root>
       ) : entries.map(field)}
       {serverError && <p role="alert" className="text-sm text-destructive">{serverError}</p>}
-      {Object.keys(errors).length > 0 && !serverError && <p className="text-sm text-destructive">Rätta de markerade fälten innan du sparar.</p>}
+      {Object.keys(errors).length > 0 && !serverError && <p className="text-sm text-destructive">{t("Correct the highlighted fields before saving.")}</p>}
       <div className="flex justify-end gap-2 pt-2">
-        <button type="button" className={btnOutline} onClick={onCancel}>Avbryt</button>
-        <button type="submit" disabled={saving} className={btnPrimary}>{saving ? "Sparar…" : "Spara"}</button>
+        <button type="button" className={btnOutline} onClick={onCancel}>{t("Cancel")}</button>
+        <button type="submit" disabled={saving} className={btnPrimary}>{t(saving ? "Saving…" : "Save")}</button>
       </div>
     </form>
   );

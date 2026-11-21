@@ -1,3 +1,4 @@
+import React from "react";
 import { BulkDeleteDialog } from "./BulkDeleteDialog";
 import { BulkEditDialog } from "./BulkEditDialog";
 import { DeleteDialog } from "./DeleteDialog";

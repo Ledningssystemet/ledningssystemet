@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import React, { type ReactNode } from "react";
 import { ItemForm } from "../forms/ItemForm";
 import type { ColumnConfig, DetailSection, Item, ModuleConfig } from "../helpers/types";
 import { badgeTone } from "../helpers/tones";

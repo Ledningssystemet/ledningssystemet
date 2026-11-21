@@ -1,3 +1,4 @@
+import React from "react";
 import * as Accordion from "@radix-ui/react-accordion";
 import { ChevronRight } from "lucide-react";
 import type { ReactNode } from "react";

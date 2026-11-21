@@ -1,13 +1,16 @@
+import React from "react";
 import { Plus, Trash2 } from "lucide-react";
 import type { DetailSection } from "../helpers/types";
 import { btnOutline, inputCls } from "../helpers/styles";
+import { t } from "../../../lib/i18n";
+import { translate } from "../helpers/translate";
 
 type TableSection = Pick<DetailSection, "columns">;
 type EditableTableSection = Pick<DetailSection, "label" | "columns">;
 
 export function NestedTable({ section, rows }: { section: TableSection; rows: Record<string, any>[] }) {
   const columns = section.columns ?? [];
-  if (!rows.length) return <p className="text-sm text-muted-foreground">Inga rader.</p>;
+  if (!rows.length) return <p className="text-sm text-muted-foreground">{t("No rows.")}</p>;
   return (
     <div className="overflow-x-auto rounded-md border">
       <table className="w-full text-sm">
@@ -28,13 +31,13 @@ export function NestedTableEditor({ section, rows, onChange }: { section: Editab
           <thead className="text-left"><tr>{columns.map((column) => <th key={column.key} className="pb-1 pr-2 font-normal text-muted-foreground">{column.label}</th>)}<th /></tr></thead>
           <tbody>{rows.map((row, index) => (
             <tr key={index}>
-              {columns.map((column) => <td key={column.key} className="pb-1 pr-2"><input aria-label={`${column.label} rad ${index + 1}`} className={inputCls} value={row[column.key] ?? ""} onChange={(event) => update(index, column.key, event.target.value)} /></td>)}
-              <td className="pb-1"><button type="button" aria-label={`Ta bort rad ${index + 1}`} className={`${btnOutline} px-2 text-destructive`} onClick={() => onChange(rows.filter((_, rowIndex) => rowIndex !== index))}><Trash2 className="h-4 w-4" /></button></td>
+              {columns.map((column) => <td key={column.key} className="pb-1 pr-2"><input aria-label={translate("{column} row {row}", { column: column.label, row: index + 1 })} className={inputCls} value={row[column.key] ?? ""} onChange={(event) => update(index, column.key, event.target.value)} /></td>)}
+              <td className="pb-1"><button type="button" aria-label={translate("Delete row {row}", { row: index + 1 })} className={`${btnOutline} px-2 text-destructive`} onClick={() => onChange(rows.filter((_, rowIndex) => rowIndex !== index))}><Trash2 className="h-4 w-4" /></button></td>
             </tr>
           ))}</tbody>
         </table>
       )}
-      <button type="button" className={btnOutline} onClick={() => onChange([...rows, Object.fromEntries(columns.map((column) => [column.key, ""]))])}><Plus className="h-4 w-4" />Lägg till rad</button>
+      <button type="button" className={btnOutline} onClick={() => onChange([...rows, Object.fromEntries(columns.map((column) => [column.key, ""]))])}><Plus className="h-4 w-4" />{t("Add row")}</button>
     </div>
   );
 }

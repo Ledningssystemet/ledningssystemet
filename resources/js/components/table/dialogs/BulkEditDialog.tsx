@@ -1,3 +1,4 @@
+import React from "react";
 import * as Checkbox from "@radix-ui/react-checkbox";
 import * as Dialog from "@radix-ui/react-dialog";
 import { Check } from "lucide-react";
@@ -5,6 +6,8 @@ import { ItemForm } from "../forms/ItemForm";
 import type { Item, ModuleConfig } from "../helpers/types";
 import type { BulkStep, SaveResult } from "./types";
 import { btnOutline, btnPrimary, cbCls, dialogBox, overlay } from "../helpers/styles";
+import { t } from "../../../lib/i18n";
+import { translate } from "../helpers/translate";
 
 type Props = {
   config: ModuleConfig;
@@ -32,10 +35,10 @@ export function BulkEditDialog({ config, step, setStep, checkedCount, checkedIte
         <div className="ls-table">
           <Dialog.Overlay className={overlay} />
           <Dialog.Content className={dialogBox} onPointerDownOutside={(event) => event.preventDefault()} onInteractOutside={(event) => event.preventDefault()}>
-            <Dialog.Title className="mb-1 text-lg font-semibold">Redigera {checkedCount} markerade</Dialog.Title>
+            <Dialog.Title className="mb-1 text-lg font-semibold">{translate("Edit {count} selected", { count: checkedCount })}</Dialog.Title>
             <Dialog.Description className="mb-4 text-sm text-muted-foreground">
-              {step === "fields" ? "Välj vilka egenskaper du vill ändra." : "De nya värdena sätts på alla markerade objekt."}
-              {checkedItems.some((item) => !canUpdate(item)) && ` ${checkedItems.filter((item) => !canUpdate(item)).length} av dem får inte ändras och hoppas över.`}
+              {t(step === "fields" ? "Select the properties to change." : "The new values will be applied to all selected items.")}
+              {checkedItems.some((item) => !canUpdate(item)) && ` ${translate("{count} cannot be edited and will be skipped.", { count: checkedItems.filter((item) => !canUpdate(item)).length })}`}
             </Dialog.Description>
             {step === "fields" ? (
               <>
@@ -50,8 +53,8 @@ export function BulkEditDialog({ config, step, setStep, checkedCount, checkedIte
                   ))}
                 </div>
                 <div className="mt-6 flex justify-end gap-2">
-                  <button className={btnOutline} onClick={() => setStep(null)}>Avbryt</button>
-                  <button className={btnPrimary} disabled={!fields.length} onClick={() => setStep("form")}>Nästa</button>
+                  <button className={btnOutline} onClick={() => setStep(null)}>{t("Cancel")}</button>
+                  <button className={btnPrimary} disabled={!fields.length} onClick={() => setStep("form")}>{t("Next")}</button>
                 </div>
               </>
             ) : step === "form" ? (

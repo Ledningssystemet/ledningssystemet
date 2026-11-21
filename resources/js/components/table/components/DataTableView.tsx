@@ -1,9 +1,11 @@
-import { Fragment, type ReactNode } from "react";
+import React, { Fragment, type ReactNode } from "react";
 import * as Checkbox from "@radix-ui/react-checkbox";
 import { Check, ChevronRight, GripVertical, X } from "lucide-react";
 import { ItemForm } from "../forms/ItemForm";
 import type { DetailSection, Item, ModuleConfig, SortState } from "../helpers/types";
 import { btnOutline, cbCls } from "../helpers/styles";
+import { t } from "../../../lib/i18n";
+import { translate } from "../helpers/translate";
 
 type Props = {
   items: Item[];
@@ -54,9 +56,9 @@ export function DataTableView(props: Props) {
     <div className="overflow-x-auto">
       <table className="w-full text-sm">
         <thead className="bg-muted text-left"><tr>
-          {canMove && <th className="w-8 px-2 py-2"><span className="sr-only">Flytta</span></th>}
+          {canMove && <th className="w-8 px-2 py-2"><span className="sr-only">{t("Move")}</span></th>}
           <th className="w-8 px-2 py-2">
-            <Checkbox.Root aria-label="Markera alla på sidan" className={cbCls}
+            <Checkbox.Root aria-label={t("Select all on this page")} className={cbCls}
               checked={allPageChecked ? true : somePageChecked ? "indeterminate" : false}
               onCheckedChange={(value) => onTogglePage(value === true)}>
               <Checkbox.Indicator>{allPageChecked ? <Check className="h-3 w-3" /> : <span className="block h-0.5 w-2 bg-current" />}</Checkbox.Indicator>
@@ -71,7 +73,7 @@ export function DataTableView(props: Props) {
               )}
             </th>
           ))}
-          {extraColumns > 0 && <th className="px-3 py-2 font-medium">Underlistor</th>}
+          {extraColumns > 0 && <th className="px-3 py-2 font-medium">{t("Sub-lists")}</th>}
           <th className="px-3 py-2" />
         </tr></thead>
         <tbody>
@@ -85,14 +87,14 @@ export function DataTableView(props: Props) {
                 onDrop={canMove ? (event) => { event.preventDefault(); const dragged = items.find((candidate) => candidate.id === dragId); if (dragged) onMove(dragged, index); setDragId(null); setDropIndex(null); } : undefined}
               >
                 <td className="px-2 py-2">
-                  <Checkbox.Root aria-label={`Markera ${item[config.titleKey]}`} className={cbCls} checked={checked.has(item.id)} onCheckedChange={() => onToggle(item.id)}>
+                  <Checkbox.Root aria-label={translate("Select {item}", { item: String(item[config.titleKey]) })} className={cbCls} checked={checked.has(item.id)} onCheckedChange={() => onToggle(item.id)}>
                     <Checkbox.Indicator><Check className="h-3 w-3" /></Checkbox.Indicator>
                   </Checkbox.Root>
                 </td>
                 {canMove && (
                   <td className="px-2 py-2">
                     {(config.reorder!.canReorder?.(item) ?? true) && (
-                      <span draggable role="button" tabIndex={0} aria-label={`Flytta ${item[config.titleKey]} (dra, eller använd pil upp/ner)`} title="Dra för att flytta"
+                      <span draggable role="button" tabIndex={0} aria-label={translate("Move {item} (drag or use the up/down arrows)", { item: String(item[config.titleKey]) })} title={t("Drag to move")}
                         className="inline-flex cursor-grab rounded p-0.5 text-muted-foreground hover:bg-accent active:cursor-grabbing"
                         onDragStart={(event) => { setDragId(item.id); event.dataTransfer.effectAllowed = "move"; event.dataTransfer.setData("text/plain", item.id); }}
                         onDragEnd={() => { setDragId(null); setDropIndex(null); }}
@@ -123,8 +125,8 @@ export function DataTableView(props: Props) {
                 return (
                   <tr className="bg-background"><td colSpan={columns.length + 2 + extraColumns + (canMove ? 1 : 0) + 1} className="py-3 pl-8 pr-3">
                     <div className="mb-2 flex items-center justify-between">
-                      <h4 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{section.label} för {item[config.titleKey]}</h4>
-                      <button className={`${btnOutline} px-2 py-1 text-xs`} onClick={() => onCloseChild(item.id)}><X className="h-3.5 w-3.5" />Stäng</button>
+                      <h4 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{translate("{section} for {item}", { section: section.label, item: String(item[config.titleKey]) })}</h4>
+                      <button className={`${btnOutline} px-2 py-1 text-xs`} onClick={() => onCloseChild(item.id)}><X className="h-3.5 w-3.5" />{t("Close")}</button>
                     </div>
                     {renderChildTable(item, section)}
                   </td></tr>
