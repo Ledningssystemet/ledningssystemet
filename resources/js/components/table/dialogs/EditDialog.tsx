@@ -1,6 +1,6 @@
 import * as Dialog from "@radix-ui/react-dialog";
 import { ItemForm } from "../forms/ItemForm";
-import type { Item, ModuleConfig } from "../types";
+import type { Item, ModuleConfig } from "../helpers/types";
 import type { SaveResult } from "./types";
 import { dialogBox, overlay } from "../helpers/styles";
 

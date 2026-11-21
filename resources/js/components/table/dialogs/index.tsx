@@ -4,7 +4,7 @@ import { DeleteDialog } from "./DeleteDialog";
 import { EditDialog } from "./EditDialog";
 import { FilterSortDialog } from "./FilterSortDialog";
 import type { BulkStep, SaveResult } from "./types";
-import type { Item, ModuleConfig, SortState } from "../types";
+import type { Item, ModuleConfig, SortState } from "../helpers/types";
 
 type Props = {
   config: ModuleConfig;

@@ -2,7 +2,7 @@ import { Fragment, type ReactNode } from "react";
 import * as Checkbox from "@radix-ui/react-checkbox";
 import { Check, ChevronRight, GripVertical, X } from "lucide-react";
 import { ItemForm } from "../forms/ItemForm";
-import type { DetailSection, Item, ModuleConfig, SortState } from "../types";
+import type { DetailSection, Item, ModuleConfig, SortState } from "../helpers/types";
 import { btnOutline, cbCls } from "../helpers/styles";
 
 type Props = {

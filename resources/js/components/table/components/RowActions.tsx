@@ -1,5 +1,5 @@
 import { Pencil, Trash2 } from "lucide-react";
-import type { Item, ModuleConfig } from "../types";
+import type { Item, ModuleConfig } from "../helpers/types";
 import { btnOutline } from "../helpers/styles";
 
 type RowCommand = NonNullable<ModuleConfig["rowCommands"]>[number];

@@ -1,6 +1,6 @@
 import * as Select from "@radix-ui/react-select";
 import { Check, ChevronDown } from "lucide-react";
-import type { OptionDef } from "../types";
+import type { OptionDef } from "../helpers/types";
 import { inputCls } from "../helpers/styles";
 
 interface Props {

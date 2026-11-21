@@ -1,5 +1,6 @@
-import { normalizeOptions } from "../logic";
-import type { ColumnConfig, CustomProperty, ModuleConfig } from "../types";
+import { normalizeOptions } from "./logic";
+import type { ColumnConfig, CustomProperty, ModuleConfig } from "./types";
+import { t } from "../../../lib/i18n";
 
 export const colOptions = (column: ColumnConfig, draft?: Record<string, any>) =>
   normalizeOptions(column.optionsFor && draft ? column.optionsFor(draft) : column.optionsFor ? column.optionsFor({}) : column.options);
@@ -10,8 +11,8 @@ export function customToColumns(props: CustomProperty[] = [], references: Module
     key: property.key, label: property.label, required: property.required,
     form: property.editable === false ? "readonly-edit" : "both",
     type: property.type === "text" ? "text" : property.type === "textarea" ? "textarea" : "select",
-    options: property.type === "boolean" ? [{ value: "true", label: "Ja" }, { value: "false", label: "Nej" }] : property.type === "text" || property.type === "textarea" ? undefined : references?.[property.type] ?? [],
-    tab: "Anpassade egenskaper",
+    options: property.type === "boolean" ? [{ value: "true", label: t("Yes") }, { value: "false", label: t("No") }] : property.type === "text" || property.type === "textarea" ? undefined : references?.[property.type] ?? [],
+    tab: t("Custom properties"),
   }));
 }
 

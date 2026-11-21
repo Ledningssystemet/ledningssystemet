@@ -1,7 +1,7 @@
 import * as Accordion from "@radix-ui/react-accordion";
 import { ChevronRight } from "lucide-react";
 import type { ReactNode } from "react";
-import type { Item, ModuleConfig } from "../types";
+import type { Item, ModuleConfig } from "../helpers/types";
 
 type Props = {
   items: Item[];

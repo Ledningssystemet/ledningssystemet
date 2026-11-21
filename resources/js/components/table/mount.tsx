@@ -1,7 +1,8 @@
 import { createRoot } from "react-dom/client";
 import React, { createRef } from "react";
 import { TableModule } from "./TableModule";
-import type { ModuleConfig, ModuleController, ViewMode } from "./types";
+import type { ModuleConfig, ModuleController, ViewMode } from "./helpers/types";
+import { translate } from "./helpers/translate";
 
 const registry = new Map<string, ModuleConfig>();
 /** Registrera en grundkonfiguration (med funktioner som render/optionsFor) som data-attribut kan peka på. */
@@ -44,7 +45,7 @@ export function configFromDataset(d: Record<string, string | undefined>): Partia
 /** Starta modulen i ett element utifrån dess data-attribut. */
 export function mountMasterDetail(el: HTMLElement, overrides: Partial<ModuleConfig> = {}) {
   const base = el.dataset.configName ? registry.get(el.dataset.configName) : undefined;
-  if (el.dataset.configName && !base) throw new Error(`Okänd konfiguration: ${el.dataset.configName}`);
+  if (el.dataset.configName && !base) throw new Error(translate("Unknown configuration: {name}", { name: el.dataset.configName }));
   const fromData = configFromDataset({ ...el.dataset });
   const config = { ...(base ?? {}), ...fromData, ...overrides, dataSource: fromData.dataSource ? { ...base?.dataSource, ...fromData.dataSource } : base?.dataSource } as ModuleConfig;
   const ref = createRef<ModuleController>() as { current: ModuleController | null };

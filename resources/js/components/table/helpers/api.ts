@@ -1,4 +1,6 @@
 import type { Item, SortState } from "./types";
+import { t } from "../../../lib/i18n";
+import { translate } from "./translate";
 
 /** Datakälla mot CRUD-API:et /api/v1/crud/{model}. */
 export interface DataSource {
@@ -59,10 +61,10 @@ export function buildListUrl(ds: DataSource, q: ListQuery = {}) {
       p.set("search", search);
     } else {
       if (!q.searchKeys.length || q.searchKeys.some((key) => !key.trim())) {
-        throw new ApiError(0, "Sökning kräver minst ett giltigt sökfält.");
+        throw new ApiError(0, t("Search requires at least one valid search field."));
       }
       const filter = `filter[${q.searchKeys.join("_or_")}]`;
-      if (p.has(filter)) throw new ApiError(0, `Sökfiltret ${filter} används redan av ett annat filter.`);
+      if (p.has(filter)) throw new ApiError(0, translate("Search filter {filter} is already used by another filter.", { filter }));
       p.set(filter, search);
     }
   }
@@ -86,7 +88,7 @@ export function parseList(json: any): { items: Item[]; total: number | null; las
     const items = toArray(json.data);
     if (items) return { items: items.map(normId), total: typeof json.total === "number" ? json.total : null, lastPage: typeof json.last_page === "number" ? json.last_page : null };
   }
-  throw new ApiError(0, "Servern skickade ett oväntat svar.");
+  throw new ApiError(0, t("The server returned an unexpected response."));
 }
 const normId = (r: any): Item => ({ ...r, id: String(r.id) });
 
@@ -100,13 +102,13 @@ async function request(ds: DataSource, method: string, url: string, body?: any) 
       body: body !== undefined ? JSON.stringify(body) : undefined,
     });
   } catch {
-    throw new ApiError(0, "Kunde inte nå servern. Kontrollera anslutningen och försök igen.");
+    throw new ApiError(0, t("Could not reach the server. Check your connection and try again."));
   }
   const text = await res.text();
   let json: any = undefined;
   try { json = text ? JSON.parse(text) : undefined; } catch { /* inte JSON */ }
   if (!res.ok) {
-    const msg = json?.message ?? ({ 400: "Ogiltig förfrågan.", 401: "Du behöver logga in.", 403: "Du saknar behörighet.", 404: "Posten finns inte.", 422: "Kontrollera de markerade fälten." } as Record<number, string>)[res.status] ?? `Fel från servern (${res.status}).`;
+    const msg = json?.message ?? ({ 400: t("Invalid request."), 401: t("You need to log in."), 403: t("You do not have permission."), 404: t("The item does not exist."), 422: t("Check the highlighted fields.") } as Record<number, string>)[res.status] ?? translate("Server error ({status}).", { status: res.status });
     throw new ApiError(res.status, msg, json);
   }
   return json;

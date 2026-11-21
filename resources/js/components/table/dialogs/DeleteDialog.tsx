@@ -1,5 +1,5 @@
 import * as AlertDialog from "@radix-ui/react-alert-dialog";
-import type { Item, ModuleConfig } from "../types";
+import type { Item, ModuleConfig } from "../helpers/types";
 import { btnDanger, btnOutline, dialogBox, overlay } from "../helpers/styles";
 
 type Props = {

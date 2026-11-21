@@ -1,8 +1,8 @@
 import * as Dialog from "@radix-ui/react-dialog";
 import * as Label from "@radix-ui/react-label";
-import { MultiSelect, TagSelect } from "../MultiSelect";
+import { MultiSelect, TagSelect } from "../components/MultiSelect";
 import { RSelect } from "../components/RSelect";
-import type { ModuleConfig, SortState } from "../types";
+import type { ModuleConfig, SortState } from "../helpers/types";
 import { btnOutline, btnPrimary, dialogBox, overlay } from "../helpers/styles";
 
 type Props = {

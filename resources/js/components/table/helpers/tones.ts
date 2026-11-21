@@ -1,4 +1,4 @@
-import type { Tone } from "../types";
+import type { Tone } from "./types";
 
 export const badgeTone: Record<Tone, string> = {
   success: "bg-badge-success text-badge-success-foreground",

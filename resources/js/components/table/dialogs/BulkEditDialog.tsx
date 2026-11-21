@@ -2,7 +2,7 @@ import * as Checkbox from "@radix-ui/react-checkbox";
 import * as Dialog from "@radix-ui/react-dialog";
 import { Check } from "lucide-react";
 import { ItemForm } from "../forms/ItemForm";
-import type { Item, ModuleConfig } from "../types";
+import type { Item, ModuleConfig } from "../helpers/types";
 import type { BulkStep, SaveResult } from "./types";
 import { btnOutline, btnPrimary, cbCls, dialogBox, overlay } from "../helpers/styles";
 

@@ -1,4 +1,5 @@
 import type { Item, SortState } from "./types";
+import { translate } from "./translate";
 
 export function filterItems(items: Item[], search: string, searchKeys: string[], filters: Record<string, string | string[]>): Item[] {
   const q = search.trim().toLowerCase();
@@ -67,30 +68,30 @@ interface Rule {
 /** FK-22/23: returnerar felmeddelande eller null. */
 export function validateField(c: Rule, value: any): string | null {
   const empty = value == null || value === "" || (Array.isArray(value) && value.length === 0);
-  if (empty) return c.required ? `${c.label} måste fyllas i.` : null;
+  if (empty) return c.required ? translate("{field} is required.", { field: c.label }) : null;
   if (c.type === "number") {
     const n = Number(value);
-    if (Number.isNaN(n)) return `${c.label} måste vara ett tal.`;
-    if (c.min != null && n < c.min) return `${c.label} får inte vara mindre än ${c.min}.`;
-    if (c.max != null && n > c.max) return `${c.label} får inte vara större än ${c.max}.`;
+    if (Number.isNaN(n)) return translate("{field} must be a number.", { field: c.label });
+    if (c.min != null && n < c.min) return translate("{field} must not be less than {min}.", { field: c.label, min: c.min });
+    if (c.max != null && n > c.max) return translate("{field} must not be greater than {max}.", { field: c.label, max: c.max });
     if (c.step != null) {
       const base = c.min ?? 0;
       const q = (n - base) / c.step;
-      if (Math.abs(q - Math.round(q)) > 1e-9) return `${c.label} måste anges i steg om ${c.step}.`;
+      if (Math.abs(q - Math.round(q)) > 1e-9) return translate("{field} must be in increments of {step}.", { field: c.label, step: c.step });
     }
     return null;
   }
   if (c.type === "file") {
     if (c.accept && value?.name) {
       const ok = c.accept.split(",").map((a) => a.trim().toLowerCase()).some((a) => value.name.toLowerCase().endsWith(a));
-      if (!ok) return `${c.label}: tillåtna filtyper är ${c.accept}.`;
+      if (!ok) return translate("{field}: allowed file types are {types}.", { field: c.label, types: c.accept });
     }
     return null;
   }
   const s = String(value);
-  if (c.minLength != null && s.length < c.minLength) return `${c.label} måste ha minst ${c.minLength} tecken.`;
-  if (c.maxLength != null && s.length > c.maxLength) return `${c.label} får ha högst ${c.maxLength} tecken.`;
-  if (c.pattern && !new RegExp(`^(?:${c.pattern})$`).test(s)) return c.patternMessage ?? `${c.label} har fel format.`;
+  if (c.minLength != null && s.length < c.minLength) return translate("{field} must have at least {min} characters.", { field: c.label, min: c.minLength });
+  if (c.maxLength != null && s.length > c.maxLength) return translate("{field} must have at most {max} characters.", { field: c.label, max: c.maxLength });
+  if (c.pattern && !new RegExp(`^(?:${c.pattern})$`).test(s)) return c.patternMessage ?? translate("{field} has an invalid format.", { field: c.label });
   return null;
 }
 

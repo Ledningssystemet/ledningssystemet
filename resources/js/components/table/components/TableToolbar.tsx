@@ -1,6 +1,6 @@
 import * as ToggleGroup from "@radix-ui/react-toggle-group";
 import { GripVertical, LayoutList, Plus, Rows3, Search, SlidersHorizontal, Table2 } from "lucide-react";
-import type { ViewMode } from "../types";
+import type { ViewMode } from "../helpers/types";
 import { btnOutline, btnPrimary, inputCls } from "../helpers/styles";
 
 type Props = {

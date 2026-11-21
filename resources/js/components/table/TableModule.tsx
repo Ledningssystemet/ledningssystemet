@@ -1,8 +1,8 @@
 import { useEffect, useImperativeHandle, useMemo, useRef, useState, type MutableRefObject } from "react";
 import { Pencil, Trash2, X } from "lucide-react";
-import type { ColumnConfig, DetailSection, Item, ModuleConfig, ModuleController, SortState, ViewMode } from "./types";
-import { bulkPatch, filterItems, moveItem, formatDate, normalizeSearch, pageRange, paginate, SEARCH_DEBOUNCE_MS, SEARCH_MAX, sortItems } from "./logic";
-import { ApiError, crud } from "./api";
+import type { ColumnConfig, DetailSection, Item, ModuleConfig, ModuleController, SortState, ViewMode } from "./helpers/types";
+import { bulkPatch, filterItems, moveItem, formatDate, normalizeSearch, pageRange, paginate, SEARCH_DEBOUNCE_MS, SEARCH_MAX, sortItems } from "./helpers/logic";
+import { ApiError, crud } from "./helpers/api";
 import React from "react";
 import { ItemForm } from "./forms/ItemForm";
 import { NestedTable } from "./components/NestedTable";
@@ -18,10 +18,12 @@ import { RowActions } from "./components/RowActions";
 import { DEFAULT_PAGE_SIZES, initialPageSize, initialView, writeCookie } from "./helpers/persistence";
 import { colOptions, customToColumns, linkState } from "./helpers/tableConfig";
 import { badgeTone, dotTone } from "./helpers/tones";
+import { t } from "../../lib/i18n";
+import { translate } from "./helpers/translate";
 // @ts-ignore
-import "./table.css";
+import "./css/table.css";
 // @ts-ignore
-import "./table.utilities.css";
+import "./css/table.utilities.css";
 
 interface Props {
   config: ModuleConfig;
@@ -39,7 +41,7 @@ export function TableModule({ config: rawConfig, data, onDataChange, controllerR
   const config = useMemo(() => rawConfig.customProperties?.length ? {
     ...rawConfig,
     columns: [...rawConfig.columns, ...customToColumns(rawConfig.customProperties, rawConfig.references)],
-    formTabs: rawConfig.formTabs ? [...rawConfig.formTabs, "Anpassade egenskaper"] : rawConfig.formTabs,
+    formTabs: rawConfig.formTabs ? [...rawConfig.formTabs, t("Custom properties")] : rawConfig.formTabs,
     filters: [...rawConfig.filters, ...rawConfig.customProperties.filter((p) => p.filterable && p.type !== "textarea").map((p) => ({ key: p.key, label: p.label, mode: "multi" as const, options: p.type === "boolean" ? ["true", "false"] : rawConfig.references?.[p.type as keyof NonNullable<ModuleConfig["references"]>] }))],
   } : rawConfig, [rawConfig]);
   const link = useMemo(() => linkState(rawConfig.tableId), [rawConfig.tableId]);
@@ -111,7 +113,7 @@ export function TableModule({ config: rawConfig, data, onDataChange, controllerR
   const [reloadKey, setReloadKey] = useState(0);
   const pendingDelete = useRef(new Set<string>());
   const reportError = (e: unknown) => {
-    const err = e instanceof ApiError ? e : new ApiError(0, "Något gick fel.");
+    const err = e instanceof ApiError ? e : new ApiError(0, t("Something went wrong."));
     if (err.status === 401) config.onUnauthorized?.();
     return err;
   };
@@ -202,12 +204,12 @@ export function TableModule({ config: rawConfig, data, onDataChange, controllerR
         catch (e) { failed.push(reportError(e).message); }
       }
       reload();
-      if (failed.length && failed.length === r.allowedIds.length) return { message: `Inget objekt kunde sparas: ${failed[0]}` };
-      setBulkMsg(`${r.allowedIds.length - failed.length} objekt uppdaterades.${failed.length ? ` ${failed.length} misslyckades: ${failed[0]}` : ""}${r.skippedIds.length ? ` ${r.skippedIds.length} hoppades över (saknar behörighet).` : ""}`);
+      if (failed.length && failed.length === r.allowedIds.length) return { message: translate("No items could be saved: {error}", { error: failed[0] }) };
+      setBulkMsg(`${translate("{count} items updated.", { count: r.allowedIds.length - failed.length })}${failed.length ? ` ${translate("{count} failed: {error}", { count: failed.length, error: failed[0] })}` : ""}${r.skippedIds.length ? ` ${translate("{count} skipped (no permission).", { count: r.skippedIds.length })}` : ""}`);
     } else {
       r.allowedIds.forEach((id) => { const prev = items.find((i) => i.id === id)!; config.events?.onUpdated?.({ ...prev, ...r.patch }, prev); });
       setItems(r.items);
-      setBulkMsg(`${r.allowedIds.length} objekt uppdaterades.${r.skippedIds.length ? ` ${r.skippedIds.length} hoppades över (saknar behörighet).` : ""}`);
+      setBulkMsg(`${translate("{count} items updated.", { count: r.allowedIds.length })}${r.skippedIds.length ? ` ${translate("{count} skipped (no permission).", { count: r.skippedIds.length })}` : ""}`);
     }
     setBulkStep(null);
     return null;
@@ -226,7 +228,7 @@ export function TableModule({ config: rawConfig, data, onDataChange, controllerR
     setChecked(new Set());
     setBulkBusy(false);
     setBulkDelete(false);
-    setBulkMsg(`${ok} objekt togs bort.${failed.length ? ` ${failed.length} misslyckades: ${failed[0]}` : ""}${skipped ? ` ${skipped} hoppades över (saknar behörighet).` : ""}`);
+    setBulkMsg(`${translate("{count} items deleted.", { count: ok })}${failed.length ? ` ${translate("{count} failed: {error}", { count: failed.length, error: failed[0] })}` : ""}${skipped ? ` ${translate("{count} skipped (no permission).", { count: skipped })}` : ""}`);
   };
 
   const startEdit = (item: Item, fresh = false) => { setEditing(structuredClone(item)); setIsNew(fresh); };
@@ -390,28 +392,28 @@ export function TableModule({ config: rawConfig, data, onDataChange, controllerR
 
       {idFilter && (
         <div className="flex items-center gap-2 border-b bg-accent/50 px-3 py-1.5 text-sm text-accent-foreground">
-          Visar endast post med ID <strong>{idFilter}</strong>
-          <button aria-label="Ta bort ID-filter" className="ml-1 rounded p-0.5 hover:bg-accent" onClick={() => setIdFilter(null)}><X className="h-3.5 w-3.5" /></button>
+          {t("Showing only item with ID")} <strong>{idFilter}</strong>
+          <button aria-label={t("Remove ID filter")} className="ml-1 rounded p-0.5 hover:bg-accent" onClick={() => setIdFilter(null)}><X className="h-3.5 w-3.5" /></button>
         </div>
       )}
       {sort.key && (
         <div className="flex items-center gap-2 border-b bg-accent/50 px-3 py-1.5 text-sm text-accent-foreground">
-          Sorterar: <strong>{colLabel(sort.key)} {sort.dir === "asc" ? "↑" : "↓"}</strong>
-          <button aria-label="Ta bort sortering" className="ml-1 rounded p-0.5 hover:bg-accent" onClick={() => setSort({ key: null, dir: "asc" })}><X className="h-3.5 w-3.5" /></button>
+          {t("Sorted by:")} <strong>{colLabel(sort.key)} {sort.dir === "asc" ? "↑" : "↓"}</strong>
+          <button aria-label={t("Remove sorting")} className="ml-1 rounded p-0.5 hover:bg-accent" onClick={() => setSort({ key: null, dir: "asc" })}><X className="h-3.5 w-3.5" /></button>
         </div>
       )}
 
       {effView === "table" && checked.size > 0 && (
         <div className="flex flex-wrap items-center gap-2 border-b bg-accent/50 px-3 py-2 text-sm text-accent-foreground">
-          <strong>{checked.size} markerade</strong>
-          <button className={btnOutline} onClick={() => { setBulkFields([]); setBulkStep("fields"); }}><Pencil className="h-4 w-4" />Redigera markerade</button>
-          <button className={`${btnOutline} text-destructive`} onClick={() => setBulkDelete(true)}><Trash2 className="h-4 w-4" />Ta bort markerade</button>
-          <button className={`${btnOutline} ml-auto`} onClick={() => setChecked(new Set())}>Avmarkera alla</button>
+          <strong>{translate("{count} selected", { count: checked.size })}</strong>
+          <button className={btnOutline} onClick={() => { setBulkFields([]); setBulkStep("fields"); }}><Pencil className="h-4 w-4" />{t("Edit selected")}</button>
+          <button className={`${btnOutline} text-destructive`} onClick={() => setBulkDelete(true)}><Trash2 className="h-4 w-4" />{t("Delete selected")}</button>
+          <button className={`${btnOutline} ml-auto`} onClick={() => setChecked(new Set())}>{t("Deselect all")}</button>
         </div>
       )}
       {bulkMsg && (
         <div role="status" className="flex items-center gap-2 border-b px-3 py-2 text-sm">
-          {bulkMsg}<button aria-label="Stäng meddelande" className="ml-auto rounded p-0.5 hover:bg-accent" onClick={() => setBulkMsg(null)}><X className="h-3.5 w-3.5" /></button>
+          {bulkMsg}<button aria-label={t("Dismiss message")} className="ml-auto rounded p-0.5 hover:bg-accent" onClick={() => setBulkMsg(null)}><X className="h-3.5 w-3.5" /></button>
         </div>
       )}
       {inlineEditing && isNew && <div className="border-b p-4"><ItemForm tagSuggestions={allValues} config={config} item={editing!} isNew onCancel={() => setEditing(null)} onSave={save} /></div>}
@@ -419,14 +421,14 @@ export function TableModule({ config: rawConfig, data, onDataChange, controllerR
       {cmdError && <p role="alert" className="border-b px-3 py-2 text-sm text-destructive">{cmdError}</p>}
       {loadError && (
         <div role="alert" className="flex items-center justify-between gap-2 border-b bg-[hsl(var(--badge-danger))] px-3 py-2 text-sm text-[hsl(var(--badge-danger-foreground))]">
-          {loadError}<button className={btnOutline} onClick={reload}>Försök igen</button>
+          {loadError}<button className={btnOutline} onClick={reload}>{t("Retry")}</button>
         </div>
       )}
       {/* Views */}
       <div aria-busy={busy} className={`relative ${busy ? "pointer-events-none" : ""}`}>
-      {busy && <div className="absolute inset-0 z-10 flex items-start justify-center bg-card/60 pt-6 text-sm text-muted-foreground" role="status">Laddar…</div>}
+      {busy && <div className="absolute inset-0 z-10 flex items-start justify-center bg-card/60 pt-6 text-sm text-muted-foreground" role="status">{t("Loading…")}</div>}
       {pageItems.length === 0 ? (
-        <p className="p-8 text-center text-muted-foreground">{busy ? "" : "Inga träffar."}</p>
+        <p className="p-8 text-center text-muted-foreground">{busy ? "" : t("No results.")}</p>
       ) : effView === "master-detail" ? (
         <MasterDetailView
           items={pageItems}

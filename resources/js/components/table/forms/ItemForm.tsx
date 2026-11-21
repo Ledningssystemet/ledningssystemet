@@ -1,12 +1,12 @@
 import { useEffect, useState, type FormEvent, type ReactNode } from "react";
 import * as Tabs from "@radix-ui/react-tabs";
 import * as Label from "@radix-ui/react-label";
-import { formatDate, validateField } from "../logic";
-import { TagSelect } from "../MultiSelect";
+import { formatDate, validateField } from "../helpers/logic";
+import { TagSelect } from "../components/MultiSelect";
 import { NestedTableEditor } from "../components/NestedTable";
 import { RSelect } from "../components/RSelect";
 import { colOptions } from "../helpers/tableConfig";
-import type { ColumnConfig, DetailSection, Item, ModuleConfig } from "../types";
+import type { ColumnConfig, DetailSection, Item, ModuleConfig } from "../helpers/types";
 import { btnOutline, btnPrimary, inputCls } from "../helpers/styles";
 
 type FormEntry = { kind: "col"; col: ColumnConfig; readOnly: boolean } | { kind: "section"; section: DetailSection };

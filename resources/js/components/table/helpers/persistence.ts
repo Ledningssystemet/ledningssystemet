@@ -1,4 +1,4 @@
-import type { ModuleConfig, ViewMode } from "../types";
+import type { ModuleConfig, ViewMode } from "./types";
 
 export const DEFAULT_PAGE_SIZES = [10, 25, 50, 100, 250];
 const VIEWS: ViewMode[] = ["master-detail", "table", "accordion"];

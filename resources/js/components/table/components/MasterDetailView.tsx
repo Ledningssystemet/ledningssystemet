@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import type { Item, ModuleConfig } from "../types";
+import type { Item, ModuleConfig } from "../helpers/types";
 
 type Props = {
   items: Item[];

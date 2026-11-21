@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { ItemForm } from "../forms/ItemForm";
-import type { ColumnConfig, DetailSection, Item, ModuleConfig } from "../types";
+import type { ColumnConfig, DetailSection, Item, ModuleConfig } from "../helpers/types";
 import { badgeTone } from "../helpers/tones";
 
 type Props = {

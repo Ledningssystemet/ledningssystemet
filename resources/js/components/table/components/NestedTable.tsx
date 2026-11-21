@@ -1,5 +1,5 @@
 import { Plus, Trash2 } from "lucide-react";
-import type { DetailSection } from "../types";
+import type { DetailSection } from "../helpers/types";
 import { btnOutline, inputCls } from "../helpers/styles";
 
 type TableSection = Pick<DetailSection, "columns">;
