@@ -91,6 +91,8 @@ export interface ModuleConfig {
   searchKeys: string[];
   columns: ColumnConfig[];
   tableColumns: string[];
+  /** Aktiverar kolumnval och anger vilka tabellkolumner som visas från början. */
+  defaultTableColumns?: string[];
   detailSections: DetailSection[];
   filters: FilterConfig[];
   badges?: Record<string, Record<string, Tone>>;

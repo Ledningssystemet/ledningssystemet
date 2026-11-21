@@ -19,12 +19,46 @@ export function resolveView(config: ModuleConfig, views: ViewMode[], preferred: 
 }
 
 function readCookie(name: string) {
-  const match = document.cookie.match(new RegExp("(?:^|; )" + name + "=([^;]*)"));
-  return match ? decodeURIComponent(match[1]) : null;
+  const escapedName = name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const match = document.cookie.match(new RegExp("(?:^|; )" + escapedName + "=([^;]*)"));
+  if (!match) return null;
+  try { return decodeURIComponent(match[1]); }
+  catch (error) { if (error instanceof URIError) return null; throw error; }
 }
 
 export function writeCookie(name: string, value: string) {
   document.cookie = `${name}=${encodeURIComponent(value)}; path=/; max-age=31536000; SameSite=Lax`;
+}
+
+function tableColumnsCookie(config: ModuleConfig): string | null {
+  return config.persistState !== false && config.tableId ? `md_columns_${encodeURIComponent(config.tableId)}` : null;
+}
+
+export function initialTableColumns(config: ModuleConfig): string[] {
+  const defaults = config.defaultTableColumns ?? [];
+  const cookie = tableColumnsCookie(config);
+  if (!cookie) return defaults;
+  const value = readCookie(cookie);
+  if (value === null) return defaults;
+  try {
+    const saved: unknown = JSON.parse(value);
+    if (Array.isArray(saved) && saved.every((key) => typeof key === "string")) {
+      return config.tableColumns.filter((key) => saved.includes(key));
+    }
+  } catch (error) {
+    if (!(error instanceof SyntaxError)) throw error;
+  }
+  return defaults;
+}
+
+export function writeTableColumns(config: ModuleConfig, columns: string[] | null) {
+  const cookie = tableColumnsCookie(config);
+  if (!cookie) return;
+  if (columns === null) {
+    document.cookie = `${cookie}=; path=/; max-age=0; SameSite=Lax`;
+  } else {
+    writeCookie(cookie, JSON.stringify(columns));
+  }
 }
 
 export function initialView(config: ModuleConfig, views = availableViews(config)): ViewMode {

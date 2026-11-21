@@ -48,6 +48,7 @@ export function DataTableView(props: Props) {
     renderChildTable,
   } = props;
   const extraColumns = childSections.length ? 1 : 0;
+  const columnCount = columns.length + 2 + extraColumns + (canMove ? 1 : 0);
   const allPageChecked = items.length > 0 && items.every((item) => checked.has(item.id));
   const somePageChecked = items.some((item) => checked.has(item.id));
   const colLabel = (key: string) => config.columns.find((column) => column.key === key)?.label ?? key;
@@ -56,7 +57,6 @@ export function DataTableView(props: Props) {
     <div className="overflow-x-auto">
       <table className="w-full text-sm">
         <thead className="bg-muted text-left"><tr>
-          {canMove && <th className="w-8 px-2 py-2"><span className="sr-only">{t("Move")}</span></th>}
           <th className="w-8 px-2 py-2">
             <Checkbox.Root aria-label={t("Select all on this page")} className={cbCls}
               checked={allPageChecked ? true : somePageChecked ? "indeterminate" : false}
@@ -64,6 +64,7 @@ export function DataTableView(props: Props) {
               <Checkbox.Indicator>{allPageChecked ? <Check className="h-3 w-3" /> : <span className="block h-0.5 w-2 bg-current" />}</Checkbox.Indicator>
             </Checkbox.Root>
           </th>
+          {canMove && <th className="w-8 px-2 py-2"><span className="sr-only">{t("Move")}</span></th>}
           {columns.map((key) => (
             <th key={key} className="px-3 py-2 font-medium">
               {isReorderMode || !config.columns.find((column) => column.key === key)?.sortable ? colLabel(key) : (
@@ -78,7 +79,7 @@ export function DataTableView(props: Props) {
         </tr></thead>
         <tbody>
           {items.map((item, index) => isInlineEditing && editing?.id === item.id && !isNew ? (
-            <tr key={item.id}><td colSpan={columns.length + 1 + extraColumns + (canMove ? 1 : 0) + 1} className="p-4"><ItemForm tagSuggestions={tagSuggestions} config={config} item={editing} isNew={false} onCancel={onCancelEdit} onSave={onSave} /></td></tr>
+            <tr key={item.id}><td colSpan={columnCount} className="p-4"><ItemForm tagSuggestions={tagSuggestions} config={config} item={editing} isNew={false} onCancel={onCancelEdit} onSave={onSave} /></td></tr>
           ) : (
             <Fragment key={item.id}>
               <tr
@@ -118,12 +119,12 @@ export function DataTableView(props: Props) {
                     })}
                   </div></td>
                 )}
-                <td className="px-3 py-2"><div className="flex gap-1">{renderActions(item)}</div></td>
+                <td className="px-3 py-2">{renderActions(item)}</td>
               </tr>
               {openChild[item.id] && (() => {
                 const section = childSections.find((candidate) => candidate.key === openChild[item.id])!;
                 return (
-                  <tr className="bg-background"><td colSpan={columns.length + 2 + extraColumns + (canMove ? 1 : 0) + 1} className="py-3 pl-8 pr-3">
+                  <tr className="bg-background"><td colSpan={columnCount} className="py-3 pl-8 pr-3">
                     <div className="mb-2 flex items-center justify-between">
                       <h4 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{translate("{section} for {item}", { section: section.label, item: String(item[config.titleKey]) })}</h4>
                       <button className={`${btnOutline} px-2 py-1 text-xs`} onClick={() => onCloseChild(item.id)}><X className="h-3.5 w-3.5" />{t("Close")}</button>

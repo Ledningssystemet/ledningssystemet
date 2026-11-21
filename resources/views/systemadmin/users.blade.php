@@ -77,7 +77,7 @@ $tableColumns = [
    'access_groups',
    ...array_values(array_map(
       fn ($column) => $column['key'],
-      array_filter($customPropertyColumns, fn ($column) => ! $column['listHidden'])
+      $customPropertyColumns
    )),
 ];
 
@@ -153,6 +153,7 @@ $tableConfig = [
       ...$customPropertyColumns,
    ],
    'tableColumns' => $tableColumns,
+   'defaultTableColumns' => array_values(array_intersect($tableColumns, ['name', 'title', 'email', 'manager_user_id'])),
    'detailSections' => [],
    'filters' => $tableFilters,
    'newItemDefaults' => [

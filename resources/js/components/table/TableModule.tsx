@@ -7,6 +7,7 @@ import React from "react";
 import { ItemForm } from "./forms/ItemForm";
 import { NestedTable } from "./components/NestedTable";
 import { TableDialogs } from "./dialogs";
+import { ColumnSelectionDialog } from "./dialogs/ColumnSelectionDialog";
 import { btnOutline } from "./helpers/styles";
 import { TablePagination } from "./components/TablePagination";
 import { TableToolbar } from "./components/TableToolbar";
@@ -15,7 +16,7 @@ import { DataTableView } from "./components/DataTableView";
 import { ItemDetails } from "./components/ItemDetails";
 import { MasterDetailView } from "./components/MasterDetailView";
 import { RowActions } from "./components/RowActions";
-import { availableViews, DEFAULT_PAGE_SIZES, initialPageSize, initialView, resolveView, writeCookie } from "./helpers/persistence";
+import { availableViews, DEFAULT_PAGE_SIZES, initialPageSize, initialTableColumns, initialView, resolveView, writeCookie, writeTableColumns } from "./helpers/persistence";
 import { colOptions, customToColumns, linkState } from "./helpers/tableConfig";
 import { badgeTone, dotTone } from "./helpers/tones";
 import { t } from "../../lib/i18n";
@@ -69,6 +70,20 @@ export function TableModule({ config: rawConfig, data, onDataChange, controllerR
   const [isNew, setIsNew] = useState(false);
   const [deleting, setDeleting] = useState<Item | null>(null);
   const [filterOpen, setFilterOpen] = useState(false);
+  const [columnOpen, setColumnOpen] = useState(false);
+  const [columnSelection, setColumnSelection] = useState(() => ({
+    tableId: config.tableId,
+    persist: config.persistState !== false,
+    columns: initialTableColumns(config),
+  }));
+  const selectedColumns = columnSelection.tableId === config.tableId && columnSelection.persist === persist
+    ? columnSelection.columns
+    : initialTableColumns(config);
+  const changeColumns = (columns: string[] | null) => {
+    const next = columns ?? config.defaultTableColumns ?? [];
+    writeTableColumns(config, columns);
+    setColumnSelection({ tableId: config.tableId, persist, columns: next });
+  };
   /** FK-33: per rad högst en öppen underordnad tabell; en ny ersätter den tidigare. */
   const [openChild, setOpenChild] = useState<Record<string, string>>({});
 
@@ -105,7 +120,9 @@ export function TableModule({ config: rawConfig, data, onDataChange, controllerR
 
   const colLabel = (k: string) => config.columns.find((c) => c.key === k)?.label ?? k;
   const listCols = config.columns.filter((c) => !c.listHidden);
-  const tableCols = config.tableColumns.filter((k) => !config.columns.find((c) => c.key === k)?.listHidden);
+  const tableCols = config.defaultTableColumns
+    ? config.tableColumns.filter((k) => selectedColumns.includes(k))
+    : config.tableColumns.filter((k) => !config.columns.find((c) => c.key === k)?.listHidden);
   const childSections = config.detailSections.filter((s) => s.type === "table");
   const ds = config.dataSource;
   const dsKey = ds ? JSON.stringify(ds) : "";
@@ -294,10 +311,11 @@ export function TableModule({ config: rawConfig, data, onDataChange, controllerR
 
   const inlineEditing = config.editMode === "inline" && editing;
 
-  const actions = (item: Item) => (
+  const actions = (item: Item, stacked = false) => (
     <RowActions
       config={config}
       item={item}
+      stacked={stacked}
       canUpdate={canUpdate(item)}
       canDelete={canDelete(item)}
       onRunCommand={runCommand}
@@ -394,6 +412,7 @@ export function TableModule({ config: rawConfig, data, onDataChange, controllerR
         canCreate={canCreate}
         onCreate={startNew}
         onOpenFilters={() => setFilterOpen(true)}
+        onOpenColumns={config.defaultTableColumns && effView === "table" ? () => setColumnOpen(true) : undefined}
       />
 
       {idFilter && (
@@ -469,7 +488,7 @@ export function TableModule({ config: rawConfig, data, onDataChange, controllerR
           onCancelEdit={() => setEditing(null)}
           onSave={save}
           renderValue={renderValue}
-          renderActions={actions}
+          renderActions={(item) => actions(item, true)}
           onMove={moveTo}
           onMoveBy={move}
           dragId={dragId}
@@ -508,6 +527,7 @@ export function TableModule({ config: rawConfig, data, onDataChange, controllerR
         />
       )}
 
+      {config.defaultTableColumns && <ColumnSelectionDialog open={columnOpen} onOpenChange={setColumnOpen} config={config} selected={selectedColumns} onChange={changeColumns} />}
       <TableDialogs
         config={config}
         filters={filters}

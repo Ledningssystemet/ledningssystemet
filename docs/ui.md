@@ -57,7 +57,8 @@ configuration error. `reorder` requires the table view and raises an error if
 it is disabled.
 
 In list view, item actions are hidden while collapsed and appear above the
-details when an item is expanded.
+details when an item is expanded. In table view, each item's actions appear in
+a separate column, stacked vertically with equal widths.
 
 The saved `md_view` cookie is used only if its view is enabled. Otherwise the
 module selects `defaultView` when enabled, or the first enabled view in the
@@ -96,7 +97,9 @@ active filter or a fixed data-source parameter.
 Consumer regression coverage should include all three views, responsive layout,
 selection and pagination, filter and edit dialogs, selects and multiselects,
 delete confirmation, nested tables, theme overrides, and unrelated Bootstrap
-controls. In list view, verify actions are hidden while collapsed and appear
+controls. Verify row actions are stacked with equal widths in their own column
+and retain the detail view's commands and permissions, including in narrow
+layouts and with nested tables or reordering. In list view, verify actions are hidden while collapsed and appear
 above details when expanded. Exercise both application registration and direct
 npm imports. Cover
 each view disabled individually and in combinations, disabled saved and default
@@ -107,6 +110,24 @@ sortable and non-sortable columns in both the table and sorting dialog, includin
 API-backed sorting. Cover
 single- and multi-field API search, combining search with filters and pagination,
 filter name collisions, and any server-specific delimiter and OR behavior.
+
+### Optional table column selection
+
+Set `defaultTableColumns` to an array of keys from `tableColumns` to enable the
+column picker in table view. Those keys are initially visible, and the picker
+offers every key in `tableColumns`, including columns marked `listHidden`.
+`listHidden` continues to control the detail view. With `tableId` and
+`persistState` enabled, the selection is saved in a cookie specific to the
+table. Without a table ID, or with `persistState: false`, selection lasts only
+while the table is mounted. Resetting columns clears the saved selection and
+restores the configured defaults. Configurations without `defaultTableColumns`
+retain their existing column visibility.
+
+The user administration table initially shows name, title, email and, when the
+staff module is active, manager. Regression coverage should check individual
+column changes, Show all, cookie persistence and reset, custom properties
+(including those hidden from details), switching views, and both staff-module settings. Other tables should
+retain their existing columns and have no picker unless explicitly configured.
 
 The table implementation is split by responsibility: `TableModule.tsx` owns
 state and data operations; reusable controls and views are in `table/components/`,
