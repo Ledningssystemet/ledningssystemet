@@ -5,7 +5,7 @@
     "type": "module",
     "exports": {
         "./app": "./resources/js/app.js",
-        "./loadstyles": "./resources/js/loadstyles.js",
+        "./loadstyles": "./resources/js/components/core/loadstyles.js",
         "./components/ui": "./resources/js/components/ui/index.tsx",
         "./components/ui/Dropzone": "./resources/js/components/ui/Dropzone.tsx",
         "./components/*": "./resources/js/components/*"

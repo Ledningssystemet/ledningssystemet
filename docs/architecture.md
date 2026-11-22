@@ -11,6 +11,11 @@ UI described in [ui.md](ui.md). The global React component registry uses
 `React.lazy` so each component's code is loaded only when its matching element
 or mount function is rendered.
 
+The npm exports `@ledningssystemet/ledningssystemet/app` and
+`@ledningssystemet/ledningssystemet/loadstyles` initialize the frontend and
+load its styles for consuming applications. The app entry also registers the
+editors and component registry and mounts UI extension slots on DOM ready.
+
 ## Table CSV export
 
 API-backed table configurations automatically request `fields[_]` (or
@@ -118,6 +123,9 @@ not use the package's `User` model.
 The separate consumer regression suite should cover password login with and
 without MFA, failed credentials and MFA, both SSO providers including mandatory
 MFA enrollment, remember-me restoration, and unrelated host user models.
+It should also cover authentication, keep-alive and logout with and without a
+CSRF meta tag, including Axios's `X-XSRF-TOKEN` cookie handling, and verify both
+public npm entry imports and their initialization in a consuming application.
 
 ## System settings
 

@@ -4,8 +4,7 @@ function resolveCsrfToken() {
         return tokenMeta.content;
     }
 
-    const xsrfMatch = document.cookie.match(/(?:^|;\s*)XSRF-TOKEN=([^;]+)/);
-    return xsrfMatch ? decodeURIComponent(xsrfMatch[1]) : '';
+    return '';
 }
 
 async function logout() {

@@ -21,8 +21,7 @@ export function AuthApp(props) {
             return tokenMeta.content;
         }
 
-        const xsrfMatch = document.cookie.match(/(?:^|;\s*)XSRF-TOKEN=([^;]+)/);
-        return xsrfMatch ? decodeURIComponent(xsrfMatch[1]) : '';
+        return '';
     }, []);
 
     const activeProps = useMemo(() => {
