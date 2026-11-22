@@ -2,8 +2,7 @@ import React, { useState } from 'react';
 import * as Checkbox from '@radix-ui/react-checkbox';
 import * as Label from '@radix-ui/react-label';
 import { Check } from 'lucide-react';
-import { btnOutline, inputCls } from '../../components/table/helpers/styles.ts';
-import { checkboxClass, eyeClosedIcon, eyeOpenIcon, labelClass, passwordToggleClass, primaryButtonClass } from './authStyles.jsx';
+import { checkboxClass, eyeClosedIcon, eyeOpenIcon, inputClass, labelClass, outlineButtonClass, passwordToggleClass, primaryButtonClass } from './authStyles.jsx';
 
 export function LoginForm({ props, submitting, onShowPasswordReset }) {
     const passwordLoginEnabled = !!props.passwordLoginEnabled;
@@ -16,7 +15,7 @@ export function LoginForm({ props, submitting, onShowPasswordReset }) {
                 <>
                     <div className="mb-4">
                         <Label.Root className={labelClass} htmlFor="email">{props.texts.email}</Label.Root>
-                        <input className={inputCls} id="email" name="email" type="email" required autoComplete="username" placeholder="name@company.com" />
+                        <input className={inputClass} id="email" name="email" type="email" required autoComplete="username" placeholder="name@company.com" />
                     </div>
                     <div className="mb-4">
                         <div className="mb-1 flex items-center justify-between">
@@ -26,7 +25,7 @@ export function LoginForm({ props, submitting, onShowPasswordReset }) {
                             </button>
                         </div>
                         <div className="relative">
-                            <input className={`${inputCls} pr-11`} id="password" name="password" type={showPassword ? 'text' : 'password'} required autoComplete="current-password" placeholder="••••••••••••" />
+                            <input className={`${inputClass} pr-11`} id="password" name="password" type={showPassword ? 'text' : 'password'} required autoComplete="current-password" placeholder="••••••••••••" />
                             <button className={passwordToggleClass} type="button" onClick={() => setShowPassword((prev) => !prev)} aria-label={showPassword ? 'Hide password' : 'Show password'}>
                                 {showPassword ? eyeClosedIcon : eyeOpenIcon}
                             </button>
@@ -52,7 +51,7 @@ export function LoginForm({ props, submitting, onShowPasswordReset }) {
             {ssoProviders.length > 0 && (
                 <div className="grid gap-2">
                     {ssoProviders.map((provider) => (
-                        <a key={provider.name} className={`${btnOutline} w-full justify-center text-foreground no-underline`} href={provider.url}>
+                        <a key={provider.name} className={`${outlineButtonClass} w-full justify-center text-foreground no-underline`} href={provider.url}>
                             {provider.buttonText}
                         </a>
                     ))}
@@ -61,4 +60,3 @@ export function LoginForm({ props, submitting, onShowPasswordReset }) {
         </>
     );
 }
-

@@ -139,12 +139,18 @@ trait HasCustomProperties {
       static::saving(function ($model) {
          $props = [];
          $validators = [];
+         $propertiesToSave = [];
          $noneset = true;
          // Fetch all custom properties
          foreach ((static::class)::getCustomProperties() as $prop) {
-            if(request()->has('customproperty_' . $prop->id))
+            $present = request()->has('customproperty_' . $prop->id);
+            if ($model->exists && !$present)
+               continue;
+
+            if($present)
                $noneset = false;
 
+            $propertiesToSave[] = $prop;
             $props['customproperty_'.$prop->id] = request()->input('customproperty_' . $prop->id, null);
             $propertyvalidator = '';
 
@@ -197,8 +203,8 @@ trait HasCustomProperties {
             // Perform validation
             Validator::make($props, $validators)->validate();
 
-            // Save all custom properties for this object
-            foreach (static::getCustomProperties() as $prop) DB::table('custom_property_object')->updateOrInsert(
+            // Save the validated custom properties for this object
+            foreach ($propertiesToSave as $prop) DB::table('custom_property_object')->updateOrInsert(
                [
                   'object_id' => $model->id,
                   'object_type' => $model::class,

@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
 import * as Label from '@radix-ui/react-label';
-import { inputCls } from '../../components/table/helpers/styles.ts';
 import { AlertList } from './AlertList.jsx';
 import { flattenErrors } from './authHelpers.js';
-import { labelClass, primaryButtonClass, warningClass } from './authStyles.jsx';
+import { inputClass, labelClass, primaryButtonClass, warningClass } from './authStyles.jsx';
 
 export function MfaEnforcementForm({ props }) {
     const [setupStarted, setSetupStarted] = useState(false);
@@ -108,7 +107,7 @@ export function MfaEnforcementForm({ props }) {
                     <div className="mb-3">
                         <Label.Root className={labelClass} htmlFor="mfa-verification-code">{props.texts.verificationCode}</Label.Root>
                         <input
-                            className={inputCls}
+                            className={inputClass}
                             id="mfa-verification-code"
                             name="mfa_verification_code"
                             type="text"
@@ -129,4 +128,3 @@ export function MfaEnforcementForm({ props }) {
         </>
     );
 }
-

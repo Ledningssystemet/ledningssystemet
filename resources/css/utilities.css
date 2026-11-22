@@ -6,8 +6,8 @@
    --brand-navy-deep: 210 69.70% 12.94% !important;
    --brand-navy-ink: 210 71.43% 8.24% !important;
    --brand-teal: 171.94 65.69% 40% !important;
-   --brand-teal-soft: #63c9bb !important;
-   --on-navy: #f7fafc !important;
+   --brand-teal-soft: 171.76 49% 59% !important;
+   --on-navy: 204 45% 98% !important;
    --brand-teal-dark: 172.58 71.20% 24.51% !important;
    --on-navy-muted: 210 22.81% 77.65% !important;
    --gradient-brand: linear-gradient(145deg, hsl(var(--brand-navy-ink)) 0%, hsl(var(--brand-navy-deep)) 45%, hsl(var(--brand-navy)) 100%) !important;
@@ -17,9 +17,9 @@
    --foreground: 213.66 48.24% 16.67% !important;
    --border: 215 27.27% 91.37% !important;
    --input: 215 27.27% 91.37% !important;
-   --ring: var(--brand-teal) !important;
-   --primary: var(--brand-teal) !important;
-   --primary-foreground: 171.67 75% 9.41% !important;
+   --ring: var(--brand-navy) !important;
+   --primary: var(--brand-navy) !important;
+   --primary-foreground: var(--on-navy) !important;
    --secondary: 210 33.33% 97.65% !important;
    --secondary-foreground: var(--foreground) !important;
    --destructive: 0 72% 45% !important;
@@ -49,45 +49,12 @@
    --list-active-border: var(--brand-teal) !important;
    --radius: 0.5rem !important;
    --font-family: "Albert Sans", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", "Noto Sans", "Liberation Sans", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji" !important;
-   color: hsl(var(--foreground)) !important;
-
-   --tw-body-font-family: var(--font-family) !important;
-   --tw-body-font-size: 1rem !important;
-   --tw-body-font-weight: 400 !important;
-   --tw-body-line-height: 1.5rem !important;
-   --tw-body-color: hsl(var(--foreground)) !important;
-   --tw-body-bg: hsl(var(--background)) !important;
 }
+
 
 *, ::before, ::after {
-   border: 0 solid hsl(var(--border)) !important;
-   --tw-translate-x: 0 !important;
-   --tw-translate-y: 0 !important;
-   --tw-rotate: 0 !important;
-   --tw-skew-x: 0 !important;
-   --tw-skew-y: 0 !important;
-   --tw-scale-x: 1 !important;
-   --tw-scale-y: 1 !important;
-   --tw-ring-inset: 0 !important;
-   --tw-ring-offset-width: 0px !important;
-   --tw-ring-offset-color: #fff !important;
-   --tw-ring-color: rgb(59 130 246 / 0.5) !important;
-   --tw-ring-offset-shadow: 0 0 #0000 !important;
-   --tw-ring-shadow: 0 0 #0000 !important;
-   --tw-shadow: 0 0 #0000 !important;
    box-sizing: border-box !important;
-}
-
-body {
-   margin: 0 !important;
-   font-family: var(--tw-body-font-family) !important;
-   font-size: var(--tw-body-font-size) !important;
-   font-weight: var(--tw-body-font-weight) !important;
-   line-height: var(--tw-body-line-height) !important;
-   color: var(--tw-body-color) !important;
-   background-color: var(--tw-body-bg) !important;
-   -webkit-text-size-adjust: 100% !important;
-   -webkit-tap-highlight-color: rgba(0,0,0,0) !important;
+   border: 0 solid hsl(var(--border)) !important;
 }
 .sr-only{
    position: absolute !important;

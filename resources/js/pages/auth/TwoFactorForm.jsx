@@ -2,8 +2,7 @@ import React, { useState } from 'react';
 import * as Checkbox from '@radix-ui/react-checkbox';
 import * as Label from '@radix-ui/react-label';
 import { Check } from 'lucide-react';
-import { inputCls } from '../../components/table/helpers/styles.ts';
-import { checkboxClass, labelClass, primaryButtonClass } from './authStyles.jsx';
+import { checkboxClass, inputClass, labelClass, primaryButtonClass } from './authStyles.jsx';
 
 export function TwoFactorForm({ props, submitting }) {
     const [code, setCode] = useState('');
@@ -28,7 +27,7 @@ export function TwoFactorForm({ props, submitting }) {
                 <div className="mb-3">
                     <Label.Root className={labelClass} htmlFor="code">{props.texts.authenticationCode}</Label.Root>
                     <input
-                        className={inputCls}
+                        className={inputClass}
                         id="code"
                         name="code"
                         type="text"
@@ -43,7 +42,7 @@ export function TwoFactorForm({ props, submitting }) {
             ) : (
                 <div className="mb-3">
                     <Label.Root className={labelClass} htmlFor="recovery_code">{props.texts.recoveryCode}</Label.Root>
-                    <input className={`${inputCls} font-mono`} id="recovery_code" name="recovery_code" type="text" autoComplete="one-time-code" value={recoveryCode} onChange={(event) => setRecoveryCode(event.target.value)} />
+                    <input className={`${inputClass} font-mono`} id="recovery_code" name="recovery_code" type="text" autoComplete="one-time-code" value={recoveryCode} onChange={(event) => setRecoveryCode(event.target.value)} />
                 </div>
             )}
             <div className="mb-4 flex items-center gap-2">
@@ -70,4 +69,3 @@ export function TwoFactorForm({ props, submitting }) {
         </>
     );
 }
-

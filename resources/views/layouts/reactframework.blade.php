@@ -8,7 +8,7 @@
       <title>{{ config('ledningssystemet.application_name') }}</title>
       <link rel="icon" type="image/png" href="@php echo(file_exists(resource_path().'/brand/logo/favicon.png') ? 'data:image/png;base64,'.base64_encode(file_get_contents(resource_path().'/brand/logo/favicon.png')) : '/favicon.png'); @endphp">
    </head>
-   <body>
+   <body class="m-0">
    <div data-ui-slot="reactframework.body-start"></div>
    @section('bodycontents')
    @show

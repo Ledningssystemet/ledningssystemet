@@ -62,6 +62,19 @@ do not assume that a field visible in a response is writable. See
 [`app/Http/Controllers/Api/SwaggerController.php`](../app/Http/Controllers/Api/SwaggerController.php)
 for the routing and specification implementation.
 
+For existing records with configured custom properties, an update changes only
+the `customproperty_<id>` fields included in the request. Omitted properties,
+including required ones, retain their existing values. An explicitly supplied
+`null` clears an optional property but fails validation for a required property;
+other supplied values remain subject to the property's validation rules. This
+also applies to the older `/api/v1/items` API. Creation retains its existing
+validation behavior.
+
+The separate consumer regression project should cover partial and full updates
+through both APIs, including mass editing multiple records with different
+unselected values, required properties, explicit null and false values, invalid
+values, creation, and permission-denied records.
+
 ## Project participants
 
 `Project` is the current CRUD model, including projects called "risk projects"

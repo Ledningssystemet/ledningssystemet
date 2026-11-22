@@ -11,7 +11,7 @@
    width: 26rem;
    height: 26rem;
    opacity: .25;
-   background: var(--brand-teal-soft);
+   background: hsl(var(--brand-teal-soft));
 }
 
 .ls-auth .glow-2 {
@@ -20,7 +20,7 @@
    width: 30rem;
    height: 30rem;
    opacity: .15;
-   background: var(--brand-teal-soft);
+   background: hsl(var(--brand-teal-soft));
 }
 
 .ls-auth aside {
@@ -35,7 +35,7 @@
 
 .ls-auth aside h2 {
    font-weight: 300 !important;
-   color: var(--on-navy) !important;
+   color: hsl(var(--on-navy)) !important;
    font-size: 2.25rem !important;
    line-height: 1.1 !important;
    margin: 1.5rem 0 0 !important;

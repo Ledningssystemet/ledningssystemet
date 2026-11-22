@@ -51,6 +51,9 @@ that also scans the host's sources.
 In the separate consumer regression project, check the table, dialogs, primary
 actions and authentication screens on light backgrounds, including focus and
 hover states and the generated stylesheet when used from the npm package.
+Authentication uses its own Tailwind class definitions rather than importing
+table styles. Also check password and SSO login, password reset, two-factor
+authentication and MFA enrollment, including checkbox and disabled states.
 
 ## Verification and formatting
 

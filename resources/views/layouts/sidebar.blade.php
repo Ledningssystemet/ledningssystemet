@@ -489,6 +489,52 @@ $(function(){
             <div data-ui-slot="sidebar.groups.management.bottom"></div>
          </ul>
       </li>
+      <div data-ui-slot="sidebar.groups.before-appsettings"></div>
+      <li class="nav-group">
+         <a class="nav-link nav-group-toggle collapsed" data-bs-toggle="collapse" role="button" href="#appsettings-menu">
+            <div class="nav-group-status"></div>
+            {{ __("Application settings") }}
+         </a>
+         <ul class="nav-group-items collapse" id="appsettings-menu" data-bs-parent="#sidebar">
+            @if(request()->user()->can('create', Ledningssystemet\Ledningssystemet\Models\Site::class))
+               <li class="nav-item" id="nav-site">
+                  <a class="nav-link" href="/systemadmin/sites">
+                     <div class="nav-item-status"></div>
+                     <span class="nav-icon material-symbols-rounded">globe</span>
+                     {{ __("Sites") }}
+                  </a>
+               </li>
+            @endif
+            @if(request()->user()->can('create', Ledningssystemet\Ledningssystemet\Models\Department::class))
+               <li class="nav-item" id="nav-department">
+                  <a class="nav-link" href="/systemadmin/departments">
+                     <div class="nav-item-status"></div>
+                     <span class="nav-icon material-symbols-rounded">factory</span>
+                     {{ __("Departments") }}
+                  </a>
+               </li>
+            @endif
+            @if(\Ledningssystemet\Ledningssystemet\Support\Modules::active('staff') && request()->user()->can('create', Ledningssystemet\Ledningssystemet\Models\Role::class))
+               <li class="nav-item" id="nav-role">
+                  <a class="nav-link" href="/systemadmin/roles">
+                     <div class="nav-item-status"></div>
+                     <span class="nav-icon material-symbols-rounded">group</span>
+                     {{ __("Roles") }}
+                  </a>
+               </li>
+            @endif
+            @if(request()->user()->can('create', Ledningssystemet\Ledningssystemet\Models\CustomProperty::class))
+               <li class="nav-item" id="nav-customproperty">
+                  <a class="nav-link" href="/systemadmin/customproperties">
+                     <div class="nav-item-status"></div>
+                     <span class="nav-icon material-symbols-rounded">edit_attributes</span>
+                     {{ __("Custom properties") }}
+                  </a>
+               </li>
+            @endif
+               <div data-ui-slot="sidebar.groups.appsettings.bottom"></div>
+         </ul>
+      </li>
       <div data-ui-slot="sidebar.groups.before-systemsettings"></div>
       <li class="nav-group">
          <a class="nav-link nav-group-toggle collapsed" data-bs-toggle="collapse" role="button" href="#systemsettings-menu">
@@ -502,7 +548,7 @@ $(function(){
                <a class="nav-link" href="{{ route('systemadmin.settings') }}">
                   <div class="nav-item-status"></div>
                   <span class="nav-icon material-symbols-rounded">toggle_on</span>
-                  {{ __("General settings") }}
+                  {{ __("Function settings") }}
                </a>
             </li>
 @endcan
@@ -512,33 +558,6 @@ $(function(){
                   <div class="nav-item-status"></div>
                   <span class="nav-icon material-symbols-rounded">person</span>
                   {{ __("Users") }}
-               </a>
-            </li>
-@endif            
-@if(request()->user()->can('create', Ledningssystemet\Ledningssystemet\Models\Site::class))
-            <li class="nav-item" id="nav-site">
-               <a class="nav-link" href="/systemadmin/sites">
-                  <div class="nav-item-status"></div>
-                  <span class="nav-icon material-symbols-rounded">globe</span>
-                  {{ __("Sites") }}
-               </a>
-            </li>
-@endif            
-@if(request()->user()->can('create', Ledningssystemet\Ledningssystemet\Models\Department::class))
-            <li class="nav-item" id="nav-department">
-               <a class="nav-link" href="/systemadmin/departments">
-                  <div class="nav-item-status"></div>
-                  <span class="nav-icon material-symbols-rounded">factory</span>
-                  {{ __("Departments") }}
-               </a>
-            </li>
-@endif            
-@if(\Ledningssystemet\Ledningssystemet\Support\Modules::active('staff') && request()->user()->can('create', Ledningssystemet\Ledningssystemet\Models\Role::class))
-            <li class="nav-item" id="nav-role">
-               <a class="nav-link" href="/systemadmin/roles">
-                  <div class="nav-item-status"></div>
-                  <span class="nav-icon material-symbols-rounded">group</span>
-                  {{ __("Roles") }}
                </a>
             </li>
 @endif            
@@ -560,16 +579,6 @@ $(function(){
                </a>
             </li>
 @endif
-@if(request()->user()->can('create', Ledningssystemet\Ledningssystemet\Models\CustomProperty::class))
-            <li class="nav-item" id="nav-customproperty">
-               <a class="nav-link" href="/systemadmin/customproperties">
-                  <div class="nav-item-status"></div>
-                  <span class="nav-icon material-symbols-rounded">edit_attributes</span>
-                  {{ __("Custom properties") }}
-               </a>
-            </li>
-@endif
-
             <div data-ui-slot="sidebar.groups.systemsettings.bottom"></div>
          </ul>
       </li>

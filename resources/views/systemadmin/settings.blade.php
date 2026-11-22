@@ -1,7 +1,7 @@
 @extends('layouts.master')
 
 @section('container')
-   <h3>{{ __('General settings') }}</h3>
+   <h3>{{ __('Function settings') }}</h3>
 
    @if(session('status'))
       <div class="alert alert-success" role="status">{{ session('status') }}</div>
