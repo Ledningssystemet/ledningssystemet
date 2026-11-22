@@ -1000,6 +1000,8 @@
     "Detach risk":  "Detach risk",
     "By detaching this risk, it will be moved to the risk register":  "By detaching this risk, it will be moved to the risk register",
     "Export as Excel":  "Export as Excel",
+    "Export as CSV": "Export as CSV",
+    "The server did not return all rows for export.": "The server did not return all rows for export.",
     "Unarchive project":  "Unarchive project",
     "Archive project":  "Archive project",
     "By unarchiving this project, risk management will be continued.":  "By unarchiving this project, risk management will be continued.",

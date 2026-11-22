@@ -911,6 +911,8 @@
    "Detach risk": "Koppla bort risk",
    "By detaching this risk, it will be moved to the risk register": "Genom att koppla bort denna risk kommer den att flyttas till riskregistret",
    "Export as Excel": "Exportera som Excel",
+   "Export as CSV": "Exportera som CSV",
+   "The server did not return all rows for export.": "Servern returnerade inte alla rader för export.",
    "Unarchive project": "Avarkivera projekt",
    "Archive project": "Arkivera projekt",
    "By unarchiving this project, risk management will be continued.": "Genom att avarkivera detta projekt kommer riskhanteringen att fortsätta.",

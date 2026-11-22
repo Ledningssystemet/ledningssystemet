@@ -1,8 +1,9 @@
 import { useEffect, useImperativeHandle, useMemo, useRef, useState, type MutableRefObject } from "react";
-import { Columns3, Pencil, Trash2, X } from "lucide-react";
+import { Columns3, Download, Pencil, Trash2, X } from "lucide-react";
 import type { ColumnConfig, DetailSection, Item, ModuleConfig, ModuleController, SortState, ViewMode } from "./helpers/types";
 import { bulkPatch, filterItems, moveItem, formatDate, normalizeSearch, pageRange, paginate, SEARCH_DEBOUNCE_MS, SEARCH_MAX, sortItems } from "./helpers/logic";
 import { ApiError, crud } from "./helpers/api";
+import { exportTableCsv } from "./helpers/csvExport";
 import React from "react";
 import { ItemForm } from "./forms/ItemForm";
 import { NestedTable } from "./components/NestedTable";
@@ -136,16 +137,24 @@ export function TableModule({ config: rawConfig, data, onDataChange, controllerR
     if (err.status === 401) config.onUnauthorized?.();
     return err;
   };
+  const listQuery = () => {
+    const f: Record<string, string | string[]> = config.reorder ? {} : { ...filters };
+    if (idFilter) f.id = idFilter;
+    if (ds?.parentKey && parentId) f[ds.parentKey] = parentId;
+    return {
+      search: idFilter || config.reorder ? "" : search,
+      searchKeys: config.searchKeys ?? [],
+      filters: f,
+      sort: config.reorder ? { key: null, dir: "asc" as const } : sort,
+    };
+  };
   // API-läge: hämta från servern när sökning, filter, sortering eller sida ändras.
   useEffect(() => {
     if (!ds) return;
     let alive = true;
     setBusy(true);
     setLoadError(null);
-    const f: Record<string, string | string[]> = config.reorder ? {} : { ...filters };
-    if (idFilter) f.id = idFilter;
-    if (ds.parentKey && parentId) f[ds.parentKey] = parentId;
-    crud.list(ds, { search: idFilter || config.reorder ? "" : search, searchKeys: config.searchKeys ?? [], filters: f, page, perPage: pageSize, sort: config.reorder ? { key: null, dir: "asc" } : sort })
+    crud.list(ds, { ...listQuery(), page, perPage: pageSize })
       .then((r) => {
         if (!alive) return;
         // FK-18: tom senare sida efter borttagning → visa föregående.
@@ -188,6 +197,28 @@ export function TableModule({ config: rawConfig, data, onDataChange, controllerR
       return <>{Array.isArray(value) ? value.map(lbl).join(", ") : lbl(value)}</>;
     }
     return <>{Array.isArray(value) ? value.join(", ") : String(value ?? "")}</>;
+  };
+
+  const [exporting, setExporting] = useState(false);
+  const [exportError, setExportError] = useState<string | null>(null);
+  const exportCsv = async () => {
+    setExporting(true);
+    setExportError(null);
+    try {
+      await exportTableCsv({
+        dataSource: ds,
+        query: listQuery(),
+        rows: visible,
+        columns: config.tableColumns,
+        label: colLabel,
+        renderValue: (key, item) => renderValue(key, item[key], item),
+        filename: config.listTitle,
+      });
+    } catch (e) {
+      setExportError(reportError(e).message);
+    } finally {
+      setExporting(false);
+    }
   };
 
   // Massredigering och massradering (tabellvy)
@@ -412,11 +443,14 @@ export function TableModule({ config: rawConfig, data, onDataChange, controllerR
         onCreate={startNew}
         onOpenFilters={() => setFilterOpen(true)}
       />
-      {config.defaultTableColumns && effView === "table" && (
-        <div className="flex items-center justify-end border-b px-3 py-2">
-          <button className={btnOutline} disabled={!!inlineEditing} onClick={() => setColumnOpen(true)}>
-            <Columns3 className="h-4 w-4" />{t("Columns")}
+      {effView === "table" && (
+        <div className="flex flex-wrap items-center justify-end gap-2 border-b px-3 py-2">
+          <button className={btnOutline} disabled={!!inlineEditing || busy || !!loadError || exporting || (!idFilter && !reorderMode && search !== normalizeSearch(searchInput))} onClick={exportCsv}>
+            <Download className="h-4 w-4" />{t("Export as CSV")}
           </button>
+          {config.defaultTableColumns && <button className={btnOutline} disabled={!!inlineEditing} onClick={() => setColumnOpen(true)}>
+            <Columns3 className="h-4 w-4" />{t("Columns")}
+          </button>}
         </div>
       )}
 
@@ -449,6 +483,7 @@ export function TableModule({ config: rawConfig, data, onDataChange, controllerR
       {inlineEditing && isNew && <div className="border-b p-4"><ItemForm tagSuggestions={allValues} config={config} item={editing!} isNew onCancel={() => setEditing(null)} onSave={save} /></div>}
 
       {cmdError && <p role="alert" className="border-b px-3 py-2 text-sm text-destructive">{cmdError}</p>}
+      {exportError && <p role="alert" className="border-b px-3 py-2 text-sm text-destructive">{exportError}</p>}
       {loadError && (
         <div role="alert" className="flex items-center justify-between gap-2 border-b bg-[hsl(var(--badge-danger))] px-3 py-2 text-sm text-[hsl(var(--badge-danger-foreground))]">
           {loadError}<button className={btnOutline} onClick={reload}>{t("Retry")}</button>

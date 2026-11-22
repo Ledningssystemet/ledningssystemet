@@ -11,6 +11,22 @@ UI described in [ui.md](ui.md). The global React component registry uses
 `React.lazy` so each component's code is loaded only when its matching element
 or mount function is rendered.
 
+## Table CSV export
+
+The table view can export all configured table data columns, including hidden
+columns, as a UTF-8 CSV with a BOM and semicolon separators for Excel. The export
+includes all rows matching the active search and filters, in the current sort
+order, not just the current page or selected rows. Cell text follows the table
+rendering; action and child-table columns are excluded. Values that could be
+interpreted as spreadsheet formulas are prefixed with an apostrophe.
+
+API-backed tables request the full result with the same query and without
+pagination. The server must support an unpaginated list response; an incomplete
+paginated response produces an error instead of a partial export. The separate
+consumer regression project should cover local and API-backed tables, filtering,
+sorting, pagination, hidden columns and column selection, rendered cells, CSV escaping, formula
+protection, and API errors and incomplete responses.
+
 The `User` model and user API use `org_roles` for organizational roles, with
 `id`/`name` pairs when reading and role IDs when writing. These use the existing
 `int_roles()` relation and `role_user` pivot table. The `roles` relation is
