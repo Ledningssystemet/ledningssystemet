@@ -2,8 +2,8 @@ import type { Config } from "tailwindcss";
 
 export default {
   darkMode: ["class"],
-  content: ["./resources/js/components/table/**/*.{ts,tsx}"],
-  important: ".ls-table",
+  content: ["./resources/js/**/*.{ts,tsx}"],
+  important: ":is(.ls-table, .ls-auth)",
   prefix: "",
   theme: {
     container: {

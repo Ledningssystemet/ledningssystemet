@@ -1,6 +1,6 @@
 import React, { useRef, useState } from 'react';
 import { action, confirmAction, create, dateValue, errorMessage, nameOf, remove, t, update, type Action, type Configuration, type Id, type Participant, type Project, type ProjectSummary, type Risk, type Run } from './api';
-import { Badge, Btn, Card, Icon, Input, Label, Options, SectionTitle, Select, Textarea } from '../ui';
+import { Badge, Btn, Card, Icon, Input, Label, Options, SectionTitle, Select, Textarea } from '../../components/ui';
 import { ActivityFields, activityPayload, activityValues, type ActivityValues } from './ActionPlanPicker';
 
 export function ProjectHeader({ project, projects, config, tab, loading, onSelect, onTab }: {

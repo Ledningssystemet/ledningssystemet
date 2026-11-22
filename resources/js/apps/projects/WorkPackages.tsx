@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { action, confirmAction, create, dateValue, remove, t, todayDate, update, type Action, type Configuration, type Project, type Run, type WorkPackage } from './api';
-import { Badge, Btn, Card, Icon, Input, Label, MultiSelect2, SectionTitle, Textarea } from '../ui';
+import { Badge, Btn, Card, Icon, Input, Label, MultiSelect2, SectionTitle, Textarea } from '../../components/ui';
 import { ActivityFields, activityPayload, activityValues } from './ActionPlanPicker';
 
 export const canCompleteWorkPackage = (item: WorkPackage) =>

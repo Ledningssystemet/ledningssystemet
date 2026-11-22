@@ -43,7 +43,7 @@ class LoginController extends Controller
                ? 'data:image/png;base64,'.base64_encode(file_get_contents(resource_path().'/brand/logo/logo_passwordreset.png'))
                : '/images/logo_'.app()->getLocale().'_white.png',
             'keepAliveUrl' => route('auth.keepalive'),
-            'keepAliveIntervalMs' => 60000,
+            'keepAliveIntervalMs' => 1000,
             'texts' => [
                'email' => __('Email'),
                'password' => __('Password'),

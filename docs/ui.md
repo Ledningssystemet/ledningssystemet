@@ -21,12 +21,21 @@ the consuming application's compiler configuration.
 
 For `Gantt` usage and date-range behavior, see [Project features](projects.md#reusable-gantt-component).
 
+## Tailwind utility styles
+
+`TableModule` and `AuthApp` import their own scoped Tailwind utilities, including
+styles for dialog and select portals. Consumers do not need to configure
+Tailwind. Utilities are scoped to `.ls-table` or `.ls-auth`. The checked-in
+utility stylesheet is generated with `npm run build:table-css` after changing
+either component's utility classes or the Tailwind configuration.
+`AuthApp` uses the table module's theme and control styles, including
+`--ls-table-*` overrides. Its dark branding panel keeps the supplied light logo
+legible. Cover login, SSO, password reset and both MFA screens in the consuming
+application, including keyboard interaction, narrow layouts and theme overrides.
+
 ## Table module permissions
 
-`TableModule` imports its own scoped styles, including styles for dialog and
-select portals. Consumers do not need to configure Tailwind. The checked-in
-utility stylesheet is generated with `npm run build:table-css` after changing
-table utility classes or the Tailwind configuration. Theme overrides use
+Theme overrides use
 `--ls-table-*` variables (HSL components, for example `--ls-table-primary:
 183 83% 27%`); set them on the document or body so portal content inherits
 them too. `--ls-table-radius` is a CSS length.

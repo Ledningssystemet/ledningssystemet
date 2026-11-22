@@ -7,7 +7,9 @@ web and API routes from `routes/`. Backend models and authorization policies liv
 under `app/Models` and `app/Policies`; database changes live under
 `database/migrations`. The API controllers are under `app/Http/Controllers/Api`.
 Frontend components are under `resources/js/components`, including the shared
-UI described in [ui.md](ui.md).
+UI described in [ui.md](ui.md). The global React component registry uses
+`React.lazy` so each component's code is loaded only when its matching element
+or mount function is rendered.
 
 The `User` model and user API use `org_roles` for organizational roles, with
 `id`/`name` pairs when reading and role IDs when writing. These use the existing

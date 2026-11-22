@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import axios from 'axios';
 import { confirmAction, errorMessage, t, type Access, type Project } from './api';
-import { Btn, Card, Dropzone, Icon, Label, SectionTitle, Textarea } from '../ui';
+import { Btn, Card, Dropzone, Icon, Label, SectionTitle, Textarea } from '../../components/ui';
 
 type ProjectFile = {
     id: number;

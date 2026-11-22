@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { Gantt, Btn, Card, type GanttGroup } from '../ui';
+import { Gantt, Btn, Card, type GanttGroup } from '../../components/ui';
 import { collection, errorMessage, t, type Action, type Configuration, type ProjectSummary } from './api';
 
 type TimelineActivity = Pick<Action, 'id' | 'name' | 'project_id' | 'responsible_user_id' | 'startdate' | 'due' | 'completed_at'>;

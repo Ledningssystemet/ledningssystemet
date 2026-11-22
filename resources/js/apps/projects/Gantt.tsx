@@ -1,5 +1,5 @@
 import React from 'react';
-import { Gantt as GanttChart, type GanttGroup, type GanttRow } from '../ui/Gantt';
+import { Gantt as GanttChart, type GanttGroup, type GanttRow } from '../../components/ui/Gantt';
 import { nameOf, t, type Action, type Configuration, type Project, type WorkPackage } from './api';
 
 export function Gantt({ project, workPackages, actions, config, today }: {

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { collection, confirmAction, create, errorMessage, nameOf, remove, t, update, type Configuration, type Project, type RecurringActivity, type Run } from './api';
 import { ActivityFields, activityPayload, activityValues } from './ActionPlanPicker';
-import { Btn, Card, Label, SectionTitle, Select } from '../ui';
+import { Btn, Card, Label, SectionTitle, Select } from '../../components/ui';
 
 export const weekdays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 export const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];

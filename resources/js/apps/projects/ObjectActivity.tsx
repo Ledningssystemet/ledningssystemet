@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { collection, confirmAction, create, errorMessage, remove, t, type Access, type Id, type Run } from './api';
-import { Btn, Textarea } from '../ui';
+import { Btn, Textarea } from '../../components/ui';
 
 type Entry = { id: Id; created_at_pretty: string; created_by: string; text?: string; comment?: string; access: Access };
 

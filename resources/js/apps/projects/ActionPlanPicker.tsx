@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { confirmAction, create, dateValue, nameOf, remove, t, todayDate, update, type Action, type Configuration, type Project, type Risk, type Run, type WorkPackage } from './api';
-import { Badge, Btn, Card, Input, Label, Options, SectionTitle, Select, Textarea } from '../ui';
+import { Badge, Btn, Card, Input, Label, Options, SectionTitle, Select, Textarea } from '../../components/ui';
 import { RecurringActivities } from './RecurringActivities';
 
 export const activityValues = (item: Action | undefined, currentUserId: number) => {

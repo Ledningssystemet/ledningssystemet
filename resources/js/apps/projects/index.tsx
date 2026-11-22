@@ -9,7 +9,7 @@ import { PersonalGantt } from './PersonalGantt';
 import { AnnualWheel } from './AnnualWheel';
 import { Meetings } from './Meetings';
 import { ProjectFiles } from './ProjectFiles';
-import { Badge, Btn, Card, Icon, Input, Label, Options, SectionTitle, Select } from '../ui';
+import { Badge, Btn, Card, Icon, Input, Label, Options, SectionTitle, Select } from '../../components/ui';
 // @ts-ignore
 import './projects.css';
 

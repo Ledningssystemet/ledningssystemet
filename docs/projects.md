@@ -124,7 +124,7 @@ project, then reused while the module remains mounted. Project risks, work
 packages and full activity details are fetched only after selecting a project.
 The light dashboard-style project header, icon tabs, accented metric cards,
 full-width project rows and risk matrix are styled with
-module-scoped CSS (`resources/js/components/projects/projects.css`), without
+module-scoped CSS (`../resources/js/apps/projects`), without
 changing the surrounding application's Bootstrap theme.
 The module uses `ProjectRisk` (`project_risks`) and `ProjectActivity`
 (`project_activities`), both scoped with `filter[project_id]`. Project activities

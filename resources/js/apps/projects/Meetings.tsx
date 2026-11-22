@@ -3,7 +3,7 @@ import axios from 'axios';
 import { action, collection, confirmAction, create, errorMessage, item, remove, t, todayDate, update, type Action, type Configuration, type Meeting, type MeetingAgendaPreview, type MeetingMention, type Option, type Project, type ProjectMeetingLink } from './api';
 import { MeetingAgenda, newAgendaItem } from './MeetingAgenda';
 import { ActivityFields, activityPayload, activityValues } from './ActionPlanPicker';
-import { Badge, Btn, Card, Input, Label, Options, SectionTitle, Select } from '../ui';
+import { Badge, Btn, Card, Input, Label, Options, SectionTitle, Select } from '../../components/ui';
 
 type MeetingValues = Pick<Meeting, 'name' | 'date' | 'location' | 'agenda'>;
 type MeetingDraft = {

@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import axios from 'axios';
-import { Btn, Card, Icon, Input } from '../ui';
+import { Btn, Card, Icon, Input } from '../../components/ui';
 import { collection, errorMessage, t, type Configuration, type Id, type ProjectSummary, type RecurringActivity } from './api';
 import { participatingProjects } from './PersonalGantt';
 import { monthNames as monthKeys, weekdays } from './RecurringActivities';

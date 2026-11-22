@@ -4,7 +4,7 @@ import type { Editor } from '@tiptap/core';
 import { StarterKit } from '@tiptap/starter-kit';
 import { Mention } from '@tiptap/extension-mention';
 import { confirmAction, nameOf, t, type Action, type AgendaItem, type Configuration, type Option } from './api';
-import { Badge, Btn, Card, Icon, Input } from '../ui';
+import { Badge, Btn, Card, Icon, Input } from '../../components/ui';
 
 export const emptyDocument = () => ({ type: 'doc', content: [{ type: 'paragraph' }] });
 export const newAgendaItem = (): AgendaItem => ({

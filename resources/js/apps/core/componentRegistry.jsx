@@ -1,11 +1,27 @@
-import React from 'react';
+import React, { lazy, Suspense } from 'react';
 import ReactDOM from 'react-dom/client';
-import { GhgCalculator } from '@components/ghgcalculator/index.jsx';
-import { FormBuilder, FormViewer } from '@components/formbuilder/index.jsx';
-import { AuthApp } from '@components/auth/AuthApp.jsx';
-import { Projects } from '@components/projects/index.tsx';
-import { ProjectMentions } from '@components/projects/ProjectMentions.tsx';
-import { TableModule } from '@components/table/TableModule.tsx';
+
+const GhgCalculator = lazy(() =>
+    import('../ghgcalculator/index.jsx').then(module => ({ default: module.GhgCalculator }))
+);
+const FormBuilder = lazy(() =>
+    import('../../components/formbuilder/index.jsx').then(module => ({ default: module.FormBuilder }))
+);
+const FormViewer = lazy(() =>
+    import('../../components/formbuilder/index.jsx').then(module => ({ default: module.FormViewer }))
+);
+const AuthApp = lazy(() =>
+    import('../auth/AuthApp.jsx').then(module => ({ default: module.AuthApp }))
+);
+const Projects = lazy(() =>
+    import('../projects/index.tsx').then(module => ({ default: module.Projects }))
+);
+const ProjectMentions = lazy(() =>
+    import('../projects/ProjectMentions.tsx').then(module => ({ default: module.ProjectMentions }))
+);
+const TableModule = lazy(() =>
+    import('../../components/table/TableModule.tsx').then(module => ({ default: module.TableModule }))
+);
 
 const registry = {
     'ghg-calculator': GhgCalculator,
@@ -30,7 +46,9 @@ window.mountFormViewer = function (container, props) {
     const root = ReactDOM.createRoot(container);
     root.render(
         <React.StrictMode>
-            <FormViewer {...props} />
+            <Suspense fallback={null}>
+                <FormViewer {...props} />
+            </Suspense>
         </React.StrictMode>
     );
     return () => root.unmount();
@@ -40,7 +58,9 @@ window.mountTableModule = function (container, props) {
     const root = ReactDOM.createRoot(container);
     root.render(
         <React.StrictMode>
-            <TableModule {...props} />
+            <Suspense fallback={null}>
+                <TableModule {...props} />
+            </Suspense>
         </React.StrictMode>
     );
     return () => root.unmount();
@@ -55,7 +75,9 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             ReactDOM.createRoot(el).render(
                 <React.StrictMode>
-                    <Component {...props} />
+                    <Suspense fallback={null}>
+                        <Component {...props} />
+                    </Suspense>
                 </React.StrictMode>
             );
         });
