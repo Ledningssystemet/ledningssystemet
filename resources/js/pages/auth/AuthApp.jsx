@@ -125,7 +125,7 @@ export function AuthApp(props) {
                 await window.axios.post(activeProps.keepAliveUrl, {}, csrfToken ? { headers: { 'X-CSRF-TOKEN': csrfToken } } : undefined);
                 setKeepAliveOk(true);
             } catch (e) {
-                setKeep/AliveOk(false);
+                setKeepAliveOk(false);
             }
         }, activeProps.keepAliveIntervalMs);
 
