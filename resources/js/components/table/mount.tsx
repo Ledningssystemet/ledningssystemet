@@ -47,7 +47,7 @@ export function mountMasterDetail(el: HTMLElement, overrides: Partial<ModuleConf
   const base = el.dataset.configName ? registry.get(el.dataset.configName) : undefined;
   if (el.dataset.configName && !base) throw new Error(translate("Unknown configuration: {name}", { name: el.dataset.configName }));
   const fromData = configFromDataset({ ...el.dataset });
-  const config = { ...(base ?? {}), ...fromData, ...overrides, dataSource: fromData.dataSource ? { ...base?.dataSource, ...fromData.dataSource } : base?.dataSource } as ModuleConfig;
+  const config = { ...(base ?? {}), ...fromData, ...overrides, dataSource: (base?.dataSource || fromData.dataSource || overrides.dataSource) ? { ...base?.dataSource, ...fromData.dataSource, ...overrides.dataSource } : undefined } as ModuleConfig;
   const ref = createRef<ModuleController>() as { current: ModuleController | null };
   const root = createRoot(el);
   root.render(<TableModule config={config} data={[]} controllerRef={ref} />);

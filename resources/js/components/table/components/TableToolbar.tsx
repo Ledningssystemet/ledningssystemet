@@ -38,7 +38,7 @@ export function TableToolbar({ title, count, reorderMode, idFilter, searchInput,
         </button>
         <ToggleGroup.Root type="single" value={view} disabled={viewChangeDisabled} onValueChange={(value) => value && onViewChange(value as ViewMode)} aria-label={t("Select view")} className="inline-flex overflow-hidden rounded-md border">
           {([["master-detail", "Master/Detail", LayoutList], ["table", "Table", Table2], ["list", "List", Rows3]] as const).filter(([value]) => availableViews.includes(value)).map(([value, label, Icon]) => (
-            <ToggleGroup.Item key={value} value={value} className="inline-flex items-center gap-1.5 border-r px-3 py-1.5 text-sm last:border-0 hover:bg-surface-hover data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">
+            <ToggleGroup.Item key={value} value={value} aria-label={t(label)} className="inline-flex items-center gap-1.5 border-r px-3 py-1.5 text-sm last:border-0 hover:bg-surface-hover data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">
               <Icon className="h-4 w-4" /><span className="hidden sm:inline">{t(label)}</span>
             </ToggleGroup.Item>
           ))}
