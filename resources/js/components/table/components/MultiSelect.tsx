@@ -29,14 +29,17 @@ export function MultiSelect({ label, options, value, onChange, id, emptyLabel = 
   };
   return (
     <Popover.Root>
-      <Popover.Trigger asChild>
-        <button id={id} type="button" aria-label={label} className={`${field} justify-between text-left`}>
-          <span className="flex flex-wrap gap-1">
-            {value.length ? value.map((v) => <Chip key={v} label={optionLabels.get(v) ?? v} onRemove={() => toggle(v)} />) : <span className="text-muted-foreground">{emptyLabel}</span>}
-          </span>
-          <ChevronDown className="h-4 w-4 shrink-0 opacity-60" />
-        </button>
-      </Popover.Trigger>
+      <Popover.Anchor asChild>
+        <div className={field}>
+          {value.map((v) => <Chip key={v} label={optionLabels.get(v) ?? v} onRemove={() => toggle(v)} />)}
+          <Popover.Trigger asChild>
+            <button id={id} type="button" aria-label={label} className="flex min-w-[2rem] flex-1 items-center justify-between gap-1 text-left outline-none">
+              {!value.length && <span className="text-muted-foreground">{emptyLabel}</span>}
+              <ChevronDown className="ml-auto h-4 w-4 shrink-0 opacity-60" />
+            </button>
+          </Popover.Trigger>
+        </div>
+      </Popover.Anchor>
       <Popover.Portal>
         <div className="ls-table">
         <Popover.Content align="start" sideOffset={4} className="z-[60] w-[var(--radix-popover-trigger-width)] rounded-md border bg-popover p-1 shadow-lg">

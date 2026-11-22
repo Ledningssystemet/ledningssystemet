@@ -340,6 +340,9 @@ body {
 .min-w-\[220px\]{
    min-width: 220px !important;
 }
+.min-w-\[2rem\]{
+   min-width: 2rem !important;
+}
 .min-w-\[var\(--radix-select-trigger-width\)\]{
    min-width: var(--radix-select-trigger-width) !important;
 }

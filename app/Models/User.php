@@ -432,14 +432,35 @@ static::creating(function ($model) {
          }
 
          $propertyId = $property->id;
+         $propertyType = $property->type;
          $filters[] = \Spatie\QueryBuilder\AllowedFilter::callback(
             'customproperty_'.$propertyId,
-            static function (Builder $query, $value) use ($propertyId) {
-               $values = is_array($value) ? $value : explode(',', (string) $value);
-               $jsonValues = array_map(
-                  static fn ($value) => json_encode((string) $value),
-                  array_filter($values, static fn ($value) => (string) $value !== '')
-               );
+            static function (Builder $query, $value) use ($propertyId, $propertyType) {
+               $values = is_array($value) ? $value : (is_string($value) ? explode(',', $value) : [$value]);
+               $jsonValues = [];
+
+               foreach ($values as $option) {
+                  if (! is_scalar($option) || $option === '') {
+                     continue;
+                  }
+
+                  if ($propertyType === 'boolean' && in_array($option, [true, false, 1, 0, '1', '0', 'true', 'false'], true)) {
+                     $boolean = in_array($option, [true, 1, '1', 'true'], true);
+                     foreach ([$boolean, (int) $boolean, (string) (int) $boolean] as $representation) {
+                        $jsonValues[] = json_encode($representation, JSON_THROW_ON_ERROR);
+                     }
+                     continue;
+                  }
+
+                  $option = (string) $option;
+                  $jsonValues[] = json_encode($option, JSON_THROW_ON_ERROR);
+                  if ($propertyType !== 'boolean' && ctype_digit($option)) {
+                     $integer = filter_var(ltrim($option, '0') ?: '0', FILTER_VALIDATE_INT);
+                     if ($integer !== false) {
+                        $jsonValues[] = json_encode($integer, JSON_THROW_ON_ERROR);
+                     }
+                  }
+               }
 
                if ($jsonValues === []) {
                   return;

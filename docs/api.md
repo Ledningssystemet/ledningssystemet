@@ -50,7 +50,9 @@ field allowlist. Review these declarations when policies or accessors change.
 For `/api/v1/crud/User`, `filter[name_or_email]` searches names or e-mail
 addresses, `filter[enabled]` filters by enabled state, and
 `filter[customproperty_<id>]` filters non-text custom properties by their stored
-option value. These filters are also available through TableModule's
+option value. Reference IDs match both JSON numbers and strings. Boolean options
+`0`/`false` and `1`/`true` match the corresponding JSON boolean, number or
+numeric string. These filters are also available through TableModule's
 `searchKeys: ["name", "email"]` and filter configuration.
 
 For writes, use the create, item-update, delete, and custom-action operations

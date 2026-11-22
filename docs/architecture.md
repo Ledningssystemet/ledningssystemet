@@ -48,6 +48,11 @@ tables. Verify custom properties, computed values, authorization-dependent
 fields, rejected fields and models without dependency declarations, as well as
 user reassignment and notification settings in the Composer/npm host.
 
+Table multiselects keep selected-chip removal buttons separate from the button
+that opens the options popover. In the consumer regression project, check
+keyboard and pointer selection and removal, focus, disabled options, clearing,
+and popover alignment and width with empty and wrapped selections.
+
 The `User` model and user API use `org_roles` for organizational roles, with
 `id`/`name` pairs when reading and role IDs when writing. These use the existing
 `int_roles()` relation and `role_user` pivot table. The `roles` relation is
