@@ -16,6 +16,48 @@ The npm exports `@ledningssystemet/ledningssystemet/app` and
 load its styles for consuming applications. The app entry also registers the
 editors and component registry and mounts UI extension slots on DOM ready.
 
+## Shared page tabs
+
+Import `Tabs` and its `TabItem`/`TabsProps` types from
+`@ledningssystemet/ledningssystemet/components/tabs`. It uses the generated
+Tailwind stylesheet, which is imported by the component, and no Bootstrap or
+project-specific CSS. Each item has a unique `value`, translated `label`,
+optional Lucide component in `icon`, optional `disabled` flag and optional
+React `content`.
+
+```tsx
+import { Tabs } from '@ledningssystemet/ledningssystemet/components/tabs';
+import { Settings, Users } from 'lucide-react';
+
+<Tabs
+  label="Administration"
+  defaultValue="users"
+  items={[
+    { value: 'users', label: 'Users', icon: Users, content: <UsersPage /> },
+    { value: 'settings', label: 'Settings', icon: Settings, content: <SettingsPage /> },
+  ]}
+/>
+```
+
+Use `value` and `onValueChange` for controlled navigation; the callback is a
+request to change tabs, so a parent can first confirm unsaved edits. Without
+`value`, `defaultValue` selects the initial tab (otherwise the first enabled
+tab is used). The parent owns validity of controlled values and changes to the
+item list. `className` customizes the outer container.
+
+When any item provides `content`, Radix supplies linked tabs and panels with
+manual keyboard activation: arrow keys move focus and Enter/Space selects.
+Inactive panels unmount. With no `content`, the component renders page
+navigation with native buttons and `aria-current`; the parent owns content
+rendering. The project header uses this mode, preserving permission-dependent
+tabs, selected-project state and its unsaved-meeting navigation confirmation.
+
+Consumer regression coverage should include npm imports and generated styles,
+Lucide icons, narrow-screen scrolling, disabled tabs, controlled and uncontrolled
+selection, keyboard/focus behavior, panel unmounting and multiple instances.
+For projects, also cover permission-dependent tabs, project selection and
+accepting/cancelling the unsaved-meeting confirmation.
+
 ## Table CSV export
 
 API-backed table configurations automatically request `fields[_]` (or
@@ -141,6 +183,23 @@ apply to the entire installation and are persisted by Laravel Pennant in
 `system_settings`, using its dedicated `ledningssystemet` store and null scope.
 The Assessment tab also stores the control-status reassessment deadline in days;
 it defaults to 365 days. Disabling a module does not delete its data.
+
+The React settings form uses the shared `Tabs` component for Features, Privacy
+and Assessment, with Lucide icons. Draft values are held by the form and survive
+tab changes. Module switches save immediately through the authorized
+`PATCH /systemadmin/settings/modules/{module}` endpoint, which validates the
+module name and boolean value and changes only that module. Switches remain
+disabled while saving and display their new state only after success; failures
+show an error and retain the previous state. No reload occurs, preserving drafts
+in other tabs. The Save button is hidden on Features; on Privacy and Assessment
+it submits those two sections without rewriting modules. The existing PUT route
+still accepts complete module configurations for compatibility.
+
+Consumer regression coverage should check immediate module persistence,
+rejected names/values, authorization, network/server errors, overlapping changes,
+editing across tabs before saving, validation for inactive sections, and
+persistence after reloading. Saving contact/assessment drafts must not overwrite
+module changes made by another administrator.
 
 Run `php artisan migrate --force` during deployment, before serving requests.
 The migration imports the installation's existing `DISABLE_STAFF`,

@@ -54,7 +54,6 @@
 
 *, ::before, ::after {
    box-sizing: border-box !important;
-   border: 0 solid hsl(var(--border)) !important;
 }
 .sr-only{
    position: absolute !important;
@@ -131,6 +130,10 @@
 .m-0{
    margin: 0px !important;
 }
+.mx-3{
+   margin-left: 0.75rem !important;
+   margin-right: 0.75rem !important;
+}
 .my-3{
    margin-top: 0.75rem !important;
    margin-bottom: 0.75rem !important;
@@ -192,6 +195,9 @@
 }
 .mt-3{
    margin-top: 0.75rem !important;
+}
+.mt-4{
+   margin-top: 1rem !important;
 }
 .mt-6{
    margin-top: 1.5rem !important;
@@ -446,6 +452,11 @@
    margin-top: calc(1.25rem * calc(1 - var(--tw-space-y-reverse))) !important;
    margin-bottom: calc(1.25rem * var(--tw-space-y-reverse)) !important;
 }
+.space-y-6 > :not([hidden]) ~ :not([hidden]){
+   --tw-space-y-reverse: 0 !important;
+   margin-top: calc(1.5rem * calc(1 - var(--tw-space-y-reverse))) !important;
+   margin-bottom: calc(1.5rem * var(--tw-space-y-reverse)) !important;
+}
 .overflow-hidden{
    overflow: hidden !important;
 }
@@ -496,6 +507,9 @@
 }
 .border-input{
    border-color: hsl(var(--input)) !important;
+}
+.border-list-active-border{
+   border-color: hsl(var(--list-active-border)) !important;
 }
 .border-primary{
    border-color: hsl(var(--primary)) !important;
@@ -560,6 +574,9 @@
 }
 .bg-foreground\/40{
    background-color: hsl(var(--foreground) / 0.4) !important;
+}
+.bg-list-active{
+   background-color: hsl(var(--list-active)) !important;
 }
 .bg-muted{
    background-color: hsl(var(--muted)) !important;
@@ -915,6 +932,9 @@
 .hover\:bg-surface-hover:hover{
    background-color: hsl(var(--surface-hover)) !important;
 }
+.hover\:text-accent-foreground:hover{
+   color: hsl(var(--accent-foreground)) !important;
+}
 .hover\:text-foreground:hover{
    color: hsl(var(--foreground)) !important;
 }
@@ -945,8 +965,14 @@
 .focus-visible\:ring-ring:focus-visible{
    --tw-ring-color: hsl(var(--ring)) !important;
 }
+.focus-visible\:ring-offset-2:focus-visible{
+   --tw-ring-offset-width: 2px !important;
+}
 .active\:cursor-grabbing:active{
    cursor: grabbing !important;
+}
+.disabled\:pointer-events-none:disabled{
+   pointer-events: none !important;
 }
 .disabled\:cursor-not-allowed:disabled{
    cursor: not-allowed !important;
@@ -998,6 +1024,11 @@
 }
 @media (min-width: 640px){
 
+   .sm\:mx-7{
+      margin-left: 1.75rem !important;
+      margin-right: 1.75rem !important;
+   }
+
    .sm\:inline{
       display: inline !important;
    }
@@ -1013,6 +1044,11 @@
    .sm\:px-10{
       padding-left: 2.5rem !important;
       padding-right: 2.5rem !important;
+   }
+
+   .sm\:px-4{
+      padding-left: 1rem !important;
+      padding-right: 1rem !important;
    }
 }
 @media (min-width: 768px){

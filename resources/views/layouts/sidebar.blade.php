@@ -565,7 +565,7 @@ $(function(){
             <li class="nav-item" id="nav-accessgroup">
                <a class="nav-link" href="/systemadmin/access">
                   <div class="nav-item-status"></div>
-                  <span class="nav-icon material-symbols-rounded">key</span>
+                  <span class="nav-icon material-symbols-rounded">manage_accounts</span>
                   {{ __("Access groups") }}
                </a>
             </li>

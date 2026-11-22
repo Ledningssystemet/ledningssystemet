@@ -22,6 +22,9 @@ const ProjectMentions = lazy(() =>
 const TableModule = lazy(() =>
     import('../table/TableModule.tsx').then(module => ({ default: module.TableModule }))
 );
+const SystemSettingsForm = lazy(() =>
+    import('../../pages/settings/SystemSettingsForm.tsx').then(module => ({ default: module.SystemSettingsForm }))
+);
 
 const registry = {
     'ghg-calculator': GhgCalculator,
@@ -31,6 +34,7 @@ const registry = {
     'projects-module': Projects,
     'project-mentions': ProjectMentions,
     'table-module': TableModule,
+    'system-settings-form': SystemSettingsForm,
 };
 
 /**

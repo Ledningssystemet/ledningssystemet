@@ -484,39 +484,6 @@
     text-decoration: underline;
 }
 
-.projects-module .pm-tabs {
-    display: flex;
-    gap: 8px;
-    padding: 0 32px 4px;
-    overflow-x: auto;
-}
-
-.projects-module .pm-tab {
-    flex-shrink: 0;
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 10px 16px;
-    border: 1px solid transparent;
-    border-radius: 10px;
-    background: #fff;
-    color: var(--pm-muted);
-    font: inherit;
-    font-weight: 500;
-}
-
-.projects-module .pm-tab:hover {
-    color: var(--pm-primary);
-    background: #e8f2f2;
-}
-
-.projects-module .pm-tab[aria-current="page"] {
-    color: #075c65;
-    border-color: #8bc9cc;
-    background: #dff1f2;
-    box-shadow: 0 2px 3px #1826330d;
-}
-
 .projects-module .pm-body {
     padding: 24px 32px 32px;
     min-height: 400px;
@@ -1119,8 +1086,6 @@
     .projects-module .pm-project-title { font-size: 30px; }
     .projects-module .pm-overview-grid { grid-template-columns: minmax(0, 1fr); }
     .projects-module .pm-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-    .projects-module .pm-tabs { padding: 0 16px 4px; }
-    .projects-module .pm-tab { padding: 10px 12px; }
     .projects-module .pm-project-row { flex-wrap: wrap; gap: 12px; padding: 20px 16px; }
     .projects-module .pm-project-row-badges { width: 100%; max-width: none; padding-left: 50px; justify-content: flex-start; }
     .projects-module .pm-list-toolbar { padding: 20px 16px; }

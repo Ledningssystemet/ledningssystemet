@@ -2,20 +2,23 @@ import React, { useRef, useState } from 'react';
 import { action, confirmAction, create, dateValue, errorMessage, nameOf, remove, t, update, type Action, type Configuration, type Id, type Participant, type Project, type ProjectSummary, type Risk, type Run } from './api';
 import { Badge, Btn, Card, Icon, Input, Label, Options, SectionTitle, Select, Textarea } from '../../components/ui';
 import { ActivityFields, activityPayload, activityValues, type ActivityValues } from './ActionPlanPicker';
+import { CalendarDays, ChartGantt, FolderOpen, LayoutDashboard, ListChecks, PanelsTopLeft, Settings as SettingsIcon, TriangleAlert, Users } from 'lucide-react';
+import { Tabs, type TabItem } from '../../components/tabs';
 
 export function ProjectHeader({ project, projects, config, tab, loading, onSelect, onTab }: {
     project?: ProjectSummary; projects: ProjectSummary[]; config: Configuration; tab: string; loading: boolean;
     onSelect: (id: Id | null) => void; onTab: (tab: string) => void;
 }) {
-    const tabs = [
-        ['overview', 'Overview', 'dashboard'], ['team', 'Team', 'group'],
-        ...(config.canReadRisks ? [['risks', 'Risks', 'warning']] : []),
-        ...(config.canReadActions ? [['actions', 'Activities', 'checklist']] : []),
-        ...(config.canReadWorkPackages ? [['work-packages', 'Work packages', 'workspaces']] : []),
-        ...(config.canReadWorkPackages || config.canReadActions ? [['gantt', 'Gantt', 'view_timeline']] : []),
-        ['meetings', 'Meetings', 'event_note'],
-        ['files', 'Files', 'folder_open'],
-        ['settings', 'Settings', 'settings'],
+    const tabs: TabItem[] = [
+        { value: 'overview', label: t('Overview'), icon: LayoutDashboard },
+        { value: 'team', label: t('Team'), icon: Users },
+        ...(config.canReadRisks ? [{ value: 'risks', label: t('Risks'), icon: TriangleAlert }] : []),
+        ...(config.canReadActions ? [{ value: 'actions', label: t('Activities'), icon: ListChecks }] : []),
+        ...(config.canReadWorkPackages ? [{ value: 'work-packages', label: t('Work packages'), icon: PanelsTopLeft }] : []),
+        ...(config.canReadWorkPackages || config.canReadActions ? [{ value: 'gantt', label: t('Gantt'), icon: ChartGantt }] : []),
+        { value: 'meetings', label: t('Meetings'), icon: CalendarDays },
+        { value: 'files', label: t('Files'), icon: FolderOpen },
+        { value: 'settings', label: t('Settings'), icon: SettingsIcon },
     ];
     return <header className="pm-header">
         <select className="pm-project-select" aria-label={t('Select project')} value={project?.id ?? ''} disabled={loading} onChange={event => onSelect(Number(event.target.value) || null)}>
@@ -30,9 +33,7 @@ export function ProjectHeader({ project, projects, config, tab, loading, onSelec
                 {project?.description && <div className="pm-header-description text-break" style={{ whiteSpace: 'pre-wrap' }}>{project.description}</div>}
             </div>
         </div>
-        {project && <nav className="pm-tabs" aria-label={t('Project')}>
-            {tabs.map(([id, label, icon]) => <button key={id} type="button" className="pm-tab" aria-current={tab === id ? 'page' : undefined} onClick={() => onTab(id)}><Icon name={icon} />{t(label)}</button>)}
-        </nav>}
+        {project && <Tabs items={tabs} label={t('Project')} value={tab} onValueChange={onTab} className="mx-3 sm:mx-7" />}
     </header>;
 }
 

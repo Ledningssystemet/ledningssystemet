@@ -242,6 +242,7 @@ Route::group(['namespace' => 'Ledningssystemet\Ledningssystemet\Http\Controllers
       });
       Route::get('/systemadmin/settings', [SystemSettingsController::class, 'index'])->name('systemadmin.settings');
       Route::put('/systemadmin/settings', [SystemSettingsController::class, 'update'])->name('systemadmin.settings.update');
+      Route::patch('/systemadmin/settings/modules/{module}', [SystemSettingsController::class, 'updateModule'])->name('systemadmin.settings.modules.update');
       Route::get('/systemadmin/access', function() { return view('systemadmin.access'); }); // Display access settings
       Route::get('/systemadmin/users', function() { return view('systemadmin.users'); }); // Display users
       Route::get('/systemadmin/users/{user}/notification-settings', [SystemUserNotificationSettingsController::class, 'show'])->whereNumber('user');

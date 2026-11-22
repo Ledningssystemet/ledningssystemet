@@ -1,156 +1,104 @@
-@php if(Auth::user()->cannot('index', \Ledningssystemet\Ledningssystemet\Models\AccessGroup::class)) abort(403); @endphp
-@extends('layouts.master')
-@section('container')
+@php
+if (Auth::user()->cannot('index', \Ledningssystemet\Ledningssystemet\Models\AccessGroup::class)) abort(403);
 
-<script>
-$(function(){
-   $('#tableContainer').jtable({
-      title: '{{ __("Access groups") }}',
-      paging: true,
-      searchfield: true,
-      tableId: 'accesstable',
-      bootstrap: true,
-      accordion: true,
-      messages: {
-         addNewRecord: '{{ __('Create access group') }}',
-      },
-      actions: {
-@if(Auth::user()->can('index', 'Ledningssystemet\Ledningssystemet\\Models\\AccessGroup'))
-         listAction: '/api/v1/items/AccessGroup',
-@endif
-@if(Auth::user()->can('create', 'Ledningssystemet\Ledningssystemet\\Models\\AccessGroup'))
-         createAction: '/api/v1/items/AccessGroup',
-@endif
-@if(Auth::user()->can('update', 'Ledningssystemet\Ledningssystemet\\Models\\AccessGroup'))
-         updateAction: '/api/v1/items/AccessGroup',
-@endif         
-@if(Auth::user()->can('delete', 'Ledningssystemet\Ledningssystemet\\Models\\AccessGroup'))
-         deleteAction: '/api/v1/items/AccessGroup',
-@endif         
-      },
-      fields: {
-         id: {
-            key: true,
-            list: false,
-            create: false,
-            edit: false,
-         },
-         name: {
-            title: '{{ __('Name') }}',
-            create: true,
-            edit: true,
-            list: true,
-            required: true,
-            header: true,
-            maxlength: 255,
-         },
-@if(config('ledningssystemet.graph_sync_enabled', false))
-         external_provider_group_id: {
-            title: '{{ config("ledningssystemet.graph_provider_name", __("External provider"))." ".__("group") }}',
-            create: true,
-            edit: true,
-            list: true,
+$optionList = fn ($items) => $items
+   ->map(fn ($item) => ['value' => (string) $item->id, 'label' => $item->name])
+   ->values()
+   ->all();
 
-            defaultValue: null,
-            options: [
-               { Value: null, DisplayText: '{{ __("None") }}' },
-@foreach(\Illuminate\Support\Facades\DB::table('external_provider_groups')->orderBy('name')->get() as $obj)
-               { Value: {{$obj->id}}, DisplayText: '{{ $obj->name }}' },
-@endforeach
-            ]
-         },
-         hr0: {
-            list: true,
-            edit: false,
-            create: false,
-            display: function(data){
-               return $('<hr />'); 
-            }
-         },
+$userOptions = $optionList(\Ledningssystemet\Ledningssystemet\Models\User::orderBy('name')->get()->each->setAppends([]));
+$riskLevelOptions = [
+   ['value' => '', 'label' => __('None')],
+   ...$optionList(\Ledningssystemet\Ledningssystemet\Models\RiskLevel::orderBy('ordinal')->get()->each->setAppends([])),
+];
 
-@endif
-         users: {
-            title: '{{ __('Users') }}',
-            create: true,
-            edit: true,
-            list: true,
-            multiple: true,
-@if(config('ledningssystemet.graph_sync_enabled', false))
-            tooltip: 'This will be overwritten by the next synchronization with external provider if a group is selected above',
-@endif
-            options: [
-@foreach(Ledningssystemet\Ledningssystemet\Models\User::orderBy('name')->get()->each->setAppends([]) as $obj)
-               { Value: {{ $obj->id }}, DisplayText: @php echo(json_encode($obj->name)); @endphp },
-@endforeach
-            ]
-         },
-         hr1: {
-            list: true,
-            edit: false,
-            create: false,
-            display: function(data){
-               return $('<hr />'); 
-            }
-         },
-         risk_level_id: {
-            title: '{{ __('Max risk acceptance level') }}',
-            create: true,
-            edit: true,
-            list: true,
-            defaultValue: null,
-            options: [
-               { Value: null, DisplayText: '{{ __("None") }}' },
-@foreach(Ledningssystemet\Ledningssystemet\Models\RiskLevel::orderBy('ordinal')->get()->each->setAppends([]) as $obj)
-               { Value: {{$obj ->id}}, DisplayText: '{{ $obj->name }}' },
-@endforeach
-            ]
-         },
-         hr2: {
-            list: true,
-            edit: false,
-            create: false,
-            display: function(data){
-               return $('<hr />'); 
-            }
-         },
-         permission_ids: {
-            title: '{{ __('Access rights') }}',
-            create: true,
-            edit: true,
-            list: true,
-            multiple: true,
-            options: [
-@php   
-   $permissions = DB::table('permissions')
-      ->where('guard_name', Ledningssystemet\Ledningssystemet\Models\AccessGroup::SHARED_GUARD)
-      ->orderBy('name')
-      ->pluck('name', 'id')
-      ->toArray();
+$permissions = DB::table('permissions')
+   ->where('guard_name', \Ledningssystemet\Ledningssystemet\Models\AccessGroup::SHARED_GUARD)
+   ->orderBy('name')
+   ->pluck('name', 'id')
+   ->map(fn ($name) => __($name))
+   ->toArray();
+asort($permissions);
+$permissionOptions = collect($permissions)
+   ->map(fn ($label, $value) => ['value' => (string) $value, 'label' => $label])
+   ->values()
+   ->all();
 
-   array_map(function($permissionId) use (&$permissions) {
-      $permissions[$permissionId] = __($permissions[$permissionId]);
-   }, array_keys($permissions));
+$tableColumns = ['name', 'users', 'risk_level_id', 'permission_ids'];
+$columns = [
+   ['key' => 'name', 'label' => __('Name'), 'form' => 'both', 'required' => true, 'maxLength' => 255, 'sortable' => true],
+   ['key' => 'users', 'label' => __('Users'), 'type' => 'select', 'multiple' => true, 'form' => 'both', 'options' => $userOptions, 'sortable' => false],
+   ['key' => 'risk_level_id', 'label' => __('Max risk acceptance level'), 'type' => 'select', 'form' => 'both', 'options' => $riskLevelOptions, 'sortable' => false],
+   ['key' => 'permission_ids', 'label' => __('Access rights'), 'type' => 'select', 'multiple' => true, 'form' => 'both', 'options' => $permissionOptions, 'sortable' => false],
+];
 
-   asort($permissions);
+if (config('ledningssystemet.graph_sync_enabled', false)) {
+   $externalProviderOptions = [
+      ['value' => '', 'label' => __('None')],
+      ...DB::table('external_provider_groups')
+         ->orderBy('name')
+         ->get()
+         ->map(fn ($group) => ['value' => (string) $group->id, 'label' => $group->name])
+         ->values()
+         ->all(),
+   ];
+   $externalProviderLabel = config('ledningssystemet.graph_provider_name', __('External provider group'));
+   $tableColumns[] = 'external_provider_group_id';
+   $columns[] = [
+      'key' => 'external_provider_group_id',
+      'label' => $externalProviderLabel,
+      'type' => 'select',
+      'form' => 'both',
+      'options' => $externalProviderOptions,
+      'sortable' => false,
+      'help' => __('This will be overwritten by the next synchronization with external provider if a group is selected above'),
+   ];
+}
+
+$tableConfig = [
+   'listTitle' => __('Access groups'),
+   'tableId' => 'accesstable',
+   'titleKey' => 'name',
+   'subtitleKeys' => [],
+   'defaultView' => 'masterDetail',
+   'editMode' => 'popup',
+   'perPage' => 10,
+   'searchKeys' => ['name'],
+   'dataSource' => [
+      'baseUrl' => '/api/v1/crud',
+      'model' => 'AccessGroup',
+      'fields' => ['access', 'users', 'permission_ids', 'risk_level_id', 'external_provider_group_id'],
+      'sort' => ['name'],
+      'headers' => ['X-CSRF-TOKEN' => csrf_token()],
+   ],
+   'permissions' => [
+      'create' => Auth::user()->can('create', \Ledningssystemet\Ledningssystemet\Models\AccessGroup::class),
+      'update' => Auth::user()->can('update', \Ledningssystemet\Ledningssystemet\Models\AccessGroup::class),
+      'delete' => Auth::user()->can('delete', \Ledningssystemet\Ledningssystemet\Models\AccessGroup::class),
+   ],
+   'columns' => $columns,
+   'tableColumns' => $tableColumns,
+   'defaultTableColumns' => array_values(array_intersect($tableColumns, ['name', 'users', 'permission_ids'])),
+   'detailSections' => [],
+   'filters' => [],
+   'newItemDefaults' => [
+      'users' => [],
+      'permission_ids' => [],
+      'risk_level_id' => '',
+      'external_provider_group_id' => '',
+   ],
+];
 @endphp
-@foreach($permissions as $permissionId => $permissionName)
-               { Value: {{ $permissionId }}, DisplayText: @php echo(json_encode($permissionName)); @endphp },
-@endforeach
-            ]
-         },
-         hr3: {
-            list: true,
-            edit: false,
-            create: false,
-            display: function(data){
-               return $('<hr />'); 
-            }
-         },
-      },
-   });
-   $('#tableContainer').jtable('load');      
+@extends('layouts.master')
+
+@section('container')
+<script>
+$(function () {
+   window.mountTableModule(
+      document.getElementById('tableContainer'),
+      { config: @json($tableConfig), data: [] }
+   );
 });
 </script>
 <div id="tableContainer"></div>
-   
 @endsection
