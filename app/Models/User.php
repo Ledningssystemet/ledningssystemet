@@ -101,6 +101,41 @@ static::creating(function ($model) {
       'access_groups',
    ];
 
+   public function getAuthorizationFields(): array
+   {
+      return ['id'];
+   }
+
+   public function getFieldDependencies(): array
+   {
+      return [
+         'access' => [],
+         'departments' => [],
+         'org_roles' => [],
+         'status' => ['enabled', 'external_id'],
+         'direct_reports' => [],
+         'activitiescount' => [],
+         'activityflowcount' => [],
+         'agreementcount' => [],
+         'assetscount' => [],
+         'controlscount' => [],
+         'control_actionscount' => [],
+         'customercount' => [],
+         'findingscount' => [],
+         'formcount' => [],
+         'incidentscount' => [],
+         'information_typescount' => [],
+         'objectivescount' => [],
+         'processescount' => [],
+         'process_performance_metricscount' => [],
+         'projectcount' => [],
+         'projectactivitycount' => [],
+         'riskscount' => [],
+         'supplierscount' => [],
+         'access_groups' => [],
+      ];
+   }
+
    public function getAccessAttribute($user = null)
    {
       if(null == $user)

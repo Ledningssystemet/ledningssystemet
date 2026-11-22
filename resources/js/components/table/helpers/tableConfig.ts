@@ -2,6 +2,21 @@ import { normalizeOptions } from "./logic";
 import type { ColumnConfig, CustomProperty, ModuleConfig } from "./types";
 import { t } from "../../../lib/i18n";
 
+/** Alla fält som behövs för listor, detaljer, formulär och export. */
+export function tableDataSource(config: ModuleConfig): ModuleConfig["dataSource"] {
+  const ds = config.dataSource;
+  if (!ds) return undefined;
+  const excluded = new Set(config.columns.filter((column) => column.apiField === false).map((column) => column.key));
+  const fields = [
+    config.titleKey,
+    ...config.subtitleKeys,
+    ...config.columns.map((column) => column.key),
+    ...config.tableColumns,
+    ...config.detailSections.filter((section) => !section.childConfig).map((section) => section.key),
+  ].filter((field) => field && !excluded.has(field));
+  return { ...ds, fields: Array.from(new Set(["id", ...fields, ...(ds.fields ?? [])])) };
+}
+
 export const colOptions = (column: ColumnConfig, draft?: Record<string, any>) =>
   normalizeOptions(column.optionsFor && draft ? column.optionsFor(draft) : column.optionsFor ? column.optionsFor({}) : column.options);
 

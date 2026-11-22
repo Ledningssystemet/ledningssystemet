@@ -30,6 +30,23 @@ legacy `index` parameters such as `search` are not automatically available.
 Without `per_page`, a list returns an array. With `per_page` (and optionally
 `page`), it returns a pagination object with `data` and pagination metadata.
 
+Field selection applies to the response, including requested appended attributes
+and configured `customproperty_<id>` attributes. Unknown or disallowed fields
+return HTTP 400. The API also selects the model key and any declared columns
+needed for authorization or requested accessors; those internal columns are
+not returned unless explicitly requested and allowed. When a model has not
+declared its authorization dependencies, or an accessor's dependencies are
+unknown, the API selects all database columns to preserve behavior. Omitting
+`fields` retains the full existing response.
+
+Models can opt into a narrower query by implementing
+`getAuthorizationFields(): array` with every column used by their view and
+access policies, and `getFieldDependencies(): array` mapping each supported
+appended attribute to the database columns it needs. Declare an empty array
+when no columns beyond the model key are needed. Include foreign keys used by
+relations and eager loads. These internal dependencies do not expand the public
+field allowlist. Review these declarations when policies or accessors change.
+
 For `/api/v1/crud/User`, `filter[name_or_email]` searches names or e-mail
 addresses, `filter[enabled]` filters by enabled state, and
 `filter[customproperty_<id>]` filters non-text custom properties by their stored

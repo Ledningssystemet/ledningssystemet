@@ -16,6 +16,8 @@ export type FieldType = "text" | "textarea" | "number" | "date" | "datetime" | "
 
 export interface ColumnConfig {
   key: string;
+  /** false för en virtuell kolumn vars key inte är ett API-fält; ange callback-beroenden i dataSource.fields. */
+  apiField?: boolean;
   /** FK-06: eget postberoende innehåll (text, länkar, knappar …). */
   render?: (item: Item) => import("react").ReactNode;
   label: string;

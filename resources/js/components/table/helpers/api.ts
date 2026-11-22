@@ -9,7 +9,7 @@ export interface DataSource {
   model: string;
   /** Tillåtna filter som får skickas som filter[fält]. Saknas listan skickas alla aktiva filter. */
   allowedFilters?: string[];
-  /** Fälturval: fields[tabell]=id,name (eller fields[_] om tableName saknas). */
+  /** Ytterligare svarsfält som används av callbacks eller andra funktioner utanför kolumnkonfigurationen. */
   fields?: string[];
   /** Databasens tabellnamn enligt swagger, t.ex. "assets". */
   tableName?: string;

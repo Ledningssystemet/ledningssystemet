@@ -13,6 +13,16 @@ or mount function is rendered.
 
 ## Table CSV export
 
+API-backed table configurations automatically request `fields[_]` (or
+`fields[tableName]`) for the ID, title, subtitles, configured columns and
+non-child detail sections. This includes hidden columns used in forms or CSV
+export. `dataSource.fields` adds fields used outside these declarations, such
+as by renderers, permissions, status functions or row commands; explicitly
+include `access` or `accessFlags` when the model exposes them. Mark a
+render-only column with `apiField: false` if its key is not an API field, and
+list its actual dependencies in `dataSource.fields`. Child tables build their
+own field selections. All requested fields must be allowed by the model.
+
 The table view can export all configured table data columns, including hidden
 columns, as a UTF-8 CSV with a BOM and semicolon separators for Excel. The export
 includes all rows matching the active search and filters, in the current sort
@@ -26,6 +36,12 @@ paginated response produces an error instead of a partial export. The separate
 consumer regression project should cover local and API-backed tables, filtering,
 sorting, pagination, hidden columns and column selection, rendered cells, CSV escaping, formula
 protection, and API errors and incomplete responses.
+
+For field selection, also cover the paginated and export requests, callbacks
+using additional fields, virtual and hidden columns, detail sections and nested
+tables. Verify custom properties, computed values, authorization-dependent
+fields, rejected fields and models without dependency declarations, as well as
+user reassignment and notification settings in the Composer/npm host.
 
 The `User` model and user API use `org_roles` for organizational roles, with
 `id`/`name` pairs when reading and role IDs when writing. These use the existing

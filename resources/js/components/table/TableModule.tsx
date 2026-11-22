@@ -18,7 +18,7 @@ import { ItemDetails } from "./components/ItemDetails";
 import { MasterDetailView } from "./components/MasterDetailView";
 import { RowActions } from "./components/RowActions";
 import { availableViews, DEFAULT_PAGE_SIZES, initialPageSize, initialTableColumns, initialView, resolveView, writeCookie, writeTableColumns } from "./helpers/persistence";
-import { colOptions, customToColumns, linkState } from "./helpers/tableConfig";
+import { colOptions, customToColumns, linkState, tableDataSource } from "./helpers/tableConfig";
 import { badgeTone, dotTone } from "./helpers/tones";
 import { t } from "../../lib/i18n";
 import { translate } from "./helpers/translate";
@@ -124,7 +124,7 @@ export function TableModule({ config: rawConfig, data, onDataChange, controllerR
     ? config.tableColumns.filter((k) => selectedColumns.includes(k))
     : config.tableColumns.filter((k) => !config.columns.find((c) => c.key === k)?.listHidden);
   const childSections = config.detailSections.filter((s) => s.type === "table");
-  const ds = config.dataSource;
+  const ds = useMemo(() => tableDataSource(config), [config]);
   const dsKey = ds ? JSON.stringify(ds) : "";
   const searchKeysKey = JSON.stringify(config.searchKeys);
   const [total, setTotal] = useState<number | null>(null);

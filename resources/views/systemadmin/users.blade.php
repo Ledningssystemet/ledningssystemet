@@ -115,6 +115,14 @@ $tableConfig = [
    'dataSource' => [
       'baseUrl' => '/api/v1/crud',
       'model' => 'User',
+      'fields' => [
+         'access', 'external_id',
+         'activitiescount', 'activityflowcount', 'agreementcount', 'assetscount',
+         'controlscount', 'control_actionscount', 'customercount', 'findingscount',
+         'formcount', 'incidentscount', 'information_typescount', 'objectivescount',
+         'processescount', 'process_performance_metricscount', 'projectcount',
+         'projectactivitycount', 'riskscount', 'supplierscount',
+      ],
       'allowedFilters' => array_values(array_map(fn ($filter) => $filter['key'], $tableFilters)),
       'sort' => ['name'],
       'headers' => ['X-CSRF-TOKEN' => csrf_token()],
@@ -273,6 +281,7 @@ function openUserNotificationSettings(user) {
                   dataSource: {
                      baseUrl: '/api/v1/crud',
                      model: 'UserNotificationChannel',
+                     fields: ['access'],
                      params: { user_id: String(user.id) },
                      allowedFilters: ['user_id'],
                      sort: ['name'],
