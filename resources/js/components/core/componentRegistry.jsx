@@ -2,25 +2,25 @@ import React, { lazy, Suspense } from 'react';
 import ReactDOM from 'react-dom/client';
 
 const GhgCalculator = lazy(() =>
-    import('../ghgcalculator/index.jsx').then(module => ({ default: module.GhgCalculator }))
+    import('../../pages/ghgcalculator/index.jsx').then(module => ({ default: module.GhgCalculator }))
 );
 const FormBuilder = lazy(() =>
-    import('../../components/formbuilder/index.jsx').then(module => ({ default: module.FormBuilder }))
+    import('../formbuilder/index.jsx').then(module => ({ default: module.FormBuilder }))
 );
 const FormViewer = lazy(() =>
-    import('../../components/formbuilder/index.jsx').then(module => ({ default: module.FormViewer }))
+    import('../formbuilder/index.jsx').then(module => ({ default: module.FormViewer }))
 );
 const AuthApp = lazy(() =>
-    import('../auth/AuthApp.jsx').then(module => ({ default: module.AuthApp }))
+    import('../../pages/auth/AuthApp.jsx').then(module => ({ default: module.AuthApp }))
 );
 const Projects = lazy(() =>
-    import('../projects/index.tsx').then(module => ({ default: module.Projects }))
+    import('../../pages/projects/index.tsx').then(module => ({ default: module.Projects }))
 );
 const ProjectMentions = lazy(() =>
-    import('../projects/ProjectMentions.tsx').then(module => ({ default: module.ProjectMentions }))
+    import('../../pages/projects/ProjectMentions.tsx').then(module => ({ default: module.ProjectMentions }))
 );
 const TableModule = lazy(() =>
-    import('../../components/table/TableModule.tsx').then(module => ({ default: module.TableModule }))
+    import('../table/TableModule.tsx').then(module => ({ default: module.TableModule }))
 );
 
 const registry = {

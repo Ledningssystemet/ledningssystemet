@@ -5,12 +5,12 @@ export default defineConfig({
    plugins: [
       laravel({
          input: [
-            'resources/js/apps/core/loadstyles.js',
-            'resources/js/apps/core/app.js',
+            'resources/js/components/core/loadstyles.js',
+            'resources/js/components/core/app.js',
             'resources/js/bpmneditor/index.js',
             'resources/js/documenteditor/index.js',
-            'resources/js/apps/core/componentRegistry.jsx',
-            'resources/js/apps/core/bootstrap.jsx',
+            'resources/js/components/core/componentRegistry.jsx',
+            'resources/js/components/core/bootstrap.jsx',
          ],
          refresh: true,
       }),

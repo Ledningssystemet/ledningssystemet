@@ -89,7 +89,7 @@ export function TagSelect({ label, id, suggestions, value, onChange, allowCreate
             <button type="button" key={m} className="block w-full rounded px-2 py-1.5 text-left text-sm hover:bg-accent" onMouseDown={(e) => e.preventDefault()} onClick={() => add(m)}>{m}</button>
           ))}
           {canCreate && (
-            <button type="button" className="flex w-full items-center gap-1.5 rounded px-2 py-1.5 text-left text-sm text-primary hover:bg-accent" onMouseDown={(e) => e.preventDefault()} onClick={() => add(q)}>
+            <button type="button" className="flex w-full items-center gap-1.5 rounded px-2 py-1.5 text-left text-sm text-brand-teal-dark hover:bg-accent" onMouseDown={(e) => e.preventDefault()} onClick={() => add(q)}>
               <Plus className="h-3.5 w-3.5" />{translate('Create tag "{tag}"', { tag: q })}
             </button>
           )}

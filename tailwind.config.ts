@@ -2,8 +2,7 @@ import type { Config } from "tailwindcss";
 
 export default {
   darkMode: ["class"],
-  content: ["./resources/js/**/*.{ts,tsx}"],
-  important: ":is(.ls-table, .ls-auth)",
+  content: ["./resources/js/**/*.{ts,tsx,jsx}"],
   prefix: "",
   theme: {
     container: {
@@ -15,6 +14,22 @@ export default {
     },
     extend: {
       colors: {
+        brand: {
+          navy: {
+            DEFAULT: "hsl(var(--brand-navy))",
+            deep: "hsl(var(--brand-navy-deep))",
+            ink: "hsl(var(--brand-navy-ink))",
+          },
+          teal: {
+            DEFAULT: "hsl(var(--brand-teal))",
+            soft: "hsl(var(--brand-teal-soft))",
+            dark: "hsl(var(--brand-teal-dark))",
+          },
+        },
+        "on-navy": {
+          DEFAULT: "hsl(var(--on-navy))",
+          muted: "hsl(var(--on-navy-muted))",
+        },
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
@@ -80,6 +95,17 @@ export default {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
+      },
+      backgroundImage: {
+        brand: "var(--gradient-brand)",
+        teal: "var(--gradient-teal)",
+      },
+      boxShadow: {
+        card: "var(--shadow-card)",
+      },
+      fontFamily: {
+        brand: ['"Instrument Sans Variable"', "system-ui", "-apple-system", '"Segoe UI"', "sans-serif"],
+        heading: ['"Quicksand Variable"', "system-ui", "sans-serif"],
       },
       keyframes: {
         "accordion-down": {

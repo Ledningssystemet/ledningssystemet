@@ -29,6 +29,29 @@ own database, or adapt a private Compose configuration to your environment.
 Use `npm run build` to build production frontend assets. Run the scheduler
 locally with `php artisan schedule:run` when testing scheduled tasks.
 
+## Tailwind theme
+
+The shared Tailwind theme is configured in `tailwind.config.ts` and
+`../resources/css/tailwind.css`. After changing the theme or Tailwind classes,
+run `npm run build:css` to regenerate the stylesheet imported by the table and
+authentication components. The semantic colors, including primary, background,
+foreground and border, apply to both. The muted text color is slightly darker than
+the brand reference to maintain contrast on the light background.
+
+The theme also defines `brand-navy`, `brand-navy-deep`, `brand-navy-ink`,
+`brand-teal`, `brand-teal-soft`, `brand-teal-dark`, `on-navy` and
+`on-navy-muted` colors, `bg-brand` and `bg-teal` gradients, `shadow-card`, and
+the `font-brand` and `font-heading` font stacks. The named fonts Instrument Sans
+and Quicksand are provided by the `@fontsource-variable` npm dependencies and
+loaded from the generated stylesheet. These stacks fall back to system fonts if
+the font assets cannot be loaded. The generated stylesheet includes classes found in this
+repository's configured content paths; host-specific classes require a build
+that also scans the host's sources.
+
+In the separate consumer regression project, check the table, dialogs, primary
+actions and authentication screens on light backgrounds, including focus and
+hover states and the generated stylesheet when used from the npm package.
+
 ## Verification and formatting
 
 Test cases may be created and run locally in `tests/`, but must remain

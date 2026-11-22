@@ -22,9 +22,8 @@ import { badgeTone, dotTone } from "./helpers/tones";
 import { t } from "../../lib/i18n";
 import { translate } from "./helpers/translate";
 // @ts-ignore
-import "./css/table.css";
-// @ts-ignore
-import "./css/table.utilities.css";
+import "../../../css/utilities.css";
+import "./table.css";
 
 interface Props {
   config: ModuleConfig;
