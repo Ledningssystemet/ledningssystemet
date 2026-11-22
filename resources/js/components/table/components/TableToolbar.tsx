@@ -1,6 +1,6 @@
 import React from "react";
 import * as ToggleGroup from "@radix-ui/react-toggle-group";
-import { Columns3, GripVertical, LayoutList, Plus, Rows3, Search, SlidersHorizontal, Table2 } from "lucide-react";
+import { GripVertical, LayoutList, Plus, Rows3, Search, SlidersHorizontal, Table2 } from "lucide-react";
 import type { ViewMode } from "../helpers/types";
 import { btnOutline, btnPrimary, inputCls } from "../helpers/styles";
 import { t } from "../../../lib/i18n";
@@ -21,10 +21,9 @@ type Props = {
   canCreate: boolean;
   onCreate: () => void;
   onOpenFilters: () => void;
-  onOpenColumns?: () => void;
 };
 
-export function TableToolbar({ title, count, reorderMode, idFilter, searchInput, onSearchChange, searchMax, activeFilterCount, view, availableViews, viewChangeDisabled, onViewChange, canCreate, onCreate, onOpenFilters, onOpenColumns }: Props) {
+export function TableToolbar({ title, count, reorderMode, idFilter, searchInput, onSearchChange, searchMax, activeFilterCount, view, availableViews, viewChangeDisabled, onViewChange, canCreate, onCreate, onOpenFilters }: Props) {
   return (
     <div className="flex flex-wrap items-center gap-2 border-b p-3">
       <h2 className="mr-2 text-lg font-semibold">{title} <span className="text-sm font-normal text-muted-foreground">({count})</span></h2>
@@ -45,7 +44,6 @@ export function TableToolbar({ title, count, reorderMode, idFilter, searchInput,
           ))}
         </ToggleGroup.Root>
       </>}
-      {onOpenColumns && <button className={btnOutline} disabled={viewChangeDisabled} onClick={onOpenColumns}><Columns3 className="h-4 w-4" />{t("Columns")}</button>}
       {canCreate && <button className={btnPrimary} onClick={onCreate}><Plus className="h-4 w-4" />{t("New")}</button>}
     </div>
   );

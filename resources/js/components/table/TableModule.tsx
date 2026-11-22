@@ -1,5 +1,5 @@
 import { useEffect, useImperativeHandle, useMemo, useRef, useState, type MutableRefObject } from "react";
-import { Pencil, Trash2, X } from "lucide-react";
+import { Columns3, Pencil, Trash2, X } from "lucide-react";
 import type { ColumnConfig, DetailSection, Item, ModuleConfig, ModuleController, SortState, ViewMode } from "./helpers/types";
 import { bulkPatch, filterItems, moveItem, formatDate, normalizeSearch, pageRange, paginate, SEARCH_DEBOUNCE_MS, SEARCH_MAX, sortItems } from "./helpers/logic";
 import { ApiError, crud } from "./helpers/api";
@@ -411,8 +411,14 @@ export function TableModule({ config: rawConfig, data, onDataChange, controllerR
         canCreate={canCreate}
         onCreate={startNew}
         onOpenFilters={() => setFilterOpen(true)}
-        onOpenColumns={config.defaultTableColumns && effView === "table" ? () => setColumnOpen(true) : undefined}
       />
+      {config.defaultTableColumns && effView === "table" && (
+        <div className="flex items-center justify-end border-b px-3 py-2">
+          <button className={btnOutline} disabled={!!inlineEditing} onClick={() => setColumnOpen(true)}>
+            <Columns3 className="h-4 w-4" />{t("Columns")}
+          </button>
+        </div>
+      )}
 
       {idFilter && (
         <div className="flex items-center gap-2 border-b bg-accent/50 px-3 py-1.5 text-sm text-accent-foreground">
