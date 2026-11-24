@@ -65,7 +65,7 @@ $(function(){
 @endif
       @if(request()->user()->can('viewAny', Ledningssystemet\Ledningssystemet\Models\Project::class))
          <li class="nav-item" id="nav-project">
-            <a class="nav-link" href="/projects">
+            <a class="nav-link" href="/app/projects">
                <div class="nav-item-status"></div>
                <span class="nav-icon material-symbols-rounded">order_approve</span>
                {{ __("Projects") }}
@@ -341,7 +341,7 @@ $(function(){
 @endif
 @if(\Ledningssystemet\Ledningssystemet\Support\Modules::active('processes') && request()->user()->can('index', Ledningssystemet\Ledningssystemet\Models\GhgFactor::class))
             <li class="nav-item" id="nav-ghgcalculator">
-               <a class="nav-link" href="/measure/ghgcalculator">
+               <a class="nav-link" href="/app/ghgcalculator">
                   <div class="nav-item-status"></div>
                   <span class="nav-icon material-symbols-rounded">footprint</span>
                   {{ __("GHG Calculator") }}

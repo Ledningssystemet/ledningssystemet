@@ -25,6 +25,7 @@ const TableModule = lazy(() =>
 const SystemSettingsForm = lazy(() =>
     import('../../pages/settings/SystemSettingsForm.tsx').then(module => ({ default: module.SystemSettingsForm }))
 );
+const AppRouter = lazy(() => import('../../router/index.jsx'));
 
 const registry = {
     'ghg-calculator': GhgCalculator,
@@ -35,6 +36,7 @@ const registry = {
     'project-mentions': ProjectMentions,
     'table-module': TableModule,
     'system-settings-form': SystemSettingsForm,
+    'app-router': AppRouter,
 };
 
 /**

@@ -160,7 +160,7 @@ export function mentionUrl(mention: MeetingMention): string {
     const params = new URLSearchParams({
         project: String(mention.project_id), meeting: String(mention.project_meeting_id), mention: String(mention.id),
     });
-    return `/projects?${params}#meeting-section-${encodeURIComponent(mention.agenda_item_id)}`;
+    return `/app/projects?${params}#meeting-section-${encodeURIComponent(mention.agenda_item_id)}`;
 }
 
 export function confirmAction(message: string, onConfirm: () => void, title: string): void {

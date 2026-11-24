@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
+use Ledningssystemet\Ledningssystemet\Http\Controllers\AppPageController;
 use Ledningssystemet\Ledningssystemet\Http\Controllers\SystemSettingsController;
 use Ledningssystemet\Ledningssystemet\Http\Controllers\SystemUserNotificationSettingsController;
 use Ledningssystemet\Ledningssystemet\Http\Middleware\LogPasswordResetAttempt;
@@ -81,9 +82,14 @@ Route::group(['namespace' => 'Ledningssystemet\Ledningssystemet\Http\Controllers
       Route::get('/dashboard', function() { return view('dashboard.dashboard'); }); // Dashboard
 
       /**
-       * Projects
+       * React application
        */
-      Route::get('/projects', function() { return view('projects.projects'); }); // Display projects
+      Route::prefix('app')->name('app.')->group(function () {
+         Route::get('/', function () { abort(404); });
+         Route::get('/{path}', function() { return view('app'); })
+            ->where('path', '.*')
+            ->name('page');
+      });
 
       /**
       * User
@@ -152,7 +158,9 @@ Route::group(['namespace' => 'Ledningssystemet\Ledningssystemet\Http\Controllers
       Route::middleware(ModuleEnabled::class.':processes')->group(function () {
          Route::get('/measure/processperformancemetrics', function() { return view('measure.processperformancemetrics'); }); // Display metrics
          Route::get('/measure/objectives', function() { return view('measure.objectives'); }); // Display objectives
-         Route::get('/measure/ghgcalculator', function() { return view('measure.ghgcalculator'); }); // Display ghg calculator
+         Route::get('/measure/ghgcalculator', function (Request $request) {
+            return redirect()->to(url()->query('/app/ghgcalculator', $request->query()));
+         });
       });
       
       /**

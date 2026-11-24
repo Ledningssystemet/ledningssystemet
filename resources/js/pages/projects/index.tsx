@@ -17,7 +17,7 @@ export function Projects(permissions: ProjectPermissions) {
     return <ProjectsView config={permissions} />;
 }
 
-export function ProjectsView({ config: initialConfig }: { config: Configuration | ProjectPermissions }) {
+export function ProjectsView({ config: initialConfig, onDirty }: { config: Configuration | ProjectPermissions; onDirty?: (dirty: boolean) => void }) {
     const initialLink = projectMeetingLink(typeof window !== 'undefined' ? window.location?.search ?? '' : '');
     const [projects, setProjects] = useState<ProjectSummary[]>([]);
     const [selectedId, setSelectedId] = useState<number | null>(() => initialLink?.projectId ?? null);
@@ -46,9 +46,12 @@ export function ProjectsView({ config: initialConfig }: { config: Configuration 
     const [visualization, setVisualization] = useState('gantt');
     const onMeetingLinkOpened = useCallback(() => setMeetingLink(null), []);
     const meetingDirty = useRef(false);
-    const onMeetingDirty = useCallback((dirty: boolean) => { meetingDirty.current = dirty; }, []);
+    const onMeetingDirty = useCallback((dirty: boolean) => {
+        meetingDirty.current = dirty;
+        onDirty?.(dirty);
+    }, [onDirty]);
     const navigate = (operation: () => void) => {
-        if (meetingDirty.current) confirmAction('Discard unsaved meeting changes?', () => { meetingDirty.current = false; operation(); }, 'Unsaved changes');
+        if (meetingDirty.current) confirmAction('Discard unsaved meeting changes?', () => { onMeetingDirty(false); operation(); }, 'Unsaved changes');
         else operation();
     };
     const responsibleUsers = Array.from(new Map(projects

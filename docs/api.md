@@ -12,6 +12,26 @@ actions. The older `/api/v1/items` API is not covered. Model names, available
 operations, fields and allowed filters depend on the model and the requesting
 user's permissions; consult the live specification for the deployed version.
 
+## Frontend permissions
+
+`GET /api/v1/permissions` returns the authenticated user's `permissions` array
+of permission names, `currentUserId`, and `pages` with policy-derived
+capabilities. `pages.projects` contains `canView` and `canCreate`;
+`pages.ghgcalculator` contains `canView` and the processes module's `enabled`
+state. These capabilities honor Gate overrides, including superadmin access.
+The response remains `Cache-Control: no-store`. Existing consumers of the
+`permissions` array remain compatible.
+
+The `/app` router requests this endpoint once when the app loads and reuses the
+result until the app is reloaded. Permission changes may not be reflected in the
+interface until reload. These values control frontend presentation only. The
+shared `/app` shell requires authentication but does not check page permissions
+or module settings; API operations enforce their own authorization. Consumer
+regression coverage should include ordinary
+users, project creators, GHG readers/editors, superadmins, host policy overrides,
+disabled processes, permission changes between navigations and after reload, and
+expired sessions.
+
 ## Listing records
 
 For a model that permits listing, for example:

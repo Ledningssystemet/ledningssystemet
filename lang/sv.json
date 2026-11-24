@@ -1,4 +1,7 @@
 {
+   "The page could not be loaded.": "Sidan kunde inte laddas.",
+   "An unexpected error occurred.": "Ett oväntat fel inträffade.",
+   "Access denied": "Åtkomst nekad",
    "Only the description of a project file can be changed": "Endast beskrivningen av en projektfil kan ändras",
    "Select files": "Välj filer",
    "Uploading…": "Laddar upp…",

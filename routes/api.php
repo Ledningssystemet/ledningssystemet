@@ -240,5 +240,16 @@ Route::prefix('v1/documentcontroller')->group(function () {
 Route::get('/v1/permissions', function () {
    return response()->json([
       'permissions' => auth()->user()->getAllPermissions()->pluck('name')->values(),
+      'currentUserId' => auth()->id(),
+      'pages' => [
+         'projects' => [
+            'canView' => Gate::allows('viewAny', \Ledningssystemet\Ledningssystemet\Models\Project::class),
+            'canCreate' => Gate::allows('create', \Ledningssystemet\Ledningssystemet\Models\Project::class),
+         ],
+         'ghgcalculator' => [
+            'enabled' => \Ledningssystemet\Ledningssystemet\Support\Modules::active('processes'),
+            'canView' => Gate::allows('index', \Ledningssystemet\Ledningssystemet\Models\GhgFactor::class),
+         ],
+      ],
    ]);
 })->middleware(NoStore::class)->name('api.v1.permissions.index');

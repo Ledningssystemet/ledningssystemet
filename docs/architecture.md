@@ -16,6 +16,47 @@ The npm exports `@ledningssystemet/ledningssystemet/app` and
 load its styles for consuming applications. The app entry also registers the
 editors and component registry and mounts UI extension slots on DOM ready.
 
+## React application pages
+
+`/app/projects` and `/app/ghgcalculator` share `resources/views/app.blade.php`,
+which retains the existing header, sidebar and extension slots and mounts
+`<app-router>`. The component registry loads the React Router entry lazily;
+each route then loads its page module lazily. Links between these two pages
+use client navigation, including sidebar links, while links outside the app
+continue to use normal browser navigation. Browser back/forward is supported.
+
+Authenticated GET requests under `/app` receive the common application shell;
+`/app` redirects to projects. The router fetches `/api/v1/permissions` once
+when the app loads and reuses it for presentation and project creation controls
+until the browser reloads the app. Changes to permissions may therefore not
+appear in those controls until reload; the API still checks current permissions.
+Sidebar links are shown based on permissions and module settings, but neither hiding links nor
+access to the shell authorizes API operations. The existing API checks policies
+for reads and writes. The generic GHG item API does not enforce the processes
+module flag, so disabling that module hides the link but is not an API access
+restriction. Unknown `/app` paths receive the shell with HTTP 200 and show a
+not-found error in the router. The old `/projects` and
+`/measure/ghgcalculator` routes redirect to the new URLs while retaining query
+parameters; the latter retains its processes-module middleware. New meeting
+mention links use `/app/projects`.
+
+To add a page, register its lazy route module and any page-specific loader in
+`resources/js/router/index.jsx`, include its URL in the client-navigation path
+set, and ensure its API endpoints enforce the required permissions. Add any
+presentation capabilities to the permissions endpoint as needed. No additional
+Laravel route is needed. The existing npm `./app`
+entry initializes this router through the component registry; consuming
+applications must compile that entry and serve the package's new shared view,
+not an old override of either replaced Blade view.
+
+Consumer regression coverage should include both Composer route registration
+and npm lazy chunks, direct loads and reloads, sidebar navigation and active
+state, a single permissions request across navigation and refreshed permissions
+after a reload, back/forward, query/hash meeting links and legacy redirects, denied
+permissions, disabled processes, expired sessions, loader/chunk failures and
+accepting/cancelling navigation with unsaved meeting changes. The original
+project and GHG workflows should remain unchanged.
+
 ## Shared page tabs
 
 Import `Tabs` and its `TabItem`/`TabsProps` types from
