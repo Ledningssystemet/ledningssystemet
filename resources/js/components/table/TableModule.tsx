@@ -341,11 +341,12 @@ export function TableModule({ config: rawConfig, data, onDataChange, controllerR
 
   const inlineEditing = config.editMode === "inline" && editing;
 
-  const actions = (item: Item, stacked = false) => (
+  const actions = (item: Item, stacked = false, group: "all" | "fixed" | "commands" = "all") => (
     <RowActions
       config={config}
       item={item}
       stacked={stacked}
+      group={group}
       canUpdate={canUpdate(item)}
       canDelete={canDelete(item)}
       onRunCommand={runCommand}
@@ -369,7 +370,8 @@ export function TableModule({ config: rawConfig, data, onDataChange, controllerR
       editing={editing}
       inlineEditing={!!inlineEditing}
       tagSuggestions={allValues}
-      renderActions={actions}
+      renderActions={(item) => actions(item, false, "fixed")}
+      renderCommands={(item) => actions(item, false, "commands")}
       renderValue={renderValue}
       renderChildTable={childTable}
       onCancelEdit={() => setEditing(null)}

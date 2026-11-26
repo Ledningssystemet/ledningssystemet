@@ -11,16 +11,17 @@ type Props = {
   inlineEditing: boolean;
   tagSuggestions: (key: string) => string[];
   renderActions: (item: Item) => ReactNode;
+  renderCommands?: (item: Item) => ReactNode;
   renderValue: (key: string, value: any, item?: Item) => ReactNode;
   renderChildTable: (item: Item, section: DetailSection) => ReactNode;
   onCancelEdit: () => void;
   onSave: (item: Item) => Promise<{ fields?: Record<string, string>; message?: string } | null>;
 };
 
-export function ItemDetails({ config, item, listColumns, editing, inlineEditing, tagSuggestions, renderActions, renderValue, renderChildTable, onCancelEdit, onSave }: Props) {
+export function ItemDetails({ config, item, listColumns, editing, inlineEditing, tagSuggestions, renderActions, renderCommands, renderValue, renderChildTable, onCancelEdit, onSave }: Props) {
   return (
-    <div className="space-y-4">
-      <div className="flex justify-end">{renderActions(item)}</div>
+    <div className="flex flex-col gap-4">
+      <div className="flex justify-end empty:hidden">{renderActions(item)}</div>
       {inlineEditing && editing?.id === item.id ? (
         <ItemForm tagSuggestions={tagSuggestions} config={config} item={editing} isNew={false} onCancel={onCancelEdit} onSave={onSave} />
       ) : (
@@ -50,6 +51,7 @@ export function ItemDetails({ config, item, listColumns, editing, inlineEditing,
               )}
             </section>
           ))}
+          <div className="flex justify-end empty:hidden">{renderCommands?.(item)}</div>
         </>
       )}
     </div>

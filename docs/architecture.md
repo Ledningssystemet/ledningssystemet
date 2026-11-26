@@ -99,7 +99,17 @@ selection, keyboard/focus behavior, panel unmounting and multiple instances.
 For projects, also cover permission-dependent tabs, project selection and
 accepting/cancelling the unsaved-meeting confirmation.
 
-## Table CSV export
+## Table details and CSV export
+
+In the list and master-detail views, edit and delete actions appear above the
+details, while configured `rowCommands` appear below all fields and detail
+sections. Row commands are hidden when that item is edited inline. The table
+view retains its existing combined row actions; custom field renderers are not
+repositioned. Command visibility, badges and callbacks continue to apply.
+
+The separate consumer regression project should cover both detail views and the
+table view, inline and popup editing, permission-dependent actions, hidden
+commands, badges, command callbacks and server actions, and nested tables.
 
 API-backed table configurations automatically request `fields[_]` (or
 `fields[tableName]`) for the ID, title, subtitles, configured columns and
