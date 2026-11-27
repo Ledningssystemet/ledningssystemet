@@ -23,10 +23,11 @@ class RedirectIfTwoFactorAuthenticatable extends BaseRedirectIfTwoFactorAuthenti
      */
     public function handle($request, $next)
     {
-       $user = $this->validateCredentials($request);
         if (!config('ledningssystemet.mfa_enabled')) {
             return $next($request);
         }
+
+        $user = $this->validateCredentials($request);
 
        if(config('ledningssystemet.mfa_enforced') || $this->userHasTwoFactorEnabled($user)) {
           if ($this->hasTrustedDeviceCookie($request, $user)) {
