@@ -36,7 +36,7 @@ class SsoController extends Controller
          return redirect()->route('login')->withErrors(trans('auth.failed'));
       }
 
-      $user = $this->resolveUser($provider, $socialUser->getEmail(), $socialUser->getName(), $socialUser->getId());
+      $user = $this->resolveUser($provider, $socialUser->getEmail(), $socialUser->getName(), $socialUser->getId(), $socialUser);
       if (!$user->enabled) {
          Log::info('User ' . $user->email . ' is disabled and cannot sign in with ' . $provider . ' from IP ' . $request->ip() . '.');
          abort(403);
@@ -100,9 +100,46 @@ class SsoController extends Controller
       return 'https://login.microsoftonline.com/' . trim((string)$tenant) . '/oauth2/v2.0/logout?post_logout_redirect_uri=' . urlencode($fallbackUrl);
    }
 
-   protected function resolveUser(string $provider, string $email, string $name, string $providerUserId): User
+   protected function resolveUser(string $provider, string $email, string $name, string $providerUserId, $socialUser): User
    {
-      $email = strtolower(trim((string)($email ?? '')));
+      $actualEmail = $email;
+
+      // Attempt to find the user by the provider's unique identifier first
+      $user = (null !== $providerUserId)
+         ? User::query()->where('external_id', $providerUserId)->first()
+         : null;
+
+      // Attempt to lookup user by primary email
+      if(null === $user && null !== $email && filter_var($email, FILTER_VALIDATE_EMAIL)) {
+         $user = User::query()->where('email', strtolower(trim($email)))->first();
+         if(null !== $user)
+            Log::info('Found user by primary email ' . $email . ' for SSO provider ' . $provider . '.');
+      }
+
+      // Attempt to lookup user by social user mail attribute
+      if(null === $user && null !== $email && $socialUser->user['mail'] &&  filter_var($socialUser->user['mail'], FILTER_VALIDATE_EMAIL)) {
+         $user = User::query()->where('email', strtolower(trim($socialUser->user['mail'])))->first();
+         if(null !== $user){
+            $actualEmail = $socialUser->user['mail'];
+            Log::info('Found user by social user mail attribute ' . $actualEmail. ' for SSO provider ' . $provider . '.');
+         }
+      }
+
+      // Attempt to lookup user by social user otherMails attribute
+      if(null === $user && null !== $email && is_array($socialUser->user['otherMails'])) {
+         foreach($socialUser->user['otherMails'] as $otherMail) {
+            if(filter_var($otherMail, FILTER_VALIDATE_EMAIL)) {
+               $user = User::query()->where('email', strtolower(trim($otherMail)))->first();
+               if(null !== $user) {
+                  $actualEmail = $otherMail;
+                  Log::info('Found user by social user otherMails attribute ' . $actualEmail. ' for SSO provider ' . $provider . '.');
+                  break;
+               }
+            }
+         }
+      }
+
+      $email = strtolower(trim((string)($actualEmail ?? '')));
       $name = trim((string)($name ?? ''));
 
       if (!filter_var($email, FILTER_VALIDATE_EMAIL) || '' === $name) {
@@ -110,9 +147,6 @@ class SsoController extends Controller
          abort(403);
       }
 
-      $user = (null !== $providerUserId)
-         ? User::query()->where('external_id', $providerUserId)->first()
-         : null;
 
       if (null === $user) {
          $user = User::query()->where('email', $email)->first();
@@ -125,10 +159,6 @@ class SsoController extends Controller
 
       if (null === $user->external_id && null !== $providerUserId) {
          $user->external_id = $providerUserId;
-      }
-
-      if ($user->email !== $email) {
-         $user->email = $email;
       }
 
       if ($user->name !== $name) {
