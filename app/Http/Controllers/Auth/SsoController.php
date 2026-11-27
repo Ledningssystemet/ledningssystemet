@@ -110,10 +110,8 @@ class SsoController extends Controller
          abort(403);
       }
 
-      $providerKey = self::providerExternalId($provider, $providerUserId);
-
-      $user = null !== $providerKey
-         ? User::query()->where('external_id', $providerKey)->first()
+      $user = (null !== $providerUserId)
+         ? User::query()->where('external_id', $providerUserId)->first()
          : null;
 
       if (null === $user) {
@@ -125,8 +123,8 @@ class SsoController extends Controller
          abort(403);
       }
 
-      if (null === $user->external_id && null !== $providerKey) {
-         $user->external_id = $providerKey;
+      if (null === $user->external_id && null !== $providerUserId) {
+         $user->external_id = $providerUserId;
       }
 
       if ($user->email !== $email) {
@@ -231,13 +229,6 @@ class SsoController extends Controller
       return is_string($clientId) && '' !== trim($clientId)
          && is_string($clientSecret) && '' !== trim($clientSecret)
          && is_string($redirect) && '' !== trim($redirect);
-   }
-
-   protected static function providerExternalId(string $provider, ?string $providerUserId): ?string
-   {
-      $providerUserId = is_string($providerUserId) ? trim($providerUserId) : '';
-
-      return '' === $providerUserId ? null : $provider . ':' . $providerUserId;
    }
 
    protected static function inferAzureClientIdFromLegacyAuthorizeUrl(): ?string
