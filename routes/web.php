@@ -244,6 +244,7 @@ Route::group(['namespace' => 'Ledningssystemet\Ledningssystemet\Http\Controllers
       /**
       * System admin routes
       */
+      Route::get('/systemadmin', function() { return view('systemadmin.not-found'); });
       Route::get('/systemadmin/departments', function() { return view('systemadmin.departments'); }); // Display departments
       Route::middleware(ModuleEnabled::class.':staff')->group(function () {
          Route::get('/systemadmin/roles', function() { return view('systemadmin.roles'); }); // Display roles

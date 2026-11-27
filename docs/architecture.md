@@ -49,6 +49,35 @@ entry initializes this router through the component registry; consuming
 applications must compile that entry and serve the package's new shared view,
 not an old override of either replaced Blade view.
 
+## System administration application
+
+The system-administration pages share one React Router application mounted by
+`<systemadmin-app>` in the existing authenticated master layout. The router and
+its page modules live in `resources/js/pages/systemadmin`; `/systemadmin`
+redirects to `/systemadmin/users`. Navigation between users, access groups,
+settings, API tokens and API documentation is client-side, with browser
+back/forward support. Sidebar links into these pages are intercepted by the
+router, while unrelated links retain normal browser navigation.
+
+Each page's authenticated Laravel view supplies its initial JSON props and
+continues to enforce its existing page-level authorization. All these views use
+the shared `resources/views/systemadmin/app.blade.php` partial to mount the app,
+with route-specific props. When navigating to another system-administration
+page, the router loads that page's HTML response to obtain its props; the page
+module renders the React UI without replacing the shared master layout. Since
+these props belong to the active child page, the root loader revalidates when
+the page path changes. CRUD endpoints and settings/notification actions retain
+their own authorization checks. Unknown paths within the React Router display
+a not-found error; system-administration routes outside this React application
+continue to use their existing Laravel views.
+
+Consumer regression coverage should include direct loads and reloads for each
+page, navigating between every page without reloading and checking that each
+renders its own props, active sidebar state, back/forward, authorization
+failures, query/hash preservation, page-data loading errors, and the API-token
+and user notification actions. Verify the npm package build and these routes in
+a host application using the package.
+
 Consumer regression coverage should include both Composer route registration
 and npm lazy chunks, direct loads and reloads, sidebar navigation and active
 state, a single permissions request across navigation and refreshed permissions
