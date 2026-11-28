@@ -74,6 +74,12 @@ server authorization and host Gate overrides, mutation invalidation, races,
 refresh retry, module settings and expired sessions, plus direct loads and
 client navigation across all five pages.
 
+User CRUD writes accept IDs or objects containing an `id` for each entry in
+`departments`, `org_roles` and `access_groups`; these fields replace the
+corresponding associations. An empty array clears them. Consumer regression
+coverage should include creation, ordinary and bulk edits, unchanged and
+modified selections, and empty selections for all three fields.
+
 ## System settings
 
 Authenticated API users can read `GET /api/v1/settings`, without system

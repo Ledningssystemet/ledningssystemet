@@ -236,6 +236,19 @@ The `User` model and user API use `org_roles` for organizational roles, with
 `int_roles()` relation and `role_user` pivot table. The `roles` relation is
 reserved for Spatie permission roles (access groups).
 
+E-mail notification settings are stored in the JSON column
+`users.email_notification_settings` (previously the `user_status_email_settings`
+table) as `{"status_email": {"monday": true, ..., "sunday": false}}`. The default
+is status mail on Mondays only. In the user CRUD API the settings are read and
+written through the virtual field `status_email_days`, a list of weekday names
+(for example `["monday", "friday"]`); unlisted days are disabled and unknown day
+names are rejected. `email_notification_settings` is readable but not mass
+assignable. The systemadmin user form edits `status_email_days` as a regular
+multi-select field, while notification channels are managed from the
+"Notification channels" row command.
+`ledningssystemet:sendstatusmail` reads the settings via
+`User::getUserCommunicationPreferences()`.
+
 ## BPMN conversion
 
 `app/Support/ProcessChartBpmn.php` converts the supported BPMN subset to and from

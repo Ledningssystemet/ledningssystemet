@@ -86,6 +86,9 @@ vyer, fråga en människa om en ny återanvändbar React-komponent i
 
 ## Testning och verifiering
 
+Använd inte en debugger vid felsökning i detta repo. Undersök i stället
+orsaken genom kodgranskning och relevanta kontroller.
+
 Testfall får skapas och köras lokalt i `tests/`, men **testfallen ska inte
 Git-hanteras eller ingå i commits eller pull requests i detta repo**. Katalogens
 innehåll är ignorerat i `.gitignore`; behåll det så och använd inte `git add -f`

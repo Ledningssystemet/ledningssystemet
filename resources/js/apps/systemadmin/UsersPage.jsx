@@ -31,114 +31,65 @@ function relationText(value, options) {
     }).filter(Boolean).join(', ');
 }
 
-function openNotificationSettings(user, props) {
+function openNotificationChannels(user, props) {
     const $ = window.$;
-    const title = t('E-mail notification settings');
-    $.ajax({
-        method: 'GET',
-        url: `/systemadmin/users/${encodeURIComponent(user.id)}/notification-settings`,
-        dataType: 'json',
-        success: settings => {
-            const content = $('<div class="container-fluid" />');
-            const weekdays = $('<div class="row g-2" />');
-            days.forEach(([name, label]) => {
-                const inputId = `notification-${name}-${user.id}`;
-                weekdays.append($('<div class="col-6 col-md-4" />').append(
-                    $('<div class="form-check form-switch" />')
-                        .append($('<input class="form-check-input" type="checkbox" />')
-                            .attr({ id: inputId, name })
-                            .prop('checked', settings[name] === true || settings[name] == 1))
-                        .append($('<label class="form-check-label" />').attr('for', inputId).text(t(label)))
-                ));
-            });
+    const content = $('<div class="container-fluid" />')
+        .append($('<div id="userNotificationChannelsTable" />'));
+    let unmountChannels = null;
+    const cleanup = () => {
+        if (unmountChannels) {
+            unmountChannels();
+            unmountChannels = null;
+        }
+    };
 
-            content.append($('<p class="mb-3" />').text(t('These settings adjust how often you want to get status overviews from the system')))
-                .append(weekdays)
-                .append($('<h5 class="mt-4" />').text(t('Notification channels')))
-                .append($('<div id="userNotificationChannelsTable" />'));
-            const status = $('<div class="text-danger mt-2" role="alert" />');
-            content.append(status);
-            let unmountChannels = null;
-            const cleanup = () => {
-                if (unmountChannels) {
-                    unmountChannels();
-                    unmountChannels = null;
-                }
+    window.showDialog(t('Notification channels'), content, {
+        dismissLabel: window.translateString('Close'),
+        modalClass: 'modal-xl',
+        formCreated: dialog => {
+            dialog.find('.modal-dialog').addClass('modal-xl');
+            dialog.one('hidden.bs.modal', cleanup);
+            const channelConfig = {
+                listTitle: t('Notification channels'),
+                tableId: `usernotificationchannels-${user.id}`,
+                titleKey: 'name',
+                subtitleKeys: [],
+                defaultView: 'table',
+                viewModes: { masterDetail: false, table: true, list: false },
+                editMode: 'inline',
+                perPage: 10,
+                searchKeys: ['name'],
+                dataSource: {
+                    baseUrl: '/api/v1/crud',
+                    model: 'UserNotificationChannel',
+                    fields: ['access'],
+                    params: { user_id: String(user.id) },
+                    allowedFilters: ['user_id'],
+                    sort: ['name'],
+                    headers: { 'X-CSRF-TOKEN': props.csrfToken },
+                },
+                columns: [
+                    { key: 'name', label: t('Name'), required: true, maxLength: 255, sortable: true },
+                    {
+                        key: 'ignoremine',
+                        label: t('Notify me when I am doing the changes'),
+                        type: 'select',
+                        options: [{ value: '1', label: t('No') }, { value: '0', label: t('Yes') }],
+                    },
+                    { key: 'channelscopes', label: t('Object scopes'), type: 'select', multiple: true, options: props.notificationScopeOptions, sortable: false },
+                    { key: 'channelevents', label: t('Events'), type: 'select', multiple: true, options: props.notificationEventOptions, sortable: false },
+                ],
+                tableColumns: ['name', 'ignoremine', 'channelscopes', 'channelevents'],
+                detailSections: [],
+                filters: [],
+                newItemDefaults: { user_id: String(user.id), ignoremine: 1, channelscopes: [], channelevents: [] },
             };
-
-            window.showDialog(title, content, {
-                actionLabel: window.translateString('Save'),
-                dismissLabel: window.translateString('Close'),
-                modalClass: 'modal-xl',
-                onAction: (data, dialog) => {
-                    const preferences = {};
-                    days.forEach(([name]) => {
-                        preferences[name] = dialog.find(`input[name="${name}"]`).prop('checked') ? 1 : 0;
-                    });
-                    dialog.find('.action-button').prop('disabled', true);
-                    $.ajax({
-                        method: 'POST',
-                        url: `/systemadmin/users/${encodeURIComponent(user.id)}/notification-settings`,
-                        data: preferences,
-                        dataType: 'json',
-                        success: () => {
-                            props.onChanged();
-                            dialog.find('.dismiss-button').first().trigger('click');
-                        },
-                        error: () => {
-                            status.text(t('Unable to save notification settings.'));
-                            dialog.find('.action-button').prop('disabled', false);
-                        },
-                    });
-                    return true;
-                },
-                formCreated: dialog => {
-                    dialog.find('.modal-dialog').addClass('modal-xl');
-                    dialog.one('hidden.bs.modal', cleanup);
-                    const channelConfig = {
-                        listTitle: t('Notification channels'),
-                        tableId: `usernotificationchannels-${user.id}`,
-                        titleKey: 'name',
-                        subtitleKeys: [],
-                        defaultView: 'table',
-                        viewModes: { masterDetail: false, table: true, list: false },
-                        editMode: 'inline',
-                        perPage: 10,
-                        searchKeys: ['name'],
-                        dataSource: {
-                            baseUrl: '/api/v1/crud',
-                            model: 'UserNotificationChannel',
-                            fields: ['access'],
-                            params: { user_id: String(user.id) },
-                            allowedFilters: ['user_id'],
-                            sort: ['name'],
-                            headers: { 'X-CSRF-TOKEN': props.csrfToken },
-                        },
-                        columns: [
-                            { key: 'name', label: t('Name'), required: true, maxLength: 255, sortable: true },
-                            {
-                                key: 'ignoremine',
-                                label: t('Notify me when I am doing the changes'),
-                                type: 'select',
-                                options: [{ value: '1', label: t('No') }, { value: '0', label: t('Yes') }],
-                            },
-                            { key: 'channelscopes', label: t('Object scopes'), type: 'select', multiple: true, options: props.notificationScopeOptions, sortable: false },
-                            { key: 'channelevents', label: t('Events'), type: 'select', multiple: true, options: props.notificationEventOptions, sortable: false },
-                        ],
-                        tableColumns: ['name', 'ignoremine', 'channelscopes', 'channelevents'],
-                        detailSections: [],
-                        filters: [],
-                        newItemDefaults: { user_id: String(user.id), ignoremine: 1, channelscopes: [], channelevents: [] },
-                    };
-                    unmountChannels = window.mountTableModule(
-                        dialog.find('#userNotificationChannelsTable').get(0),
-                        { config: channelConfig, data: [] }
-                    );
-                },
-                afterClose: cleanup,
-            });
+            unmountChannels = window.mountTableModule(
+                dialog.find('#userNotificationChannelsTable').get(0),
+                { config: channelConfig, data: [] }
+            );
         },
-        error: () => window.showDialog(title, $('<p />').text(t('Unable to load notification settings.'))),
+        afterClose: cleanup,
     });
 }
 
@@ -213,6 +164,7 @@ export function Component() {
                 sortable: false,
             };
         });
+        const statusEmailDayOptions = days.map(([value, dayLabel]) => ({ value, label: label(dayLabel) }));
         const filters = [
             { key: 'enabled', label: label('Status'), mode: 'single', options: [{ value: '1', label: label('Enabled') }, { value: '0', label: label('Deactivated') }] },
             ...customColumns.filter(column => column.type === 'select').map(column => ({
@@ -225,6 +177,7 @@ export function Component() {
             'departments',
             ...(staff ? ['org_roles', 'direct_reports'] : []),
             'access_groups',
+            'status_email_days',
             ...customColumns.map(column => column.key),
         ];
         const columns = [
@@ -233,6 +186,7 @@ export function Component() {
             { key: 'enabled', label: label('Enabled'), type: 'select', form: 'both', required: true, options: [{ value: '0', label: label('No') }, { value: '1', label: label('Yes') }], sortable: true, tab: label('User') },
             { key: 'email', label: label('E-mail address'), form: 'both', required: true, sortable: true, tab: label('User') },
             { key: 'last_login_at', label: label('Last login'), type: 'datetime', form: 'none', sortable: true, tab: label('User') },
+            { key: 'status_email_days', label: label('Status overview days'), type: 'select', multiple: true, form: 'both', options: statusEmailDayOptions, help: label('These settings adjust how often you want to get status overviews from the system'), sortable: false, tab: label('User') },
             ...(staff ? [{ key: 'manager_user_id', label: label('Manager'), type: 'select', form: 'both', options: props.userOptions, sortable: false, tab: label('Organization') }] : []),
             { key: 'departments', label: label('Departments'), type: 'select', multiple: true, form: props.graphDepartmentsAssignUsers ? 'none' : 'both', options: props.departmentOptions, sortable: false, tab: label('Organization') },
             ...(staff ? [
@@ -271,7 +225,7 @@ export function Component() {
             defaultTableColumns: tableColumns.filter(key => ['name', 'title', 'email', 'manager_user_id'].includes(key)),
             detailSections: [],
             filters,
-            newItemDefaults: { enabled: 1, departments: [], org_roles: [], access_groups: [] },
+            newItemDefaults: { enabled: 1, departments: [], org_roles: [], access_groups: [], status_email_days: ['monday'] },
             formTabs: [
                 label('User'),
                 ...(staff || !props.graphDepartmentsAssignUsers ? [label('Organization')] : []),
@@ -289,13 +243,14 @@ export function Component() {
                 : '';
         }
         column('access_groups').render = user => relationText(user.access_groups, props.accessGroupOptions);
+        column('status_email_days').render = user => relationText(user.status_email_days, statusEmailDayOptions);
         next.permissions = {
             ...next.permissions,
             delete: user => !hasLinkedObjects(user),
         };
         next.rowCommands = [
             ...(props.localUserManagement ? [
-                { label: t('Notification settings'), onClick: user => openNotificationSettings(user, props) },
+                { label: t('Notification channels'), onClick: user => openNotificationChannels(user, props) },
                 { label: t('Re-assign objects'), onClick: user => openReassignment(user, props.userOptions, props.supplierEnabled, props.onChanged), visible: hasLinkedObjects },
             ] : []),
             {

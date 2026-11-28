@@ -4,7 +4,6 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
 use Ledningssystemet\Ledningssystemet\Http\Controllers\AppPageController;
 use Ledningssystemet\Ledningssystemet\Http\Controllers\SystemSettingsController;
-use Ledningssystemet\Ledningssystemet\Http\Controllers\SystemUserNotificationSettingsController;
 use Ledningssystemet\Ledningssystemet\Http\Middleware\LogPasswordResetAttempt;
 use Ledningssystemet\Ledningssystemet\Http\Middleware\ModuleEnabled;
 use Ledningssystemet\Ledningssystemet\Http\Middleware\PasswordResetAccess;

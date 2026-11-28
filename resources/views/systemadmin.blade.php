@@ -21,6 +21,7 @@ $bootstrap = [
     'urls' => [
        'crud' => '/api/v1/crud',
        'settings' => '/api/v1/settings',
+       'swagger' => '/api/v1/swagger',
    ],
     'configuration' => [
         'graphSyncEnabled' => $graphEnabled,
