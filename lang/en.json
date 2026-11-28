@@ -1,6 +1,10 @@
 {
+    "Changes were saved, but the page data could not be refreshed.": "Changes were saved, but the page data could not be refreshed.",
     "The page could not be loaded.": "The page could not be loaded.",
     "An unexpected error occurred.": "An unexpected error occurred.",
+    "Page not found": "Page not found",
+    "The link may be incorrect or the page may have moved.": "The link may be incorrect or the page may have moved.",
+    "Go to homepage": "Go to homepage",
     "Access denied": "Access denied",
     "Only the description of a project file can be changed": "Only the description of a project file can be changed",
     "Select files": "Select files",

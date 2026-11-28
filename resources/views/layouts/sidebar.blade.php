@@ -536,6 +536,7 @@ $(function(){
          </ul>
       </li>
       <div data-ui-slot="sidebar.groups.before-systemsettings"></div>
+@can('systemadministrator.edit')
       <li class="nav-group">
          <a class="nav-link nav-group-toggle collapsed" data-bs-toggle="collapse" role="button" href="#systemsettings-menu">
             <div class="nav-group-status"></div>
@@ -543,16 +544,13 @@ $(function(){
          </a>
          <ul class="nav-group-items collapse" id="systemsettings-menu" data-bs-parent="#sidebar">
             <div data-ui-slot="sidebar.groups.systemsettings.top"></div>
-@can('manage-system-settings')
             <li class="nav-item" id="nav-modules">
-               <a class="nav-link" href="{{ route('systemadmin.settings') }}">
+               <a class="nav-link" href="/systemadmin/settings">
                   <div class="nav-item-status"></div>
                   <span class="nav-icon material-symbols-rounded">toggle_on</span>
                   {{ __("Function settings") }}
                </a>
             </li>
-@endcan
-@if(request()->user()->can('create', Ledningssystemet\Ledningssystemet\Models\User::class))
             <li class="nav-item" id="nav-user">
                <a class="nav-link" href="/systemadmin/users">
                   <div class="nav-item-status"></div>
@@ -560,8 +558,6 @@ $(function(){
                   {{ __("Users") }}
                </a>
             </li>
-@endif            
-@if(request()->user()->can('create', Ledningssystemet\Ledningssystemet\Models\AccessGroup::class))
             <li class="nav-item" id="nav-accessgroup">
                <a class="nav-link" href="/systemadmin/access">
                   <div class="nav-item-status"></div>
@@ -569,8 +565,6 @@ $(function(){
                   {{ __("Access groups") }}
                </a>
             </li>
-@endif            
-@if(request()->user()->can('create', Ledningssystemet\Ledningssystemet\Models\PersonalAccessToken::class))
             <li class="nav-item" id="nav-apitokens">
                <a class="nav-link" href="/systemadmin/apitokens">
                   <div class="nav-item-status"></div>
@@ -578,10 +572,10 @@ $(function(){
                   {{ __("API tokens") }}
                </a>
             </li>
-@endif
             <div data-ui-slot="sidebar.groups.systemsettings.bottom"></div>
          </ul>
       </li>
+@endcan
       <div data-ui-slot="sidebar.groups.bottom"></div>
    </ul>
    <button class="sidebar-toggler" type="button" onClick="$('#sidebar').toggleClass('sidebar-narrow-unfoldable').trigger('statuschanged');"></button>

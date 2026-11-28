@@ -1,10 +1,10 @@
 import React, { useEffect } from 'react';
 import axios from 'axios';
 import {
-    createBrowserRouter, isRouteErrorResponse, Outlet, RouterProvider,
-    useLocation, useNavigation, useRouteError,
+    createBrowserRouter, isRouteErrorResponse, Outlet, RouterProvider, useLocation, useNavigation, useRouteError,
 } from 'react-router-dom';
 import { t } from '../lib/i18n';
+import ErrorPage from '../components/errorpage';
 
 const pagePaths = new Set(['/app/projects', '/app/ghgcalculator']);
 
@@ -32,13 +32,18 @@ async function loadPermissions({ request }) {
 
 function PageError() {
     const error = useRouteError();
-    return <div className="alert alert-danger" role="alert">
-        <h2>{t('The page could not be loaded.')}</h2>
-        <p>{isRouteErrorResponse(error)
-            ? `${error.status}: ${error.data}`
-            : error instanceof Error ? error.message : t('An unexpected error occurred.')}</p>
-        <a className="btn btn-outline-primary" href={window.location.href}>{t('Retry')}</a>
-    </div>;
+    const notFound = isRouteErrorResponse(error) && error.status === 404;
+    const message = isRouteErrorResponse(error)
+        ? `${error.status}: ${error.data}`
+        : error instanceof Error ? error.message : t('An unexpected error occurred.');
+
+    return <ErrorPage
+        errorType={notFound ? 'pageNotFound' : 'pageLoadError'}
+        title={notFound ? t('Page not found') : t('The page could not be loaded.')}
+        text={notFound ? t('The link may be incorrect or the page may have moved.') : message}
+        homeLabel={t('Go to homepage')}
+        retryLabel={t('Retry')}
+    />;
 }
 
 function AppLayout() {

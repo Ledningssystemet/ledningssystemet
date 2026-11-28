@@ -1,4 +1,4 @@
-import React, { useRef, useState, type FormEvent } from "react";
+import React, { useEffect, useRef, useState, type FormEvent } from "react";
 import { ClipboardCheck, Shield, ToggleLeft } from "lucide-react";
 import { Tabs, type TabItem } from "../../components/tabs";
 import { btnPrimary } from "../../components/table/helpers/styles";
@@ -11,6 +11,19 @@ type ModuleSetting = {
   action: string;
 };
 
+type SavedSettings = {
+  contact: Record<string, string>;
+  assessment: Record<string, number>;
+};
+
+function isSavedSettings(value: unknown): value is SavedSettings {
+  return value !== null && typeof value === "object"
+    && "contact" in value && value.contact !== null && typeof value.contact === "object" && !Array.isArray(value.contact)
+    && Object.values(value.contact).every((item) => typeof item === "string")
+    && "assessment" in value && value.assessment !== null && typeof value.assessment === "object" && !Array.isArray(value.assessment)
+    && Object.values(value.assessment).every((item) => typeof item === "number" && Number.isFinite(item));
+}
+
 type Props = {
   action: string;
   csrfToken: string;
@@ -19,6 +32,8 @@ type Props = {
   assessment: Record<string, number>;
   contactFields: { key: string; label: string; email: boolean }[];
   assessmentFields: { key: string; label: string }[];
+  onSaved?: (result: SavedSettings) => void;
+  onModuleChanged?: (result: { module: string; enabled: boolean }) => void;
 };
 
 export function SystemSettingsForm({
@@ -29,6 +44,8 @@ export function SystemSettingsForm({
   assessment,
   contactFields,
   assessmentFields,
+  onSaved,
+  onModuleChanged,
 }: Props) {
   const [moduleValues, setModuleValues] = useState<Record<string, boolean>>(
     Object.fromEntries(modules.map((module) => [module.key, module.enabled]))
@@ -37,11 +54,28 @@ export function SystemSettingsForm({
   const [assessmentValues, setAssessmentValues] = useState<Record<string, number>>(assessment);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [status, setStatus] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState("features");
   const [savingModule, setSavingModule] = useState<string | null>(null);
   const moduleRequestPending = useRef(false);
   const [moduleError, setModuleError] = useState<string | null>(null);
   const [moduleStatus, setModuleStatus] = useState<string | null>(null);
+  const hydratedValues = useRef({ contact, assessment });
+
+  useEffect(() => {
+    setModuleValues(Object.fromEntries(modules.map((module) => [module.key, module.enabled])));
+  }, [modules]);
+
+  useEffect(() => {
+    const previous = hydratedValues.current;
+    setContactValues((current) => Object.fromEntries(Object.entries(contact).map(([key, value]) => [
+      key, current[key] === previous.contact[key] ? value : current[key],
+    ])));
+    setAssessmentValues((current) => Object.fromEntries(Object.entries(assessment).map(([key, value]) => [
+      key, current[key] === previous.assessment[key] ? value : current[key],
+    ])));
+    hydratedValues.current = { contact, assessment };
+  }, [contact, assessment]);
 
   const saveModule = async (module: ModuleSetting, enabled: boolean) => {
     if (moduleRequestPending.current || saving) return;
@@ -66,8 +100,20 @@ export function SystemSettingsForm({
         setModuleError(`${module.label}: ${body?.message ?? t("Could not save.")}`);
         return;
       }
-      setModuleValues((current) => ({ ...current, [module.key]: enabled }));
       setModuleStatus(t("System settings saved."));
+      if (!onModuleChanged) {
+        setModuleValues((current) => ({ ...current, [module.key]: enabled }));
+        return;
+      }
+      const result: unknown = await response.json().catch(() => null);
+      if (!result || typeof result !== "object" || !("module" in result) || result.module !== module.key
+        || !("enabled" in result) || typeof result.enabled !== "boolean") {
+        setModuleError(t("Changes were saved, but the page data could not be refreshed."));
+        return;
+      }
+      const savedEnabled = result.enabled;
+      setModuleValues((current) => ({ ...current, [module.key]: savedEnabled }));
+      onModuleChanged({ module: module.key, enabled: savedEnabled });
     } catch {
       setModuleError(`${module.label}: ${t("Could not reach the server. Check your connection and try again.")}`);
     } finally {
@@ -81,6 +127,7 @@ export function SystemSettingsForm({
     if (activeTab === "features" || saving || moduleRequestPending.current) return;
     setSaving(true);
     setError(null);
+    setStatus(null);
 
     const payload = {
       ...contactValues,
@@ -105,7 +152,19 @@ export function SystemSettingsForm({
         return;
       }
 
-      window.location.reload();
+      if (onSaved) {
+        setStatus(t("System settings saved."));
+        const result: unknown = await response.json().catch(() => null);
+        if (!isSavedSettings(result)) {
+          setError(t("Changes were saved, but the page data could not be refreshed."));
+          return;
+        }
+        setContactValues(result.contact);
+        setAssessmentValues(result.assessment);
+        onSaved(result);
+      } else {
+        window.location.reload();
+      }
     } catch {
       setError(t("Could not save."));
     } finally {
@@ -209,6 +268,7 @@ export function SystemSettingsForm({
   return (
     <form onSubmit={submit} className="space-y-6">
       {error && <div className="alert alert-danger" role="alert">{error}</div>}
+      {status && <div role="status">{status}</div>}
       <Tabs items={tabs} label={t("Function settings")} value={activeTab} onValueChange={setActiveTab} />
       {activeTab !== "features" && <div className="flex justify-end gap-2 pt-2">
         <button type="submit" className={btnPrimary} disabled={saving || savingModule !== null}>

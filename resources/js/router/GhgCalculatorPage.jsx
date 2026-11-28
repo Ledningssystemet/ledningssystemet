@@ -1,3 +1,3 @@
-import { GhgCalculator } from '../pages/ghgcalculator/index.jsx';
+import { GhgCalculator } from '../apps/ghgcalculator/index.jsx';
 
 export const Component = GhgCalculator;

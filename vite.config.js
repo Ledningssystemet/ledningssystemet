@@ -11,6 +11,7 @@ export default defineConfig({
             'resources/js/documenteditor/index.js',
             'resources/js/components/core/componentRegistry.jsx',
             'resources/js/components/core/bootstrap.jsx',
+            'resources/js/apps/systemadmin/index.jsx',
          ],
          refresh: true,
       }),

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useBlocker, useRouteLoaderData, useLocation } from 'react-router-dom';
-import { ProjectsView } from '../pages/projects/index.tsx';
+import { ProjectsView } from '../apps/projects/index.tsx';
 import { t } from '../lib/i18n';
 
 export function Component() {

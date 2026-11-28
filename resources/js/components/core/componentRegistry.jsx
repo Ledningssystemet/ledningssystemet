@@ -2,7 +2,7 @@ import React, { lazy, Suspense } from 'react';
 import ReactDOM from 'react-dom/client';
 
 const GhgCalculator = lazy(() =>
-    import('../../pages/ghgcalculator/index.jsx').then(module => ({ default: module.GhgCalculator }))
+    import('../../apps/ghgcalculator/index.jsx').then(module => ({ default: module.GhgCalculator }))
 );
 const FormBuilder = lazy(() =>
     import('../formbuilder/index.jsx').then(module => ({ default: module.FormBuilder }))
@@ -11,22 +11,21 @@ const FormViewer = lazy(() =>
     import('../formbuilder/index.jsx').then(module => ({ default: module.FormViewer }))
 );
 const AuthApp = lazy(() =>
-    import('../../pages/auth/AuthApp.jsx').then(module => ({ default: module.AuthApp }))
+    import('../../apps/auth/AuthApp.jsx').then(module => ({ default: module.AuthApp }))
 );
 const Projects = lazy(() =>
-    import('../../pages/projects/index.tsx').then(module => ({ default: module.Projects }))
+    import('../../apps/projects/index.tsx').then(module => ({ default: module.Projects }))
 );
 const ProjectMentions = lazy(() =>
-    import('../../pages/projects/ProjectMentions.tsx').then(module => ({ default: module.ProjectMentions }))
+    import('../../apps/projects/ProjectMentions.tsx').then(module => ({ default: module.ProjectMentions }))
 );
 const TableModule = lazy(() =>
     import('../table/TableModule.tsx').then(module => ({ default: module.TableModule }))
 );
 const SystemSettingsForm = lazy(() =>
-    import('../../pages/settings/SystemSettingsForm.tsx').then(module => ({ default: module.SystemSettingsForm }))
+    import('../../apps/settings/SystemSettingsForm.tsx').then(module => ({ default: module.SystemSettingsForm }))
 );
 const AppRouter = lazy(() => import('../../router/index.jsx'));
-const SystemAdminApp = lazy(() => import('../../pages/systemadmin/index.jsx'));
 
 const registry = {
     'ghg-calculator': GhgCalculator,
@@ -38,7 +37,6 @@ const registry = {
     'table-module': TableModule,
     'system-settings-form': SystemSettingsForm,
     'app-router': AppRouter,
-    'systemadmin-app': SystemAdminApp,
 };
 
 /**

@@ -1,9 +1,9 @@
-import React from 'react';
-import { useRouteLoaderData } from 'react-router-dom';
+import React, { useMemo, useRef } from 'react';
 import { TableModule } from '../../components/table/TableModule';
 import { t } from '../../lib/i18n';
+import { mutationEvents, useSystemAdmin, useSystemAdminLabels } from './HydrationProvider';
 
-function createToken(userOptions) {
+function createToken(userOptions, onCreated) {
     const $ = window.$;
     const name = $('<input />').attr({ type: 'text', maxlength: 255, id: 'api-token-name' }).addClass('form-control');
     const user = $('<select />').attr('id', 'api-token-user').addClass('form-select')
@@ -71,7 +71,7 @@ function createToken(userOptions) {
                 message.text(t('Due to an unknown reason, a requested action failed'));
             }
             window.showDialog(t('API token'), message, {
-                afterClose: () => window.location.reload(),
+                afterClose: onCreated,
                 modalClass: 'modal-xl',
             });
         },
@@ -79,7 +79,40 @@ function createToken(userOptions) {
 }
 
 export function Component() {
-    const { config, userOptions, canCreate } = useRouteLoaderData('systemadmin-root');
+    const { data, csrfToken, refresh } = useSystemAdmin();
+    const label = useSystemAdminLabels();
+    const controllerRef = useRef(null);
+    const { userOptions } = data.groups;
+    const config = useMemo(() => ({
+        listTitle: label('API tokens'),
+        tableId: 'tokenslist',
+        titleKey: 'name',
+        subtitleKeys: [],
+        defaultView: 'table',
+        editMode: 'inline',
+        perPage: 10,
+        searchKeys: ['name'],
+        dataSource: {
+            baseUrl: data.urls.crud,
+            model: 'PersonalAccessToken',
+            sort: ['name'],
+            headers: { 'X-CSRF-TOKEN': csrfToken },
+        },
+        permissions: { create: false },
+        columns: [
+            { key: 'name', label: label('Name'), form: 'both', required: true, maxLength: 255, sortable: true },
+            { key: 'user_id', label: label('User'), type: 'select', form: 'create', options: userOptions },
+        ],
+        tableColumns: ['name', 'user_id'],
+        detailSections: [],
+        filters: [],
+        newItemDefaults: {},
+        events: mutationEvents(refresh, []),
+    }), [data, csrfToken, refresh, label, userOptions]);
+    const onCreated = () => {
+        controllerRef.current?.reload();
+        void refresh([]);
+    };
 
     return <>
         <div className="mb-3">
@@ -88,12 +121,12 @@ export function Component() {
                     {t('To the API documentation')}
                 </a>
             </span>
-            {canCreate && <span className="ls-table inline-flex">
-                <button type="button" className="inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring bg-primary text-primary-foreground hover:bg-primary/90" onClick={() => createToken(userOptions)}>
+            <span className="ls-table inline-flex">
+                <button type="button" className="inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring bg-primary text-primary-foreground hover:bg-primary/90" onClick={() => createToken(userOptions, onCreated)}>
                     {t('Create API token')}
                 </button>
-            </span>}
+            </span>
         </div>
-        <TableModule config={config} data={[]} />
+        <TableModule config={config} data={[]} controllerRef={controllerRef} />
     </>;
 }

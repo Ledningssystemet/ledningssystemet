@@ -8,6 +8,7 @@
         "./loadstyles": "./resources/js/components/core/loadstyles.js",
         "./components/ui": "./resources/js/components/ui/index.tsx",
         "./components/ui/Dropzone": "./resources/js/components/ui/Dropzone.tsx",
+        "./components/errorpage": "./resources/js/components/errorpage/index.jsx",
         "./components/tabs": "./resources/js/components/tabs/index.tsx",
         "./components/*": "./resources/js/components/*"
     },

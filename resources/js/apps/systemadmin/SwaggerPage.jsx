@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react';
-import { useRouteLoaderData } from 'react-router-dom';
 import { t } from '../../lib/i18n';
+import { useSystemAdmin } from './HydrationProvider';
 
 let swaggerAssets;
 
@@ -27,7 +27,8 @@ function loadSwaggerAssets() {
 }
 
 export function Component() {
-    const { specUrl } = useRouteLoaderData('systemadmin-root');
+    const { data } = useSystemAdmin();
+    const specUrl = data.urls.swagger;
     const container = useRef(null);
 
     useEffect(() => {

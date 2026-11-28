@@ -47,6 +47,8 @@ class CustomProperty extends Model
     */
    protected $appends = [
       'access',
+      'translated_name',
+      'select_options',
    ];
 
    public function getAccessAttribute($user = null)
@@ -235,6 +237,27 @@ class CustomProperty extends Model
             throw new \Exception('The custom property of type '.$this->type.' does not have corresponding jtable options');
       }
 
+   }
+
+   public function getTranslatedNameAttribute(): string
+   {
+      return __($this->name);
+   }
+
+   public static function getAllowedFields(): array
+   {
+      return [...(new static)->getVisible(), 'translated_name', 'select_options'];
+   }
+
+   public function getSelectOptionsAttribute(): array
+   {
+      return collect(json_decode($this->getJtableOptions(), true) ?? [])
+         ->filter(fn ($option) => isset($option['Value']))
+         ->map(fn ($option) => [
+            'value' => (string) $option['Value'],
+            'label' => $option['DisplayText'],
+            'disabled' => $option['Disabled'] ?? false,
+         ])->values()->all();
    }
 
    /**

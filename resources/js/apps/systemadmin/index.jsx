@@ -1,11 +1,15 @@
 import React, { useEffect } from 'react';
+import { createRoot } from 'react-dom/client';
 import {
-    createBrowserRouter, isRouteErrorResponse, Outlet, redirect, RouterProvider,
-    useLocation, useNavigation, useRouteError,
+    createBrowserRouter, isRouteErrorResponse, Outlet, redirect, RouterProvider, useLocation, useNavigation, useRouteError,
 } from 'react-router-dom';
 import { t } from '../../lib/i18n';
+import { createHydrationStore } from './hydration';
+import { HydrationProvider, useSystemAdmin } from './HydrationProvider';
+import ErrorPage from '../../components/errorpage';
 
-let initialPageProps = document.querySelector('systemadmin-app')?.dataset.props;
+const bootstrap = JSON.parse(document.querySelector('systemadmin-app').dataset.props);
+const hydration = createHydrationStore(bootstrap);
 const pagePaths = new Set([
     '/systemadmin/users',
     '/systemadmin/access',
@@ -14,52 +18,44 @@ const pagePaths = new Set([
     '/systemadmin/swagger',
 ]);
 
-function readPageProps(html) {
-    const element = new DOMParser().parseFromString(html, 'text/html').querySelector('systemadmin-app');
-    if (!element?.dataset.props) {
-        throw new Error(t('The page could not be loaded.'));
-    }
-
-    return JSON.parse(element.dataset.props);
-}
-
 async function loadPage({ request }) {
-    if (initialPageProps) {
-        const props = JSON.parse(initialPageProps);
-        initialPageProps = null;
-        return props;
-    }
-
-    const response = await fetch(request.url, {
-        signal: request.signal,
-        credentials: 'same-origin',
-        headers: { Accept: 'text/html' },
-    });
-    if (!response.ok) {
-        throw new Response(t('The page could not be loaded.'), { status: response.status });
-    }
-
-    return readPageProps(await response.text());
+    await hydration.load(request.signal);
+    return null;
 }
 
 function PageError() {
     const error = useRouteError();
-    return <div className="alert alert-danger" role="alert">
-        <h2>{t('The page could not be loaded.')}</h2>
-        <p>{isRouteErrorResponse(error)
-            ? `${error.status}: ${error.data}`
-            : error instanceof Error ? error.message : t('An unexpected error occurred.')}</p>
-        <a className="btn btn-outline-primary" href={window.location.href}>{t('Retry')}</a>
-    </div>;
+    const notFound = isRouteErrorResponse(error) && error.status === 404;
+    const message = isRouteErrorResponse(error)
+        ? `${error.status}: ${error.data}`
+        : error instanceof Error ? error.message : t('An unexpected error occurred.');
+
+    return <ErrorPage
+        errorType={notFound ? 'pageNotFound' : 'pageLoadError'}
+        title={notFound ? t('Page not found') : t('The page could not be loaded.')}
+        text={notFound ? t('The link may be incorrect or the page may have moved.') : message}
+        homeLabel={t('Go to homepage')}
+        retryLabel={t('Retry')}
+    />;
 }
 
 function Layout() {
+    return <HydrationProvider store={hydration} csrfToken={bootstrap.csrfToken}>
+        <HydratedLayout />
+    </HydrationProvider>;
+}
+
+function HydratedLayout() {
     const location = useLocation();
     const navigation = useNavigation();
+    const { data, refreshing } = useSystemAdmin();
 
     useEffect(() => {
+        const pathname = location.pathname.startsWith('/systemadmin')
+            ? location.pathname
+            : `/systemadmin${location.pathname}`;
         document.querySelectorAll('.sidebar .nav-link:not(.nav-group-toggle)').forEach(link => {
-            const active = new URL(link.href, window.location.href).pathname.replace(/\/$/, '') === location.pathname.replace(/\/$/, '');
+            const active = new URL(link.href, window.location.href).pathname.replace(/\/$/, '') === pathname.replace(/\/$/, '');
             link.classList.toggle('active', active);
             if (active) {
                 const group = link.closest('.nav-group');
@@ -69,10 +65,14 @@ function Layout() {
         });
     }, [location.pathname]);
 
-    return <div aria-busy={navigation.state !== 'idle'}>
+    return <div aria-busy={navigation.state !== 'idle' || refreshing}>
         {navigation.state !== 'idle' && <p role="status">{t('Loading data…')}</p>}
-        <Outlet />
+        {data && <Outlet />}
     </div>;
+}
+
+function LoadingPage() {
+    return <p role="status">{t('Loading data…')}</p>;
 }
 
 function createSystemAdminRouter() {
@@ -83,6 +83,7 @@ function createSystemAdminRouter() {
         shouldRevalidate: ({ currentUrl, nextUrl, defaultShouldRevalidate }) =>
             currentUrl.pathname !== nextUrl.pathname || defaultShouldRevalidate,
         ErrorBoundary: PageError,
+        HydrateFallback: LoadingPage,
         children: [
             { index: true, loader: () => redirect('/systemadmin/users') },
             { path: 'users', lazy: () => import('./UsersPage.jsx'), ErrorBoundary: PageError },
@@ -118,4 +119,14 @@ export default function SystemAdminApp() {
     }, []);
 
     return <RouterProvider router={router} />;
+}
+
+const mountElement = document.querySelector('systemadmin-app');
+
+if (mountElement) {
+    createRoot(mountElement).render(
+        <React.StrictMode>
+            <SystemAdminApp />
+        </React.StrictMode>
+    );
 }

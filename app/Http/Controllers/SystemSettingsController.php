@@ -19,29 +19,10 @@ class SystemSettingsController extends Controller
     {
         Gate::authorize('manage-system-settings');
 
-        $modules = [];
-        foreach (Modules::LABELS as $module => $label) {
-            $modules[$module] = Modules::active($module);
-        }
-
-        $contact = [];
-        foreach (array_keys(SystemSettings::CONTACT_FIELDS) as $name) {
-            $contact[$name] = SystemSettings::value($name);
-        }
-
-        $assessment = [];
-        foreach (array_keys(SystemSettings::ASSESSMENT_FIELDS) as $name) {
-            $assessment[$name] = SystemSettings::integerValue($name);
-        }
-
-        return view('systemadmin.settings', [
-            'modules' => $modules,
-            'contact' => $contact,
-            'assessment' => $assessment,
-        ]);
+        return view('systemadmin.settings');
     }
 
-    public function update(Request $request): RedirectResponse
+    public function update(Request $request): RedirectResponse|JsonResponse
     {
         Gate::authorize('manage-system-settings');
 
@@ -67,6 +48,14 @@ class SystemSettingsController extends Controller
                 Feature::store('ledningssystemet')->for(null)->activate($name, (int) $validated[$name]);
             }
         });
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'message' => __('System settings saved.'),
+                'contact' => collect(SystemSettings::CONTACT_FIELDS)->map(fn ($label, $key) => $validated[$key] ?? '')->all(),
+                'assessment' => collect(SystemSettings::ASSESSMENT_FIELDS)->map(fn ($label, $key) => (int) $validated[$key])->all(),
+            ]);
+        }
 
         return redirect()->route('systemadmin.settings')->with('status', __('System settings saved.'));
     }

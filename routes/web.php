@@ -244,22 +244,7 @@ Route::group(['namespace' => 'Ledningssystemet\Ledningssystemet\Http\Controllers
       /**
       * System admin routes
       */
-      Route::get('/systemadmin', function() { return view('systemadmin.not-found'); });
-      Route::get('/systemadmin/departments', function() { return view('systemadmin.departments'); }); // Display departments
-      Route::middleware(ModuleEnabled::class.':staff')->group(function () {
-         Route::get('/systemadmin/roles', function() { return view('systemadmin.roles'); }); // Display roles
-      });
-      Route::get('/systemadmin/settings', [SystemSettingsController::class, 'index'])->name('systemadmin.settings');
-      Route::put('/systemadmin/settings', [SystemSettingsController::class, 'update'])->name('systemadmin.settings.update');
-      Route::patch('/systemadmin/settings/modules/{module}', [SystemSettingsController::class, 'updateModule'])->name('systemadmin.settings.modules.update');
-      Route::get('/systemadmin/access', function() { return view('systemadmin.access'); }); // Display access settings
-      Route::get('/systemadmin/users', function() { return view('systemadmin.users'); }); // Display users
-      Route::get('/systemadmin/users/{user}/notification-settings', [SystemUserNotificationSettingsController::class, 'show'])->whereNumber('user');
-      Route::post('/systemadmin/users/{user}/notification-settings', [SystemUserNotificationSettingsController::class, 'update'])->whereNumber('user');
-      Route::get('/systemadmin/apitokens', function() { return view('systemadmin.apitokens'); }); // Display API tokens
-      Route::get('/systemadmin/sites', function() { return view('systemadmin.sites'); }); // Display Sites
-      Route::get('/systemadmin/swagger', function() { return view('systemadmin.swagger'); }); // Display Swagger
-      Route::get('/systemadmin/customproperties', function() { return view('systemadmin.customproperties'); }); // Custom properties settings
+      Route::get('/systemadmin/{any}', function() { return view('systemadmin'); })->where('any', '.*'); // System admin app
 
       /**
       * i18n

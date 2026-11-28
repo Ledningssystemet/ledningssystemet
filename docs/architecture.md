@@ -16,6 +16,24 @@ The npm exports `@ledningssystemet/ledningssystemet/app` and
 load its styles for consuming applications. The app entry also registers the
 editors and component registry and mounts UI extension slots on DOM ready.
 
+The shared `ErrorPage` component lives in `resources/js/components/errorpage`
+and is exported as `@ledningssystemet/ledningssystemet/components/errorpage`.
+Pass `errorType`, `title`, `text`, `homeLabel` and `retryLabel` when rendering it.
+`pageNotFound` selects the 404 map illustration; other error types (including
+`pageLoadError`) select a warning illustration. The component does not interpret
+router errors or translate text: each app supplies the appropriate type and
+all translated text. The actions navigate to `/` and reload the current page.
+In the consumer regression project, verify both illustrations, supplied texts,
+mobile layout, and both actions in each app.
+
+Server-rendered HTTP errors use the self-contained `errors::minimal` and
+`errors::layout` Blade views, with the same 404 and warning illustrations.
+They retain the status-specific message and code, and offer home and retry
+links without requiring frontend assets or JavaScript. The package appends its
+view path to Laravel's error view search paths; host error views take priority.
+In the consumer regression project, check 404, 403, 419, 500 and 503 responses,
+translations, mobile layout, both links and host-provided error view overrides.
+
 ## React application pages
 
 `/app/projects` and `/app/ghgcalculator` share `resources/views/app.blade.php`,
@@ -59,24 +77,61 @@ settings, API tokens and API documentation is client-side, with browser
 back/forward support. Sidebar links into these pages are intercepted by the
 router, while unrelated links retain normal browser navigation.
 
-Each page's authenticated Laravel view supplies its initial JSON props and
-continues to enforce its existing page-level authorization. All these views use
-the shared `resources/views/systemadmin/app.blade.php` partial to mount the app,
-with route-specific props. When navigating to another system-administration
-page, the router loads that page's HTML response to obtain its props; the page
-module renders the React UI without replacing the shared master layout. Since
-these props belong to the active child page, the root loader revalidates when
-the page path changes. CRUD endpoints and settings/notification actions retain
-their own authorization checks. Unknown paths within the React Router display
-a not-found error; system-administration routes outside this React application
-continue to use their existing Laravel views.
+The root route provides a translated loading status through `HydrateFallback`
+while the initial reference data and lazy page module load. Later navigation
+retains the layout's existing loading indicator.
+
+Each page's authenticated Laravel view retains its page-level authorization
+and uses `../resources/views/systemadmin.blade.php` to supply the same minimal
+bootstrap: CSRF token, URLs, configuration, translated labels and only those
+resources that have no CRUD model (permission options, external groups,
+notification definitions and system settings). The root loader reads User,
+Department, Role, AccessGroup, RiskLevel and CustomProperty references from
+the existing `/api/v1/crud` routes on entry and page-path navigation; it no
+longer fetches page HTML. The shared hydration provider owns these references
+and initialization values. Static table configuration belongs to each JSX
+page; table rows still use the CRUD API. All authorization stays on the server;
+the app does not perform its own page/permission checks. Unknown client paths display
+a not-found error. The other system-administration pages retain their Laravel
+views and are not part of this migration.
+
+Successful user and access-group mutations refresh dependent options and
+references through existing TableModule events. User changes also refresh
+user-dependent custom-property options. Settings changes update shared settings
+from their existing save responses. Enabling staff loads role references before
+publishing the new configuration; disabling staff removes them. API-token creation reloads its table after
+the one-time token dialog closes, without reloading the application. Settings
+and user actions also refresh affected data without a full browser reload.
+Requests are serialized; a mutation invalidates an in-flight older snapshot.
+Refreshes update configuration without remounting tables or clearing form drafts.
+Failures after a successful write explicitly report that saving succeeded but
+hydration failed, and offer retry. There is no polling or cross-tab real-time
+sync; changes made outside this app (including risk levels) are picked up on
+the next page-path navigation or reload. Bootstrap-only data, including
+configuration changed outside the app and sidebar permission presentation, stays
+unchanged until a manual browser reload. The app does not try to recalculate
+permissions when the current user's groups or rights change; backend checks
+continue to enforce current permissions on every request.
+
+Host applications overriding these five Blade views or the shared mount partial
+must adopt the new bootstrap contract. The existing npm app entry and lazy page
+modules remain the integration points. `SystemSettingsForm` keeps its standalone
+reload behavior unless the app supplies its optional `onSaved` and
+`onModuleChanged` callbacks. JSON settings writes return a success message;
+normal form submissions still redirect with the existing flash status.
+The local-user-management flag still controls the user form's creation/editing
+presentation; it is configuration, not client-side authorization.
 
 Consumer regression coverage should include direct loads and reloads for each
-page, navigating between every page without reloading and checking that each
-renders its own props, active sidebar state, back/forward, authorization
-failures, query/hash preservation, page-data loading errors, and the API-token
-and user notification actions. Verify the npm package build and these routes in
-a host application using the package.
+page, navigating between every page without reloading and checking each page's
+configuration, shared references, active sidebar state, back/forward, authorization
+failures, query/hash preservation, hydration failures/retry, token one-time
+display and user notification/reassignment actions. Check user/group
+create/update/delete propagation, custom-property options, Graph/staff settings,
+server-side permission revocation, external risk-level changes on navigation, simultaneous
+navigation/mutations and preservation of form drafts. Verify sidebar extension
+slots, standalone settings callbacks, npm lazy chunks and package route
+registration in a host application using Composer and npm.
 
 Consumer regression coverage should include both Composer route registration
 and npm lazy chunks, direct loads and reloads, sidebar navigation and active

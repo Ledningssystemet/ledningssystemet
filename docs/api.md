@@ -32,6 +32,52 @@ users, project creators, GHG readers/editors, superadmins, host policy overrides
 disabled processes, permission changes between navigations and after reload, and
 expired sessions.
 
+## System administration hydration
+
+There is no separate hydration endpoint. The shared system-administration app
+reads reference data through the existing `/api/v1/crud/{model}` routes:
+`User`, `Department`, `Role`, `AccessGroup`, `RiskLevel` and `CustomProperty`.
+Requests use explicit `fields[_]`, name sorting (ordinal sorting for risk levels
+and custom properties), and no pagination, so option lists are complete.
+Custom properties are filtered by `context` for the package's User class.
+
+`CustomProperty` additionally supports the optional read-only fields
+`translated_name` and `select_options`. Request them explicitly with field
+selection; default serialization remains unchanged. Options reuse the model's
+existing options helper and contain string `value`, translated `label` and
+`disabled`, preserving boolean/reference form behavior without returning a
+finished table configuration.
+
+Authorization stays on the server. The React application does not calculate
+page permissions or skip requests based on permissions; the API applies its
+normal Gates and reports denied requests. System administrators can read/write
+Department and Role resources (Role still requires staff to be enabled), and
+read RiskLevel references; risk-level write permissions remain unchanged.
+The actual permission name used by the server is `systemadministrator.edit`.
+
+Configuration, translated UI labels and resources without CRUD support
+(permission options, external-provider groups, notification definitions and
+system settings) remain in the common authenticated Blade bootstrap. No
+additional API routes are introduced for them. Settings writes use their
+existing routes: JSON `PUT /systemadmin/settings` responses include `message`,
+canonical `contact` and `assessment` values, while normal form submissions
+retain redirects. Module PATCH responses retain `{ "module": "...",
+"enabled": true }`. These results update the app's shared settings state.
+
+The app rehydrates CRUD references on entry and page-path navigation, and
+refreshes affected references after successful mutations. Requests bypass the
+browser cache. Failures after a successful write are reported separately and
+can be retried. External reference changes are discovered on navigation or
+reload; no polling or real-time synchronization is used. Bootstrap-only data
+and server-rendered sidebar permissions are refreshed by a manual browser
+reload, not by client-side authorization checks.
+
+Consumer regression coverage should include complete field-selected option
+lists, custom-property translations/options and unchanged default responses,
+server authorization and host Gate overrides, mutation invalidation, races,
+refresh retry, module settings and expired sessions, plus direct loads and
+client navigation across all five pages.
+
 ## Listing records
 
 For a model that permits listing, for example:

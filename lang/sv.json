@@ -1,6 +1,10 @@
 {
+   "Changes were saved, but the page data could not be refreshed.": "Ändringarna har sparats, men sidans data kunde inte uppdateras.",
    "The page could not be loaded.": "Sidan kunde inte laddas.",
    "An unexpected error occurred.": "Ett oväntat fel inträffade.",
+   "Page not found": "Sidan kunde inte hittas",
+   "The link may be incorrect or the page may have moved.": "Länken kan vara felaktig eller så har sidan flyttats.",
+   "Go to homepage": "Till startsidan",
    "Access denied": "Åtkomst nekad",
    "Only the description of a project file can be changed": "Endast beskrivningen av en projektfil kan ändras",
    "Select files": "Välj filer",
