@@ -524,7 +524,7 @@ if($issue->due < date("Y-m-d"))
             <div class="d-block">
                <div class="container-header"><span class="material-symbols-rounded">settings_alert</span>{{ __("System settings") }}</div>
                <div class="status-container">
-      @foreach(array_merge(\Ledningssystemet\Ledningssystemet\Models\User::getItemsStatus(null, auth()->user(), true), \Ledningssystemet\Ledningssystemet\Models\Site::getItemsStatus(null, auth()->user(), true), \Ledningssystemet\Ledningssystemet\Models\Department::getItemsStatus(null, auth()->user(), true), \Ledningssystemet\Ledningssystemet\Models\Role::getItemsStatus(null, auth()->user(), true), \Ledningssystemet\Ledningssystemet\Models\AccessGroup::getItemsStatus(null, auth()->user(), true)) as $issue)
+      @foreach(array_merge(\Ledningssystemet\Ledningssystemet\Models\Site::getItemsStatus(null, auth()->user(), true), \Ledningssystemet\Ledningssystemet\Models\Department::getItemsStatus(null, auth()->user(), true), \Ledningssystemet\Ledningssystemet\Models\Role::getItemsStatus(null, auth()->user(), true)) as $issue)
                   <div class="status-item">
                      <span class="badge bg-{{ $issue['level'] }}"></span>
                      <span class="count">{{ $issue['count'] }}</span>

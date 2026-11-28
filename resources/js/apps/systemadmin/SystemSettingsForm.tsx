@@ -60,8 +60,6 @@ export function SystemSettingsForm({
   const [activeTab, setActiveTab] = useState("features");
   const [savingModule, setSavingModule] = useState<string | null>(null);
   const moduleRequestPending = useRef(false);
-  const [moduleError, setModuleError] = useState<string | null>(null);
-  const [moduleStatus, setModuleStatus] = useState<string | null>(null);
   const hydratedValues = useRef({ contact, assessment });
 
   useEffect(() => {
@@ -83,13 +81,13 @@ export function SystemSettingsForm({
     if (moduleRequestPending.current || saving) return;
     moduleRequestPending.current = true;
     setSavingModule(module.key);
-    setModuleError(null);
-    setModuleStatus(null);
+    setError(null);
+    setStatus(null);
 
     try {
       const url = modulesAction ? `${modulesAction}/${encodeURIComponent(module.key)}` : module.action;
       if (!url) {
-        setModuleError(`${module.label}: ${t("Could not save.")}`);
+        setError(`${module.label}: ${t("Could not save.")}`);
         return;
       }
       const response = await fetch(url, {
@@ -104,10 +102,10 @@ export function SystemSettingsForm({
       });
       if (!response.ok) {
         const body = await response.json().catch(() => null);
-        setModuleError(`${module.label}: ${body?.message ?? t("Could not save.")}`);
+        setError(`${module.label}: ${body?.message ?? t("Could not save.")}`);
         return;
       }
-      setModuleStatus(t("System settings saved."));
+      setStatus(t("System settings saved."));
       if (!onModuleChanged) {
         setModuleValues((current) => ({ ...current, [module.key]: enabled }));
         return;
@@ -115,14 +113,14 @@ export function SystemSettingsForm({
       const result: unknown = await response.json().catch(() => null);
       if (!result || typeof result !== "object" || !("module" in result) || result.module !== module.key
         || !("enabled" in result) || typeof result.enabled !== "boolean") {
-        setModuleError(t("Changes were saved, but the page data could not be refreshed."));
+        setError(t("Changes were saved, but the page data could not be refreshed."));
         return;
       }
       const savedEnabled = result.enabled;
       setModuleValues((current) => ({ ...current, [module.key]: savedEnabled }));
       onModuleChanged({ module: module.key, enabled: savedEnabled });
     } catch {
-      setModuleError(`${module.label}: ${t("Could not reach the server. Check your connection and try again.")}`);
+      setError(`${module.label}: ${t("Could not reach the server. Check your connection and try again.")}`);
     } finally {
       moduleRequestPending.current = false;
       setSavingModule(null);
@@ -188,10 +186,6 @@ export function SystemSettingsForm({
       <section>
         <h4>{t("Modules")}</h4>
         <p>{t("Enabled modules apply to all users. Disabling a module does not delete its data.")}</p>
-        {moduleError && <div className="alert alert-danger" role="alert">{moduleError}</div>}
-        <div role="status" aria-live="polite">
-          {savingModule ? t("Saving…") : moduleStatus}
-        </div>
         <div className="mt-3">
           {modules.map((module) => (
             <div className="form-check form-switch mb-3" key={module.key}>
@@ -275,7 +269,9 @@ export function SystemSettingsForm({
   return (
     <form onSubmit={submit} className="space-y-6">
       {error && <div className="alert alert-danger" role="alert">{error}</div>}
-      {status && <div role="status">{status}</div>}
+      {(saving || savingModule || status) && <div className="alert alert-success" role="status">
+        {saving || savingModule ? t("Saving…") : status}
+      </div>}
       <Tabs items={tabs} label={t("Function settings")} value={activeTab} onValueChange={setActiveTab} />
       {activeTab !== "features" && <div className="flex justify-end gap-2 pt-2">
         <button type="submit" className={btnPrimary} disabled={saving || savingModule !== null}>
