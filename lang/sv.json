@@ -177,6 +177,7 @@
    "Approved": "Godkänd",
    "Retry": "Försök igen",
    "Loading data…": "Laddar data…",
+   "Please wait while data is loading.": "Vänta medan data laddas.",
    "Saving…": "Sparar…",
    "Unexpected API response": "Oväntat svar från API:t",
    "Could not fetch data": "Kunde inte hämta data",

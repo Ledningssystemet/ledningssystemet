@@ -8,7 +8,7 @@ type ModuleSetting = {
   key: string;
   label: string;
   enabled: boolean;
-  action: string;
+  action?: string;
 };
 
 type SavedSettings = {
@@ -26,6 +26,7 @@ function isSavedSettings(value: unknown): value is SavedSettings {
 
 type Props = {
   action: string;
+  modulesAction?: string;
   csrfToken: string;
   modules: ModuleSetting[];
   contact: Record<string, string>;
@@ -38,6 +39,7 @@ type Props = {
 
 export function SystemSettingsForm({
   action,
+  modulesAction,
   csrfToken,
   modules,
   contact,
@@ -85,7 +87,12 @@ export function SystemSettingsForm({
     setModuleStatus(null);
 
     try {
-      const response = await fetch(module.action, {
+      const url = modulesAction ? `${modulesAction}/${encodeURIComponent(module.key)}` : module.action;
+      if (!url) {
+        setModuleError(`${module.label}: ${t("Could not save.")}`);
+        return;
+      }
+      const response = await fetch(url, {
         method: "PATCH",
         credentials: "same-origin",
         headers: {

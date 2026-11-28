@@ -20,10 +20,9 @@ $bootstrap = [
     'csrfToken' => csrf_token(),
     'urls' => [
        'crud' => '/api/v1/crud',
+       'settings' => '/api/v1/settings',
    ],
     'configuration' => [
-        'staffEnabled' => \Ledningssystemet\Ledningssystemet\Support\Modules::active('staff'),
-        'supplierEnabled' => \Ledningssystemet\Ledningssystemet\Support\Modules::active('supplier'),
         'graphSyncEnabled' => $graphEnabled,
         'graphProviderName' => config('ledningssystemet.graph_provider_name', __('External provider group')),
         'graphDepartmentsAssignUsers' => (bool) config('ledningssystemet.graph_departments_assignusers'),
@@ -40,20 +39,6 @@ $bootstrap = [
             'scopeOptions' => array_map(fn ($scope) => ['value' => $scope['key'], 'label' => $scope['text']], \Ledningssystemet\Ledningssystemet\Models\UserNotificationChannel::availableScopes()),
             'eventOptions' => array_map(fn ($event) => ['value' => $event['key'], 'label' => $event['text']], \Ledningssystemet\Ledningssystemet\Models\UserNotificationChannel::availableEvents()),
         ],
-        'settings' => [
-            'modules' => collect(\Ledningssystemet\Ledningssystemet\Support\Modules::LABELS)->map(fn ($label, $module) => [
-                'key' => $module, 'label' => __($label),
-                'enabled' => \Ledningssystemet\Ledningssystemet\Support\Modules::active($module),
-            ])->values()->all(),
-            'contact' => collect(\Ledningssystemet\Ledningssystemet\Support\SystemSettings::CONTACT_FIELDS)
-                ->map(fn ($label, $key) => \Ledningssystemet\Ledningssystemet\Support\SystemSettings::value($key))->all(),
-            'assessment' => collect(\Ledningssystemet\Ledningssystemet\Support\SystemSettings::ASSESSMENT_FIELDS)
-                ->map(fn ($label, $key) => \Ledningssystemet\Ledningssystemet\Support\SystemSettings::integerValue($key))->all(),
-            'contactFields' => collect(\Ledningssystemet\Ledningssystemet\Support\SystemSettings::CONTACT_FIELDS)
-                ->map(fn ($label, $key) => ['key' => $key, 'label' => __($label), 'email' => $key === 'data_privacy_contact_email'])->values()->all(),
-            'assessmentFields' => collect(\Ledningssystemet\Ledningssystemet\Support\SystemSettings::ASSESSMENT_FIELDS)
-                ->map(fn ($label, $key) => ['key' => $key, 'label' => __($label)])->values()->all(),
-        ],
     ],
 ];
 @endphp
@@ -62,4 +47,3 @@ $bootstrap = [
 @vite(['resources/js/apps/systemadmin/index.jsx'])
 <systemadmin-app data-props="{{ json_encode($bootstrap) }}"></systemadmin-app>
 @endsection
-

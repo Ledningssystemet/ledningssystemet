@@ -77,9 +77,10 @@ settings, API tokens and API documentation is client-side, with browser
 back/forward support. Sidebar links into these pages are intercepted by the
 router, while unrelated links retain normal browser navigation.
 
-The root route provides a translated loading status through `HydrateFallback`
-while the initial reference data and lazy page module load. Later navigation
-retains the layout's existing loading indicator.
+The root route displays a translated blocking loading dialog through
+`HydrateFallback` while the initial reference data and lazy page module load.
+The same dialog appears during subsequent navigation and reference-data
+refreshes, and closes when loading finishes.
 
 Each page's authenticated Laravel view retains its page-level authorization
 and uses `../resources/views/systemadmin.blade.php` to supply the same minimal
@@ -106,9 +107,9 @@ Requests are serialized; a mutation invalidates an in-flight older snapshot.
 Refreshes update configuration without remounting tables or clearing form drafts.
 Failures after a successful write explicitly report that saving succeeded but
 hydration failed, and offer retry. There is no polling or cross-tab real-time
-sync; changes made outside this app (including risk levels) are picked up on
+sync; changes made outside this app (including risk levels and system settings) are picked up on
 the next page-path navigation or reload. Bootstrap-only data, including
-configuration changed outside the app and sidebar permission presentation, stays
+other configuration changed outside the app and sidebar permission presentation, stays
 unchanged until a manual browser reload. The app does not try to recalculate
 permissions when the current user's groups or rights change; backend checks
 continue to enforce current permissions on every request.
@@ -332,13 +333,16 @@ it defaults to 365 days. Disabling a module does not delete its data.
 The React settings form uses the shared `Tabs` component for Features, Privacy
 and Assessment, with Lucide icons. Draft values are held by the form and survive
 tab changes. Module switches save immediately through the authorized
-`PATCH /systemadmin/settings/modules/{module}` endpoint, which validates the
+`PATCH /api/v1/settings/modules/{module}` endpoint, which validates the
 module name and boolean value and changes only that module. Switches remain
 disabled while saving and display their new state only after success; failures
 show an error and retain the previous state. No reload occurs, preserving drafts
 in other tabs. The Save button is hidden on Features; on Privacy and Assessment
-it submits those two sections without rewriting modules. The existing PUT route
-still accepts complete module configurations for compatibility.
+it submits those two sections to `PUT /api/v1/settings` without rewriting modules.
+`GET /api/v1/settings` supplies the settings and translated field metadata to
+authenticated users; writes require `systemadministrator.edit`. The web PUT and
+PATCH routes remain available, and PUT still accepts complete module
+configurations for compatibility.
 
 Consumer regression coverage should check immediate module persistence,
 rejected names/values, authorization, network/server errors, overlapping changes,

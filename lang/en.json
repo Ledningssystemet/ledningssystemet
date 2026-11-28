@@ -177,6 +177,7 @@
     "Approved": "Approved",
     "Retry": "Retry",
     "Loading data…": "Loading data…",
+    "Please wait while data is loading.": "Please wait while data is loading.",
     "Saving…": "Saving…",
     "Unexpected API response": "Unexpected API response",
     "Could not fetch data": "Could not fetch data",

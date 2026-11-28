@@ -10,6 +10,7 @@ use Ledningssystemet\Ledningssystemet\Http\Controllers\Api\TableController;
 use Ledningssystemet\Ledningssystemet\Http\Controllers\Api\TagController;
 use Ledningssystemet\Ledningssystemet\Http\Controllers\DocumentController;
 use Ledningssystemet\Ledningssystemet\Http\Controllers\StatusController;
+use Ledningssystemet\Ledningssystemet\Http\Controllers\SystemSettingsController;
 use Ledningssystemet\Ledningssystemet\Http\Middleware\NoStore;
 use Ledningssystemet\Ledningssystemet\Models\Department;
 use Ledningssystemet\Ledningssystemet\Models\LibraryDocument;
@@ -32,6 +33,11 @@ use Ledningssystemet\Ledningssystemet\Http\Middleware\ModuleEnabled;
 
 // API v1 routes
 Route::prefix('v1')->group(function () {
+
+    Route::get('/settings', [SystemSettingsController::class, 'show'])
+        ->middleware(NoStore::class)->name('api.v1.settings.show');
+    Route::put('/settings', [SystemSettingsController::class, 'update'])->name('api.v1.settings.update');
+    Route::patch('/settings/modules/{module}', [SystemSettingsController::class, 'updateModule'])->name('api.v1.settings.modules.update');
 
     Route::get('/swagger', [SwaggerController::class, 'index'])
         ->middleware('web')

@@ -2,7 +2,6 @@
 
 namespace Ledningssystemet\Ledningssystemet\Http\Controllers;
 
-use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -15,16 +14,28 @@ use Ledningssystemet\Ledningssystemet\Support\SystemSettings;
 
 class SystemSettingsController extends Controller
 {
-    public function index(): View
+    public function show(): JsonResponse
     {
-        Gate::authorize('manage-system-settings');
-
-        return view('systemadmin.settings');
+        return response()->json([
+            'modules' => collect(Modules::LABELS)->map(fn ($label, $module) => [
+                'key' => $module,
+                'label' => __($label),
+                'enabled' => Modules::active($module),
+            ])->values()->all(),
+            'contact' => collect(SystemSettings::CONTACT_FIELDS)
+                ->map(fn ($label, $key) => SystemSettings::value($key))->all(),
+            'assessment' => collect(SystemSettings::ASSESSMENT_FIELDS)
+                ->map(fn ($label, $key) => SystemSettings::integerValue($key))->all(),
+            'contactFields' => collect(SystemSettings::CONTACT_FIELDS)
+                ->map(fn ($label, $key) => ['key' => $key, 'label' => __($label), 'email' => $key === 'data_privacy_contact_email'])->values()->all(),
+            'assessmentFields' => collect(SystemSettings::ASSESSMENT_FIELDS)
+                ->map(fn ($label, $key) => ['key' => $key, 'label' => __($label)])->values()->all(),
+        ]);
     }
 
     public function update(Request $request): RedirectResponse|JsonResponse
     {
-        Gate::authorize('manage-system-settings');
+        Gate::authorize('systemadministrator.edit');
 
         $rules = [
             'modules' => ['sometimes', 'array:'.implode(',', array_keys(Modules::LABELS))],
@@ -57,12 +68,12 @@ class SystemSettingsController extends Controller
             ]);
         }
 
-        return redirect()->route('systemadmin.settings')->with('status', __('System settings saved.'));
+        return redirect('/systemadmin/settings')->with('status', __('System settings saved.'));
     }
 
     public function updateModule(Request $request, string $module): JsonResponse
     {
-        Gate::authorize('manage-system-settings');
+        Gate::authorize('systemadministrator.edit');
 
         $validated = validator([
             'module' => $module,

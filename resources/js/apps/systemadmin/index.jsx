@@ -1,5 +1,7 @@
 import React, { useEffect } from 'react';
 import { createRoot } from 'react-dom/client';
+import PageLoading from '../../components/pageloading';
+import * as Dialog from '@radix-ui/react-dialog';
 import {
     createBrowserRouter, isRouteErrorResponse, Outlet, redirect, RouterProvider, useLocation, useNavigation, useRouteError,
 } from 'react-router-dom';
@@ -7,6 +9,7 @@ import { t } from '../../lib/i18n';
 import { createHydrationStore } from './hydration';
 import { HydrationProvider, useSystemAdmin } from './HydrationProvider';
 import ErrorPage from '../../components/errorpage';
+import '../../components/ui/ui.css';
 
 const bootstrap = JSON.parse(document.querySelector('systemadmin-app').dataset.props);
 const hydration = createHydrationStore(bootstrap);
@@ -65,14 +68,12 @@ function HydratedLayout() {
         });
     }, [location.pathname]);
 
-    return <div aria-busy={navigation.state !== 'idle' || refreshing}>
-        {navigation.state !== 'idle' && <p role="status">{t('Loading data…')}</p>}
+    const loading = navigation.state !== 'idle' || refreshing;
+
+    return <div aria-busy={loading}>
+        {loading && <PageLoading />}
         {data && <Outlet />}
     </div>;
-}
-
-function LoadingPage() {
-    return <p role="status">{t('Loading data…')}</p>;
 }
 
 function createSystemAdminRouter() {
@@ -83,7 +84,7 @@ function createSystemAdminRouter() {
         shouldRevalidate: ({ currentUrl, nextUrl, defaultShouldRevalidate }) =>
             currentUrl.pathname !== nextUrl.pathname || defaultShouldRevalidate,
         ErrorBoundary: PageError,
-        HydrateFallback: LoadingPage,
+        HydrateFallback: PageLoading,
         children: [
             { index: true, loader: () => redirect('/systemadmin/users') },
             { path: 'users', lazy: () => import('./UsersPage.jsx'), ErrorBoundary: PageError },

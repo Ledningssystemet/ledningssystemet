@@ -244,6 +244,8 @@ Route::group(['namespace' => 'Ledningssystemet\Ledningssystemet\Http\Controllers
       /**
       * System admin routes
       */
+      Route::put('/systemadmin/settings', [SystemSettingsController::class, 'update']);
+      Route::patch('/systemadmin/settings/modules/{module}', [SystemSettingsController::class, 'updateModule']);
       Route::get('/systemadmin/{any}', function() { return view('systemadmin'); })->where('any', '.*'); // System admin app
 
       /**

@@ -56,13 +56,9 @@ read RiskLevel references; risk-level write permissions remain unchanged.
 The actual permission name used by the server is `systemadministrator.edit`.
 
 Configuration, translated UI labels and resources without CRUD support
-(permission options, external-provider groups, notification definitions and
-system settings) remain in the common authenticated Blade bootstrap. No
-additional API routes are introduced for them. Settings writes use their
-existing routes: JSON `PUT /systemadmin/settings` responses include `message`,
-canonical `contact` and `assessment` values, while normal form submissions
-retain redirects. Module PATCH responses retain `{ "module": "...",
-"enabled": true }`. These results update the app's shared settings state.
+(permission options, external-provider groups and notification definitions)
+remain in the authenticated Blade bootstrap. System settings are loaded from
+the API described below and update the app's shared settings state.
 
 The app rehydrates CRUD references on entry and page-path navigation, and
 refreshes affected references after successful mutations. Requests bypass the
@@ -77,6 +73,33 @@ lists, custom-property translations/options and unchanged default responses,
 server authorization and host Gate overrides, mutation invalidation, races,
 refresh retry, module settings and expired sessions, plus direct loads and
 client navigation across all five pages.
+
+## System settings
+
+Authenticated API users can read `GET /api/v1/settings`, without system
+administrator permission. The response is not cacheable and includes `modules`
+(an array of `{key, label, enabled}`), `contact` and `assessment` objects,
+and translated `contactFields` and `assessmentFields` metadata.
+
+Only users allowed `systemadministrator.edit` can write settings.
+`PATCH /api/v1/settings/modules/{module}` accepts `{"enabled":true}` and
+returns `{"module":"staff","enabled":true}` for the corresponding module.
+Unknown module names and invalid boolean values return 422. It changes no other
+settings. `PUT /api/v1/settings` requires `data_privacy_contact_name`,
+`data_privacy_contact_email` (both nullable) and the positive integer
+`control_status_reassessment_days`. It optionally accepts a complete `modules`
+object, with a boolean for each supported module. Omit `modules` to preserve
+existing module settings; an empty object also leaves them unchanged. Its JSON response contains `message`, `contact` and
+`assessment`. Authorization failures return 403 and invalid values return 422.
+The existing web PUT and module PATCH routes remain available; non-JSON web PUT
+submissions redirect to `/systemadmin/settings`.
+
+The shared system-administration app reloads settings on page navigation and
+uses the saved module state to decide which reference lists to load. Consumer
+regression coverage should include authenticated readers without edit rights,
+administrators and Gate overrides, guest access, each write path, invalid input,
+session/CSRF and token authentication, refresh races, and changes made in
+another session.
 
 ## Listing records
 

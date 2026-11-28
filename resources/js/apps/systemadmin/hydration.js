@@ -32,6 +32,32 @@ export function createHydrationStore(bootstrap) {
         listeners.forEach(listener => listener());
     };
 
+    async function readSettings(signal) {
+        const response = await fetch(initial.urls.settings, {
+            signal,
+            credentials: 'same-origin',
+            cache: 'no-store',
+            headers: { Accept: 'application/json' },
+        });
+        if (!response.ok) throw new ApiError(response.status, `Settings: ${response.statusText}`);
+        const settings = await response.json();
+        const record = value => value !== null && typeof value === 'object' && !Array.isArray(value);
+        const fields = value => Array.isArray(value) && value.every(field =>
+            record(field) && typeof field.key === 'string' && typeof field.label === 'string');
+        if (!record(settings) || !Array.isArray(settings.modules)
+            || settings.modules.some(module => !record(module) || typeof module.key !== 'string'
+                || typeof module.label !== 'string' || typeof module.enabled !== 'boolean')
+            || new Set(settings.modules.map(module => module.key)).size !== settings.modules.length
+            || !['staff', 'supplier'].every(key => settings.modules.some(module => module.key === key))
+            || !record(settings.contact) || !Object.values(settings.contact).every(value => typeof value === 'string')
+            || !record(settings.assessment) || !Object.values(settings.assessment).every(value => typeof value === 'number' && Number.isFinite(value))
+            || !fields(settings.contactFields) || settings.contactFields.some(field => typeof field.email !== 'boolean' || typeof settings.contact[field.key] !== 'string')
+            || !fields(settings.assessmentFields) || settings.assessmentFields.some(field => typeof settings.assessment[field.key] !== 'number')) {
+            throw new ApiError(0, `Settings: ${t('The server returned an unexpected response.')}`);
+        }
+        return settings;
+    }
+
     async function readGroup(key, signal) {
         const source = { baseUrl: initial.urls.crud, ...sources[key] };
         const response = await fetch(buildListUrl(source), {
@@ -78,19 +104,28 @@ export function createHydrationStore(bootstrap) {
             signal?.throwIfAborted();
             publish({ refreshing: true });
             const startedAt = revision;
-            const enabled = Object.keys(sources).filter(key => key !== 'roleOptions' || initial.configuration.staffEnabled);
-            const selected = groups === undefined || !snapshot.data
-                ? enabled
-                : [...new Set([...groups, ...dirty])].filter(key => enabled.includes(key));
             try {
+                const settings = groups === undefined || !snapshot.data
+                    ? await readSettings(signal)
+                    : initial.groups.settings;
+                const configuration = {
+                    ...initial.configuration,
+                    staffEnabled: settings.modules.find(module => module.key === 'staff').enabled,
+                    supplierEnabled: settings.modules.find(module => module.key === 'supplier').enabled,
+                };
+                const enabled = Object.keys(sources).filter(key => key !== 'roleOptions' || configuration.staffEnabled);
+                const selected = groups === undefined || !snapshot.data
+                    ? enabled
+                    : [...new Set([...groups, ...dirty])].filter(key => enabled.includes(key));
                 const values = await Promise.all(selected.map(async key => [key, await readGroup(key, signal)]));
                 signal?.throwIfAborted();
                 if (revision !== startedAt) return null;
+                initial = { ...initial, configuration, groups: { ...initial.groups, settings } };
                 const data = {
                     ...initial,
-                    groups: { ...initial.groups, ...snapshot.data?.groups, ...Object.fromEntries(values) },
+                    groups: { ...initial.groups, ...snapshot.data?.groups, ...Object.fromEntries(values), settings },
                 };
-                if (!initial.configuration.staffEnabled) delete data.groups.roleOptions;
+                if (!configuration.staffEnabled) delete data.groups.roleOptions;
                 dirty.clear();
                 publish({ data, error: null });
                 return data;
@@ -111,6 +146,7 @@ export function createHydrationStore(bootstrap) {
     }
 
     function updateSettings(result) {
+        revision++;
         const settings = { ...initial.groups.settings, contact: result.contact, assessment: result.assessment };
         initial = { ...initial, groups: { ...initial.groups, settings } };
         if (snapshot.data) publish({ data: { ...snapshot.data, groups: { ...snapshot.data.groups, settings } } });
@@ -128,7 +164,7 @@ export function createHydrationStore(bootstrap) {
         };
         initial = { ...initial, configuration, groups: { ...initial.groups, settings } };
         if (snapshot.data) {
-            publish({ data: { ...snapshot.data, groups: { ...snapshot.data.groups, settings } } });
+            publish({ data: { ...snapshot.data, configuration, groups: { ...snapshot.data.groups, settings } } });
         }
         return enqueue(undefined, undefined, true);
     }

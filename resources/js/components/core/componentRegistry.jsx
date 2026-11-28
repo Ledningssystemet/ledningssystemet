@@ -23,7 +23,7 @@ const TableModule = lazy(() =>
     import('../table/TableModule.tsx').then(module => ({ default: module.TableModule }))
 );
 const SystemSettingsForm = lazy(() =>
-    import('../../apps/settings/SystemSettingsForm.tsx').then(module => ({ default: module.SystemSettingsForm }))
+    import('../../apps/systemadmin/SystemSettingsForm.tsx').then(module => ({ default: module.SystemSettingsForm }))
 );
 const AppRouter = lazy(() => import('../../router/index.jsx'));
 
