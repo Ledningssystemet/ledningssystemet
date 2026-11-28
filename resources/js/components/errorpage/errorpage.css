@@ -1,0 +1,65 @@
+.ls-error-page {
+    display: flex;
+    min-height: min(72vh, 760px);
+    align-items: center;
+    justify-content: center;
+    margin: -1rem;
+    padding: 3rem 1.5rem;
+    color: #26343d;
+    text-align: center;
+}
+
+.ls-error-page__content {
+    width: min(100%, 620px);
+}
+
+.ls-error-page__illustration {
+    display: block;
+    width: min(100%, 360px);
+    height: auto;
+    margin: 0 auto 1rem;
+}
+
+.ls-error-page__number {
+    fill: #e5eaea;
+    font-size: 112px;
+    font-weight: 700;
+    letter-spacing: -7px;
+}
+
+.ls-error-page__title {
+    margin: 0 0 .6rem;
+    color: #26343d;
+    font-size: clamp(1.7rem, 4vw, 2.25rem);
+    font-weight: 700;
+}
+
+.ls-error-page__message {
+    margin: 0 auto 1.5rem;
+    color: #596c77;
+    font-size: 1.05rem;
+    overflow-wrap: anywhere;
+}
+
+.ls-error-page__actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: .75rem;
+}
+
+@media (max-width: 480px) {
+    .ls-error-page {
+        min-height: 65vh;
+        margin: -.5rem;
+        padding: 2rem 1rem;
+    }
+
+    .ls-error-page__illustration {
+        width: min(100%, 310px);
+    }
+
+    .ls-error-page__actions {
+        flex-direction: column;
+    }
+}

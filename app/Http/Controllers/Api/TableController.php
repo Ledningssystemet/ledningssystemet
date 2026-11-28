@@ -17,6 +17,7 @@ use Illuminate\Support\Str;
 use Spatie\QueryBuilder\AllowedInclude;
 use Spatie\QueryBuilder\AllowedFilter;
 use Spatie\QueryBuilder\AllowedSort;
+use Spatie\QueryBuilder\Exceptions\InvalidFieldQuery;
 use Spatie\QueryBuilder\QueryBuilder;
 
 class TableController extends Controller
@@ -37,6 +38,12 @@ class TableController extends Controller
 
       $requestedFieldSelection = self::getRequestedFieldSelection($classname);
       self::applyQueryableFieldSelection($requestedFieldSelection);
+      $allowedFields = method_exists($classname, 'getAllowedFields')
+         ? $classname::getAllowedFields()
+         : self::getDefaultAllowedFields($classname);
+      if ($requestedFieldSelection !== null) {
+         $allowedFields = array_values(array_unique([...$allowedFields, ...$requestedFieldSelection['queryable']]));
+      }
 
       // Perform index using query parameters for filtering/sorting/search/pagination
       $query = $classname::query();
@@ -55,11 +62,7 @@ class TableController extends Controller
                ? $classname::getAllowedSorts()
                : self::getDefaultAllowedSorts($classname)
          ))
-         ->allowedFields(...(
-            method_exists($classname, 'getAllowedFields')
-               ? $classname::getAllowedFields()
-               : self::getDefaultAllowedFields($classname)
-         ))
+         ->allowedFields(...$allowedFields)
          ->allowedIncludes(...(
             method_exists($classname, 'getAllowedIncludes')
                ? $classname::getAllowedIncludes()
@@ -274,24 +277,51 @@ class TableController extends Controller
          return null;
       }
 
-      $appends = (new $classname())->getAppends();
-      $queryableFields = array_values(array_diff($visibleFields, $appends));
       $model = new $classname();
+      $allowedFields = method_exists($classname, 'getAllowedFields')
+         ? $classname::getAllowedFields()
+         : self::getDefaultAllowedFields($classname);
+      $customFields = [];
+      if (method_exists($classname, 'getCustomProperties') && count(array_filter($visibleFields, static fn ($field) => str_starts_with($field, 'customproperty_')))) {
+         $customFields = $classname::getCustomProperties()
+            ->map(static fn ($property) => 'customproperty_'.$property->id)
+            ->all();
+      }
+      $allowedResponseFields = array_values(array_unique([...$allowedFields, ...$customFields]));
+      $unknownFields = collect($visibleFields)->reject(static fn ($field) => in_array($field, $allowedResponseFields, true) || in_array($table.'.'.$field, $allowedResponseFields, true));
+      if ($unknownFields->isNotEmpty()) {
+         throw InvalidFieldQuery::fieldsNotAllowed($unknownFields, collect($allowedResponseFields));
+      }
+
+      $appends = array_values(array_unique([...$model->getAppends(), ...$customFields]));
+      $requestedAppends = array_values(array_intersect($visibleFields, $appends));
+      $queryableFields = array_values(array_diff($visibleFields, $appends));
+      $queryableFields[] = $model->getKeyName();
+
+      // Undeclared policy or accessor dependencies require a full model for correctness.
+      $needsFullModel = !method_exists($model, 'getAuthorizationFields');
       if (method_exists($model, 'getAuthorizationFields')) {
-         $queryableFields = array_values(array_unique([
-            ...$queryableFields,
-            ...$model->getAuthorizationFields(),
-         ]));
+         $queryableFields = [...$queryableFields, ...$model->getAuthorizationFields()];
+      }
+      $dependencies = method_exists($model, 'getFieldDependencies') ? $model->getFieldDependencies() : [];
+      foreach ($requestedAppends as $field) {
+         if (in_array($field, $customFields, true)) {
+            continue;
+         }
+         if (!array_key_exists($field, $dependencies)) {
+            $needsFullModel = true;
+            continue;
+         }
+         $queryableFields = [...$queryableFields, ...$dependencies[$field]];
+      }
+      if ($needsFullModel) {
+         $queryableFields = [...$queryableFields, ...self::getColumnListing($model)];
       }
 
       return [
          'table' => $table,
          'visible' => $visibleFields,
-         'appends' => array_values(array_intersect(
-            $visibleFields,
-            $appends
-         )),
-         'queryable' => $queryableFields,
+         'queryable' => array_values(array_unique($queryableFields)),
       ];
    }
 
@@ -302,11 +332,10 @@ class TableController extends Controller
       }
 
       $visibleFields = $requestedFieldSelection['visible'] ?? [];
-      $appends = $requestedFieldSelection['appends'] ?? [];
-
       $items = $retval instanceof LengthAwarePaginator ? $retval->getCollection() : $retval;
 
-      $items->each(function (Model $model) use ($visibleFields, $appends) {
+      $items->each(function (Model $model) use ($visibleFields) {
+         $appends = array_values(array_intersect($model->getAppends(), $visibleFields));
          $model->setVisible($visibleFields);
          $model->setAppends($appends);
       });

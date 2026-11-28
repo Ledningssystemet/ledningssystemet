@@ -10,6 +10,7 @@ use Ledningssystemet\Ledningssystemet\Http\Controllers\Api\TableController;
 use Ledningssystemet\Ledningssystemet\Http\Controllers\Api\TagController;
 use Ledningssystemet\Ledningssystemet\Http\Controllers\DocumentController;
 use Ledningssystemet\Ledningssystemet\Http\Controllers\StatusController;
+use Ledningssystemet\Ledningssystemet\Http\Controllers\SystemSettingsController;
 use Ledningssystemet\Ledningssystemet\Http\Middleware\NoStore;
 use Ledningssystemet\Ledningssystemet\Models\Department;
 use Ledningssystemet\Ledningssystemet\Models\LibraryDocument;
@@ -32,6 +33,11 @@ use Ledningssystemet\Ledningssystemet\Http\Middleware\ModuleEnabled;
 
 // API v1 routes
 Route::prefix('v1')->group(function () {
+
+    Route::get('/settings', [SystemSettingsController::class, 'show'])
+        ->middleware(NoStore::class)->name('api.v1.settings.show');
+    Route::put('/settings', [SystemSettingsController::class, 'update'])->name('api.v1.settings.update');
+    Route::patch('/settings/modules/{module}', [SystemSettingsController::class, 'updateModule'])->name('api.v1.settings.modules.update');
 
     Route::get('/swagger', [SwaggerController::class, 'index'])
         ->middleware('web')
@@ -240,5 +246,16 @@ Route::prefix('v1/documentcontroller')->group(function () {
 Route::get('/v1/permissions', function () {
    return response()->json([
       'permissions' => auth()->user()->getAllPermissions()->pluck('name')->values(),
+      'currentUserId' => auth()->id(),
+      'pages' => [
+         'projects' => [
+            'canView' => Gate::allows('viewAny', \Ledningssystemet\Ledningssystemet\Models\Project::class),
+            'canCreate' => Gate::allows('create', \Ledningssystemet\Ledningssystemet\Models\Project::class),
+         ],
+         'ghgcalculator' => [
+            'enabled' => \Ledningssystemet\Ledningssystemet\Support\Modules::active('processes'),
+            'canView' => Gate::allows('index', \Ledningssystemet\Ledningssystemet\Models\GhgFactor::class),
+         ],
+      ],
    ]);
 })->middleware(NoStore::class)->name('api.v1.permissions.index');

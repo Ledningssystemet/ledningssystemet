@@ -104,12 +104,10 @@ class MailSendstatus extends Command
             \Ledningssystemet\Ledningssystemet\Models\Activity::class,
             \Ledningssystemet\Ledningssystemet\Models\LibraryDocument::class,
          ],
-         'System settings' => [
-            \Ledningssystemet\Ledningssystemet\Models\User::class,
+         'Application settings' => [
             \Ledningssystemet\Ledningssystemet\Models\Site::class,
             \Ledningssystemet\Ledningssystemet\Models\Department::class,
             \Ledningssystemet\Ledningssystemet\Models\Role::class,
-            \Ledningssystemet\Ledningssystemet\Models\AccessGroup::class,
          ],
       ];
 

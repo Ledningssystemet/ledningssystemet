@@ -97,7 +97,9 @@ class LegacyTableController extends Controller
       DB::beginTransaction();
 
       // Create new item
-      $newitem = $classname::create(request()->all());
+      $newitem = method_exists($classname, 'createFromRequest')
+         ? $classname::createFromRequest(request())
+         : $classname::create(request()->all());
 
       DB::commit();
 

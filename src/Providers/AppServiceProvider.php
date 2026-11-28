@@ -233,10 +233,8 @@ class AppServiceProvider extends ServiceProvider
             case 'ConfidentialityClass':
             case 'IntegrityClass':
             case 'ConsequenceLevel':
-            case 'Department':
             case 'FormTemplate':
             case 'ProbabilityLevel':
-            case 'RiskLevel':
             case 'Tag':
             case 'ProjectType':
             case 'ProjectTypeRiskTemplate':
@@ -245,6 +243,10 @@ class AppServiceProvider extends ServiceProvider
             case 'GhgCategory':
             case 'GhgConversionFactor':
                return $user->hasAnyPermission(['managementtools.edit']);
+
+            case 'Department':
+            case 'RiskLevel':
+               return $user->hasAnyPermission(['managementtools.edit', 'systemadministrator.edit']);
 
             case 'ConfidentialityGround':
             case 'Diary':
@@ -257,7 +259,7 @@ class AppServiceProvider extends ServiceProvider
             return true;
 
             case 'Role':
-               return (\Ledningssystemet\Ledningssystemet\Support\Modules::active('staff')) && $user->hasAnyPermission(['managementtools.edit']);
+               return (\Ledningssystemet\Ledningssystemet\Support\Modules::active('staff')) && $user->hasAnyPermission(['managementtools.edit', 'systemadministrator.edit']);
 
             case 'SubjectCategory':
             case 'DataCategory':
@@ -433,9 +435,7 @@ class AppServiceProvider extends ServiceProvider
             case 'ConfidentialityClass':
             case 'IntegrityClass':
             case 'ConsequenceLevel':
-            case 'Department':
             case 'ProbabilityLevel':
-            case 'RiskLevel':
             case 'Tag':
             case 'ProjectType':
             case 'ProjectTypeRiskTemplate':
@@ -444,6 +444,10 @@ class AppServiceProvider extends ServiceProvider
             case 'GhgCategory':
             case 'GhgConversionFactor':
                return $user->hasAnyPermission(['managementtools.edit']);
+
+            case 'Department':
+            case 'RiskLevel':
+               return $user->hasAnyPermission(['managementtools.edit', 'systemadministrator.edit']);
 
             case 'ConfidentialityGround':
             case 'Diary':
@@ -460,7 +464,7 @@ class AppServiceProvider extends ServiceProvider
                   return (($user->id == $model->approver_id) || ($user->id == $model->int_library_document->responsible_user_id) || $user->hasAnyPermission(['managementtools.edit']));
 
             case 'Role':
-               return (\Ledningssystemet\Ledningssystemet\Support\Modules::active('staff')) && $user->hasAnyPermission(['managementtools.edit']);
+               return (\Ledningssystemet\Ledningssystemet\Support\Modules::active('staff')) && $user->hasAnyPermission(['managementtools.edit', 'systemadministrator.edit']);
 
             case 'SubjectCategory':
             case 'DataCategory':
@@ -628,7 +632,6 @@ class AppServiceProvider extends ServiceProvider
             case 'ConfidentialityClass':
             case 'IntegrityClass':
             case 'ConsequenceLevel':
-            case 'Department':
             case 'ProbabilityLevel':
             case 'RiskLevel':
             case 'Tag':
@@ -641,6 +644,9 @@ class AppServiceProvider extends ServiceProvider
             case 'GhgConversionFactor':
                return $user->hasAnyPermission(['managementtools.edit']);
 
+            case 'Department':
+               return $user->hasAnyPermission(['managementtools.edit', 'systemadministrator.edit']);
+
             case 'ConfidentialityGround':
             case 'Diary':
             case 'PointNotation':
@@ -650,7 +656,7 @@ class AppServiceProvider extends ServiceProvider
                return $user->hasAnyPermission(['managementtools.edit']);
 
             case 'Role':
-               return (\Ledningssystemet\Ledningssystemet\Support\Modules::active('staff')) && $user->hasAnyPermission(['managementtools.edit']);
+               return (\Ledningssystemet\Ledningssystemet\Support\Modules::active('staff')) && $user->hasAnyPermission(['managementtools.edit', 'systemadministrator.edit']);
 
             case 'SubjectCategory':
             case 'DataCategory':
@@ -829,7 +835,6 @@ class AppServiceProvider extends ServiceProvider
             case 'ConfidentialityClass':
             case 'IntegrityClass':
             case 'ConsequenceLevel':
-            case 'Department':
             case 'ProbabilityLevel':
             case 'RiskLevel':
             case 'Tag':
@@ -839,6 +844,9 @@ class AppServiceProvider extends ServiceProvider
             case 'ProjectMeetingAgendaTemplateItem':
             case 'FormTemplate':
                return $user->hasAnyPermission(['managementtools.edit']);
+
+            case 'Department':
+               return $user->hasAnyPermission(['managementtools.edit', 'systemadministrator.edit']);
 
             case 'GhgCategory':
             case 'GhgConversionFactor':
@@ -863,7 +871,7 @@ class AppServiceProvider extends ServiceProvider
                   return ($user->hasAnyPermission(['managementtools.edit']) || ($model->int_library_document->responsible_user_id == auth()->user()->id));
 
             case 'Role':
-               return (\Ledningssystemet\Ledningssystemet\Support\Modules::active('staff')) && $user->hasAnyPermission(['managementtools.edit']);
+               return (\Ledningssystemet\Ledningssystemet\Support\Modules::active('staff')) && $user->hasAnyPermission(['managementtools.edit', 'systemadministrator.edit']);
 
             case 'SubjectCategory':
             case 'DataCategory':

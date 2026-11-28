@@ -1,0 +1,60 @@
+.ls-auth .glow {
+   position: absolute;
+   border-radius: 50%;
+   filter: blur(140px);
+   pointer-events: none;
+}
+
+.ls-auth .glow-1 {
+   top: -8rem;
+   left: -6rem;
+   width: 26rem;
+   height: 26rem;
+   opacity: .25;
+   background: hsl(var(--brand-teal-soft));
+}
+
+.ls-auth .glow-2 {
+   right: -8rem;
+   bottom: 0;
+   width: 30rem;
+   height: 30rem;
+   opacity: .15;
+   background: hsl(var(--brand-teal-soft));
+}
+
+.ls-auth aside {
+   position: relative;
+   overflow: hidden;
+   background-image: var(--gradient-brand);
+   padding: 2.5rem 1.5rem;
+   display: flex;
+   flex-direction: column;
+   justify-content: center;
+}
+
+.ls-auth aside h2 {
+   font-weight: 300 !important;
+   color: hsl(var(--on-navy)) !important;
+   font-size: 2.25rem !important;
+   line-height: 1.1 !important;
+   margin: 1.5rem 0 0 !important;
+}
+
+.ls-auth aside h2 .block {
+   display: block;
+   color: var(--brand-teal-soft);
+}
+
+.ls-auth .pw-toggle {
+   border:0;
+   background:transparent;
+   color:var(--foreground);
+   display:flex;
+   align-items:center;
+   justify-content:center;
+}
+
+.ls-auth .pw-reset {
+   background: transparent;
+}

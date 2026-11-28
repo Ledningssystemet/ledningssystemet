@@ -2,8 +2,8 @@
 
 use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
+use Ledningssystemet\Ledningssystemet\Http\Controllers\AppPageController;
 use Ledningssystemet\Ledningssystemet\Http\Controllers\SystemSettingsController;
-use Ledningssystemet\Ledningssystemet\Http\Controllers\SystemUserNotificationSettingsController;
 use Ledningssystemet\Ledningssystemet\Http\Middleware\LogPasswordResetAttempt;
 use Ledningssystemet\Ledningssystemet\Http\Middleware\ModuleEnabled;
 use Ledningssystemet\Ledningssystemet\Http\Middleware\PasswordResetAccess;
@@ -81,9 +81,14 @@ Route::group(['namespace' => 'Ledningssystemet\Ledningssystemet\Http\Controllers
       Route::get('/dashboard', function() { return view('dashboard.dashboard'); }); // Dashboard
 
       /**
-       * Projects
+       * React application
        */
-      Route::get('/projects', function() { return view('projects.projects'); }); // Display projects
+      Route::prefix('app')->name('app.')->group(function () {
+         Route::get('/', function () { abort(404); });
+         Route::get('/{path}', function() { return view('app'); })
+            ->where('path', '.*')
+            ->name('page');
+      });
 
       /**
       * User
@@ -152,7 +157,9 @@ Route::group(['namespace' => 'Ledningssystemet\Ledningssystemet\Http\Controllers
       Route::middleware(ModuleEnabled::class.':processes')->group(function () {
          Route::get('/measure/processperformancemetrics', function() { return view('measure.processperformancemetrics'); }); // Display metrics
          Route::get('/measure/objectives', function() { return view('measure.objectives'); }); // Display objectives
-         Route::get('/measure/ghgcalculator', function() { return view('measure.ghgcalculator'); }); // Display ghg calculator
+         Route::get('/measure/ghgcalculator', function (Request $request) {
+            return redirect()->to(url()->query('/app/ghgcalculator', $request->query()));
+         });
       });
       
       /**
@@ -236,20 +243,9 @@ Route::group(['namespace' => 'Ledningssystemet\Ledningssystemet\Http\Controllers
       /**
       * System admin routes
       */
-      Route::get('/systemadmin/departments', function() { return view('systemadmin.departments'); }); // Display departments
-      Route::middleware(ModuleEnabled::class.':staff')->group(function () {
-         Route::get('/systemadmin/roles', function() { return view('systemadmin.roles'); }); // Display roles
-      });
-      Route::get('/systemadmin/settings', [SystemSettingsController::class, 'index'])->name('systemadmin.settings');
-      Route::put('/systemadmin/settings', [SystemSettingsController::class, 'update'])->name('systemadmin.settings.update');
-      Route::get('/systemadmin/access', function() { return view('systemadmin.access'); }); // Display access settings
-      Route::get('/systemadmin/users', function() { return view('systemadmin.users'); }); // Display users
-      Route::get('/systemadmin/users/{user}/notification-settings', [SystemUserNotificationSettingsController::class, 'show'])->whereNumber('user');
-      Route::post('/systemadmin/users/{user}/notification-settings', [SystemUserNotificationSettingsController::class, 'update'])->whereNumber('user');
-      Route::get('/systemadmin/apitokens', function() { return view('systemadmin.apitokens'); }); // Display API tokens
-      Route::get('/systemadmin/sites', function() { return view('systemadmin.sites'); }); // Display Sites
-      Route::get('/systemadmin/swagger', function() { return view('systemadmin.swagger'); }); // Display Swagger
-      Route::get('/systemadmin/customproperties', function() { return view('systemadmin.customproperties'); }); // Custom properties settings
+      Route::put('/systemadmin/settings', [SystemSettingsController::class, 'update']);
+      Route::patch('/systemadmin/settings/modules/{module}', [SystemSettingsController::class, 'updateModule']);
+      Route::get('/systemadmin/{any}', function() { return view('systemadmin'); })->where('any', '.*'); // System admin app
 
       /**
       * i18n

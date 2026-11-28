@@ -38,13 +38,7 @@ class User extends Authenticatable
    
    public static function getPrettyName($plural = false){ if($plural) { return __("Users"); } else { return __("User"); }}
 
-   /* Retrieve status for the entire collection of objects */
-   public static function getItemsStatus($department = null, $user = null, $personalOnly = false)
-   {
-      $retval = [];
 
-      return $retval;
-   }
    /**
     * Bootstrap any application services.
     *
@@ -99,7 +93,44 @@ static::creating(function ($model) {
       'riskscount',
       'supplierscount',
       'access_groups',
+      'status_email_days',
    ];
+
+   public function getAuthorizationFields(): array
+   {
+      return ['id'];
+   }
+
+   public function getFieldDependencies(): array
+   {
+      return [
+         'access' => [],
+         'departments' => [],
+         'org_roles' => [],
+         'status' => ['enabled', 'external_id'],
+         'direct_reports' => [],
+         'activitiescount' => [],
+         'activityflowcount' => [],
+         'agreementcount' => [],
+         'assetscount' => [],
+         'controlscount' => [],
+         'control_actionscount' => [],
+         'customercount' => [],
+         'findingscount' => [],
+         'formcount' => [],
+         'incidentscount' => [],
+         'information_typescount' => [],
+         'objectivescount' => [],
+         'processescount' => [],
+         'process_performance_metricscount' => [],
+         'projectcount' => [],
+         'projectactivitycount' => [],
+         'riskscount' => [],
+         'supplierscount' => [],
+         'access_groups' => [],
+         'status_email_days' => ['email_notification_settings'],
+      ];
+   }
 
    public function getAccessAttribute($user = null)
    {
@@ -134,7 +165,8 @@ static::creating(function ($model) {
    
    public function setDepartmentsAttribute($value)
    {
-      $this->syncRelationAttribute('departments', fn ($model) => $model->int_departments()->sync($value));
+      $ids = self::relationIds($value);
+      $this->syncRelationAttribute('departments', fn ($model) => $model->int_departments()->sync($ids));
    }
    
    public function getOrgRolesAttribute()
@@ -147,7 +179,8 @@ static::creating(function ($model) {
 
    public function setOrgRolesAttribute($value)
    {
-      $this->syncRelationAttribute('org_roles', fn ($model) => $model->int_roles()->sync($value));
+      $ids = self::relationIds($value);
+      $this->syncRelationAttribute('org_roles', fn ($model) => $model->int_roles()->sync($ids));
    }
 
 
@@ -161,7 +194,19 @@ static::creating(function ($model) {
 
    public function setAccessGroupsAttribute($value)
    {
-      $this->syncRelationAttribute('access_groups', fn ($model) => $model->int_access_groups()->sync($value));
+      $ids = self::relationIds($value);
+      $this->syncRelationAttribute('access_groups', fn ($model) => $model->int_access_groups()->sync($ids));
+   }
+
+   private static function relationIds($value): array
+   {
+      return collect($value ?? [])
+         ->map(fn ($item) => is_array($item) ? ($item['id'] ?? null) : (is_object($item) ? ($item->id ?? null) : $item))
+         ->filter(fn ($id) => $id !== null && $id !== '')
+         ->map(fn ($id) => (int) $id)
+         ->unique()
+         ->values()
+         ->all();
    }
    public function getDirectReportsAttribute()
    {
@@ -302,6 +347,8 @@ static::creating(function ($model) {
       'supplierscount',
       'last_login_at',
       'access_groups',
+      'email_notification_settings',
+      'status_email_days',
    ];
 
    
@@ -320,6 +367,16 @@ static::creating(function ($model) {
       'departments',
       'access_groups',
       'manager_user_id',
+      'status_email_days',
+   ];
+
+   /**
+    * Default attribute values.
+    *
+    * @var array<string, mixed>
+    */
+   protected $attributes = [
+      'email_notification_settings' => '{"status_email":{"monday":true,"tuesday":false,"wednesday":false,"thursday":false,"friday":false,"saturday":false,"sunday":false}}',
    ];
 
 
@@ -355,6 +412,93 @@ static::creating(function ($model) {
       'resetpasssword',
    ];
   
+   /** Allowed filters for CRUD listing, including the user search and custom-property filters. */
+   public static function getAllowedFilters(): array
+   {
+      $filters = [
+         \Spatie\QueryBuilder\AllowedFilter::exact('id'),
+         \Spatie\QueryBuilder\AllowedFilter::partial('name'),
+         \Spatie\QueryBuilder\AllowedFilter::partial('email'),
+         \Spatie\QueryBuilder\AllowedFilter::exact('enabled'),
+         \Spatie\QueryBuilder\AllowedFilter::partial('created_at'),
+         \Spatie\QueryBuilder\AllowedFilter::partial('updated_at'),
+         \Spatie\QueryBuilder\AllowedFilter::partial('external_id'),
+         \Spatie\QueryBuilder\AllowedFilter::partial('title'),
+         \Spatie\QueryBuilder\AllowedFilter::exact('manager_user_id'),
+         \Spatie\QueryBuilder\AllowedFilter::partial('last_login_at'),
+         \Spatie\QueryBuilder\AllowedFilter::callback('name_or_email', static function (Builder $query, $value) {
+            $searches = array_values(array_filter(
+               is_array($value) ? $value : [$value],
+               static fn ($search) => trim((string) $search) !== ''
+            ));
+
+            if ($searches === []) {
+               return;
+            }
+
+            $query->where(static function (Builder $query) use ($searches) {
+               foreach ($searches as $search) {
+                  $search = (string) $search;
+                  $query->orWhere(static function (Builder $query) use ($search) {
+                     $query->where('name', 'LIKE', '%'.$search.'%')
+                        ->orWhere('email', 'LIKE', '%'.$search.'%');
+                  });
+               }
+            });
+         }),
+      ];
+
+      foreach (static::getCustomProperties() as $property) {
+         if (in_array($property->type, ['string', 'textarea'], true)) {
+            continue;
+         }
+
+         $propertyId = $property->id;
+         $propertyType = $property->type;
+         $filters[] = \Spatie\QueryBuilder\AllowedFilter::callback(
+            'customproperty_'.$propertyId,
+            static function (Builder $query, $value) use ($propertyId, $propertyType) {
+               $values = is_array($value) ? $value : (is_string($value) ? explode(',', $value) : [$value]);
+               $jsonValues = [];
+
+               foreach ($values as $option) {
+                  if (! is_scalar($option) || $option === '') {
+                     continue;
+                  }
+
+                  if ($propertyType === 'boolean' && in_array($option, [true, false, 1, 0, '1', '0', 'true', 'false'], true)) {
+                     $boolean = in_array($option, [true, 1, '1', 'true'], true);
+                     foreach ([$boolean, (int) $boolean, (string) (int) $boolean] as $representation) {
+                        $jsonValues[] = json_encode($representation, JSON_THROW_ON_ERROR);
+                     }
+                     continue;
+                  }
+
+                  $option = (string) $option;
+                  $jsonValues[] = json_encode($option, JSON_THROW_ON_ERROR);
+                  if ($propertyType !== 'boolean' && ctype_digit($option)) {
+                     $integer = filter_var(ltrim($option, '0') ?: '0', FILTER_VALIDATE_INT);
+                     if ($integer !== false) {
+                        $jsonValues[] = json_encode($integer, JSON_THROW_ON_ERROR);
+                     }
+                  }
+               }
+
+               if ($jsonValues === []) {
+                  return;
+               }
+
+               $query->whereHas('int_custom_properties', static function (Builder $query) use ($propertyId, $jsonValues) {
+                  $query->where('custom_properties.id', $propertyId)
+                     ->whereIn('custom_property_object.value', $jsonValues);
+               });
+            }
+         );
+      }
+
+      return $filters;
+   }
+
    /**
     * Index-function used for fetching multiple items via API
     */
@@ -441,34 +585,125 @@ static::creating(function ($model) {
       return (null == $risklevel) ? null : RiskLevel::findOrFail($risklevel->id);
    }
    
+   public const STATUS_EMAIL_DAYS = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+
    /**
-    * Get user communication preferences
+    * Default e-mail notification settings: status mail on mondays only.
+    */
+   public static function defaultEmailNotificationSettings(): array
+   {
+      $statusEmail = [];
+      foreach (self::STATUS_EMAIL_DAYS as $day)
+         $statusEmail[$day] = 'monday' === $day;
+
+      return ['status_email' => $statusEmail];
+   }
+
+   /**
+    * Normalize e-mail notification settings on top of $base. Invalid values are
+    * rejected when $strict, otherwise the base value is kept.
+    */
+   protected static function normalizeEmailNotificationSettings($value, array $base, bool $strict): array
+   {
+      if (is_string($value))
+         $value = json_decode($value, true);
+
+      $statusEmail = is_array($value) ? ($value['status_email'] ?? null) : null;
+      if (null !== $statusEmail && !is_array($statusEmail) && $strict)
+         throw \Illuminate\Validation\ValidationException::withMessages([
+            'email_notification_settings.status_email' => __('validation.array', ['attribute' => 'status_email']),
+         ]);
+
+      foreach (self::STATUS_EMAIL_DAYS as $day) {
+         if (!is_array($statusEmail) || !array_key_exists($day, $statusEmail))
+            continue;
+
+         $enabled = is_scalar($statusEmail[$day]) ? filter_var($statusEmail[$day], FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE) : null;
+         if (null === $enabled) {
+            if ($strict)
+               throw \Illuminate\Validation\ValidationException::withMessages([
+                  'email_notification_settings.status_email.'.$day => __('validation.boolean', ['attribute' => $day]),
+               ]);
+            continue;
+         }
+
+         $base['status_email'][$day] = $enabled;
+      }
+
+      return $base;
+   }
+
+   public function getEmailNotificationSettingsAttribute($value): array
+   {
+      return self::normalizeEmailNotificationSettings($value, self::defaultEmailNotificationSettings(), false);
+   }
+
+   /**
+    * Partial settings are merged into the current settings.
+    */
+   public function setEmailNotificationSettingsAttribute($value): void
+   {
+      $current = $this->getEmailNotificationSettingsAttribute($this->attributes['email_notification_settings'] ?? null);
+
+      $this->attributes['email_notification_settings'] = json_encode(
+         self::normalizeEmailNotificationSettings($value, $current, true)
+      );
+   }
+
+   /**
+    * Weekdays on which the user receives status e-mail, as a list of day names.
+    */
+   public function getStatusEmailDaysAttribute(): array
+   {
+      return array_keys(array_filter($this->email_notification_settings['status_email']));
+   }
+
+   /**
+    * Accepts a list (or comma-separated string) of day names; unlisted days are disabled.
+    */
+   public function setStatusEmailDaysAttribute($value): void
+   {
+      if (null === $value || '' === $value)
+         $value = [];
+      elseif (is_string($value))
+         $value = explode(',', $value);
+
+      if (!is_array($value))
+         throw \Illuminate\Validation\ValidationException::withMessages([
+            'status_email_days' => __('validation.array', ['attribute' => 'status_email_days']),
+         ]);
+
+      $days = array_map(static fn ($day) => is_scalar($day) ? strtolower(trim((string) $day)) : '', $value);
+      $invalid = array_diff($days, self::STATUS_EMAIL_DAYS);
+      if ([] !== $invalid)
+         throw \Illuminate\Validation\ValidationException::withMessages([
+            'status_email_days' => __('validation.in', ['attribute' => 'status_email_days']),
+         ]);
+
+      $settings = [];
+      foreach (self::STATUS_EMAIL_DAYS as $day)
+         $settings[$day] = in_array($day, $days, true);
+
+      $this->email_notification_settings = ['status_email' => $settings];
+   }
+
+   /**
+    * Get user status e-mail weekday preferences
     */
    public function getUserCommunicationPreferences()
    {
-      // Try to get settings
-      $usersettings = DB::table('user_status_email_settings')->where('user_id', $this->id)->first();
-
-      return array(
-         'monday' => (null == $usersettings) ? false : $usersettings->monday,
-         'tuesday' => (null == $usersettings) ? false : $usersettings->tuesday,
-         'wednesday' => (null == $usersettings) ? false : $usersettings->wednesday,
-         'thursday' => (null == $usersettings) ? false : $usersettings->thursday,
-         'friday' => (null == $usersettings) ? false : $usersettings->friday,
-         'saturday' => (null == $usersettings) ? false : $usersettings->saturday,
-         'sunday' => (null == $usersettings) ? false : $usersettings->sunday,
-      );
+      return $this->email_notification_settings['status_email'];
    }
    
 
    /**
-    * Set user communication preferences
+    * Set user status e-mail weekday preferences
     */
    public function setUserCommunicationPreferences($usersettings)
    {
-      DB::table('user_status_email_settings')
-         ->updateOrInsert(['user_id' => $this->id], $usersettings);
-         
+      $this->email_notification_settings = ['status_email' => $usersettings];
+      $this->save();
+
       return $this->getUserCommunicationPreferences();
    }  
 
