@@ -1553,5 +1553,7 @@
     "suppliers.read": "View suppliers",
     "sustainabilityaspects.edit": "Manage sustainability aspects",
     "sustainabilityaspects.read": "View sustainability aspects",
-    "systemadministrator.edit": "Manage system settings"
+    "systemadministrator.edit": "Manage system settings",
+    "Loading page…": "Loading page…",
+    "Please wait while page is loading.": "Please wait while page is loading."
 }

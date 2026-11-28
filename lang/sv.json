@@ -1738,5 +1738,8 @@
    "{field} must not be less than {min}.": "{field} får inte vara mindre än {min}.",
    "{field}: allowed file types are {types}.": "{field}: tillåtna filtyper är {types}.",
    "{section} for {item}": "{section} för {item}",
-   "Application settings": "Applikationsinställningar"
+   "Application settings": "Applikationsinställningar",
+   "Loading page…": "Laddar sidan…",
+   "Please wait while page is loading.": "Vänligen vänta medan sidan laddas."
+
 }
