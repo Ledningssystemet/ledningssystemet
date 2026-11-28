@@ -27,14 +27,6 @@ class AccessGroup extends SpatieRole
       }
    }
 
-   /* Retrieve status for the entire collection of objects */
-   public static function getItemsStatus($department = null, $user = null, $personalOnly = false)
-   {
-      $retval = [];
-
-      return $retval;
-   }
-
    /**
     * Bootstrap any application services.
     *

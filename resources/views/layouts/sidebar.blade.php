@@ -641,6 +641,8 @@ $(function(){
                $(this).find('.nav-group-status').addClass('nav-group-status-warning');
             else if($(this).closest('.nav-group').find('.nav-item-status-info').length)
                $(this).find('.nav-group-status').addClass('nav-group-status-info');
+            else
+               $(this).find('.nav-group-status').addClass('nav-group-status-none');
          });
       }
    });

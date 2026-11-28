@@ -128,16 +128,16 @@
                </div>
 
                <div class="col col-12 col-md-6">
-                  <div class="department-container-header">{{ __("System settings") }}</div>
+                  <div class="department-container-header">{{ __("Application settings") }}</div>
                   <div class="container status-container">
-@foreach(array_merge(\Ledningssystemet\Ledningssystemet\Models\User::getItemsStatus($department), \Ledningssystemet\Ledningssystemet\Models\Site::getItemsStatus($department), \Ledningssystemet\Ledningssystemet\Models\Department::getItemsStatus($department), \Ledningssystemet\Ledningssystemet\Models\Role::getItemsStatus($department), \Ledningssystemet\Ledningssystemet\Models\AccessGroup::getItemsStatus($department)) as $issue)
+@foreach(array_merge(\Ledningssystemet\Ledningssystemet\Models\Site::getItemsStatus($department), \Ledningssystemet\Ledningssystemet\Models\Department::getItemsStatus($department), \Ledningssystemet\Ledningssystemet\Models\Role::getItemsStatus($department)) as $issue)
                <div class="container status-item">
                   <span class="badge bg-{{ $issue['level'] }}">{{ $issue['count'] }}</span>
 @if($issue['url'])
                      <a class="status-item-link" href="{{ $issue['url'] }}">{{ $issue['text'] }}</a>
 @else
                      {{ $issue['text'] }}
-@endif                  
+@endif
                </div>
 @endforeach
                   </div>

@@ -38,13 +38,7 @@ class User extends Authenticatable
    
    public static function getPrettyName($plural = false){ if($plural) { return __("Users"); } else { return __("User"); }}
 
-   /* Retrieve status for the entire collection of objects */
-   public static function getItemsStatus($department = null, $user = null, $personalOnly = false)
-   {
-      $retval = [];
 
-      return $retval;
-   }
    /**
     * Bootstrap any application services.
     *
