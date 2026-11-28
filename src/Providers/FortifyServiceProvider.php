@@ -75,8 +75,15 @@ class FortifyServiceProvider extends ServiceProvider
             ],
         ]]));
 
-        Fortify::authenticateUsing(function (Request $request) {
+        // Fortify may invoke the callback twice during one login request.
+        // Weak keys release the result with the request, including in long-lived workers.
+        $verifiedRequests = new \WeakMap();
+        $credentialsKey = random_bytes(32);
+
+        Fortify::authenticateUsing(function (Request $request) use ($verifiedRequests, $credentialsKey) {
             if (!config('ledningssystemet.login_allow_passwordlogin')) {
+                unset($verifiedRequests[$request]);
+
                 return null;
             }
 
@@ -85,7 +92,20 @@ class FortifyServiceProvider extends ServiceProvider
                 'password' => ['required', 'string'],
             ]);
 
-            $user = Auth::getProvider()->retrieveByCredentials($credentials);
+            $provider = Auth::getProvider();
+            $fingerprint = hash_hmac('sha256', serialize($credentials), $credentialsKey);
+            $verified = $verifiedRequests[$request] ?? null;
+
+            if ($verified !== null
+                && $verified['provider'] === $provider
+                && hash_equals($verified['fingerprint'], $fingerprint)
+                && $verified['user']->enabled
+                && $verified['passwordHash'] === $verified['user']->getAuthPassword()) {
+                return $verified['user'];
+            }
+
+            unset($verifiedRequests[$request]);
+            $user = $provider->retrieveByCredentials($credentials);
 
             // Always run a Hash::check(), even when no user was found, using
             // a dummy hash so that the response time does not depend on
@@ -108,6 +128,13 @@ class FortifyServiceProvider extends ServiceProvider
             }
 
             Log::info('User password verified for '.$credentials['email'].' from IP '.$request->ip());
+
+            $verifiedRequests[$request] = [
+                'provider' => $provider,
+                'fingerprint' => $fingerprint,
+                'user' => $user,
+                'passwordHash' => $hashedPassword,
+            ];
 
             return $user;
         });

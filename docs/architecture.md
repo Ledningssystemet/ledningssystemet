@@ -230,6 +230,13 @@ warnings in bpmn.io.
 
 ## Password authentication
 
+Each successful password verification runs once per login request and records
+one verification log entry, whether MFA is disabled, an MFA
+challenge is required, or a trusted device bypasses the challenge. A successful
+verification may be reused only within the same request for unchanged
+credentials; it does not authenticate the session before a required MFA
+challenge is completed.
+
 `LOGIN_ALLOW_PASSWORDLOGIN=false` disables password login and denies unauthenticated
 access to both GET and POST password reset routes (`/forgot-password` and
 `/reset-password`). Authenticated system administrators with
@@ -247,8 +254,11 @@ authentication and an unfinished password MFA challenge do not update it.
 The listener also runs in Composer host applications and ignores users that do
 not use the package's `User` model.
 
-The separate consumer regression suite should cover password login with and
-without MFA, failed credentials and MFA, both SSO providers including mandatory
+The separate consumer regression suite should cover one password verification and
+one success log per successful attempt with MFA disabled, with MFA enabled but
+not enrolled, with a trusted device, and with an MFA challenge. It should also cover changed
+credentials and separate requests, disabled users and password login, invalid
+credentials, failed MFA, both SSO providers including mandatory
 MFA enrollment, remember-me restoration, and unrelated host user models.
 It should also cover authentication, keep-alive and logout with and without a
 CSRF meta tag, including Axios's `X-XSRF-TOKEN` cookie handling, and verify both
