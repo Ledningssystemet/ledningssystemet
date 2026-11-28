@@ -627,6 +627,10 @@ html .sidebar:not(.show).sidebar-self-hiding.sidebar-narrow.sidebar-end, html .s
    margin-right: 10px;
 }
 
+.sidebar .nav-group-status.nav-group-status-none {
+  background-color: var(--bs-gray-300);
+}
+
 .sidebar .nav-group-status.nav-group-status-danger {
    background-color: var(--bs-danger);
 }

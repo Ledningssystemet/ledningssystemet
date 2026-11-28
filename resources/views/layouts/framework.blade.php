@@ -7,8 +7,7 @@
       <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
       <title>{{ config('ledningssystemet.application_name') }}</title>
       <link rel="icon" type="image/png" href="@php echo(file_exists(resource_path().'/brand/logo/favicon.png') ? 'data:image/png;base64,'.base64_encode(file_get_contents(resource_path().'/brand/logo/favicon.png')) : '/favicon.png'); @endphp">
-      @vite(['resources/js/app.js'])
-      @vite(['resources/js/loadstyles.js'])
+      @vite(['resources/js/components/core/loadstyles.js', 'resources/js/components/core/app.js', 'resources/js/bpmneditor/index.js','resources/js/documenteditor/index.js','resources/js/components/core/componentRegistry.jsx'])
       
       <!-- Vendors styles-->
       <link rel="stylesheet" href="/vendors/bootstrap/font/bootstrap-icons.css">

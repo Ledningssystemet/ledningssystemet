@@ -34,6 +34,13 @@ class LedningssystemetServiceProvider extends ServiceProvider
       $this->loadViewsFrom(__DIR__ . '/../resources/views', 'ledningssystemet');
       $this->app['view']->addLocation(__DIR__ . '/../resources/views');
 
+      // Laravel builds its errors:: namespace from view.paths, not view locations.
+      $viewPaths = $this->app['config']->get('view.paths', []);
+      $packageViews = realpath(__DIR__ . '/../resources/views');
+      if ($packageViews && !in_array($packageViews, $viewPaths, true)) {
+         $this->app['config']->set('view.paths', [...$viewPaths, $packageViews]);
+      }
+
       // Route registration (including the "web"/"api" middleware groups and
       // the "/api" prefix) is handled by Providers\RouteServiceProvider,
       // registered below - it owns routes/web.php and routes/api.php

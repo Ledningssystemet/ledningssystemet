@@ -7,12 +7,247 @@ web and API routes from `routes/`. Backend models and authorization policies liv
 under `app/Models` and `app/Policies`; database changes live under
 `database/migrations`. The API controllers are under `app/Http/Controllers/Api`.
 Frontend components are under `resources/js/components`, including the shared
-UI described in [ui.md](ui.md).
+UI described in [ui.md](ui.md). The global React component registry uses
+`React.lazy` so each component's code is loaded only when its matching element
+or mount function is rendered.
+
+The npm exports `@ledningssystemet/ledningssystemet/app` and
+`@ledningssystemet/ledningssystemet/loadstyles` initialize the frontend and
+load its styles for consuming applications. The app entry also registers the
+editors and component registry and mounts UI extension slots on DOM ready.
+
+The shared `ErrorPage` component lives in `resources/js/components/errorpage`
+and is exported as `@ledningssystemet/ledningssystemet/components/errorpage`.
+Pass `errorType`, `title`, `text`, `homeLabel` and `retryLabel` when rendering it.
+`pageNotFound` selects the 404 map illustration; other error types (including
+`pageLoadError`) select a warning illustration. The component does not interpret
+router errors or translate text: each app supplies the appropriate type and
+all translated text. The actions navigate to `/` and reload the current page.
+In the consumer regression project, verify both illustrations, supplied texts,
+mobile layout, and both actions in each app.
+
+Server-rendered HTTP errors use the self-contained `errors::minimal` and
+`errors::layout` Blade views, with the same 404 and warning illustrations.
+They retain the status-specific message and code, and offer home and retry
+links without requiring frontend assets or JavaScript. The package appends its
+view path to Laravel's error view search paths; host error views take priority.
+In the consumer regression project, check 404, 403, 419, 500 and 503 responses,
+translations, mobile layout, both links and host-provided error view overrides.
+
+## React application pages
+
+`/app/projects` and `/app/ghgcalculator` share `resources/views/app.blade.php`,
+which retains the existing header, sidebar and extension slots and mounts
+`<app-router>`. The component registry loads the React Router entry lazily;
+each route then loads its page module lazily. Links between these two pages
+use client navigation, including sidebar links, while links outside the app
+continue to use normal browser navigation. Browser back/forward is supported.
+
+Authenticated GET requests under `/app` receive the common application shell;
+`/app` redirects to projects. The router fetches `/api/v1/permissions` once
+when the app loads and reuses it for presentation and project creation controls
+until the browser reloads the app. Changes to permissions may therefore not
+appear in those controls until reload; the API still checks current permissions.
+Sidebar links are shown based on permissions and module settings, but neither hiding links nor
+access to the shell authorizes API operations. The existing API checks policies
+for reads and writes. The generic GHG item API does not enforce the processes
+module flag, so disabling that module hides the link but is not an API access
+restriction. Unknown `/app` paths receive the shell with HTTP 200 and show a
+not-found error in the router. The old `/projects` and
+`/measure/ghgcalculator` routes redirect to the new URLs while retaining query
+parameters; the latter retains its processes-module middleware. New meeting
+mention links use `/app/projects`.
+
+To add a page, register its lazy route module and any page-specific loader in
+`resources/js/router/index.jsx`, include its URL in the client-navigation path
+set, and ensure its API endpoints enforce the required permissions. Add any
+presentation capabilities to the permissions endpoint as needed. No additional
+Laravel route is needed. The existing npm `./app`
+entry initializes this router through the component registry; consuming
+applications must compile that entry and serve the package's new shared view,
+not an old override of either replaced Blade view.
+
+## System administration application
+
+The system-administration pages share one React Router application mounted by
+`<systemadmin-app>` in the existing authenticated master layout. The router and
+its page modules live in `resources/js/pages/systemadmin`; `/systemadmin`
+redirects to `/systemadmin/users`. Navigation between users, access groups,
+settings, API tokens and API documentation is client-side, with browser
+back/forward support. Sidebar links into these pages are intercepted by the
+router, while unrelated links retain normal browser navigation.
+
+The root route displays a translated blocking loading dialog through
+`HydrateFallback` while the initial reference data and lazy page module load.
+The same dialog appears during subsequent navigation and reference-data
+refreshes, and closes when loading finishes.
+
+Each page's authenticated Laravel view retains its page-level authorization
+and uses `../resources/views/systemadmin.blade.php` to supply the same minimal
+bootstrap: CSRF token, URLs, configuration, translated labels and only those
+resources that have no CRUD model (permission options, external groups,
+notification definitions and system settings). The root loader reads User,
+Department, Role, AccessGroup, RiskLevel and CustomProperty references from
+the existing `/api/v1/crud` routes on entry and page-path navigation; it no
+longer fetches page HTML. The shared hydration provider owns these references
+and initialization values. Static table configuration belongs to each JSX
+page; table rows still use the CRUD API. All authorization stays on the server;
+the app does not perform its own page/permission checks. Unknown client paths display
+a not-found error. The other system-administration pages retain their Laravel
+views and are not part of this migration.
+
+Successful user and access-group mutations refresh dependent options and
+references through existing TableModule events. User changes also refresh
+user-dependent custom-property options. Settings changes update shared settings
+from their existing save responses. Enabling staff loads role references before
+publishing the new configuration; disabling staff removes them. API-token creation reloads its table after
+the one-time token dialog closes, without reloading the application. Settings
+and user actions also refresh affected data without a full browser reload.
+Requests are serialized; a mutation invalidates an in-flight older snapshot.
+Refreshes update configuration without remounting tables or clearing form drafts.
+Failures after a successful write explicitly report that saving succeeded but
+hydration failed, and offer retry. There is no polling or cross-tab real-time
+sync; changes made outside this app (including risk levels and system settings) are picked up on
+the next page-path navigation or reload. Bootstrap-only data, including
+other configuration changed outside the app and sidebar permission presentation, stays
+unchanged until a manual browser reload. The app does not try to recalculate
+permissions when the current user's groups or rights change; backend checks
+continue to enforce current permissions on every request.
+
+Host applications overriding these five Blade views or the shared mount partial
+must adopt the new bootstrap contract. The existing npm app entry and lazy page
+modules remain the integration points. `SystemSettingsForm` keeps its standalone
+reload behavior unless the app supplies its optional `onSaved` and
+`onModuleChanged` callbacks. JSON settings writes return a success message;
+normal form submissions still redirect with the existing flash status.
+The local-user-management flag still controls the user form's creation/editing
+presentation; it is configuration, not client-side authorization.
+
+Consumer regression coverage should include direct loads and reloads for each
+page, navigating between every page without reloading and checking each page's
+configuration, shared references, active sidebar state, back/forward, authorization
+failures, query/hash preservation, hydration failures/retry, token one-time
+display and user notification/reassignment actions. Check user/group
+create/update/delete propagation, custom-property options, Graph/staff settings,
+server-side permission revocation, external risk-level changes on navigation, simultaneous
+navigation/mutations and preservation of form drafts. Verify sidebar extension
+slots, standalone settings callbacks, npm lazy chunks and package route
+registration in a host application using Composer and npm.
+
+Consumer regression coverage should include both Composer route registration
+and npm lazy chunks, direct loads and reloads, sidebar navigation and active
+state, a single permissions request across navigation and refreshed permissions
+after a reload, back/forward, query/hash meeting links and legacy redirects, denied
+permissions, disabled processes, expired sessions, loader/chunk failures and
+accepting/cancelling navigation with unsaved meeting changes. The original
+project and GHG workflows should remain unchanged.
+
+## Shared page tabs
+
+Import `Tabs` and its `TabItem`/`TabsProps` types from
+`@ledningssystemet/ledningssystemet/components/tabs`. It uses the generated
+Tailwind stylesheet, which is imported by the component, and no Bootstrap or
+project-specific CSS. Each item has a unique `value`, translated `label`,
+optional Lucide component in `icon`, optional `disabled` flag and optional
+React `content`.
+
+```tsx
+import { Tabs } from '@ledningssystemet/ledningssystemet/components/tabs';
+import { Settings, Users } from 'lucide-react';
+
+<Tabs
+  label="Administration"
+  defaultValue="users"
+  items={[
+    { value: 'users', label: 'Users', icon: Users, content: <UsersPage /> },
+    { value: 'settings', label: 'Settings', icon: Settings, content: <SettingsPage /> },
+  ]}
+/>
+```
+
+Use `value` and `onValueChange` for controlled navigation; the callback is a
+request to change tabs, so a parent can first confirm unsaved edits. Without
+`value`, `defaultValue` selects the initial tab (otherwise the first enabled
+tab is used). The parent owns validity of controlled values and changes to the
+item list. `className` customizes the outer container.
+
+When any item provides `content`, Radix supplies linked tabs and panels with
+manual keyboard activation: arrow keys move focus and Enter/Space selects.
+Inactive panels unmount. With no `content`, the component renders page
+navigation with native buttons and `aria-current`; the parent owns content
+rendering. The project header uses this mode, preserving permission-dependent
+tabs, selected-project state and its unsaved-meeting navigation confirmation.
+
+Consumer regression coverage should include npm imports and generated styles,
+Lucide icons, narrow-screen scrolling, disabled tabs, controlled and uncontrolled
+selection, keyboard/focus behavior, panel unmounting and multiple instances.
+For projects, also cover permission-dependent tabs, project selection and
+accepting/cancelling the unsaved-meeting confirmation.
+
+## Table details and CSV export
+
+In the list and master-detail views, edit and delete actions appear above the
+details, while configured `rowCommands` appear below all fields and detail
+sections. Row commands are hidden when that item is edited inline. The table
+view retains its existing combined row actions; custom field renderers are not
+repositioned. Command visibility, badges and callbacks continue to apply.
+
+The separate consumer regression project should cover both detail views and the
+table view, inline and popup editing, permission-dependent actions, hidden
+commands, badges, command callbacks and server actions, and nested tables.
+
+API-backed table configurations automatically request `fields[_]` (or
+`fields[tableName]`) for the ID, title, subtitles, configured columns and
+non-child detail sections. This includes hidden columns used in forms or CSV
+export. `dataSource.fields` adds fields used outside these declarations, such
+as by renderers, permissions, status functions or row commands; explicitly
+include `access` or `accessFlags` when the model exposes them. Mark a
+render-only column with `apiField: false` if its key is not an API field, and
+list its actual dependencies in `dataSource.fields`. Child tables build their
+own field selections. All requested fields must be allowed by the model.
+
+The table view can export all configured table data columns, including hidden
+columns, as a UTF-8 CSV with a BOM and semicolon separators for Excel. The export
+includes all rows matching the active search and filters, in the current sort
+order, not just the current page or selected rows. Cell text follows the table
+rendering; action and child-table columns are excluded. Values that could be
+interpreted as spreadsheet formulas are prefixed with an apostrophe.
+
+API-backed tables request the full result with the same query and without
+pagination. The server must support an unpaginated list response; an incomplete
+paginated response produces an error instead of a partial export. The separate
+consumer regression project should cover local and API-backed tables, filtering,
+sorting, pagination, hidden columns and column selection, rendered cells, CSV escaping, formula
+protection, and API errors and incomplete responses.
+
+For field selection, also cover the paginated and export requests, callbacks
+using additional fields, virtual and hidden columns, detail sections and nested
+tables. Verify custom properties, computed values, authorization-dependent
+fields, rejected fields and models without dependency declarations, as well as
+user reassignment and notification settings in the Composer/npm host.
+
+Table multiselects keep selected-chip removal buttons separate from the button
+that opens the options popover. In the consumer regression project, check
+keyboard and pointer selection and removal, focus, disabled options, clearing,
+and popover alignment and width with empty and wrapped selections.
 
 The `User` model and user API use `org_roles` for organizational roles, with
 `id`/`name` pairs when reading and role IDs when writing. These use the existing
 `int_roles()` relation and `role_user` pivot table. The `roles` relation is
 reserved for Spatie permission roles (access groups).
+
+E-mail notification settings are stored in the JSON column
+`users.email_notification_settings` (previously the `user_status_email_settings`
+table) as `{"status_email": {"monday": true, ..., "sunday": false}}`. The default
+is status mail on Mondays only. In the user CRUD API the settings are read and
+written through the virtual field `status_email_days`, a list of weekday names
+(for example `["monday", "friday"]`); unlisted days are disabled and unknown day
+names are rejected. `email_notification_settings` is readable but not mass
+assignable. The systemadmin user form edits `status_email_days` as a regular
+multi-select field, while notification channels are managed from the
+"Notification channels" row command.
+`ledningssystemet:sendstatusmail` reads the settings via
+`User::getUserCommunicationPreferences()`.
 
 ## BPMN conversion
 
@@ -94,6 +329,9 @@ not enrolled, with a trusted device, and with an MFA challenge. It should also c
 credentials and separate requests, disabled users and password login, invalid
 credentials, failed MFA, both SSO providers including mandatory
 MFA enrollment, remember-me restoration, and unrelated host user models.
+It should also cover authentication, keep-alive and logout with and without a
+CSRF meta tag, including Axios's `X-XSRF-TOKEN` cookie handling, and verify both
+public npm entry imports and their initialization in a consuming application.
 
 ## System settings
 
@@ -104,6 +342,26 @@ apply to the entire installation and are persisted by Laravel Pennant in
 `system_settings`, using its dedicated `ledningssystemet` store and null scope.
 The Assessment tab also stores the control-status reassessment deadline in days;
 it defaults to 365 days. Disabling a module does not delete its data.
+
+The React settings form uses the shared `Tabs` component for Features, Privacy
+and Assessment, with Lucide icons. Draft values are held by the form and survive
+tab changes. Module switches save immediately through the authorized
+`PATCH /api/v1/settings/modules/{module}` endpoint, which validates the
+module name and boolean value and changes only that module. Switches remain
+disabled while saving and display their new state only after success; failures
+show an error and retain the previous state. No reload occurs, preserving drafts
+in other tabs. The Save button is hidden on Features; on Privacy and Assessment
+it submits those two sections to `PUT /api/v1/settings` without rewriting modules.
+`GET /api/v1/settings` supplies the settings and translated field metadata to
+authenticated users; writes require `systemadministrator.edit`. The web PUT and
+PATCH routes remain available, and PUT still accepts complete module
+configurations for compatibility.
+
+Consumer regression coverage should check immediate module persistence,
+rejected names/values, authorization, network/server errors, overlapping changes,
+editing across tabs before saving, validation for inactive sections, and
+persistence after reloading. Saving contact/assessment drafts must not overwrite
+module changes made by another administrator.
 
 Run `php artisan migrate --force` during deployment, before serving requests.
 The migration imports the installation's existing `DISABLE_STAFF`,

@@ -1,0 +1,58 @@
+@import "@fontsource-variable/instrument-sans";
+@import "@fontsource-variable/quicksand";
+
+:root {
+   --brand-navy: 211.34 69.07% 19.02%;
+   --brand-navy-deep: 210 69.70% 12.94%;
+   --brand-navy-ink: 210 71.43% 8.24%;
+   --brand-teal: 171.94 65.69% 40%;
+   --brand-teal-soft: 171.76 49% 59%;
+   --on-navy: 204 45% 98%;
+   --brand-teal-dark: 172.58 71.20% 24.51%;
+   --on-navy-muted: 210 22.81% 77.65%;
+   --gradient-brand: linear-gradient(145deg, hsl(var(--brand-navy-ink)) 0%, hsl(var(--brand-navy-deep)) 45%, hsl(var(--brand-navy)) 100%);
+   --gradient-teal: linear-gradient(100deg, hsl(var(--brand-teal)), hsl(var(--brand-teal-soft)));
+   --shadow-card: 0 1px 2px rgba(6, 21, 36, .06), 0 18px 44px -28px rgba(6, 21, 36, .35);
+   --background: 210 33.33% 97.65%;
+   --foreground: 213.66 48.24% 16.67%;
+   --border: 215 27.27% 91.37%;
+   --input: 215 27.27% 91.37%;
+   --ring: var(--brand-navy);
+   --primary: var(--brand-navy);
+   --primary-foreground: var(--on-navy) !important;
+   --secondary: 210 33.33% 97.65%;
+   --secondary-foreground: var(--foreground);
+   --destructive: 0 72% 45%;
+   --destructive-foreground: 0 0% 100%;
+   --muted: 210 33.33% 97.65%;
+   --muted-foreground: 215 15.38% 45.88%;
+   --accent: 182 30% 93%;
+   --accent-foreground: var(--foreground);
+   --popover: 0 0% 100%;
+   --popover-foreground: var(--foreground);
+   --card: 0 0% 100%;
+   --card-foreground: var(--foreground);
+   --surface-hover: 210 33.33% 97.65%;
+   --badge-info: 210 85% 94%;
+   --badge-info-foreground: 210 80% 30%;
+   --badge-success: 145 50% 92%;
+   --badge-success-foreground: 145 65% 25%;
+   --badge-warning: 45 95% 90%;
+   --badge-warning-foreground: 35 90% 25%;
+   --badge-danger: 0 85% 94%;
+   --badge-danger-foreground: 0 75% 35%;
+   --dot-success: 145 65% 35%;
+   --dot-warning: 35 90% 45%;
+   --dot-secondary: 200 16% 50%;
+   --detail-label: var(--muted-foreground);
+   --list-active: 182 30% 93%;
+   --list-active-border: var(--brand-teal);
+   --radius: 0.5rem;
+   --font-family: "Albert Sans", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", "Noto Sans", "Liberation Sans", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+}
+
+
+*, ::before, ::after {
+   box-sizing: border-box;
+}
+@tailwind utilities;

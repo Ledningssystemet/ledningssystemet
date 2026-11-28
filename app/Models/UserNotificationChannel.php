@@ -48,6 +48,20 @@ class UserNotificationChannel extends Model
       'channelevents',
    ];
 
+   public function getAuthorizationFields(): array
+   {
+      return ['id', 'user_id'];
+   }
+
+   public function getFieldDependencies(): array
+   {
+      return [
+         'access' => [],
+         'channelscopes' => ['scopes'],
+         'channelevents' => ['events'],
+      ];
+   }
+
    public function getAccessAttribute($user = null)
    {
       if(null == $user)

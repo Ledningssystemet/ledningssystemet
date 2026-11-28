@@ -65,7 +65,7 @@ $(function(){
 @endif
       @if(request()->user()->can('viewAny', Ledningssystemet\Ledningssystemet\Models\Project::class))
          <li class="nav-item" id="nav-project">
-            <a class="nav-link" href="/projects">
+            <a class="nav-link" href="/app/projects">
                <div class="nav-item-status"></div>
                <span class="nav-icon material-symbols-rounded">order_approve</span>
                {{ __("Projects") }}
@@ -341,7 +341,7 @@ $(function(){
 @endif
 @if(\Ledningssystemet\Ledningssystemet\Support\Modules::active('processes') && request()->user()->can('index', Ledningssystemet\Ledningssystemet\Models\GhgFactor::class))
             <li class="nav-item" id="nav-ghgcalculator">
-               <a class="nav-link" href="/measure/ghgcalculator">
+               <a class="nav-link" href="/app/ghgcalculator">
                   <div class="nav-item-status"></div>
                   <span class="nav-icon material-symbols-rounded">footprint</span>
                   {{ __("GHG Calculator") }}
@@ -489,7 +489,54 @@ $(function(){
             <div data-ui-slot="sidebar.groups.management.bottom"></div>
          </ul>
       </li>
+      <div data-ui-slot="sidebar.groups.before-appsettings"></div>
+      <li class="nav-group">
+         <a class="nav-link nav-group-toggle collapsed" data-bs-toggle="collapse" role="button" href="#appsettings-menu">
+            <div class="nav-group-status"></div>
+            {{ __("Application settings") }}
+         </a>
+         <ul class="nav-group-items collapse" id="appsettings-menu" data-bs-parent="#sidebar">
+            @if(request()->user()->can('create', Ledningssystemet\Ledningssystemet\Models\Site::class))
+               <li class="nav-item" id="nav-site">
+                  <a class="nav-link" href="/systemadmin/sites">
+                     <div class="nav-item-status"></div>
+                     <span class="nav-icon material-symbols-rounded">globe</span>
+                     {{ __("Sites") }}
+                  </a>
+               </li>
+            @endif
+            @if(request()->user()->can('create', Ledningssystemet\Ledningssystemet\Models\Department::class))
+               <li class="nav-item" id="nav-department">
+                  <a class="nav-link" href="/systemadmin/departments">
+                     <div class="nav-item-status"></div>
+                     <span class="nav-icon material-symbols-rounded">factory</span>
+                     {{ __("Departments") }}
+                  </a>
+               </li>
+            @endif
+            @if(\Ledningssystemet\Ledningssystemet\Support\Modules::active('staff') && request()->user()->can('create', Ledningssystemet\Ledningssystemet\Models\Role::class))
+               <li class="nav-item" id="nav-role">
+                  <a class="nav-link" href="/systemadmin/roles">
+                     <div class="nav-item-status"></div>
+                     <span class="nav-icon material-symbols-rounded">group</span>
+                     {{ __("Roles") }}
+                  </a>
+               </li>
+            @endif
+            @if(request()->user()->can('create', Ledningssystemet\Ledningssystemet\Models\CustomProperty::class))
+               <li class="nav-item" id="nav-customproperty">
+                  <a class="nav-link" href="/systemadmin/customproperties">
+                     <div class="nav-item-status"></div>
+                     <span class="nav-icon material-symbols-rounded">edit_attributes</span>
+                     {{ __("Custom properties") }}
+                  </a>
+               </li>
+            @endif
+               <div data-ui-slot="sidebar.groups.appsettings.bottom"></div>
+         </ul>
+      </li>
       <div data-ui-slot="sidebar.groups.before-systemsettings"></div>
+@can('systemadministrator.edit')
       <li class="nav-group">
          <a class="nav-link nav-group-toggle collapsed" data-bs-toggle="collapse" role="button" href="#systemsettings-menu">
             <div class="nav-group-status"></div>
@@ -497,16 +544,13 @@ $(function(){
          </a>
          <ul class="nav-group-items collapse" id="systemsettings-menu" data-bs-parent="#sidebar">
             <div data-ui-slot="sidebar.groups.systemsettings.top"></div>
-@can('manage-system-settings')
             <li class="nav-item" id="nav-modules">
-               <a class="nav-link" href="{{ route('systemadmin.settings') }}">
+               <a class="nav-link" href="/systemadmin/settings">
                   <div class="nav-item-status"></div>
                   <span class="nav-icon material-symbols-rounded">toggle_on</span>
-                  {{ __("General settings") }}
+                  {{ __("Function settings") }}
                </a>
             </li>
-@endcan
-@if(request()->user()->can('create', Ledningssystemet\Ledningssystemet\Models\User::class))
             <li class="nav-item" id="nav-user">
                <a class="nav-link" href="/systemadmin/users">
                   <div class="nav-item-status"></div>
@@ -514,44 +558,13 @@ $(function(){
                   {{ __("Users") }}
                </a>
             </li>
-@endif            
-@if(request()->user()->can('create', Ledningssystemet\Ledningssystemet\Models\Site::class))
-            <li class="nav-item" id="nav-site">
-               <a class="nav-link" href="/systemadmin/sites">
-                  <div class="nav-item-status"></div>
-                  <span class="nav-icon material-symbols-rounded">globe</span>
-                  {{ __("Sites") }}
-               </a>
-            </li>
-@endif            
-@if(request()->user()->can('create', Ledningssystemet\Ledningssystemet\Models\Department::class))
-            <li class="nav-item" id="nav-department">
-               <a class="nav-link" href="/systemadmin/departments">
-                  <div class="nav-item-status"></div>
-                  <span class="nav-icon material-symbols-rounded">factory</span>
-                  {{ __("Departments") }}
-               </a>
-            </li>
-@endif            
-@if(\Ledningssystemet\Ledningssystemet\Support\Modules::active('staff') && request()->user()->can('create', Ledningssystemet\Ledningssystemet\Models\Role::class))
-            <li class="nav-item" id="nav-role">
-               <a class="nav-link" href="/systemadmin/roles">
-                  <div class="nav-item-status"></div>
-                  <span class="nav-icon material-symbols-rounded">group</span>
-                  {{ __("Roles") }}
-               </a>
-            </li>
-@endif            
-@if(request()->user()->can('create', Ledningssystemet\Ledningssystemet\Models\AccessGroup::class))
             <li class="nav-item" id="nav-accessgroup">
                <a class="nav-link" href="/systemadmin/access">
                   <div class="nav-item-status"></div>
-                  <span class="nav-icon material-symbols-rounded">key</span>
+                  <span class="nav-icon material-symbols-rounded">manage_accounts</span>
                   {{ __("Access groups") }}
                </a>
             </li>
-@endif            
-@if(request()->user()->can('create', Ledningssystemet\Ledningssystemet\Models\PersonalAccessToken::class))
             <li class="nav-item" id="nav-apitokens">
                <a class="nav-link" href="/systemadmin/apitokens">
                   <div class="nav-item-status"></div>
@@ -559,20 +572,10 @@ $(function(){
                   {{ __("API tokens") }}
                </a>
             </li>
-@endif
-@if(request()->user()->can('create', Ledningssystemet\Ledningssystemet\Models\CustomProperty::class))
-            <li class="nav-item" id="nav-customproperty">
-               <a class="nav-link" href="/systemadmin/customproperties">
-                  <div class="nav-item-status"></div>
-                  <span class="nav-icon material-symbols-rounded">edit_attributes</span>
-                  {{ __("Custom properties") }}
-               </a>
-            </li>
-@endif
-
             <div data-ui-slot="sidebar.groups.systemsettings.bottom"></div>
          </ul>
       </li>
+@endcan
       <div data-ui-slot="sidebar.groups.bottom"></div>
    </ul>
    <button class="sidebar-toggler" type="button" onClick="$('#sidebar').toggleClass('sidebar-narrow-unfoldable').trigger('statuschanged');"></button>
@@ -638,6 +641,8 @@ $(function(){
                $(this).find('.nav-group-status').addClass('nav-group-status-warning');
             else if($(this).closest('.nav-group').find('.nav-item-status-info').length)
                $(this).find('.nav-group-status').addClass('nav-group-status-info');
+            else
+               $(this).find('.nav-group-status').addClass('nav-group-status-none');
          });
       }
    });

@@ -72,9 +72,7 @@ class SwaggerController extends Controller
             'info' => [
                 'title' => 'Ledningssystemet.se Open API',
                 'version' => '1.0.0',
-                'description' => 'API documentation and bug reporting: https://github.com/Ledningssystemet/ledningssystemet/blob/HEAD/docs/api.md#reporting-api-bugs. '
-                    .'Report reproducible API or documentation bugs at https://github.com/Ledningssystemet/ledningssystemet/issues. '
-                    .'Include the environment/date, HTTP method and path, sanitized payload, status/response, and expected behavior. Never include tokens or personal data.',
+                'description' => 'This is the Open API specification for Ledningssystemet.se. It describes the available endpoints, request parameters, and response formats for interacting with the system programmatically. The API follows RESTful principles and uses JSON for data exchange.',
             ],
             'host' => $request->getHttpHost(),
             'basePath' => '/',

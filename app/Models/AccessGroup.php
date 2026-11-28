@@ -27,14 +27,6 @@ class AccessGroup extends SpatieRole
       }
    }
 
-   /* Retrieve status for the entire collection of objects */
-   public static function getItemsStatus($department = null, $user = null, $personalOnly = false)
-   {
-      $retval = [];
-
-      return $retval;
-   }
-
    /**
     * Bootstrap any application services.
     *
@@ -91,7 +83,15 @@ class AccessGroup extends SpatieRole
 
    public function setUsersAttribute($value)
    {
-      $this->syncRelationAttribute('users', fn ($model) => $model->int_users()->sync($value));
+      $userIds = collect($value ?? [])
+         ->map(fn ($user) => is_array($user) ? ($user['id'] ?? null) : (is_object($user) ? ($user->id ?? null) : $user))
+         ->filter(fn ($id) => $id !== null && $id !== '')
+         ->map(fn ($id) => (int) $id)
+         ->unique()
+         ->values()
+         ->all();
+
+      $this->syncRelationAttribute('users', fn ($model) => $model->int_users()->sync($userIds));
    }
 
    public function getPermissionIdsAttribute(): array

@@ -126,7 +126,7 @@ WORKDIR /var/www/html
 COPY . /var/www/html
 
 # Build frontend assets
-RUN npm install && npm run build
+RUN npm install && npm run build:css && npm run build
 
 FROM base AS runtime
 

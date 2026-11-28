@@ -1,12 +1,7 @@
-// JS
-import './bootstrap.jsx';
-import './authClient';
-import './utils';
-import './bpmneditor/index';
-import './table';
-import './documenteditor';
-import 'dropzone';
-import './componentRegistry.jsx';
+import './components/core/app.js';
+import './bpmneditor/index.js';
+import './documenteditor/index.js';
+import './components/core/componentRegistry.jsx';
 import { mountUiExtensionSlots } from './extensions/uiExtensionRegistry.jsx';
 
 document.addEventListener('DOMContentLoaded', mountUiExtensionSlots);
